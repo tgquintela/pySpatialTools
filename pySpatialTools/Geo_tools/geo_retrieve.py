@@ -1,6 +1,8 @@
 
 """
 Module which groups all the data oriented to retrieve spatial neighbours.
+
+TODEPRECATE
 """
 import numpy as np
 from scipy.spatial import KDTree

@@ -1,5 +1,7 @@
 
 """
+Geo transformations
+-------------------
 Module to transform geographical coordinates between magnitude transformations
 or geographical projections.
 """
@@ -10,7 +12,10 @@ import numpy as np
 def general_projection(data, loc_vars, method='ellipsoidal', inverse=False,
                        radians=False):
     "General global projection in order to compute distances."
-    coordinates = data.loc[:, loc_vars].as_matrix()
+    if loc_vars is None:
+        coordinates = data
+    else:
+        coordinates = data.loc[:, loc_vars].as_matrix()
 
     # Compute to correct magnitude (radians)
     if not radians:
