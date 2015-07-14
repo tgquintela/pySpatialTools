@@ -46,7 +46,7 @@ QUALIFIER = ''
 write_version_py()
 
 ## Setup
-setup(name='pythonUtils',
+setup(name='pySpatialTools',
       version=VERSION,
       description='Utils for python coding',
       license='BSD',
@@ -57,8 +57,6 @@ setup(name='pythonUtils',
       packages=['pySpatialTools', 'pySpatialTools.Geo_tools',
 		'pySpatialTools.IO', 'pySpatialTools.Models',
 		'pySpatialTools.Preprocess', 'pySpatialTools.Retrieve'],
-      install_requires=['numpy', 'scipy', 'matplotlib', 'pandas'
-			'python-mpl_toolkits.basemap', 'datetime',
-			'python-dateutil', 'python-tz'],
+      install_requires=['numpy', 'scipy', 'pandas'],
 )
 
