@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial import KDTree
 import numpy as np
 
-from Mscthesis.Preprocess import Aggregator
+from pySpatialTools.Preprocess import Aggregator
 
 
 class Neighbourhood():
