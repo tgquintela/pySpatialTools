@@ -1,5 +1,8 @@
 
 
+import pandas as pd
+import numpy as np
+
 from aggregation_utils import compute_aggregate_counts,\
     average_position_by_aggarr
 #from Mscthesis.IO.io_aggfile import read_aggregation
@@ -8,66 +11,36 @@ from aggregation_utils import compute_aggregate_counts,\
 class Aggregator:
     "Aggregate or read aggregate information."
 
-    def __init__(self, filepath=None, typevars=None):
+    def __init__(self, typevars=None):
         """It is needed the identification of the aggvar and feat_vars with the
         filepath if we want to get a aggregation from a file.
         """
         self.typevars = format_typevars(typevars)
-        if filepath is None:
-            self.bool_read_agg = False
-        else:
-            self.bool_read_agg = True
-            self.filepath = filepath
 
     def retrieve_aggregation(self, df=None, reindices=None, funct=None):
         "Main function for retrieving aggregation."
-        if self.bool_read_agg:
-            # TODO: Function to read file
-            filepath, typevars = self.filepath, self.typevars
-            agglocs, aggfeatures = read_aggregation(filepath, typevars)
-        else:
-            ## Correct inputs
-            #################
-            locs = df[self.typevars['loc_vars']].as_matrix()
-            feat_arr = df[self.typevars['feat_vars']].as_matrix()
-            agg_arr = df[self.typevars['agg_var']].as_matrix()
-#            if self.typevars['agg_var'] is None:
-#                ## Check if discretized or to do
-#                if type(self.discretizor) == np.ndarray:
-#                    agg_arr = self.discretizor
-#                    agglocs = average_position_by_aggarr(locs, agg_arr)
-#                else:
-#                    agg_arr = self.discretizor.map2id(locs)
-#                    agglocs = self.discretizor.discretize(locs)
-#                self.typevars['agg_var'] = 'aggvar'
-#            else:
-#                agg_arr = df[self.typevars['agg_var']].as_matrix()
-#                agglocs = average_position_by_aggarr(locs, agg_arr)
-            if reindices is None:
-                N_t = locs.shape[0]
-                reindices = np.array(range(N_t)).reshape((N_t, 1))
-            if len(feat_arr.shape) == 1:
-                feat_arr = feat_arr.reshape(feat_arr.shape[0], 1)
-            ######################################################
-            ## Compute agglocs
-            agglocs = average_position_by_aggarr(locs, agg_arr)
-            ## Compute aggfeatures
-            aggfeatures = create_aggregation(agg_arr, feat_arr, reindices,
-                                             self.typevars, funct)
+
+        ## Correct inputs
+        #################
+        locs = df[self.typevars['loc_vars']].as_matrix()
+        feat_arr = df[self.typevars['feat_vars']].as_matrix()
+        agg_arr = df[self.typevars['agg_var']].as_matrix()
+        if reindices is None:
+            N_t = locs.shape[0]
+            reindices = np.array(range(N_t)).reshape((N_t, 1))
+        if len(feat_arr.shape) == 1:
+            feat_arr = feat_arr.reshape(feat_arr.shape[0], 1)
+        ######################################################
+        ## Compute agglocs
+        agglocs = average_position_by_aggarr(locs, agg_arr)
+        ## Compute aggfeatures
+        aggfeatures = create_aggregation(agg_arr, feat_arr, reindices,
+                                         self.typevars, funct)
         ## Format output
         agglocs = np.array(agglocs)
         ndim, N_t = len(agglocs.shape), agglocs.shape[0]
         agglocs = agglocs if ndim > 1 else agglocs.reshape((N_t, 1))
         return agglocs, aggfeatures
-
-#    def retrieve_aggloc(self, point_i):
-#        point_i = point_i.reshape(1, 2)
-#        region = self.spatial_disc.map2id(point_i)
-#        return region
-#
-#    def retrieve_agglocs(self, locs):
-#        regions = self.spatial_disc.map2id(locs)
-#        return regions
 
 
 def create_aggregation(agg_arr, feat_arr, reindices, typevars=None,
