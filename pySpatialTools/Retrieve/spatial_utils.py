@@ -1,7 +1,7 @@
 
 """
 Spatial utils
-=============
+-------------
 Module which groups the functions related with spatial utils which can be
 useful.
 

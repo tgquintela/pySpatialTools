@@ -1,6 +1,12 @@
 
 """
-Assign geographically density value to a points.
+Density assignation
+-------------------
+Module to assign geographically density value to a points.
+
+TODO
+----
+- Use neighbourhood defintion?
 """
 
 from scipy.spatial import KDTree

@@ -1,10 +1,13 @@
 
 """
-Spatial Discretizor utilities.
+Spatial Discretizor utilities
+-----------------------------
+Module which contains the classes for discretize space.
 
 TODO
 ----
-- Fit irregular discretizer
+- Fix irregular discretizer
+
 """
 
 
