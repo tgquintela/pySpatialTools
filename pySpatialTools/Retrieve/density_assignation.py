@@ -7,6 +7,7 @@ Module to assign geographically density value to a points.
 TODO
 ----
 - Use neighbourhood defintion?
+- Recurrent measure (TODO)[better before with the population?]
 """
 
 from scipy.spatial import KDTree
@@ -16,99 +17,117 @@ from scipy.optimize import minimize
 import numpy as np
 
 
-def general_density_assignation(locs, parameters, values=None, locs2=None):
-    "Density assignation function."
+def general_density_assignation(locs, retriever, info_ret, values, f_weights,
+                                params_w, f_dens, params_d):
+    """
+    Parameters
+    ----------
+    locs: array_like shape(n, 2)
+        location variables
+    retriever: pySpatialTools.Retrieve.retrievers object
+        retriever. Return the indices and distances of the possible retrivable
+        points.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+    f_weighs: functions, str
+        function of weighs assignation. It transforms the distance to weights.
+    params_w: dict
+        parameters needed to apply f_weighs.
+    f_dens: function, str
+        function of density assignation.
+    params_d: dict
+        parameters needed to apply f_dens.
 
-    # Creation of the kdtree for retrieving neighs
-    if locs2 is None:
-        leafsize = int(locs.shape[0]/float(10.))
-        kdtree = KDTree(locs, leafsize=leafsize)
-    else:
-        leafsize = int(locs2.shape[0]/float(10.))
-        kdtree = KDTree(locs2, leafsize=leafsize)
+    Returns
+    -------
+    M: array_like, shape(n)
+        mesasure of each location given.
 
-    parameters = preparation_parameters(parameters)
+    """
 
-    M = compute_measure(locs=locs, kdtree=kdtree, values=values, **parameters)
+    ## 0. Preparation needed variables
+    #parameters = preparation_parameters(parameters)
+    if len(values.shape) == 1:
+        values = values.reshape(values.shape[0], 1)
 
-    ## Recurrent measure (TODO)[better before with the population?]
+    ## 1. Computation of density
+    M = compute_measure(locs, retriever, info_ret, values, f_weights, params_w,
+                        f_dens, params_d)
+
     return M
-
-
-# method, params (weitghted count, ...)
-# method, params (linear, trapezoid,...)
+    
 
 ###############################################################################
 ############################### Compute measure ###############################
 ###############################################################################
-def compute_measure(locs, kdtree, max_r, values, method, params):
-    "Retrieve the neighs indices and the neighs descriptors and weights."
-
+def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
+                    f_dens, params_d):
     ## Computation of the measure based in the distances as weights.
     M = np.zeros(locs.shape[0])
-    for i in range(locs):
-        neighs, dist = get_self_neighs_i(locs, kdtree, max_r, i)
-        M[i] = compute_measure_i(neighs, dist, values[neighs], method, params)
+    for i in range(locs.shape[0]):
+        neighs, dist = retriever.retrieve_neighs(locs[i, :], info_ret[i], True)
+        neighs, dist = np.array(neighs).astype(int), np.array(dist)
+        weights = from_distance_to_weights(dist, f_weighs, params_w)
+        M[i] = compute_measure_i(weights, values[neighs, :], f_dens, params_d)
+
     return M
 
 
-def get_self_neighs_i(locs, kdtree, max_r, i):
-    "Retrieving neighs and distance."
-    loc = locs[i, :]
-    neighs = kdtree.query_ball_point(loc, max_r)
-    neighs.remove(i)
-    dist = cdist(locs[i, :], locs[neighs, :])
-    return neighs, dist
-
-
-def compute_measure_i(neighs, dist, values, method, params):
+def compute_measure_i(weights, values, f_dens, params_d):
     "Swither function between different possible options to compute density."
-    if method == 'weighted_count':
-        measure = compute_measure_wcount(neighs, dist, params)
-    elif method == 'weighted_avg':
-        measure = compute_measure_wavg(neighs, dist, params)
+    if type(f_dens) == str:
+        if f_dens == 'weighted_count':
+            measure = compute_measure_wcount(weights, values, **params_d)
+        elif f_dens == 'weighted_avg':
+            measure = compute_measure_wavg(weights, values, **params_d)
+    else:
+        measure = f_dens(weights, values, **params_d)
 
     return measure
 
 
-def compute_measure_wcount(neighs, dist, params):
+def compute_measure_wcount(weights, values):
     """Measure to compute density only based on the weighted count of selected
     elements around the point considered.
     """
-    weights = from_distance_to_weights(dist, **params)
     measure = np.sum(weights)
     return measure
 
 
-def compute_measure_wavg(neighs, dist, values, params):
+def compute_measure_wavg(weights, values):
     """Measure to compute density based on the weighted average of selected
     elements around the point considered.
     """
-    weights = from_distance_to_weights(dist, **params)
     measure = np.sum(weights * values)
     return measure
 
 
+
+# method, params (weitghted count, ...)
+# method, params (linear, trapezoid,...)
 ###############################################################################
 ############################# Distance to weights #############################
 ###############################################################################
 def from_distance_to_weights(dist, method, params):
     "Function which transforms the distance given to weights."
 
-    if method == 'linear':
-        weights = dist2weights_linear(dist, **params)
-    elif method == 'Trapezoid':
-        weights = dist2weights_trapez(dist, **params)
-    elif method == 'inverse_prop':
-        weights = dist2weights_invers(dist, **params)
-    elif method == 'exponential':
-        weights = dist2weights_exp(dist, **params)
-    elif method == 'gaussian':
-        weights = dist2weights_gauss(dist, **params)
-    elif method == 'surgaussian':
-        weights = dist2weights_surgauss(dist, **params)
-    elif method == 'sigmoid':
-        weights = dist2weights_sigmoid(dist, **params)
+    if type(method) == str:
+        if method == 'linear':
+            weights = dist2weights_linear(dist, **params)
+        elif method == 'Trapezoid':
+            weights = dist2weights_trapez(dist, **params)
+        elif method == 'inverse_prop':
+            weights = dist2weights_invers(dist, **params)
+        elif method == 'exponential':
+            weights = dist2weights_exp(dist, **params)
+        elif method == 'gaussian':
+            weights = dist2weights_gauss(dist, **params)
+        elif method == 'surgaussian':
+            weights = dist2weights_surgauss(dist, **params)
+        elif method == 'sigmoid':
+            weights = dist2weights_sigmoid(dist, **params)
+    else:
+        weights = method(dist, **params)
 
     return weights
 
@@ -162,7 +181,7 @@ def dist2weights_exp(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
 def dist2weights_gauss(dist, max_r, max_w=1, min_w=1e-3, S=None, rescale=True):
     "Gaussian distance weighting."
     if S is None:
-        S = set_scale_surgauss(max_r, max_w, min_w)
+        S = set_scale_gauss(max_r, max_w, min_w)
     if rescale:
         A = max_w/(norm.pdf(0)-norm.pdf(max_r, scale=S))
         weights = A*norm.pdf(dist, scale=S)

@@ -6,7 +6,7 @@ Module which contains the classes for discretize space.
 
 TODO
 ----
-- Fix irregular discretizer
+- Complete irregular discretizer
 
 """
 
@@ -62,6 +62,8 @@ class SpatialDiscretizor:
         return agglocs
 
 
+################################# Grid based ##################################
+###############################################################################
 class GridSpatialDisc(SpatialDiscretizor):
     "Grid spatial discretization. The regions are rectangular with equal size."
 
@@ -107,9 +109,12 @@ def map_gridloc2regionid(locs_grid, grid_size):
     return locs_grid[:, 0]*grid_size[0]+locs_grid[:, 1]
 
 
+############################### Circular based ################################
+###############################################################################
 class CircularSpatialDisc(SpatialDiscretizor):
     """Circular spatial discretization. The regions are circles with different
-    sizes."""
+    sizes. One point could belong to zero, one or more than one region.
+    """
 
     ## TODO: map loc_grid to a id region: map_gridloc2regionid
     def __init__(self, centerlocs, radios):
@@ -172,6 +177,8 @@ def distribute_tasks(n, memlim):
     return lims
 
 
+############################### Poligion based ################################
+###############################################################################
 class IrregularSpatialDisc(SpatialDiscretizor):
     "Grid spatial discretization."
 
