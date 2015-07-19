@@ -41,6 +41,7 @@ class KRetriever(Retriever):
 
     def __init__(self, locs, flag_auto=True):
         self.retriever = define_kdretriever(locs)
+        self.flag_auto = flag_auto
 
     def retrieve_neighs_spec(self, point_i, info_i, ifdistance=False):
         res = self.retriever.query(point_i, info_i)

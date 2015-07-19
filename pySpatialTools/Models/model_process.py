@@ -6,8 +6,8 @@ This module contains the main class to execute the process.
 
 TODO
 ----
-matrix with np.array not appending lists
-Class a a process Class
+matrix and corr in the same process
+problem with reindices and matrix
 
 """
 
@@ -76,6 +76,7 @@ class ModelProcess():
 
         # Other paramters
         self.lim_rows = lim_rows
+        self.bool_inform = True if self.lim_rows != 0 else False
         self.n_procs = n_procs
         self.proc_name = proc_name
         self.proc_desc = proc_desc
@@ -119,8 +120,6 @@ class ModelProcess():
         N_t = df.shape[0]
         # clean unnecessary
         del df
-        # Bool options
-        self.bool_inform = True if self.lim_rows is not None else False
 
         ## 1. Computation of the measure (parallel if)
         corr_loc = self.compute_mea_sequ_generic(locs, feat_arr, info_ret,
@@ -140,15 +139,17 @@ class ModelProcess():
 
         ## 0. Intialization of needed variables
         N_t = reindices.shape[0]
-        n_calc = reindices.shape[1]
+
 
         ## 1. Computation of local spatial correlations
         if self.bool_matrix:
             _, n_vals1 = self.descriptormodel.model_dim
             corr_loc = np.zeros((N_t, n_vals1))
+            n_calc = 1
         else:
             n_vals0, n_vals1 = self.descriptormodel.model_dim
             corr_loc = np.zeros((n_vals0, n_vals1, n_calc))
+            n_calc = reindices.shape[1]
         ## Begin to track the process
         t0, bun = time.time(), 0
         for i in xrange(N_t):

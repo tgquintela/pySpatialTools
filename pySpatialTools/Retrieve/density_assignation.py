@@ -64,7 +64,7 @@ def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
                     f_dens, params_d):
     ## Computation of the measure based in the distances as weights.
     M = np.zeros(locs.shape[0])
-    for i in range(locs.shape[0]):
+    for i in xrange(locs.shape[0]):
         neighs, dist = retriever.retrieve_neighs(locs[i, :], info_ret[i], True)
         neighs, dist = np.array(neighs).astype(int), np.array(dist)
         weights = from_distance_to_weights(dist, f_weighs, params_w)
