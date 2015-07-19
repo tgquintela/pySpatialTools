@@ -10,8 +10,8 @@ TODO
 """
 
 import numpy as np
-from Mscthesis.Models import DescriptorModel
-from Mscthesis.Preprocess.comp_complementary_data import \
+from descriptor_models import DescriptorModel
+from pySpatialTools.Preprocess.comp_complementary_data import \
     compute_aggregate_counts
 from aux_functions import compute_global_counts
 
