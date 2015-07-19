@@ -12,8 +12,6 @@ TODO:
 import numpy as np
 import pandas as pd
 
-from pySpatialTools.Retrieve.density_assignation import general_density_assignation
-
 
 ###############################################################################
 ############################ Main functions counts ############################
@@ -125,21 +123,3 @@ def computation_aggregate_collapse_i(type_arr, n_vals):
     for j in range(values.shape[0]):
         counts_i[values[j]] = (type_arr == values[j]).sum()
     return counts_i
-
-
-###############################################################################
-############################# Auxiliar grid counts ############################
-###############################################################################
-def compute_population_data(locs, pop, popvars, parameters):
-    "Function to compute the correspondant population data to each point."
-
-    ## 0. Computation of initial variables
-    locs = np.array(locs)
-    locs_pop = np.array(pop[popvars['loc_vars']])
-    pop_pop = np.array(pop[popvars['pop_vars']])
-
-    ## 1. Computation of assignation to point
-    pop_assignation = general_density_assignation(locs, parameters, pop_pop,
-                                                  locs_pop)
-
-    return pop_assignation
