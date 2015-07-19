@@ -19,7 +19,7 @@ import multiprocessing as mp
 import time
 
 from model_utils import filter_with_random_nets
-from Mscthesis.IO.model_report import create_model_report
+from pySpatialTools.IO import create_model_report
 from aux_functions import init_compl_arrays
 
 
