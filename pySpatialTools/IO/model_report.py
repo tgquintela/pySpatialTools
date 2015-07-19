@@ -4,7 +4,7 @@ Module used to group the functions and utils to built a report from a model
 application.
 """
 
-from Mscthesis.Plotting.net_plotting import plot_net_distribution,\
+from pythonUtils.ExploreDA.Plotting.net_plotting import plot_net_distribution,\
     plot_heat_net
 from os.path import exists, join
 from os import makedirs
