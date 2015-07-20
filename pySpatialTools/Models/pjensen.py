@@ -11,7 +11,7 @@ TODO
 
 import numpy as np
 from descriptor_models import DescriptorModel
-from pySpatialTools.Preprocess.comp_complementary_data import \
+from pySpatialTools.Preprocess.aggregation_utils import \
     compute_aggregate_counts
 from aux_functions import compute_global_counts
 
@@ -32,6 +32,7 @@ class Pjensen(DescriptorModel):
     The model has to retrieve the val_i and the features (model_dim)
 
     """
+    name_desc = "Jensen descriptors"
 
     def __init__(self, df, typevars):
         "The inputs are the needed to compute model_dim."

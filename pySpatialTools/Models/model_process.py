@@ -52,7 +52,8 @@ class ModelProcess():
     ## Process descriptors
     time_expended = 0.  # Time expended along the process
     n_procs = 0  # Number of cpu used in parallelization (0 no parallel)
-    proc_name = None  # Name of the process
+    proc_name = ""  # Name of the process
+    proc_desc = ""
     ## Logger info
     lim_rows = 0  # Lim of rows done in a bunch. For matrix comp or information
     logfile = None  # Log file
@@ -64,7 +65,7 @@ class ModelProcess():
     t_expended_subproc = []
 
     def __init__(self, logfile, retriever, descriptormodel, typevars,
-                 lim_rows=0, n_procs=0, proc_name=""):
+                 lim_rows=0, n_procs=0, proc_name="Model computation"):
         # Logfile
         self.logfile = logfile
         ## Retriever
@@ -79,7 +80,7 @@ class ModelProcess():
         self.bool_inform = True if self.lim_rows != 0 else False
         self.n_procs = n_procs
         self.proc_name = proc_name
-        self.proc_desc = proc_desc
+        self.proc_desc = "Computation %s with %s"
 
     ###########################################################################
     ######################## Measure computations #############################
@@ -108,11 +109,9 @@ class ModelProcess():
         """
 
         ## 0. Setting needed variables
+        m_aux0 = "training matrix" if self.bool_matrix else "net"
+        self.proc_desc % (m_aux0, self.descriptormodel.name_desc)
         t00 = self.setting_global_process()
-        m_aux0 = "Training matrix" if self.bool_matrix else "Net"
-        m_aux1 = "Trial0" if self.proc_name is None else self.proc_name
-        self.logfile.write_log(message0 % (m_aux0, m_aux1))
-
 
         # Preparing needed vars
         aux = init_compl_arrays(df, self.typevars, reindices)
