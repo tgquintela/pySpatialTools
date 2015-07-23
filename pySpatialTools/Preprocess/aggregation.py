@@ -85,6 +85,7 @@ def create_aggregation(agg_arr, feat_arr, reindices, typevars=None,
     if funct is None:
         agg_desc, _ = compute_aggregate_counts(df, agg_var, feat_vars,
                                                reindices)
+        agg_desc = agg_desc[agg_desc.keys()[0]]
     else:
         agg_desc = funct(df, agg_var, feat_vars, reindices)
     return agg_desc

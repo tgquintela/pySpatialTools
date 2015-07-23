@@ -16,20 +16,20 @@ import pandas as pd
 ###############################################################################
 ############################ Main functions counts ############################
 ###############################################################################
-def compute_aggregate_counts(df, agg_var, type_vars, reindices):
+def compute_aggregate_counts(df, agg_var, feat_vars, reindices):
     ## Compute the tables
     agg_values = list(np.unique(df[agg_var]))
     tables = {}
     axis = {}
-    for col in type_vars:
+    for col in feat_vars:
         n_vals = df[col].unique().shape[0]
         aux = np.zeros((len(agg_values), n_vals, reindices.shape[1]))
         for i in range(reindices.shape[1]):
             # The type values
-            aux_df = df.loc[:, [agg_var]+type_vars]
-            aux2 = aux_df[type_vars].reindex(reindices[:, i]).as_matrix()
-            aux_df[type_vars] = aux2
-            table, cols = counting_type_by_aggvar(aux_df, agg_var, type_vars)
+            aux_df = df.loc[:, [agg_var]+feat_vars]
+            aux2 = aux_df[feat_vars].reindex(reindices[:, i]).as_matrix()
+            aux_df[feat_vars] = aux2
+            table, cols = counting_type_by_aggvar(aux_df, agg_var, feat_vars)
             aux[:, :, i] = table.as_matrix()
 
         tables[col] = aux
@@ -41,14 +41,14 @@ def compute_aggregate_counts(df, agg_var, type_vars, reindices):
 ###############################################################################
 ############################ Auxiliar counts by var ###########################
 ###############################################################################
-def aggregate_by_var(df, agg_var, loc_vars, type_vars=None):
+def aggregate_by_var(df, agg_var, loc_vars, feat_vars=None):
     """Function to aggregate variables by the selected variable considering a
     properly structured data.
     """
     ## Aggregation
     positions = average_position_by_aggvar(df, agg_var, loc_vars)
-    if type_vars is not None:
-        types = aggregate_by_typevar(df, agg_var, type_vars)
+    if feat_vars is not None:
+        types = aggregate_by_typevar(df, agg_var, feat_vars)
         df_agg, cols = pd.concat([positions, types], axis=1)
         cols = {'types': cols}
         cols['positions'] = list(positions.columns)
@@ -59,10 +59,10 @@ def aggregate_by_var(df, agg_var, loc_vars, type_vars=None):
     return df_agg, cols
 
 
-def aggregate_by_typevar(df, agg_var, type_vars):
+def aggregate_by_typevar(df, agg_var, feat_vars):
     "Function to aggregate only by type_var."
-    type_vars = [type_vars] if type(type_vars) != list else type_vars
-    df_agg = counting_type_by_aggvar(df, agg_var, type_vars)
+    feat_vars = [feat_vars] if type(feat_vars) != list else feat_vars
+    df_agg = counting_type_by_aggvar(df, agg_var, feat_vars)
     cols = list(df.columns)
     return df_agg, cols
 
@@ -83,9 +83,9 @@ def average_position_by_aggarr(locs, agg_arr):
     return table
 
 
-def counting_type_by_aggvar(df, aggvar, type_vars):
+def counting_type_by_aggvar(df, aggvar, feat_vars):
     "Compute the counting of types by "
-    table = df[[aggvar] + type_vars].pivot_table(rows=aggvar, cols=type_vars,
+    table = df[[aggvar] + feat_vars].pivot_table(rows=aggvar, cols=feat_vars,
                                                  aggfunc='count')
     table = table.fillna(value=0)
     cols = table.columns.get_level_values(1).unique()
