@@ -29,7 +29,7 @@ def create_reindices(n, m):
     "Creation of reindices for a permutation."
     reindices = np.zeros((n, m+1)).astype(int)
     reindices[:, 0] = np.arange(n).astype(int)
-    for i in range(m):
+    for i in range(1, m+1):
         reindices[:, i] = np.random.permutation(np.arange(n).astype(int))
     return reindices
 
