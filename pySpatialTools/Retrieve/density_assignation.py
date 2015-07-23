@@ -66,7 +66,7 @@ def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
     M = np.zeros(locs.shape[0])
     for i in xrange(locs.shape[0]):
         neighs, dist = retriever.retrieve_neighs(locs[i, :], info_ret[i], True)
-        neighs, dist = np.array(neighs).astype(int), np.array(dist)
+        neighs, dist = np.array(neighs).astype(int).ravel(), np.array(dist)
         weights = from_distance_to_weights(dist, f_weighs, params_w)
         M[i] = compute_measure_i(weights, values[neighs, :], f_dens, params_d)
 
@@ -128,7 +128,7 @@ def from_distance_to_weights(dist, method, params):
             weights = dist2weights_sigmoid(dist, **params)
     else:
         weights = method(dist, **params)
-
+    weights = weights.ravel()
     return weights
 
 

@@ -9,7 +9,8 @@ The objects to retrieve neighbours in flat (non-splitted) space.
 
 
 from scipy.spatial.distance import cdist
-from scipy.spatial import KDTree
+#from scipy.spatial import KDTree
+from sklearn.neighbors import KDTree
 import numpy as np
 
 
@@ -24,9 +25,15 @@ class Retriever():
     flag_auto = True
 
     def retrieve_neighs(self, point_i, info_i, ifdistance=False):
-        neighs, dist = self.retrieve_neighs_spec(point_i, info_i, ifdistance)
+        ## Retrieve neighs
+        neighs = self.retrieve_neighs_spec(point_i, info_i, ifdistance)
+        if ifdistance:
+            neighs, dist = neighs
+        else:
+            dist = None
+        ## Exclude auto
         if not self.flag_auto:
-            neighs = self.exclude_auto(point_i, neighs)
+            neighs, dist = self.exclude_auto(point_i, neighs, dist)
         return neighs, dist
 
 
@@ -44,20 +51,26 @@ class KRetriever(Retriever):
         self.flag_auto = flag_auto
 
     def retrieve_neighs_spec(self, point_i, info_i, ifdistance=False):
-        res = self.retriever.query(point_i, info_i)
-        res = res[1], res[0]
-        if not ifdistance:
-            res = res[1]
+        res = self.retriever.query(point_i, int(info_i), ifdistance)
+        if ifdistance:
+            res = res[1][0], res[0][0]
+        else:
+            res = res[0]
         return res
 
-    def exclude_auto(self, point_i, neighs):
+    def exclude_auto(self, point_i, neighs, dist):
         sh = point_i.shape
         point_i = point_i if len(sh) == 2 else point_i.reshape(1, sh[0])
-        logi = np.logical_and(self.retriever.data[:, 0] == point_i[:, 0],
-                              self.retriever.data[:, 1] == point_i[:, 1])
+        logi1 = np.array(self.retriever.data)[:, 0] == point_i[:, 0]
+        logi2 = np.array(self.retriever.data)[:, 1] == point_i[:, 1]
+        logi = np.logical_and(logi1, logi2)        
         to_exclude_points = np.where(logi)[0]
         neighs = [e for e in neighs if e not in to_exclude_points]
-        return neighs
+        if dist is not None:
+            n_p = len(neighs)
+            dist = [dist[i] for i in range(n_p) if neighs[i]
+                    not in to_exclude_points]
+        return neighs, dist
 
 
 ################################ R disctance ##################################
@@ -70,31 +83,32 @@ class CircRetriever(Retriever):
         self.flag_auto = flag_auto
 
     def retrieve_neighs_spec(self, point_i, info_i, ifdistance=False):
-        res = self.retriever.query_ball_point(point_i, info_i)
+        res = self.retriever.query_radius(point_i, info_i, ifdistance)
         if ifdistance:
-            if len(point_i.shape) == 1:
-                point_i = point_i.reshape(1, point_i.shape[0])
-            points = self.retriever.data[res, :]
-            if len(points.shape) == 1:
-                points = points.reshape(1, points.shape[0])
-            dis = cdist(point_i, points)
-            res = res, dis
+            res = res[0][0], res[1][0]
+        else:
+            res = res[0]
         return res
 
     def exclude_auto(self, point_i, neighs):
         sh = point_i.shape
         point_i = point_i if len(sh) == 2 else point_i.reshape(1, sh[0])
-        logi = np.logical_and(self.retriever.data[:, 0] == point_i[:, 0],
-                              self.retriever.data[:, 1] == point_i[:, 1])
+        logi1 = np.array(self.retriever.data)[:, 0] == point_i[:, 0]
+        logi2 = np.array(self.retriever.data)[:, 1] == point_i[:, 1]
+        logi = np.logical_and(logi1, logi2)
         to_exclude_points = np.where(logi)[0]
         neighs = [e for e in neighs if e not in to_exclude_points]
+        if dist is not None:
+            n_p = len(neighs)
+            dist = [dist[i] for i in range(n_p) if neighs[i]
+                    not in to_exclude_points]
         return neighs
 
 
 def define_kdretriever(locs):
     leafsize = locs.shape[0]
     leafsize = locs.shape[0]/100 if leafsize > 1000 else leafsize
-    return KDTree(locs, leafsize=leafsize)
+    return KDTree(locs, leaf_size=leafsize)
 
 
 ############################### Same location #################################

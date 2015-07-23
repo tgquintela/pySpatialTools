@@ -77,6 +77,8 @@ class Neighbourhood():
         ## Creation of the aggregator object and aggregation
         agg = Aggregator(typevars)
         agglocs, aggfeatures = agg.retrieve_aggregation(df, reindices, funct)
+        ## Instantiation aggretriever
+        self.aggretriever = aggretriever(agglocs)
         ## Correction of the agglocs if there is a discretizor
         if discretizor is not None:
             agglocs = discretizor.map2aggloc(agglocs)
@@ -92,20 +94,17 @@ class Neighbourhood():
             point_i = point_i.reshape(1, point_i.shape[0])
         typereturn = self.get_type_return(cond_i)
         if typereturn:
-            neighbourhood = self.retrieve_neighs_agg(point_i, info_i)
+            neighbourhood, dist = self.retrieve_neighs_agg(point_i, info_i[1])
         else:
-            neighbourhood = self.retrieve_neighs_i(point_i, info_i)
+            neighbourhood, dist = self.retrieve_neighs_i(point_i, info_i[0])
         typereturn = 'aggregate' if typereturn else 'individual'
-        return neighbourhood, typereturn
+        #neighbourhood = [int(e) for e in neighbourhood]
+        return neighbourhood, dist, typereturn
 
     def retrieve_neighs_agg(self, point_i, info_i):
         "Retrieve the correspondent regions."
         ## Discretizor
-
-        if type(self.aggretriever) != np.ndarray:
-            out = self.aggretriever.map2id(point_i)
-        else:
-            out = self.aggretriever
+        out = self.aggretriever.retrieve_neighs(point_i, info_i)
         return out
 
     def retrieve_neighs_i(self, point_i, info_i):
