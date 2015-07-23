@@ -8,4 +8,7 @@ spatial correlation matrices.
 
 from descriptor_models import DescriptorModel
 from model_process import ModelProcess
+
+## Descriptor models
 from pjensen import Pjensen
+from countdescriptors import Countdescriptor

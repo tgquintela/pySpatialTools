@@ -19,32 +19,29 @@ import multiprocessing as mp
 import time
 
 from model_utils import filter_with_random_nets
-from pySpatialTools.IO import create_model_report
 from aux_functions import init_compl_arrays
+from pySpatialTools.IO import create_model_report
+from pythonUtils.ProcessTools import Processer
 
 
 ###############################################################################
 ################################## MAIN CLASS #################################
 ###############################################################################
-class ModelProcess():
-    """Abstract class for performs the process of computation of the models.
+class ModelProcess(Processer):
+    """Class which performs the spatialmodel computation. This process assigns
+    a descriptors for each point in the dataset regarding their raw features
+    and the spatial relation between them.
+
     ===============================
     Functionalities:
     - Compute net from data (parallel/sequential)
-    - Compute net from precomputed neighs (parallel/sequential)
-    - Compute net from agg points (parallel/sequential)
     - Compute matrix for trainning approach (parallel/sequential)
 
     ================================
     Problems:
-    - Mask neighs
-    - Get and compute descriptors (online/file)
-    - Aggregate descriptors (measure dependant)
 
     ================================
     TODO:
-    - lim_rows matrix computation (auxiliary folder to save)
-    - ...
 
     """
 
@@ -85,20 +82,20 @@ class ModelProcess():
     ###########################################################################
     ######################## Measure computations #############################
     ###########################################################################
-    def compute_net(self, df, info_ret=None, cond_agg=None, reindices=None):
+    def compute_net(self, df, reindices=None):
         """Main function for the computation of the matrix. It acts as a
         wrapper over the compute_measure_all function.
         """
         self.bool_matrix = False
-        net = self.compute_measure_all(df, info_ret, cond_agg, reindices)
+        net = self.compute_measure_all(df, reindices)
         return net
 
-    def compute_matrix(self, df, info_ret=None, cond_agg=None, reindices=None):
+    def compute_matrix(self, df, reindices=None):
         """Main function for the computation of the matrix. It acts as a
         wrapper over the compute_measure_all function.
         """
         self.bool_matrix = True
-        matrix = self.compute_measure_all(df, info_ret, cond_agg, reindices)
+        matrix = self.compute_measure_all(df, reindices)
         return matrix
 
     def compute_measure_all(self, df, reindices=None):
@@ -110,7 +107,8 @@ class ModelProcess():
 
         ## 0. Setting needed variables
         m_aux0 = "training matrix" if self.bool_matrix else "net"
-        self.proc_desc % (m_aux0, self.descriptormodel.name_desc)
+        name_desc = self.descriptormodel.name_desc
+        self.proc_desc = self.proc_desc % (m_aux0, name_desc)
         t00 = self.setting_global_process()
 
         # Preparing needed vars
@@ -128,7 +126,7 @@ class ModelProcess():
         corr_loc = self.descriptormodel.to_complete_measure(corr_loc, N_t)
         ## Closing process
         self.close_process(t00)
-        return corr_loc, type_vals, N_x
+        return corr_loc
 
     def compute_mea_sequ_generic(self, locs, feat_arr, info_ret, cond_agg,
                                  reindices):
@@ -143,14 +141,14 @@ class ModelProcess():
         ## 1. Computation of local spatial correlations
         if self.bool_matrix:
             _, n_vals1 = self.descriptormodel.model_dim
-            corr_loc = np.zeros((N_t, n_vals1))
             n_calc = 1
+            corr_loc = np.zeros((N_t, n_vals1))
         else:
             n_vals0, n_vals1 = self.descriptormodel.model_dim
-            corr_loc = np.zeros((n_vals0, n_vals1, n_calc))
             n_calc = reindices.shape[1]
+            corr_loc = np.zeros((n_vals0, n_vals1, n_calc))
         ## Begin to track the process
-        t0, bun = time.time(), 0
+        t0, bun = self.setting_loop(N_t)
         for i in xrange(N_t):
             ## Obtaining neighs of a given point
             point_i = locs[i, :].reshape(1, locs.shape[1])
