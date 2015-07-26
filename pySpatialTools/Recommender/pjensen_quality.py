@@ -19,8 +19,7 @@ from pythonUtils.numpy_tools.sorting import get_kbest
 ########### Class for computing index of the model selected
 ##################################################################
 class PjensenRecommender(RecommenderModel):
-    """
-    Recommender model for location recommendation. This model is the
+    """Recommender model for location recommendation. This model is the
     application of the proposal used by P. Jensen [1]
     It is based on the statical assumption of market, the stationary regime of
     the system, that makes that the average position of a type of point is the
