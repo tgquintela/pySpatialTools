@@ -34,9 +34,9 @@ class PjensenRecommender(RecommenderModel):
     """
     name_desc = "PJensen recommender"
 
-    def __init__(self, df, typevars):
+    def __init__(self):
         "The inputs are the needed to compute model_dim."
-        self.typevars = typevars
+        pass
 
     ###########################################################################
     ####################### Compulsary main functions #########################
@@ -59,7 +59,6 @@ def compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type=None):
     n, n_vals = count_matrix.shape
     ## Loop over each type
     avges = compute_avges_by_val(count_matrix, feat_arr, type_vals)
-
     ## Loop for each row
     Q = np.zeros(n)
     for i in xrange(n):
@@ -74,13 +73,11 @@ def compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type=None):
 
 def compute_kbest_type(corr_loc, count_matrix, feat_arr, kbest):
     "Compute the k best type and their quality."
-
     ## Compute needed variables
     type_vals = np.unique(feat_arr)
     n, n_vals = count_matrix.shape
     ## Loop over each type
     avges = compute_avges_by_val(count_matrix, feat_arr, type_vals)
-
     ## Loop for each row
     Qs = np.zeros((n, kbest))
     idxs = np.zeros((n, kbest)).astype(int)

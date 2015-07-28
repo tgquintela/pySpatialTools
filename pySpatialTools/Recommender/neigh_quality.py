@@ -24,6 +24,7 @@ class NeighRecommender(RecommenderModel):
     TODO
     ----
     """
+    name_desc = "Neighbourhood recommender"
 
     def __init__(self, retriever):
         self.retriever = retriever

@@ -10,5 +10,6 @@ recommender models.
 class RecommenderModel:
     "Recomender model abstract class."
 
-    def abstract(self):
-        pass
+    def test_results(self):
+    	""
+    	self.typeresult
