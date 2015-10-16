@@ -63,7 +63,7 @@ class KRetriever(Retriever):
         point_i = point_i if len(sh) == 2 else point_i.reshape(1, sh[0])
         logi1 = np.array(self.retriever.data)[:, 0] == point_i[:, 0]
         logi2 = np.array(self.retriever.data)[:, 1] == point_i[:, 1]
-        logi = np.logical_and(logi1, logi2)        
+        logi = np.logical_and(logi1, logi2)
         to_exclude_points = np.where(logi)[0]
         neighs = [e for e in neighs if e not in to_exclude_points]
         if dist is not None:
