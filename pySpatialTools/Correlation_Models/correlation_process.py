@@ -7,6 +7,9 @@ description of the data.
 """
 
 import numpy as np
+from pythonUtils.ProcessTools import Processer
+from pySpatialTools.utils.transformation_utils import split_df,\
+    compute_reindices
 
 
 ###############################################################################
@@ -14,11 +17,8 @@ import numpy as np
 ###############################################################################
 class CorrModelProcess(Processer):
     """Class which performs the spatial correlation model computation. This
-    process uses the descriptors of the data to comopute spatial correlation of
-    descriptors.
-
-    assigns a descriptors for each point in the dataset regarding their raw features
-    and the spatial relation between them.
+    process uses the spatial distribution of featuresto compute spatial
+    correlation.
 
     ===============================
     Functionalities:
@@ -49,7 +49,7 @@ class CorrModelProcess(Processer):
     t_expended_subproc = []
 
     def __init__(self, logfile, retriever, corrmodel, typevars,
-                 lim_rows=0, n_procs=0, proc_name="Model computation"):
+                 lim_rows=0, n_procs=0, proc_name="CorrModel computation"):
         # Logfile
         self.logfile = logfile
         ## Retriever
@@ -69,27 +69,21 @@ class CorrModelProcess(Processer):
     ###########################################################################
     ######################## Measure computations #############################
     ###########################################################################
-    def compute_net(self, df, reindices=None):
-        """Main function for the computation of the matrix. It acts as a
-        wrapper over the compute_measure_all function.
-        """
-        self.bool_matrix = False
-        net = self.compute_measure_all(df, reindices)
-        return net
+    def compute_corr(self, df, reindices=None):
+        """Main function for building the correlation model.
 
-    def compute_matrix(self, df, reindices=None):
-        """Main function for the computation of the matrix. It acts as a
-        wrapper over the compute_measure_all function.
-        """
-        self.bool_matrix = True
-        matrix = self.compute_measure_all(df, reindices)
-        return matrix
+        Parameters
+        ----------
+        df: pandas.DataFrame
+            pandas dataframe.
+        reindices: numpy.ndarray
+            permutations of the elements.
 
-    def compute_measure_all(self, df, reindices=None):
-        """Main function for building the index of the selected model. This
-        function acts as swicher between the different possibilities:
-        - Parallel from data/neighs/(agg/preagg)
-        - Sequential from data/neighs/(agg/preagg)
+        Return
+        ------
+        corr_loc: numpy.ndarray
+            correlation matrix.
+
         """
 
         ## 0. Setting needed variables
@@ -99,8 +93,8 @@ class CorrModelProcess(Processer):
         t00 = self.setting_global_process()
 
         # Preparing needed vars
-        aux = init_compl_arrays(df, self.typevars, reindices)
-        locs, feat_arr, info_ret, cond_agg, reindices = aux
+        locs, feat_arr, info_ret, cond_agg = split_df(df, self.typevars)
+        reindices = compute_reindices(df, reindices)
         N_t = df.shape[0]
         # clean unnecessary
         del df
@@ -110,7 +104,7 @@ class CorrModelProcess(Processer):
                                                  cond_agg, reindices)
 
         ## 2. Building a net
-        corr_loc = self.descriptormodel.to_complete_measure(corr_loc, N_t)
+        corr_loc = self.corrmodel.to_complete_measure(corr_loc, N_t)
         ## Closing process
         self.close_process(t00)
         return corr_loc
@@ -118,7 +112,7 @@ class CorrModelProcess(Processer):
     def compute_mea_sequ_generic(self, locs, feat_arr, info_ret, cond_agg,
                                  reindices):
         """Main function to perform spatial correlation computation in a
-        sequential mode using aggregated information given by a '''''file'''''.
+        sequential mode.
         """
 
         ## 0. Intialization of needed variables
@@ -146,7 +140,9 @@ class CorrModelProcess(Processer):
                 corr_loc_i =\
                     self.corrmodel.compute_descriptors(chars, val_i)
                 # 3. Aggregation
-                corr_loc[val_i, :, k] += corr_loc_i
+                corr_loc[val_i, :, k] =\
+                    self.corrmodel.aggregate_characs(corr_loc[val_i, :, k],
+                                                     corr_loc_i)
             ## Finish to track this process
             t0, bun = self.messaging_loop(i, t0, bun)
         return corr_loc
