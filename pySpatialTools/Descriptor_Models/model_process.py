@@ -16,10 +16,10 @@ import shelve
 import networkx as nx
 import numpy as np
 import multiprocessing as mp
-import time
 
 from model_utils import filter_with_random_nets
-from aux_functions import init_compl_arrays
+from pySpatialTools.utils.transformation_utils import split_df,\
+    compute_reindices
 from pySpatialTools.IO import create_model_report
 from pythonUtils.ProcessTools import Processer
 
@@ -112,8 +112,8 @@ class ModelProcess(Processer):
         t00 = self.setting_global_process()
 
         # Preparing needed vars
-        aux = init_compl_arrays(df, self.typevars, reindices)
-        locs, feat_arr, info_ret, cond_agg, reindices = aux
+        locs, feat_arr, info_ret, cond_agg = split_df(df, self.typevars)
+        reindices = compute_reindices(df, reindices)
         N_t = df.shape[0]
         # clean unnecessary
         del df

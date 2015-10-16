@@ -1,7 +1,7 @@
 
 """
-Models
-======
+Descriptor Models
+=================
 Package which contains the classes needed to compute matrix descritptors or
 spatial correlation matrices.
 """

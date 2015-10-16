@@ -13,53 +13,6 @@ import numpy as np
 ###############################################################################
 ############################# Auxiliary functions #############################
 ###############################################################################
-def init_compl_arrays(df, typevars, reindices):
-    """Auxiliary function to prepare the initialization and preprocess of the
-    required input variables in order to format them properly.
-    """
-    N_t = df.shape[0]
-
-    # Reindices creation
-    if type(reindices) != np.ndarray:
-        reindices = reindices_creation(df, reindices)
-
-    # Extract arrays
-    locs = df[typevars['loc_vars']].as_matrix()
-    ndim = len(locs.shape)
-    locs = locs if ndim > 1 else locs.reshape((N_t, 1))
-
-    feat_arr = df[typevars['feat_vars']].as_matrix()
-    ndim = len(feat_arr.shape)
-    feat_arr = feat_arr if ndim > 1 else feat_arr.reshape((N_t, 1))
-
-    info_ret = df[typevars['info_ret']].as_matrix()
-    cond_agg = df[typevars['cond_agg']].as_matrix()
-
-    return locs, feat_arr, info_ret, cond_agg, reindices
-
-
-def reindices_creation(df, permuts):
-    "Function to create reindices for permuting elements of the array."
-    N_t = df.shape[0]
-    reindex = np.array(df.index)
-    reindex = reindex.reshape((N_t, 1))
-    if permuts is not None:
-        if type(permuts) == int:
-            if permuts != 0:
-                permuts = [np.random.permutation(N_t) for i in range(permuts)]
-                permuts = np.vstack(permuts).T
-                bool_ch = len(permuts.shape) == 1
-                permuts = permuts.reshape((N_t, 1)) if bool_ch else permuts
-        elif type(permuts) == np.ndarray:
-            n_per = permuts.shape[1]
-            permuts = [reindex[permuts[:, i]] for i in range(n_per)]
-            permuts = np.hstack(permuts)
-    bool_ch = permuts is None or permuts == 0
-    reindex = [reindex] if bool_ch else [reindex, permuts]
-    reindices = np.hstack(reindex)
-    return reindices
-
-
 def compute_global_counts(df, type_vars):
     "Compute counts of each values."
     N_x = {}
