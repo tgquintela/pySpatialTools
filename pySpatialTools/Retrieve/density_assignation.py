@@ -55,7 +55,7 @@ def general_density_assignation(locs, retriever, info_ret, values, f_weights,
                         f_dens, params_d)
 
     return M
-    
+
 
 ###############################################################################
 ############################### Compute measure ###############################
