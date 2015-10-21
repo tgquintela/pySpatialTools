@@ -5,8 +5,11 @@ Retrievers
 The objects to retrieve neighbours in flat (non-splitted) space.
 
 
-"""
+TODO:
+----
+- info_i: integrated in the object.
 
+"""
 
 from scipy.spatial.distance import cdist
 #from scipy.spatial import KDTree
@@ -90,7 +93,7 @@ class CircRetriever(Retriever):
             res = res[0]
         return res
 
-    def exclude_auto(self, point_i, neighs):
+    def exclude_auto(self, point_i, neighs, dist):
         sh = point_i.shape
         point_i = point_i if len(sh) == 2 else point_i.reshape(1, sh[0])
         logi1 = np.array(self.retriever.data)[:, 0] == point_i[:, 0]

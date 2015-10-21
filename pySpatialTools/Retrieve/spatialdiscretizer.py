@@ -6,7 +6,9 @@ Module which contains the classes for discretize space.
 
 TODO
 ----
-- Complete irregular discretizer
+- Complete irregular discretizer.
+- Retrieve only populated regions. (Renumerate populated regions)
+- Assign regions to points.
 
 """
 
@@ -33,7 +35,7 @@ class SpatialDiscretizor:
     def retrieve_region(self, point_i, info_i, ifdistance=False):
         if len(point_i.shape) == 1:
             point_i = point_i.reshape(1, point_i.shape[0])
-        region = map_loc2regionid(point_i)
+        region = self.map_loc2regionid(point_i)
         return region
 
     def retrieve_neigh(self, point_i, locs):
