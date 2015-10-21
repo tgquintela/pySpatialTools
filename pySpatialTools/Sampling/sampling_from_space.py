@@ -24,3 +24,14 @@ def squared_sampling(limits, n):
     """Uniformely retrieve from a sector.
     """
     pass
+
+
+def clustering_sampling(points, discretizor, retrievers, info_rets,
+                        clustering):
+    """Sampling by spatial clustering points.
+    """
+    points_cl = clustering_regions(points, discretizor, retrievers,
+                                   info_rets, clustering)
+
+
+    return points
