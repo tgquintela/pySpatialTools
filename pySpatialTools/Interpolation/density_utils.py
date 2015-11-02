@@ -20,3 +20,12 @@ def clustering_by_comparison(density1, density2, Zscore=3.):
     idxs = np.logical_and(comparison >= m-Zs*Zscore, comparison <= m+Zs*Zscore)
     comparison[idxs] = 0
     return comparison
+
+
+def population_assignation_f(weights, values):
+    """Population function decided. Values has 3dim: population, density and
+    area).
+    """
+    ## Only use population data
+    pop_assign = np.dot(values[:, 0], weights)
+    return pop_assign
