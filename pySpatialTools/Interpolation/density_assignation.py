@@ -33,7 +33,7 @@ def general_density_assignation(locs, retriever, info_ret, values, f_weights,
         function of weighs assignation. It transforms the distance to weights.
     params_w: dict
         parameters needed to apply f_weighs.
-    f_dens: function, str
+    f_dens: function, set_scale_surgauss
         function of density assignation.
     params_d: dict
         parameters needed to apply f_dens.
