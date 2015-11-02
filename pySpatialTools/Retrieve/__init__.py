@@ -16,5 +16,3 @@ from retrievers import KRetriever, CircRetriever, SameRegionRetriever
 from spatialdiscretizer import CircularSpatialDisc, GridSpatialDisc,\
     IrregularSpatialDisc
 
-# import density assignation
-from density_assignation import general_density_assignation

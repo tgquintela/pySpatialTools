@@ -64,9 +64,14 @@ def measure_internal_prop(points, internal, retriever, info_i):
     return proportion
 
 
-def cluster_regions(coincidences, clustering):
+def cluster_regions(coincidences, clustering, params_cl):
     """Function which uses network clustering for cluster regions.
 
     TODO
     """
+    ## Collapsing coincidences
+
+    ## Clustering
+    clusters = clustering.cluster(coincidences, **params_cl)
+
     return clusters
