@@ -21,8 +21,7 @@ from aux_functions import compute_global_counts
 ########### Class for computing index of the model selected
 ##################################################################
 class Pjensen(DescriptorModel):
-    """
-    Model of spatial correlation inference. This model is the application of
+    """Model of spatial correlation inference. This model is the application of
     the spatial correlation used by P. Jensen [1]
 
     References
