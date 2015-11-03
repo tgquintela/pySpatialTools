@@ -10,7 +10,9 @@ import numpy as np
 
 
 def fit_model(model, pars_model, cv, X, y):
-    "Function to fit the model we want."
+    """Function to fit the model we want.
+
+    """
     models, measures = [], []
     for train_index, test_index in cv:
         ## Extract Kfold
@@ -27,22 +29,25 @@ def fit_model(model, pars_model, cv, X, y):
     return model, measure
 
 
-
 ## Auxiliary functions to normalize inputs
 ###############################################
 def build_skmodel(model, pars_model):
-    "Return an sklearn model object."
+    """Return an sklearn model object.
+    """
     return model, pars_model
 
 
 def build_cv(cv, pars_cv):
-    "Return something valid as Cross-validation sklearn object."
+    """Return something valid as Cross-validation sklearn object.
+    """
     if cv is None:
         cv = StratifiedKFold
     return cv, pars_cv
 
 
 def create_X(X, x_type, y):
+    """
+    """
     x_type = x_type.reshape(x_type.shape[0], 1)
     X = np.concatenate([X, x_type], axis=1)
     return X

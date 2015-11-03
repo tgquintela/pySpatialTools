@@ -7,6 +7,17 @@ Pjensen quality.
 
 TODO
 ----
+Check correct inputs for variables.
+More than 1-dim feat_arr. TO generalize.
+
+
+Structure
+---------
+class Pjensen
+ |
+ |- functions compute_quality_measure, compute_kbest_type
+    |
+    |- function compute_avges_by_val
 
 """
 
@@ -42,18 +53,74 @@ class PjensenRecommender(RecommenderModel):
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute_quality(self, corr_loc, count_matrix, feat_arr, val_type=None):
-        "Computation of the quality measure associated to the model."
+        """Computation of the quality measure associated to the model.
+
+        Parameters
+        ----------
+        corr_loc: numpy.ndarray, shape (Nvars, Nvars)
+            the correlation matrix between the whole set of variables.
+        count_matrix: numpy.ndarray, shape (N, Nvars)
+            the count matrix of each type of variable.
+        feat_arr: numpy.ndarray, shape (N, Nfeats)
+            the features information of each sample we want to study.
+        val_type: int or numpy.ndarray
+            the type of element we want to measure its quality.
+
+        Returns
+        -------
+        Q: numpy.ndarray, shape (N,)
+            the quality values for each sample.
+
+        """
         Q = compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type)
         return Q
 
     def compute_kbest_type(self, corr_loc, count_matrix, feat_arr, kbest):
-        "Compute the k best type and their quality."
+        """Compute the k best type and their quality.
+
+        Parameters
+        ----------
+        corr_loc: numpy.ndarray, shape (Nvars, Nvars)
+            the correlation matrix between the whole set of variables.
+        count_matrix: numpy.ndarray, shape (N, Nvars)
+            the count matrix of each type of variable.
+        feat_arr: numpy.ndarray, shape (N, Nfeats)
+            the features information of each sample we want to study.
+        kbest: int
+            the number of best types we want to get.
+
+        Returns
+        -------
+        Qs: numpy.ndarray, shape (N, kbest)
+            the quality values for each sample.
+        idxs: numpy.ndarray, shape (N, kbest)
+            the indices of the k-best types for each sample.
+
+        """
         Q, idxs = compute_kbest_type(corr_loc, count_matrix, feat_arr, kbest)
         return Q, idxs
 
 
 def compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type=None):
-    "Main function to compute the quality measure of pjensen."
+    """Main function to compute the quality measure of pjensen.
+
+    Parameters
+    ----------
+    corr_loc: numpy.ndarray, shape (Nvars, Nvars)
+        the correlation matrix between the whole set of variables.
+    count_matrix: numpy.ndarray, shape (N, Nvars)
+        the count matrix of each type of variable.
+    feat_arr: numpy.ndarray, shape (N, Nfeats)
+        the features information of each sample we want to study.
+    val_type: int or numpy.ndarray
+        the type of element we want to measure its quality.
+
+    Returns
+    -------
+    Q: numpy.ndarray, shape (N,)
+        the quality values for each sample.
+
+    """
     ## Compute needed variables
     type_vals = np.unique(feat_arr)
     n, n_vals = count_matrix.shape
@@ -72,7 +139,27 @@ def compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type=None):
 
 
 def compute_kbest_type(corr_loc, count_matrix, feat_arr, kbest):
-    "Compute the k best type and their quality."
+    """Compute the k best type and their quality.
+
+    Parameters
+    ----------
+    corr_loc: numpy.ndarray, shape (Nvars, Nvars)
+        the correlation matrix between the whole set of variables.
+    count_matrix: numpy.ndarray, shape (N, Nvars)
+        the count matrix of each type of variable.
+    feat_arr: numpy.ndarray, shape (N, Nfeats)
+        the features information of each sample we want to study.
+    kbest: int
+        the number of best types we want to get.
+
+    Returns
+    -------
+    Qs: numpy.ndarray, shape (N, kbest)
+        the quality values for each sample.
+    idxs: numpy.ndarray, shape (N, kbest)
+        the indices of the k-best types for each sample.
+
+    """
     ## Compute needed variables
     type_vals = np.unique(feat_arr)
     n, n_vals = count_matrix.shape
@@ -88,11 +175,31 @@ def compute_kbest_type(corr_loc, count_matrix, feat_arr, kbest):
             values[k] = np.sum(corr_loc[k, :] * (count_matrix[i, :] - avg))
         idxs[i], Qs[i] = get_kbest(values, kbest)
 
-    return Q, idxs
+    return Qs, idxs
 
 
 def compute_avges_by_val(count_matrix, feat_arr, type_vals):
-    "Compute the average for each type value."
+    """Compute the average for each type value.
+
+    Parameters
+    ----------
+    count_matrix: numpy.ndarray, shape (N, Nvars)
+        the count matrix of each type of variable.
+    feat_arr: numpy.ndarray, shape (N, Nfeats)
+        the features information of each sample we want to study.
+    type_vals: numpy.ndarray, shape (Nvals,)
+        the differet vals we can have in the feat_arr.
+
+    Returns
+    -------
+    avges: numpy.ndarray, shape (Nvals, Nvals)
+        the averages by value.
+
+    See also
+    --------
+    pjensen_quality.compute_kbest_type, pjensen_quality.compute_quality_measure
+
+    """
     n_vals = type_vals.shape[0]
     avges = np.zeros((n_vals, n_vals))
     for val_j in type_vals:

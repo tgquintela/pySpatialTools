@@ -6,6 +6,7 @@ Compute the quality from the neighbourhood.
 
 TODO
 ----
+
 """
 
 import numpy as np
@@ -14,7 +15,7 @@ from pythonUtils.numpy_tools.sorting import get_kbest
 
 
 class NeighRecommender(RecommenderModel):
-    """Recommender model for location recommendation.    
+    """Recommender model for location recommendation.
     It is based on the statical assumption of market, the stationary regime of
     the system, that makes that the average position of a type of point is the
     best location for these type of points. In order to obtain the best ones we
@@ -45,7 +46,17 @@ class NeighRecommender(RecommenderModel):
 
 def compute_quality_measure(descrip_matrix, points_arr, feat_arr,
                             val_type=None):
-    "Computation of the quality measure associated to the model."
+    """Computation of the quality measure associated to the model.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+
+    """
+
     n, n_vals = descrip_matrix.shape
     Q = np.zeros(n)
     for i in xrange(n):
@@ -60,7 +71,16 @@ def compute_quality_measure(descrip_matrix, points_arr, feat_arr,
 
 
 def compute_kbest_type(descrip_matrix, points_arr, feat_arr, kbest):
-    "Compute the k best type and their quality."
+    """Compute the k best type and their quality.
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+    """
     n, n_vals = descrip_matrix.shape
     votes, idxs = np.zeros((n, kbest)), np.zeros((n, kbest))
     for i in xrange(descrip_matrix.shape[0]):

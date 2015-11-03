@@ -11,10 +11,18 @@ TODO
 - Incorporate the testers in the class
 - Creation of plots in the class
 
+
+Structure
+---------
+ - RecommenderModel
+    |
+    | - CorrRecomender
+    | - MLRecomender
+
 """
 
 from pjensen_quality import PjensenRecommender
 from neigh_quality import NeighRecommender
 from regressors_quality import RandomForestRecommender, KneighRegRecommender,\
-	RNeighRegRecommender, GradientBoostingRecommender, ExtraTreesRecommender,\
-	AdaBoostRecommender
+    RNeighRegRecommender, GradientBoostingRecommender, ExtraTreesRecommender,\
+    AdaBoostRecommender
