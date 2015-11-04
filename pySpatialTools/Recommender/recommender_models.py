@@ -21,4 +21,4 @@ class RecommenderModel:
 
     def test_results(self):
         ""
-        self.typeresult
+        pass
