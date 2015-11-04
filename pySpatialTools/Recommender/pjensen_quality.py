@@ -61,8 +61,9 @@ class PjensenRecommender(RecommenderModel):
             the correlation matrix between the whole set of variables.
         count_matrix: numpy.ndarray, shape (N, Nvars)
             the count matrix of each type of variable.
-        feat_arr: numpy.ndarray, shape (N, Nfeats)
-            the features information of each sample we want to study.
+        feat_arr: numpy.ndarray, shape (N,)
+            the categorical features information of each sample we want to
+            study.
         val_type: int or numpy.ndarray
             the type of element we want to measure its quality.
 
@@ -84,8 +85,9 @@ class PjensenRecommender(RecommenderModel):
             the correlation matrix between the whole set of variables.
         count_matrix: numpy.ndarray, shape (N, Nvars)
             the count matrix of each type of variable.
-        feat_arr: numpy.ndarray, shape (N, Nfeats)
-            the features information of each sample we want to study.
+        feat_arr: numpy.ndarray, shape (N,)
+            the categorical features information of each sample we want to
+            study.
         kbest: int
             the number of best types we want to get.
 
@@ -111,7 +113,7 @@ def compute_quality_measure(corr_loc, count_matrix, feat_arr, val_type=None):
     count_matrix: numpy.ndarray, shape (N, Nvars)
         the count matrix of each type of variable.
     feat_arr: numpy.ndarray, shape (N, Nfeats)
-        the features information of each sample we want to study.
+        the categorical features information of each sample we want to study.
     val_type: int or numpy.ndarray
         the type of element we want to measure its quality.
 
@@ -148,7 +150,7 @@ def compute_kbest_type(corr_loc, count_matrix, feat_arr, kbest):
     count_matrix: numpy.ndarray, shape (N, Nvars)
         the count matrix of each type of variable.
     feat_arr: numpy.ndarray, shape (N, Nfeats)
-        the features information of each sample we want to study.
+        the categorical features information of each sample we want to study.
     kbest: int
         the number of best types we want to get.
 
