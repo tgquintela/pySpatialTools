@@ -7,10 +7,33 @@ Functions which complement the tasks of the other modules.
 """
 
 import numpy as np
+from sklearn.cross_validation import KFold, LeaveOneOut, LeaveOneLabelOut,\
+    LeavePOut, StratifiedKFold
 
 
 def fit_model(model, pars_model, cv, X, y):
     """Function to fit the model we want.
+
+    Parameters
+    ----------
+    model: model object
+        an object which represents a model and has the functions class fit and
+        score.
+    pars_model: dict
+        the parameters of the selected model.
+    cv: cross-validation object or a list of tuples of indices
+        the cross validation object.
+    X: numpy.ndarray, shape (n, m)
+        the data matrix.
+    y: numpy.ndarray, shape (n,)
+        the labels we want to predict with the model.
+
+    Return
+    ------
+    model: model object
+        an object which represents a model.
+    measure: float
+        the performance of the model in the cv-test.
 
     """
     models, measures = [], []
@@ -33,7 +56,24 @@ def fit_model(model, pars_model, cv, X, y):
 ###############################################
 def build_skmodel(model, pars_model):
     """Return an sklearn model object.
+
+    Parameters
+    ----------
+    model: non-instantiated model, str
+        model we want to apply in order to model the data.
+    pars_model: dict
+        paramters of the model.
+
+    Returns
+    -------
+    model: non-instantiated model
+        the instantiated model.
+    pars_model: dict
+        paramters of the model.
+
     """
+    model, pars_model = model, pars_model
+
     return model, pars_model
 
 
@@ -41,8 +81,8 @@ def build_cv(cv, pars_cv):
     """Return something valid as Cross-validation sklearn object.
     """
     if cv is None:
-        cv = StratifiedKFold
-    return cv, pars_cv
+        cv = KFold(**pars_cv)
+    return cv
 
 
 def create_X(X, x_type, y):

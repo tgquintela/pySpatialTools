@@ -11,7 +11,7 @@ measure of quality in the out-of-sample data.
 
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor,\
     ExtraTreesRegressor, AdaBoostRegressor
-from sklearn.neighbors RadiusNeighborsRegressor, KNeighborsRegressor
+from sklearn.neighbors import RadiusNeighborsRegressor, KNeighborsRegressor
 
 
 class RandomForestRecommender(SupervisedRmodel):
@@ -34,6 +34,9 @@ class RandomForestRecommender(SupervisedRmodel):
 
     """
     name_desc = "Random Forest recommender"
+
+    def __init__(self, model, pars_model):
+        pass
 
     def retrieve_class_model(self):
         return RandomForestRegressor
