@@ -26,6 +26,8 @@ There are different sampling types:
 
 TODO
 ----
+Clustering sampling
+From region space sampling
 Extension to 3D of some functions
 
 """
