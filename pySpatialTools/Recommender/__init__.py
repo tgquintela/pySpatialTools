@@ -31,4 +31,4 @@ from supervisedmodels import SupervisedRmodel
 
 ## Test measures
 from tester_recommender import binary_categorical_measure,\
-	float_categorical_measure, binary_quality_measure, float_quality_measure
+    float_categorical_measure, binary_quality_measure, float_quality_measure

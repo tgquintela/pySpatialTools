@@ -13,6 +13,7 @@ points_arr description
 import numpy as np
 from pythonUtils.numpy_tools.stats import counting
 from pythonUtils.numpy_tools.sorting import get_kbest
+from recommender_models import RecommenderModel
 
 
 class NeighRecommender(RecommenderModel):
@@ -94,7 +95,7 @@ class NeighRecommender(RecommenderModel):
         Returns
         -------
         Qs: np.ndarray, shape (n, kbest)
-            the quality measure obtained for the sample given and the 
+            the quality measure obtained for the sample.
         idxs: np.ndarray, shape (n, kbest)
             the best types selected by our recommendation algorithm.
 
@@ -167,7 +168,7 @@ def compute_kbest_type(descrip_matrix, points_arr, feat_arr, kbest, retriever,
     Returns
     -------
     Qs: np.ndarray, shape (n, kbest)
-        the quality measure obtained for the sample given and the 
+        the quality measure obtained for the sample.
     idxs: np.ndarray, shape (n, kbest)
         the best types selected by our recommendation algorithm.
 

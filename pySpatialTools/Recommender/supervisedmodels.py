@@ -71,7 +71,8 @@ class SupervisedRmodel(RecommenderModel):
         """
         ## 0. Prepare inputs
         ## 1. Compute model and cross-validation performance measure
-        model, measure = fit_model(self.modelclass, pars_model, self.cv, X, y)
+        model, measure = fit_model(self.modelclass, self.pars_model, self.cv,
+                                   X, y)
         ## 2. Save selected model
         self.model, self.measure = model, measure
         return model, measure
@@ -98,7 +99,6 @@ class SupervisedRmodel(RecommenderModel):
         Q = self.model.predict(X)
         return Q
 
-
     def compute_kbest_type(self, X, y, kbest):
         """Compute the k best type and their quality.
 
@@ -119,4 +119,5 @@ class SupervisedRmodel(RecommenderModel):
             the indices of the k-best types for each sample.
 
         """
+
         return Qs, idxs
