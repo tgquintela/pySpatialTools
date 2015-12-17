@@ -5,45 +5,29 @@ Spatial utils
 Module which groups the functions related with spatial utils which can be
 useful.
 
+
+TODO
+----
+Create voronoi diagram from line segments:
+[1] http://gis.stackexchange.com/questions/104631/create-voronoi-diagram-from-
+line-segments
+
+
 """
 
 import numpy as np
+import shapely
+from scipy.spatial import Voronoi
+from sklearn.neighbors import KDTree
 
 
-def mapping2grid(locs, grid_size, xlim=(None, None), ylim=(None, None)):
-    "Main function to map a group of points in a 2d to a grid."
-
-    ## 1. Grid creation
-    x, y = create_grid(locs, grid_size, xlim, ylim)
-    xv, yv = np.meshgrid(x, y)
-
-    ## 2. Application of the grid
-    locs_agg_grid = apply_grid(locs, x, y)
-    return locs_agg_grid, xv, yv
-
-
-def create_grid(grid_size, locs=None, xlim=(None, None), ylim=(None, None)):
-    ## 0. Preparation needed variables
-    nx, ny = grid_size
-    xmin, xmax = xlim
-    ymin, ymax = ylim
-    xmin = xmin if xmin is not None else locs[:, 0].min()
-    xmax = xmax if xmax is not None else locs[:, 0].max()
-    ymin = ymin if ymin is not None else locs[:, 1].min()
-    ymax = ymax if ymax is not None else locs[:, 1].max()
-
-    ## 1. Creation of the grid points
-    x = np.linspace(xmin, xmax, nx)
-    y = np.linspace(ymin, ymax, ny)
-    return x, y
-
-
-def apply_grid(locs, x, y):
-    locs_agg_grid = -1*np.ones(locs.shape).astype(int)
-    for i in xrange(locs.shape[0]):
-        locs_agg_grid[i, 0] = mask_application(locs[i, 0], x)
-        locs_agg_grid[i, 1] = mask_application(locs[i, 1], y)
-    return locs_agg_grid
+def indices_assignation(indices, regions_id):
+    "Function which acts to assign the indices obtained to the regions ids."
+    n = indices.shape[0]
+    regions = -1*np.ones(n).astype(int)
+    boolean = indices >= 0
+    regions[boolean] = regions_id[indices[boolean]]
+    return regions
 
 
 def mask_application(p, points):
@@ -53,3 +37,36 @@ def mask_application(p, points):
     for i in xrange(points.shape[0]-1):
         if p <= points[i+1]:
             return i
+
+
+def compute_limital_polygon(limits):
+    "Compute a poligon with the imformation given in limits."
+    if type(limits) == shapely.geometry.polygon.Polygon:
+        pass
+    elif type(limits) in [tuple, list, np.ndarray]:
+        lims = shapely.geometry.Polygon(limits)
+
+    return lims
+
+
+def match_regions(polygons, regionlocs, n_dim=2):
+    n = len(polygons)
+    centroids = np.zeros((n, n_dim))
+    for i in xrange(n):
+        centroids[i, :] = np.array(polygons[i])
+    ret = KDTree(regionlocs)
+    assign_r = np.zeros(n).astype(int)
+    for i in xrange(n):
+        assign_r[i] = ret.query(centroids[i, :])[1][0]
+    return assign_r
+
+
+def tesselation(regionlocs):
+    vor = Voronoi(regionlocs)
+    lines = []
+    for line in vor.ridge_vertices:
+        if -1 not in line:
+            lines.append(shapely.geometry.LineString(vor.vertices[line]))
+    pols = shapely.ops.polygonize(lines)
+    polygons = [poly for poly in pols]
+    return polygons

@@ -2,21 +2,28 @@
 """
 Spatial Discretizor utilities
 -----------------------------
-Module which contains the classes for discretize space.
+Module which contains the classes for discretize space. The main function of
+these clases are transform the location points to a region ids.
+If the point do not belong to the region discretized, the function has to
+return -1.
+The clases also implement some util functions related.
 
 TODO
 ----
 - Complete irregular discretizer.
 - Retrieve only populated regions. (Renumerate populated regions)
 - Assign regions to points.
+- Multiple regions
+- Multiple discretization types aggregated
+- Compute contiguity using correlation measure
 
 """
 
 
 import numpy as np
-from scipy.spatial.distance import cdist
-
-from spatial_utils import create_grid, apply_grid
+#from scipy.spatial.distance import cdist
+#from sklearn.neighbors import KDTree
+#from pythonUtils.parallel_tools import distribute_tasks
 
 
 class SpatialDiscretizor:
@@ -24,24 +31,58 @@ class SpatialDiscretizor:
     spatial domain and it is able to do:
     - Assign a static predefined regions to each point.
     - Retrieve neighbourhood defined by static regions.
+
     """
 
+    limits = None
     borders = None
     regionlocs = None
     regions_id = None
-
     regionretriever = None
 
     def retrieve_region(self, point_i, info_i, ifdistance=False):
+        """Retrieve the region to which the points given belong to in this
+        discretization.
+
+        Parameters
+        ----------
+        point_i: numpy.ndarray, shape(n, 2) or shape (n,)
+            the point or points we want to retrieve their regions.
+        info_i: numpy.ndarray, shape(n,)
+            the special information in order to retrieve neighs and regions.
+        ifdistance: bool
+            True if we want the distance.
+
+        Returns
+        -------
+        region: numpy.ndarray or int
+            the region id of the given points.
+
+        """
         if len(point_i.shape) == 1:
             point_i = point_i.reshape(1, point_i.shape[0])
         region = self.map_loc2regionid(point_i)
         return region
 
     def retrieve_neigh(self, point_i, locs):
-        """Retrieve the neighs given a point. Could be an internal retrieve if
-        point_i is an index or an external retrieve if point_i it is not a
-        point in locs (point_i is a coordinates).
+        """Retrieve the neighs given a point using this discretization. Could
+        be an internal retrieve if point_i is an index or an external retrieve
+        if point_i it is not a point in locs (point_i is a coordinates).
+
+        Parameters
+        ----------
+        point_i: numpy.ndarray
+            the point location for which we want its neighbours using the given
+            discretization.
+        locs: numpy.ndarray, shape(n,)
+            the location of the points we want to get the neighs of point_i.
+
+        Returns
+        -------
+        logi: numpy.ndarray boolean
+            the boolean array of which locs are neighs (are in the same region)
+            of point_i.
+
         """
         regions = self.map_loc2regionid(locs)
         if type(point_i) == int:
@@ -52,152 +93,127 @@ class SpatialDiscretizor:
         return logi
 
     def discretize(self, locs):
-        disc_locs = self.discretize_spec(locs)
-        return disc_locs
+        """Discretize locs given their region_id.
 
-    def map2id(self, locs):
+        Parameters
+        ----------
+        locs: numpy.ndarray
+            the locations for which we want to obtain their region given that
+            discretization.
+
+        Returns
+        -------
+        regions: numpy.ndarray
+            the region_id of each locs for this discretization.
+
+        """
         regions = self.map_loc2regionid(locs)
         return regions
 
-    def map2aggloc(self, locs):
-        agglocs = self.map2aggloc_spec(locs)
-        return agglocs
+    def belong_region(self, point, region_id=None):
+        """Function to compute the belonging of some point to the region
+        selected.
 
+        Parameters
+        ----------
+        point: numpy.ndarray, shape(2,) or tuple or list
+            the coordinates of the point we want to check its belonging to the
+            selected region.
+        region_id: int or None
+            the region we want to check. If it is None we will check the whole
+            region defined by the discretization.
 
-################################# Grid based ##################################
-###############################################################################
-class GridSpatialDisc(SpatialDiscretizor):
-    "Grid spatial discretization. The regions are rectangular with equal size."
+        Returns
+        -------
+        boolean: bool
+            the belonging to the selected region.
 
-    def __init__(self, grid_size, xlim=(None, None), ylim=(None, None)):
-        "Main function to map a group of points in a 2d to a grid."
-        self.create_grid(grid_size, xlim=xlim, ylim=ylim)
+        """
+        if region_id is None:
+            boolean = self.map_loc2regionid(point) != -1
+        else:
+            boolean = self.map_loc2regionid(point) == region_id
+        return boolean
 
-    ##################### Definition of particularities ######################
-    ##########################################################################
-    def create_grid(self, grid_size, xlim=(None, None), ylim=(None, None)):
-        self.borders = create_grid(grid_size=grid_size, xlim=xlim, ylim=ylim)
+    def get_contiguity(self, region_id=None):
+        """Get the whole contiguity or the contiguos regions of a given region.
 
-    def apply_grid(self, locs):
-        locs_grid = apply_grid(locs, self.borders[0], self.borders[1])
-        return locs_grid
+        Parameters
+        ----------
+        region_id: int or None
+            the regions we want to get their contiguous regions. If it is None
+            it is retrieved the whole map of contiguity.
 
-    def discretize_spec(self, locs):
-        return self.apply_grid(locs)
+        Returns
+        -------
+        contiguity: list or list of lists
+            the contiguous regions.
 
-    ################################ Functions ###############################
-    ##########################################################################
-    def map_loc2regionid(self, locs):
-        locs_grid = apply_grid(locs, self.borders[0], self.borders[1])
-        grid_size = (self.borders[0].shape[0]-1, self.borders[0].shape[0]-1)
-        regions_id = map_gridloc2regionid(locs_grid, grid_size)
-        return regions_id
+        """
+        contiguity = self.compute_contiguity(region_id)
+        return contiguity
+
+    def get_limits(self, region_id=None):
+        """Function to compute the limits of the region.
+
+        Parameters
+        ----------
+        region_id: numpy.ndarray or int
+            the regions id of the regions we want to get their limits. If it is
+            None it is retrieved the limits of the whole discretized space.
+
+        Returns
+        -------
+        limits: numpy.ndarray
+            the limits with an specific ordering.
+
+        """
+        if region_id is None:
+            limits = self.limits
+        else:
+            limits = self.compute_limits(region_id)
+        return limits
+
+    def map2agglocs(self, locs):
+        ""
+        pass
 
     def check_neighbours(self, region, regions):
+        "Returns the ones with the same region which is required."
         logi = regions == region
         return logi
 
-    def map2aggloc_spec(self, locs):
-        agglocs = np.zeros(locs.shape).astype(float)
-        delta_x = self.borders[0][1]-self.borders[0][0]
-        delta_y = self.borders[1][1]-self.borders[1][0]
-        grid_locs = self.apply_grid(locs)
-        agglocs[:, 0] = grid_locs[:, 0]*delta_x + delta_x/2.
-        agglocs[:, 1] = grid_locs[:, 1]*delta_y + delta_y/2.
-        return agglocs
-
-
-def map_gridloc2regionid(locs_grid, grid_size):
-    return locs_grid[:, 0]*grid_size[0]+locs_grid[:, 1]
-
-
-############################### Circular based ################################
-###############################################################################
-class CircularSpatialDisc(SpatialDiscretizor):
-    """Circular spatial discretization. The regions are circles with different
-    sizes. One point could belong to zero, one or more than one region.
-    """
-
-    ## TODO: map loc_grid to a id region: map_gridloc2regionid
-    def __init__(self, centerlocs, radios):
-        "Main information to built the regions."
-        if type(radios) in [float, int]:
-            radios = np.ones(centerlocs.shape[0])*radios
-        self.borders = radios
-        self.regionlocs = centerlocs
-
-    ################################ Functions ###############################
-    ##########################################################################
-    def map_loc2regionid(self, locs):
-        return map_circloc2regionid(locs, self.regionlocs, self.borders)
-
-    def check_neighbours(self, region, regions):
+    def check_neighbours_multiple(self, region, regions):
         N_r = len(regions)
         logi = np.zeros(N_r).astype(bool)
         for i in xrange(N_r):
             logi[i] = region in regions[i]
         return logi
 
-    def discretize_spec(self, locs):
-        ## TODO: See which is their correspondent circle.
-        pass
+    def compute_contiguity(self, retriever, locs, info_i):
+        """Compute contiguity using the locations and a retriever.
 
-    def map2aggloc_spec(self, locs):
-        n_locs = locs.shape[0]
-        agglocs = np.zeros(locs.shape).astype(float)
+        TODO
+        ----
+        Use correlation measure!!!!!
+        """
+        ## 0. Prepare inputs
+        sh = locs.shape
+        locs = locs if len(sh) > 1 else locs.reshape((1, sh[0]))
+        ret = retriever(locs)
+        regions_u = self.regions_id.unique()
+        n_reg_u = regions_u.shape[0], regions_u.shape[0]
+        regions_counts = np.zeros(n_reg_u)
+        region_coincidences = np.zeros((n_reg_u, n_reg_u))
+        ## 1. Compute matrix of coincidences
         regions = self.discretize(locs)
-        # Average between all the locs circles
-        for i in xrange(n_locs):
-            agglocs[i, :] = np.mean(self.regionlocs[regions[i], :], axis=0)
-        return agglocs
-
-
-def map_circloc2regionid(locs, centerlocs, radis):
-    "Map the each point to the correspondent circular region."
-    idxs_dis = distribute_tasks(locs.shape[0], 50000)
-    regions_id = [[] for i in range(locs.shape[0])]
-    for k in range(len(idxs_dis)):
-        logi = cdist(locs[idxs_dis[k][0]:idxs_dis[k][1]], centerlocs) < radis
-        aux = np.where(logi)
-        for j in range(len(aux[0])):
-            regions_id[aux[0][j]].append(aux[1][j])
-    return regions_id
-
-
-def distribute_tasks(n, memlim):
-    """Util function for distribute tasks in matrix computation in order to
-    save memory or to parallelize computations."""
-    lims = []
-    inflim = 0
-    while True:
-        if inflim + memlim > n:
-            lims.append([inflim, n])
-            break
-        else:
-            lims.append([inflim, inflim+memlim])
-            inflim = inflim+memlim
-    return lims
-
-
-############################### Poligion based ################################
-###############################################################################
-class IrregularSpatialDisc(SpatialDiscretizor):
-    "Grid spatial discretization."
-
-    ## TODO: map loc_grid to a id region: map_gridloc2regionid
-    def __init__(self, borders=None):
-        "Main information to built the regions."
-        self.borders = borders
-
-    ##################### Definition of particularities ######################
-    ##########################################################################
-    def fit_spatialmodel(self, data):
-        self.regionlocs, self.borders = somefunction(data)
-
-    ################################ Functions ###############################
-    ##########################################################################
-    def map_loc2regionid(self, locs):
-        return somefunction(locs, self.regionlocs, self.borders)
-
-    def check_neighbours(self, region, regions):
-        pass
+        for i in xrange(locs.shape[0]):
+            r = regions[i]
+            i_r = np.where(regions_u == r)
+            neighs, dist = ret.retrieve_neighs(locs[i, :], info_i[i], True)
+            regs = regions[neighs]
+            i_regs = np.array([rs == regions_u for rs in regs])
+            weights = compute_weigths(regs, dist)
+            region_coincidences[i_r, i_regs] += weights
+        contiguity = compute_measure(region_coincidences, regions_counts)
+        return contiguity
