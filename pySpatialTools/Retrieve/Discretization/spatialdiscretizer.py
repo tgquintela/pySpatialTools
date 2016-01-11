@@ -190,30 +190,12 @@ class SpatialDiscretizor:
             logi[i] = region in regions[i]
         return logi
 
-    def compute_contiguity(self, retriever, locs, info_i):
-        """Compute contiguity using the locations and a retriever.
-
-        TODO
-        ----
-        Use correlation measure!!!!!
-        """
-        ## 0. Prepare inputs
-        sh = locs.shape
-        locs = locs if len(sh) > 1 else locs.reshape((1, sh[0]))
-        ret = retriever(locs)
-        regions_u = self.regions_id.unique()
-        n_reg_u = regions_u.shape[0], regions_u.shape[0]
-        regions_counts = np.zeros(n_reg_u)
-        region_coincidences = np.zeros((n_reg_u, n_reg_u))
-        ## 1. Compute matrix of coincidences
-        regions = self.discretize(locs)
-        for i in xrange(locs.shape[0]):
-            r = regions[i]
-            i_r = np.where(regions_u == r)
-            neighs, dist = ret.retrieve_neighs(locs[i, :], info_i[i], True)
-            regs = regions[neighs]
-            i_regs = np.array([rs == regions_u for rs in regs])
-            weights = compute_weigths(regs, dist)
-            region_coincidences[i_r, i_regs] += weights
-        contiguity = compute_measure(region_coincidences, regions_counts)
-        return contiguity
+    def get_activated_regionlocs(self, locs, geom=True):
+        regions = np.unique(self.map_loc2regionid(locs))
+        if locs is True:
+            regionlocs = self.map_regionid2regionlocs(regions)
+        else:
+            regionslocs = np.zeros((regions.shape[0], locs.shape[1]))
+            for i in xrange(regions.shape[0]):
+                regionslocs[i, :] = locs[regions[i] == regions, :].mean(0)
+        return regionlocs, regions
