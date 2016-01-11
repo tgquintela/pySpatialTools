@@ -11,10 +11,22 @@ TODO:
 
 import numpy as np
 import pandas as pd
+from IO.format_utils import create_formatted_spdf
 
 
 ###############################################################################
 ############################ Main functions counts ############################
+###############################################################################
+def aggregated_counts(agg_arr, feat_arr, reindices, f=None):
+    df, typevars = create_formatted_spdf(agg_arr, feat_arr)
+    feat_vars, agg_var = typevars['feat_vars'], typevars['agg_var']
+    agg_desc, _ = compute_aggregate_counts(df, agg_var, feat_vars, reindices)
+    agg_desc = agg_desc[agg_desc.keys()[0]]
+    return agg_desc
+
+
+###############################################################################
+############################## Counting functions #############################
 ###############################################################################
 def compute_aggregate_counts(df, agg_var, feat_vars, reindices):
     ## Compute the tables
