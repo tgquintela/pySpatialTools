@@ -17,6 +17,11 @@ from pySpatialTools.Spatial_Relations.region_spatial_relations import \
     regions_relation_points
 
 
+## discretization --> feats
+## descriptormodel -->
+## do it as sparse or network
+
+
 def clustering_regions(points, discretizor, retrievers, info_rets, clustering):
     """Pipeline function for spatial clustering points.
 
