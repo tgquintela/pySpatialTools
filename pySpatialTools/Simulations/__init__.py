@@ -11,7 +11,6 @@ e spatial elements
 Net connections between spatial elements
 
 
-
 Required
 --------
 - SpatialModelEvolver

@@ -2,7 +2,9 @@
 """
 State system
 ------------
-State system module
+State system module which contains all the functions and classes required to be
+able to store a spatial state system.
+
 """
 
 
