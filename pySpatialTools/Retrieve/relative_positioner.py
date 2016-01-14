@@ -45,7 +45,8 @@ class RelativeRegionPositioner:
         return self.funct(loc_i, loc_neighs, reg_i, reg_neighs)
 
 
-###### Collection of functions
+########################### Collection of functions ###########################
+###############################################################################
 def metric_distances(loc_i, loc_neighs, info_pos={}):
     dist_metric = cdist(loc_i, loc_neighs, **info_pos)
     dist_metric = dist_metric.T
