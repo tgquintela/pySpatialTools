@@ -11,6 +11,7 @@ TODO
 http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
 https://en.wikipedia.org/wiki/Shapefile
 arcpy
+- Clean the modules and homogenize
 
 """
 

@@ -8,7 +8,8 @@ discretization of space.
 """
 
 import numpy as np
-from spatialdiscretizer import SpatialDiscretizor
+from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
+    SpatialDiscretizor
 #from sklearn.neighbors import KDTree
 from scipy.spatial.distance import cdist
 from pythonUtils.parallel_tools import distribute_tasks

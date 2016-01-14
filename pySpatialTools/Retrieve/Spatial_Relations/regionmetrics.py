@@ -12,7 +12,8 @@ import numpy as np
 from scipy.sparse import coo_matrix, issparse
 from scipy.spatial.distance import pdist
 
-from aux_regionmetrics import compute_selfdistances
+from aux_regionmetrics import get_regions4distances,\
+    create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs
 
 
 ###############################################################################
@@ -27,7 +28,7 @@ class RegionDistances:
     inv_null_value = 0.
 
     relations = None
-    u_regs = None
+    data = None
     store = 'matrix'  # sparse, network
 
     def __init__(self, relations=None, distanceorweighs=True, symmetric=True):
@@ -46,12 +47,12 @@ class RegionDistances:
             self.inv_null_value = np.inf
         self.symmetric = symmetric
 
-    def get_relations(self, reg):
+    def retrieve_neighs(self, reg):
         """Retrieve the neighbourhood regions of the region in input.
 
         Parameters
         ----------
-        reg: int
+        reg: int or numpy.ndarray
             the region_id which we want to retrieve their nieghborhood regions.
 
         Returns
@@ -61,28 +62,56 @@ class RegionDistances:
         dists: numpy.ndarray
             the distances between points or regions.
 
+        TODO:
+        ----
+        Errors when there is not in the data list.
         """
+        ## 0. Format input
+        if type(reg) == list:
+            if len(reg) == 1:
+                reg = reg[0]
+                if reg not in self.data[:, 0]:
+                    neighs = np.array([])
+                    dists = np.array([])
+                    return neighs, dists
+            else:
+                print reg, len(reg)
+                raise Exception("Not correct input.")
+        elif type(reg) == np.ndarray:
+            if len(reg.shape) == 1 and reg.shape[0] == 1:
+                reg = reg[0]
+                if reg not in self.data[:, 0]:
+                    neighs = np.array([])
+                    dists = np.array([])
+                    return neighs, dists
+            else:
+                print reg, reg.shape
+                raise Exception("Not correct input.")
+        elif type(reg) == int:
+            reg = self.data[reg, 0]
+        ## 1. Perform the retrieve
         if self.relations is not None:
             if self.store == 'matrix':
-                logi = self.relations[self.u_regs == reg, :] != self.null_value
-                neighs = self.u_reg[logi]
-                dists = self.relations[self.u_regs == reg, logi]
+                logi = self.relations[self.data == reg, :] != self.null_value
+                logi = logi[:, 0]
+                neighs = self.data[logi, 0]
+                dists = self.relations[self.data[:, 0] == reg, logi]
             elif self.store == 'sparse':
-                i_reg = np.where(self.u_regs == reg)[0][0]
+                i_reg = np.where(self.data[:, 0] == reg)[0][0]
                 idxs = self.relations.getrow(i_reg).nonzero()[1]
                 if self.symmetric:
                     idxs2 = self.relations.getcol(i_reg).nonzero()[0]
                     idxs = np.unique(np.hstack([idxs, idxs2]))
                 dists = [self.relations.getrow(i_reg).getcol(i).A[0, 0]
                          for i in idxs]
-                neighs = self.u_regs[idxs]
+                neighs = self.data[idxs, 0]
                 self.relations[i_reg, idxs]
             elif self.store == 'network':
                 neighs = self.relations.neighbors(reg)
                 dists = [self.relations[reg][nei]['weight'] for nei in neighs]
         else:
             neighs, dists = self.get_relations_spec(reg)
-        neighs, dists = np.array(neighs), np.array(dists)
+        neighs, dists = np.array(neighs).ravel(), np.array(dists)
         return neighs, dists
 
 
@@ -93,29 +122,59 @@ class CenterLocsRegionDistances(RegionDistances):
     representative point.
     """
 
-    def compute_distances(self, discretizor, retriever='', store='network',
-                          symmetric=True, elements=None):
+    def compute_distances(self, sp_descriptor, store='network', elements=None,
+                          symmetric=True, activated=None):
         """Function to compute the spatial distances between the regions.
-        TODO: spatial_descriptor
+
+        Parameters
+        ----------
+        sp_descriptor: sp_descriptor or tuple.
+            the spatial descriptormodel object or the tuple of elements needed
+            to build it (discretizor, locs, retriever, descriptormodel)
+        store: optional, ['network', 'sparse', 'matrix']
+            the type of object we want to store the relation metric.
+        elements: array_like, list or None
+            the regions we want to use for measure the metric distance between
+            them.
+        symmetric: boolean
+            assume symmetric measure.
+        activated: numpy.ndarray or None
+            the location points we want to know if we use the regions non-empty
+            or None if we want to use all of them.
         """
-        ## 0. Elements management
-        if elements is not None:
-            elements = discretizor.regions_id
-        elif elements is True:
-            # Filter by activated regions
-            elements = np.unique(self.discretizor.discretize(retriever.data))
-        self.u_regs = elements
+        ## 0. Compute variable needed
         self.symmetric = symmetric
+        self.store = store
+        # Sp descriptor management
+        if type(sp_descriptor) == tuple:
+            activated = sp_descriptor[1] if activated is not None else None
+            regions_id, elements_i = get_regions4distances(sp_descriptor[0],
+                                                           elements, activated)
+            sp_descriptor = create_sp_descriptor_regionlocs(sp_descriptor,
+                                                            regions_id,
+                                                            elements_i)
+            self.data = np.array(regions_id)
+            self.data = self.data.reshape((self.data.shape[0], 1))
+        else:
+            regions, elements_i = get_regions4distances(sp_descriptor,
+                                                        elements, activated)
+            self.data = np.array(regions)
+            self.data = self.data.reshape((self.data.shape[0], 1))
 
         ## 1. Computation of relations
-        if type(retriever) == str:
-            regionlocs = np.array(discretizor.regionlocs)
-            metric = retriever if retriever else 'euclidean'
-            self.relations = pdist(regionlocs, metric)
+        if type(sp_descriptor) == tuple:
+            relations = pdist(sp_descriptor[0], sp_descriptor[1])
         else:
-            # compute distances between to their neighs
-            self.relations = compute_selfdistances(retriever, self.u_regs,
-                                                   store, symmetric)
+            relations = sp_descriptor.compute_net()[:, :, 0]
+        if store == 'matrix':
+            self.relations = relations
+        elif store == 'sparse':
+            self.relations = coo_matrix(relations)
+        elif store == 'network':
+            relations = coo_matrix(relations)
+            self.relations = nx.from_scipy_sparse_matrix(relations)
+            mapping = dict(zip(self.relations.nodes(), regions_id))
+            self.relations = nx.relabel_nodes(self.relations, mapping)
 
 
 class ContiguityRegionDistances(RegionDistances):
@@ -127,7 +186,8 @@ class ContiguityRegionDistances(RegionDistances):
         """Function to compute the spatial distances between the regions.
         """
         ## TODO: implement contiguity into the discretizor
-        self.u_regs = discretizor
+        self.data = discretizor
+        self.data = self.data.reshape((self.data.shape[0], 1))
         self.relations = discretizor.retrieve_contiguity_regions(store)
 
 
@@ -136,59 +196,54 @@ class PointsNeighsIntersection(RegionDistances):
     of the points belonged to each region.
     """
 
-    def compute_distances(self, sp_descriptor, store='network',
-                          symmetric=False, geom=False, elements=None):
+    def compute_distances(self, sp_descriptor, store='network', elements=None,
+                          symmetric=False, activated=None):
         """Function to compute the spatial distances between the regions.
+
+        Parameters
+        ----------
+        sp_descriptor: sp_descriptor or tuple.
+            the spatial descriptormodel object or the tuple of elements needed
+            to build it (discretizor, locs, retriever, descriptormodel)
+        store: optional, ['network', 'sparse', 'matrix']
+            the type of object we want to store the relation metric.
+        elements: array_like, list or None
+            the regions we want to use for measure the metric distance between
+            them.
+        symmetric: boolean
+            assume symmetric measure.
+        activated: numpy.ndarray or None
+            the location points we want to know if we use the regions non-empty
+            or None if we want to use all of them.
         """
         ## 0. Needed variables
-        # Filter by activated regions
-        # Internal function if it is possible
-        locs = sp_descriptor.retriever.retriever.data
-        regionlocs, self.u_regs =\
-            self.sp_descriptor.discretizor.get_activated_regionlocs(locs, geom)
-        self.u_regs = np.unique(self.sp_descriptor.discretizor.discretize(self.sp_descriptor.retriever.data))
+        # Sp descriptor management
+        if type(sp_descriptor) == tuple:
+            activated = sp_descriptor[1] if activated is not None else None
+            regions_id, elements_i = get_regions4distances(sp_descriptor[0],
+                                                           elements, activated)
+            sp_descriptor = create_sp_descriptor_points_regs(sp_descriptor,
+                                                             regions_id,
+                                                             elements_i)
+            self.data = np.array(regions_id)
+            self.data = self.data.reshape((self.data.shape[0], 1))
+        else:
+            regions, elements_i = get_regions4distances(sp_descriptor,
+                                                        elements, activated)
+            self.data = np.array(regions)
+            self.data = self.data.reshape((self.data.shape[0], 1))
 
         self.symmetric = symmetric
-
+        self.store = store
         ## 1. Computation of relations
-        relations, self.u_regs = sp_descriptor.compute_net()
-        filter_relations(relations, self.u_regs, elements)
+        relations = sp_descriptor.compute_net()[:, :, 0]
+        #filter_relations(relations, self.data, elements)
         if store == 'matrix':
             self.relations = relations
         elif store == 'sparse':
             self.relations = coo_matrix(relations)
         elif store == 'network':
-            self.relations = coo_matrix(relations)
+            relations = coo_matrix(relations)
             self.relations = nx.from_scipy_sparse_matrix(relations)
-
-
-
-
-
-    def compute_contiguity(self, retriever, locs, info_i):
-        """Compute contiguity using the locations and a retriever.
-
-        TODO
-        ----
-        Use correlation measure!!!!!
-        """
-        ## 0. Prepare inputs
-        sh = locs.shape
-        locs = locs if len(sh) > 1 else locs.reshape((1, sh[0]))
-        ret = retriever(locs)
-        regions_u = self.regions_id.unique()
-        n_reg_u = regions_u.shape[0], regions_u.shape[0]
-        regions_counts = np.zeros(n_reg_u)
-        region_coincidences = np.zeros((n_reg_u, n_reg_u))
-        ## 1. Compute matrix of coincidences
-        regions = self.discretize(locs)
-        for i in xrange(locs.shape[0]):
-            r = regions[i]
-            i_r = np.where(regions_u == r)
-            neighs, dist = ret.retrieve_neighs(locs[i, :], info_i[i], True)
-            regs = regions[neighs]
-            i_regs = np.array([rs == regions_u for rs in regs])
-            weights = compute_weigths(regs, dist)
-            region_coincidences[i_r, i_regs] += weights
-        contiguity = compute_measure(region_coincidences, regions_counts)
-        return contiguity
+            mapping = dict(zip(self.relations.nodes(), regions_id))
+            self.relations = nx.relabel_nodes(self.relations, mapping)

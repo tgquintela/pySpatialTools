@@ -8,6 +8,23 @@ If the point do not belong to the region discretized, the function has to
 return -1.
 The clases also implement some util functions related.
 
+Compulsary requisits
+--------------------
+For each instantiable son classes of spatial discretizers, are required the
+next functions and parameters:
+- map_loc2regionid (function)
+- map_regionid2regionlocs (function)
+- compute_limits (function)
+- check_neighbours (function) [TOMOVE: regionmetrics?]
+- compute_contiguity (function) [TOMOVE: regionmetrics?]
+- get_nregs (function)
+- get_regions_id (function)
+- get_regionslocs (function)
+- limits (parameter)
+- borders (parameter)
+- regionlocs (parameter)
+- regions_id (parameter)
+
 TODO
 ----
 - Complete irregular discretizer.
@@ -16,6 +33,8 @@ TODO
 - Multiple regions
 - Multiple discretization types aggregated
 - Compute contiguity using correlation measure
+- 1-neigh discretizer for nd discretization
+- nd-grid discretization
 
 """
 
@@ -46,7 +65,7 @@ class SpatialDiscretizor:
 
         Parameters
         ----------
-        point_i: numpy.ndarray, shape(n, 2) or shape (n,)
+        point_i: numpy.ndarray, shape(n, m) or shape (n,)
             the point or points we want to retrieve their regions.
         info_i: numpy.ndarray, shape(n,)
             the special information in order to retrieve neighs and regions.

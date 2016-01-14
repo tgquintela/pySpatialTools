@@ -11,11 +11,13 @@ Fit from distribution of points tagged with region types.
 """
 
 import numpy as np
-from spatialdiscretizer import SpatialDiscretizor
+from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
+    SpatialDiscretizor
+from pySpatialTools.Retrieve.Discretization.spatial_utils import \
+    match_regions, tesselation
 #from sklearn.neighbors import KDTree
 #from scipy.spatial.distance import cdist
 #from pythonUtils.parallel_tools import distribute_tasks
-from spatial_utils import match_regions, tesselation
 import shapely
 from shapely.geometry import Point
 

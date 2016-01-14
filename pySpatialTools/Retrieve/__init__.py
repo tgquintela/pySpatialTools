@@ -9,4 +9,5 @@ neighbourhood or local properties related with the neighbourhood.
 
 # import retrievers
 from point_retrievers import KRetriever, CircRetriever
-from region_retrievers import RegionRetriever
+from region_retrievers import OrderRegNeigh, SameRegNeigh,\
+    LimDistanceRegNeigh, RegionPointRetriever

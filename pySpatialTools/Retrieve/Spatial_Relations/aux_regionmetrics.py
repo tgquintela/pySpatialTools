@@ -1,11 +1,74 @@
 
 """
+Auxiliary regionmetrics
+-----------------------
+Auxiliary functions to complement the regionmetrics object.
 
 """
 
 from scipy.sparse import coo_matrix
 import networkx as nx
 import numpy as np
+from pySpatialTools.Feature_engineering import SpatialDescriptorModel
+
+
+def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):
+    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
+    retriever = retriever(locs, info_ret, ifdistance=True)
+    loc_r = discretizor.discretize(locs)
+    map_locs = dict(zip(regions_id, elements_i))
+    r_locs = np.array([int(map_locs[r]) for r in loc_r])
+    descriptormodel = descriptormodel(r_locs, sp_typemodel='correlation')
+    sp_descriptor = SpatialDescriptorModel(retriever, descriptormodel)
+    n_e = locs.shape[0]
+    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
+    return sp_descriptor
+
+
+def create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i):
+    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
+    if type(retriever) == str:
+        regionslocs = discretizor.get_regionslocs()[elements_i, :]
+        return regionslocs, retriever
+
+    retriever = retriever(discretizor.get_regionslocs()[elements_i, :],
+                          info_ret, ifdistance=True)
+    descriptormodel = descriptormodel(np.array(elements_i),
+                                      sp_typemodel='matrix')
+    sp_descriptor = SpatialDescriptorModel(retriever, descriptormodel)
+    n_e = len(elements_i)
+    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
+    return sp_descriptor
+
+
+def get_regions4distances(discretizor, elements=None, activated=None):
+    """Get regions id to compute distance between them.
+
+    Parameters
+    ----------
+    discretizor:
+    elements:
+    activated:
+
+    Returns
+    -------
+    regions_id:
+    elements_i: list of int
+        the list of indices of the regions we will use.
+    """
+    if activated is None:
+        regions_id = discretizor.get_regions_id()
+        if elements is not None:
+            regions_id = elements
+            elements_i = [int(np.where(regions_id == e)[0])
+                          for e in regions_id]
+        else:
+            elements_i = range(regions_id.shape[0])
+    else:
+        regions_id = discretizor.discretize(activated)
+        regions_id = np.unique(regions_id)
+        elements_i = [int(np.where(regions_id == e)[0]) for e in regions_id]
+    return regions_id, elements_i
 
 
 def compute_selfdistances(retriever, element_labels, typeoutput='network',
@@ -25,13 +88,15 @@ def compute_selfdistances(retriever, element_labels, typeoutput='network',
 
     """
     lista = []
-    for reg in element_labels:
+    for reg in list(element_labels):
         ## TODO: change locs
         neighs, dists = retriever.retrieve_neighs(reg, ifdistance=True)
         neighs, dists = filter_possible(element_labels, neighs, dists)
+        neighs, dists = np.array(neighs), np.array(dists)
         aux = [(reg, neighs[i], dists[i]) for i in range(len(list(neighs)))]
-        lista.append(aux)
+        lista += aux
     ## Transformation to a sparse matrix
+    element_labels = np.array(element_labels)
     relations = sparse_from_listaregneighs(lista, element_labels, symmetric)
     if typeoutput == 'network':
         relations = nx.from_scipy_sparse_matrix(relations)
@@ -73,17 +138,7 @@ def sparse_from_listaregneighs(lista, u_regs, symmetric):
     values.
     """
     sh = (u_regs.shape[0], u_regs.shape[0])
-    dts, iss, jss = [], [], []
-    for i in xrange(len(lista)):
-        n_neigh = lista[i][1].shape[0]
-        for j in range(n_neigh):
-            dts.append(lista[i][0])
-            iss.append(lista[i][1][j])
-            jss.append(lista[i][2][j])
-            if symmetric:
-                dts.append(lista[i][0])
-                iss.append(lista[i][2][j])
-                jss.append(lista[i][1][j])
-    dts, iss, jss = np.array(dts), np.array(iss), np.array(jss)
+    lista = np.array(lista)
+    dts, iss, jss = lista[:, 2], lista[:, 0], lista[:, 1]
     relations = coo_matrix((dts, (iss, jss)), shape=sh)
     return relations

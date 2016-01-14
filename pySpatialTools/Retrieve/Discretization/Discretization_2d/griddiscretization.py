@@ -2,7 +2,8 @@
 """
 Grid discretizer
 ----------------
-The class and functions related with the grid discretization.
+The class and functions related with the 2d-grid discretization.
+
 """
 
 import numpy as np
@@ -22,26 +23,6 @@ class GridSpatialDisc(SpatialDiscretizor):
         self.create_grid(grid_size, xlim=xlim, ylim=ylim)
         self.compute_limits()
 
-    ##################### Definition of particularities ######################
-    ##########################################################################
-    def apply_grid(self, locs):
-        """Discretize locs given their region_id.
-
-        Parameters
-        ----------
-        locs: numpy.ndarray
-            the locations for which we want to obtain their region given that
-            discretization.
-
-        Returns
-        -------
-        locs_grid: numpy.ndarray
-            the region discretized coordinates.
-
-        """
-        locs_grid = apply_grid(locs, self.borders[0], self.borders[1])
-        return locs_grid
-
     ########################### Automatic Functions ##########################
     ##########################################################################
     def create_grid(self, grid_size, xlim=(None, None), ylim=(None, None)):
@@ -60,20 +41,22 @@ class GridSpatialDisc(SpatialDiscretizor):
 
     ################################ Functions ###############################
     ##########################################################################
-    def compute_contiguity_geom(self, region_id=None):
-        "Compute which regions are contiguous and returns a graph."
-        ## 0. Compute needed variables
-        nx, ny = self.borders[0].shape[0]-1, self.borders[1].shape[0]-1
-        ## 1. Only compute neighs of a specific region if it is required
-        if region_id is None:
-            return compute_contiguity_grid(region_id, (nx, ny))
-        ## 2. Compute contiguity for all regions
-        contiguous = [[] for i in xrange(nx*ny)]
-        for i in range(nx):
-            for j in range(ny):
-                contiguous[i*nx+j] = compute_contiguity_grid(i*nx+j, (nx, ny))
-        return contiguous
+    def get_nregs(self):
+        "Get number of regions."
+        n_regs = (self.borders[0].shape[0]-1, self.borders[1].shape[0]-1)
+        n_regs = np.prod(n_regs)
+        return n_regs
 
+    def get_regions_id(self):
+        "Get regions id described by this discretizor."
+        return np.arange(self.get_nregs())
+
+    def get_regionslocs(self):
+        "Get the regionslocs (representative region location) described here."
+        return self.map_regionid2regionlocs(self.get_regions_id())
+
+    ########################### Compulsary mappers ###########################
+    ##########################################################################
     def map_loc2regionid(self, locs):
         """Discretize locs returning their region_id.
 
@@ -116,7 +99,46 @@ class GridSpatialDisc(SpatialDiscretizor):
         regionlocs = map_gridloc2regionlocs(grid_locs, self.borders)
         return regionlocs
 
+    ########################## Contiguity definition #########################
+    ##########################################################################
+    def compute_contiguity_geom(self, region_id=None):
+        "Compute which regions are contiguous and returns a graph."
+        ## 0. Compute needed variables
+        nx, ny = self.borders[0].shape[0]-1, self.borders[1].shape[0]-1
+        ## 1. Only compute neighs of a specific region if it is required
+        if region_id is None:
+            return compute_contiguity_grid(region_id, (nx, ny))
+        ## 2. Compute contiguity for all regions
+        contiguous = [[] for i in xrange(nx*ny)]
+        for i in range(nx):
+            for j in range(ny):
+                contiguous[i*nx+j] = compute_contiguity_grid(i*nx+j, (nx, ny))
+        return contiguous
 
+    ##################### Definition of particularities ######################
+    ##########################################################################
+    def apply_grid(self, locs):
+        """Discretize locs given their region_id.
+
+        Parameters
+        ----------
+        locs: numpy.ndarray
+            the locations for which we want to obtain their region given that
+            discretization.
+
+        Returns
+        -------
+        locs_grid: numpy.ndarray
+            the region discretized coordinates.
+
+        """
+        locs_grid = apply_grid(locs, self.borders[0], self.borders[1])
+        return locs_grid
+
+
+###############################################################################
+############################# Auxiliary functions #############################
+###############################################################################
 def compute_limits_grid(borders, region_id=None):
     "Compute the limits of the region or the whole space discretized."
     limits = np.zeros((2, 2))

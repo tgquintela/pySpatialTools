@@ -12,11 +12,13 @@ Compute contiguity_geom
 """
 
 import numpy as np
-from spatialdiscretizer import SpatialDiscretizor
+from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
+    SpatialDiscretizor
 from polygondiscretization import fit_polygondiscretizer
 from sklearn.neighbors import KDTree
 
-from spatial_utils import tesselation, match_regions
+from pySpatialTools.Retrieve.Discretization.spatial_utils import \
+    tesselation, match_regions
 import shapely
 
 
