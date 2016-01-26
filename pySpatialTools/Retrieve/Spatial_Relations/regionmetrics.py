@@ -5,6 +5,9 @@ RegionMetrics
 The definition of distances between regions and the store of this measures
 into an object.
 
+Extend this objects to different input output.
+Create a superClass.
+
 """
 
 import networkx as nx
@@ -23,29 +26,37 @@ class RegionDistances:
     """Object which stores the information of spatial relations between regions
     defined by a discretization of a discretized points.
     """
-    distanceorweighs = True
-    null_value = np.inf
-    inv_null_value = 0.
+    _distanceorweighs = True
+    _null_value = np.inf
+    _inv_null_value = 0.
 
     relations = None
-    data = None
-    store = 'matrix'  # sparse, network
+    _data = None
+    _data_input = None
+    _store = 'matrix'  # sparse, network
+    _out = 'indices'  # indices, elements_id
+    _input = 'indices'  # indices, elements_id
 
-    def __init__(self, relations=None, distanceorweighs=True, symmetric=True):
+    def __init__(self, relations=None, distanceorweighs=True, symmetric=True,
+                 input_='indices', output='indices'):
         ## Relations management
         self.relations = relations
-        if type(relations) == np.ndarray:
-            self.store = 'matrix'
-        elif type(relations) == nx.Graph:
-            self.store = 'network'
-        elif issparse(relations):
-            self.store = 'sparse'
+        if relations is not None:
+            if type(relations) == np.ndarray:
+                self._store = 'matrix'
+            elif type(relations) == nx.Graph:
+                self._store = 'network'
+            elif issparse(relations):
+                self._store = 'sparse'
         ## Type of values
-        self.distanceorweighs = distanceorweighs
+        self._distanceorweighs = distanceorweighs
         if not distanceorweighs:
-            self.null_value = 0.
-            self.inv_null_value = np.inf
-        self.symmetric = symmetric
+            self._null_value = 0.
+            self._inv_null_value = np.inf
+        self._symmetric = symmetric
+        ## IO parameters
+        self._input = input_
+        self._out = output
 
     def retrieve_neighs(self, reg):
         """Retrieve the neighbourhood regions of the region in input.
@@ -76,7 +87,7 @@ class RegionDistances:
                     return neighs, dists
             else:
                 print reg, len(reg)
-                raise Exception("Not correct input.")
+                raise TypeError("Not correct input.")
         elif type(reg) == np.ndarray:
             if len(reg.shape) == 1 and reg.shape[0] == 1:
                 reg = reg[0]
@@ -94,7 +105,10 @@ class RegionDistances:
             if self.store == 'matrix':
                 logi = self.relations[self.data == reg, :] != self.null_value
                 logi = logi[:, 0]
-                neighs = self.data[logi, 0]
+                if self._out == 'elements_id':
+                    neighs = self.data[logi, 0]
+                else:
+                    neighs = np.where(logi)[0]
                 dists = self.relations[self.data[:, 0] == reg, logi]
             elif self.store == 'sparse':
                 i_reg = np.where(self.data[:, 0] == reg)[0][0]
@@ -104,8 +118,10 @@ class RegionDistances:
                     idxs = np.unique(np.hstack([idxs, idxs2]))
                 dists = [self.relations.getrow(i_reg).getcol(i).A[0, 0]
                          for i in idxs]
-                neighs = self.data[idxs, 0]
-                self.relations[i_reg, idxs]
+                if self._out == 'elements_id':
+                    neighs = self.data[idxs, 0]
+                else:
+                    neighs = idxs
             elif self.store == 'network':
                 neighs = self.relations.neighbors(reg)
                 dists = [self.relations[reg][nei]['weight'] for nei in neighs]
@@ -113,6 +129,42 @@ class RegionDistances:
             neighs, dists = self.get_relations_spec(reg)
         neighs, dists = np.array(neighs).ravel(), np.array(dists)
         return neighs, dists
+
+    def transform(self, f_trans, params={}):
+        ##TODO:
+        return f_trans(self.relations)
+
+    @property
+    def data_input(self):
+        if self._data_input is None:
+            return self.data
+        else:
+            return self.data_input
+
+    @property
+    def data_output(self):
+        return self.data
+
+    def __getitem__(self, i):
+        if type(i) == list:
+            neighs, dists = [], []
+            for j in i:
+                aux = self[j]
+                neighs.append(aux[0])
+                dists.append(aux[0])
+        if type(i) == int:
+            if self.shape[0] <= i or i < 0:
+                raise IndexError('Index i out of bounds.')
+            neighs, dists = self.retrieve_neighs(i)
+        if isinstance(i, slice):
+            neighs, dists = self[list(range(i.start, i.stop, i.step))]
+        if type(i) not in [int, list, slice]:
+            raise TypeError("Not correct index")
+        return neighs, dists
+
+    @property
+    def shape(self):
+        return (len(self.data_input), len(self.data_output))
 
 
 class CenterLocsRegionDistances(RegionDistances):
@@ -143,8 +195,8 @@ class CenterLocsRegionDistances(RegionDistances):
             or None if we want to use all of them.
         """
         ## 0. Compute variable needed
-        self.symmetric = symmetric
-        self.store = store
+        self._symmetric = symmetric
+        self._store = store
         # Sp descriptor management
         if type(sp_descriptor) == tuple:
             activated = sp_descriptor[1] if activated is not None else None
@@ -153,13 +205,13 @@ class CenterLocsRegionDistances(RegionDistances):
             sp_descriptor = create_sp_descriptor_regionlocs(sp_descriptor,
                                                             regions_id,
                                                             elements_i)
-            self.data = np.array(regions_id)
-            self.data = self.data.reshape((self.data.shape[0], 1))
+            self._data = np.array(regions_id)
+            self._data = self._data.reshape((self._data.shape[0], 1))
         else:
             regions, elements_i = get_regions4distances(sp_descriptor,
                                                         elements, activated)
-            self.data = np.array(regions)
-            self.data = self.data.reshape((self.data.shape[0], 1))
+            self._data = np.array(regions)
+            self._data = self._data.reshape((self._data.shape[0], 1))
 
         ## 1. Computation of relations
         if type(sp_descriptor) == tuple:
@@ -186,14 +238,15 @@ class ContiguityRegionDistances(RegionDistances):
         """Function to compute the spatial distances between the regions.
         """
         ## TODO: implement contiguity into the discretizor
-        self.data = discretizor
-        self.data = self.data.reshape((self.data.shape[0], 1))
+        self._data = discretizor
+        self._data = self._data.reshape((self._data.shape[0], 1))
         self.relations = discretizor.retrieve_contiguity_regions(store)
 
 
 class PointsNeighsIntersection(RegionDistances):
     """Region distances defined only by the intersection of neighbourhoods
     of the points belonged to each region.
+    It is also applyable for the average distance between each points.
     """
 
     def compute_distances(self, sp_descriptor, store='network', elements=None,
@@ -225,16 +278,16 @@ class PointsNeighsIntersection(RegionDistances):
             sp_descriptor = create_sp_descriptor_points_regs(sp_descriptor,
                                                              regions_id,
                                                              elements_i)
-            self.data = np.array(regions_id)
-            self.data = self.data.reshape((self.data.shape[0], 1))
+            self._data = np.array(regions_id)
+            self._data = self._data.reshape((self._data.shape[0], 1))
         else:
             regions, elements_i = get_regions4distances(sp_descriptor,
                                                         elements, activated)
-            self.data = np.array(regions)
-            self.data = self.data.reshape((self.data.shape[0], 1))
+            self._data = np.array(regions)
+            self._data = self._data.reshape((self._data.shape[0], 1))
 
-        self.symmetric = symmetric
-        self.store = store
+        self._symmetric = symmetric
+        self._store = store
         ## 1. Computation of relations
         relations = sp_descriptor.compute_net()[:, :, 0]
         #filter_relations(relations, self.data, elements)

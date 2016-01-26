@@ -7,7 +7,14 @@ neighbourhood or local properties related with the neighbourhood.
 
 """
 
-# import retrievers
-from point_retrievers import KRetriever, CircRetriever
-from region_retrievers import OrderRegNeigh, SameRegNeigh,\
-    LimDistanceRegNeigh, RegionPointRetriever
+## Import Builded retrievers
+from element_retrievers import KRetriever, CircRetriever, SameEleNeigh,\
+    OrderEleNeigh, LimDistanceEleNeigh
+
+## Import wrapper retrievers
+from collectionretrievers import CollectionRetrievers
+
+## Import 'abstract' retrievers
+from element_retrievers import ElementRetriever
+
+## Import useful functions
