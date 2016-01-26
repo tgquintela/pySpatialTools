@@ -1,0 +1,501 @@
+
+
+#### Spatial dzescriptor models 2016-01-26
+
+#
+#def format_inputs_sp_descriptor(descriptormodel, retrievers, aggdescriptor):
+#    """Formatting function.
+#    """
+#    if type(retrievers) != list:
+#        retrievers = [retrievers]
+#    #aggdescriptor = descriptormodel.generate_aggregation(retrievers)
+#    return descriptormodel, retrievers, aggdescriptor
+
+
+#    def compute_descriptors(self, i):
+#        """
+#        Dictionary
+#        ----------
+#        typeret: integer type of return. Index of Retrievers
+#        neighs: neighs retrieved by the retriever number typeret
+#        characs: using all the information of the point and its neighbourhood.
+#
+#        """
+#        ## Retrieve type retriever
+#        typeret = self.get_typeret(i)
+#        ## Division of point or region retriever
+#        neighs_info = self.retriever.retrieve_neighs(i, typeret=typeret)
+#        characs, vals_i = self.descriptormodel.compute_descriptors(i,
+#                                                                   neighs_info,
+#                                                                   typeret)
+#        return characs, vals_i
+
+
+#
+#    def compute_descriptors(self, i, k):
+#        """
+#        Dictionary
+#        ----------
+#        typeret: integer type of return. Index of Retrievers
+#        neighs: neighs retrieved by the retriever number typeret
+#        characs: using all the information of the point and its neighbourhood.
+#
+#        """
+#        ## Retrieve type retriever
+#        typeret, typefeats = self._get_methods(i)
+#
+#        ## Division of point or region retriever
+#        if self.retrievers[typeret].typeret == 'point':
+#            ## Retrieve
+#            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+#            ## Compute characs
+#            characs =\
+#                self.descriptormodel.compute_predescriptors(i, neighs, dists,
+#                                                            self.reindices, k)
+#        else:
+#            ## Retrieve
+#            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+#            neighs_r, dists_r = self.retrievers[typeret].retrieve_neighs(i)
+#            ## Compute characs
+#            characs =\
+#                self.aggdescriptor[typeret].compute_characs(i, neighs, dists,
+#                                                            neighs_r, dists_r,
+#                                                            k, self.reindices)
+#        ## Compute descriptors
+#        descriptors = self.descriptormodel.compute_descriptors(i, characs)
+#        return descriptors
+#
+#    def compute_net(self):
+#        """Function used to compute the total measure.
+#        """
+#        n_calc = self.reindices.shape[1]
+#        corr = self.descriptormodel.initialization_output(n_calc)
+#        for i in xrange(self.descriptormodel.features.shape[0]):
+#            for k in range(n_calc):
+#                # 1. Retrieve local characterizers
+#                val_i = self.descriptormodel.compute_value_i(i, k,
+#                                                             self.reindices)
+#                corr_i = self.compute_descriptors(i, k)
+#                # 3. Aggregation
+#                ## TODO: indexing result
+#                corr[val_i, :, k] =\
+#                    self.descriptormodel.add2result(corr[val_i, :, k], corr_i)
+#        corr = self.descriptormodel.to_complete_measure(corr)
+#        return corr
+
+"""
+initialization_output
+compute_descriptors
+to_complete_measure
+add2result
+"""
+
+"""
+#aggdescriptors: list (discretization) [typeret]
+
+
+    def compute_descriptors(self, i):
+        ""
+#        Dictionary
+#        ----------
+#        typeret : integer type of return. Index of Retrievers
+#        neighs : neighs retrieved by the retriever number typeret
+#        characs : using all the information of the point and its neighbourhood.
+        ## Retrieve type retriever
+        typeret, typefeats = self._get_methods(i)
+
+        ## Model0
+        for k in range(k_rein):
+            i_k
+            neighs_info = self.retrievers.retrieve_neighs(i_k,
+                                                          typeret_i=typeret)
+            characs, vals_i =\
+                self.descriptormodel.compute_predescriptors(i, neighs_info, k)
+
+
+
+    def compute_descriptors(self, i, k):
+        ## Retrieve type retriever
+        typeret = self.get_typeret(i)
+
+        ## Division of point or region retriever
+        if self.retrievers[typeret].typeret == 'point':
+            ## Retrieve
+            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+            ## Compute characs
+            characs =\
+                self.descriptormodel.compute_predescriptors(i, neighs, dists,
+                                                            self.reindices, k)
+        else:
+            ## Retrieve
+            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+            neighs_r, dists_r = self.retrievers[typeret].retrieve_neighs(i)
+            ## Compute characs
+            characs =\
+                self.aggdescriptor[typeret].compute_characs(i, neighs, dists,
+                                                            neighs_r, dists_r,
+                                                            k, self.reindices)
+        ## Compute descriptors
+        descriptors = self.descriptormodel.compute_descriptors(i, characs)
+        return descriptors
+
+
+    def compute_descriptors(self, i):
+
+        characs_i, idxs_i = [], []
+        neighs, dists = retrievers.retrieve_neighs(i, typeret=typeret)
+        for k in range(self.reindices.shape[1]):
+            i_rei, neighs_rei
+            i_disc_rei, neighs_rei
+            aggdesc = None
+            if aggdescriptors[typeret] is not None:
+                aggdesc = aggdescriptors[typeret][k]
+            characs =\
+                self.descriptormodel.compute_general_predescriptors(i_disc_rei,
+                                                                    neighs,
+                                                                    dists)
+
+
+        ## Retrieve neighsbours
+        neighs_rei, dists = self.retriever.g_retrieve_neighs(i_rei, typeret, k,
+                                                             self.reindices)
+        i_rei = self.reindices[i, k]
+
+        ## Compute discretization
+        i_disc_rei, neighs_rei = self.retriever.g_discretization(i_rei,
+                                                                 neighs_rei, k,
+                                                                 self.reindices)
+        ## Compute general predescriptors
+        characs = self.descriptormodel.compute_general_predescriptors(i_disc,
+                                                                      neighs,
+                                                                      dists)
+
+        ## Compute descritptors
+        descriptors = self.descriptormodel.compute_descriptors(i_rei, characs,
+                                                               typeret)
+        return descriptors
+
+
+        ## Reserve memory for each one
+        #characs(k_rein, characs_size)
+        characs_i, idxs_i = [], []
+        k_rein = range(self.reindices.shape[1]) if k_rein is None else k_rein
+        ## Retrieve neighbours
+        neighs, dists = self.retriever.g_retrieve_neighs(i, typeret)
+        for k in k_rein:
+            ## Compute reindices
+            i_rei, neighs_rei
+            ## Compute discretization
+            i_disc_r
+            ##
+            characs_i.append()
+            idxs_i.append()
+
+
+    def compute_net(self):
+        n_calc = self.reindices.shape[1]
+        corr = self.descriptormodel.initialization_output(n_calc)
+        k_rein = range(n_calc)
+        for i in xrange(self.descriptormodel.features.shape[0]):
+            # 1. Retrieve local descriptors
+            characs_i, idxs_i = self.compute_descriptors(i, k_rein)
+            for k in k_rein:
+                # 3. Aggregation
+                corr[idxs_i[k]] =\
+                    self.descriptormodel.add2result(corr[idxs_i[k]],
+                                                    characs_i[k])
+        corr = self.descriptormodel.to_complete_measure(corr)
+        return corr
+
+
+        ## Division of point or region retriever
+        if self.retrievers[typeret].typeret == 'point':
+            ## Retrieve
+            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+            ## Compute characs
+            characs =\
+                self.descriptormodel.compute_predescriptors(i, neighs, dists,
+                                                            self.reindices, k)
+        else:
+            ## Retrieve
+            neighs, dists = self.retrievers[typeret].retrieve_neighs(i)
+            neighs_r, dists_r = self.retrievers[typeret].retrieve_neighs(i)
+            ## Compute characs
+            characs =\
+                self.aggdescriptor[typeret].compute_characs(i, neighs, dists,
+                                                            neighs_r, dists_r,
+                                                            k, self.reindices)
+
+
+"""
+
+
+
+#### Spatial dzescriptor models 2016-01-14
+
+## TOMOVE: to retrievers
+#    def compute_neighbourhoodnet(self, typeoutput):
+#        """TODO: General function."""
+#        N_t = self.retriever.data.shape[0]
+#        lista = []
+#        for i in xrange(N_t):
+#            neighs, dists = self.retrieve_neighs_spec(i, ifdistance=True)
+#            if not self.flag_auto:
+#                neighs, dists = filter_possible(i, neighs, dists)
+#            n_neigh = len(list(neighs))
+#            aux = [(i, neighs[j], dists[j]) for j in range(n_neigh)]
+#            lista.append(aux)
+#        ## Transformation to a sparse matrix
+#        neighnet = sparse_from_listaregneighs(lista, range(N_t), symmetric)
+#        if typeoutput == 'network':
+#            neighnet = nx.from_scipy_sparse_matrix(neighnet)
+#        if typeoutput == 'matrix':
+#            neighnet = neighnet.A
+#        return neighnet
+
+
+#    def to_complete_measure(self, corr_loc):
+#        'TODO: aggdescriptor'
+#        if self.aggdescriptor is None:
+#            corr_loc = self.descriptormodel.to_complete_measure(corr_loc)
+#        else:
+#            corr_loc = self.aggdescriptor.to_complete_measure(corr_loc)
+#        return corr_loc
+
+
+#### Descriptor models Process 2016-01-14
+
+    def compute_aggdescriptors(self, descriptor, feat_arr, reindices):
+        "TODO"
+        ## General variables needed
+        n = self.retriever.data.shape[0]
+        aggdesctriptors, aggregions, null_values = [], [], []
+        ## Computation aggdescriptors
+        for z in range(len(self.retriever.discretizors)):
+            u_regions = np.unique(self.locs_r[z])
+            aggdescriptor = np.zeros(())
+            # aggdescriptor = descriptor.inizialize_result
+            for i in xrange(n):
+                neighs, dists = self.retrieve_neigh_i(i, info_i=z)
+                characs_i = descriptor.compute_characs(feat_arr[neighs], dists)
+                # Add to aggdescriptor
+
+            ## Add to aggregates
+            aggdesctriptors.append(aggdescriptor)
+            aggregions.append(u_regions)
+            null_values.append()
+        return aggdesctriptors, aggregions, null_values
+
+
+
+
+
+
+#### Descriptor models Process 2016-01-10
+class ModelProcess(Processer):
+    """Class which performs the spatialmodel computation. This process assigns
+    a descriptors for each point in the dataset regarding their raw features
+    and the spatial relation between them.
+
+    ===============================
+    Functionalities:
+    - Compute net from data (parallel/sequential)
+    - Compute matrix for trainning approach (parallel/sequential)
+
+    ================================
+    Problems:
+
+    ================================
+    TODO:
+
+    """
+
+    ### Class parameters
+    ## Process descriptors
+    time_expended = 0.  # Time expended along the process
+    n_procs = 0  # Number of cpu used in parallelization (0 no parallel)
+    proc_name = ""  # Name of the process
+    proc_desc = ""
+    ## Logger info
+    lim_rows = 0  # Lim of rows done in a bunch. For matrix comp or information
+    logfile = None  # Log file
+    ## Bool options
+    bool_inform = False  # Give information of the process
+    bool_matrix = False  # compute matrix
+
+    subproc_desc = []
+    t_expended_subproc = []
+
+
+
+
+#### Descriptor models Process 2016-01-10
+    def compute_measure_all(self, df, reindices=None):
+        """Main function for building the index of the selected model. This
+        function acts as swicher between the different possibilities:
+        - Parallel from data/neighs/(agg/preagg)
+        - Sequential from data/neighs/(agg/preagg)
+        """
+
+        ## 0. Setting needed variables (TODO: cambiar)
+        m_aux0 = "training matrix" if self.bool_matrix else "net"
+        name_desc = self.descriptormodel.name_desc
+        self.proc_desc = self.proc_desc % (m_aux0, name_desc)
+        t00 = self.setting_global_process()
+
+        # Preparing needed vars
+        locs, feat_arr, info_ret, cond_agg = split_df(df, self.typevars)
+        reindices = compute_reindices(df, reindices)
+        self.sp_descriptormodel.setmodel(feat_arr, info_ret, cond_agg)
+        # clean unnecessary
+        del df, info_ret, cond_agg
+
+        ## 1. Computation of the measure (parallel if)
+        corr_loc = self.compute_mea_sequ_generic(locs, feat_arr, reindices)
+
+        ## 2. Building a net
+        corr_loc = self.descriptormodel.to_complete_measure(corr_loc)
+        ## Closing process
+        self.close_process(t00)
+        return corr_loc
+
+    def compute_mea_sequ_generic(self, locs, feat_arr, reindices):
+        """Main function to perform spatial correlation computation in a
+        sequential mode using aggregated information given by a '''''file'''''.
+        """
+
+        ## 0. Intialization of needed variables
+        N_t = locs.shape[0]
+        n_vals0, n_vals1 = self.sp_descriptormodel.model_dim
+        n_calc = reindices.shape[1]  # TODO: reindices always 2 dim
+        corr_loc = np.zeros((n_vals0, n_vals1, n_calc))
+
+        ## 1. Computation of local spatial correlations
+        ## Begin to track the process
+        t0, bun = self.setting_loop(N_t)
+        for i in xrange(N_t):
+            ## Obtaining neighs of a given point
+            #point_i = locs[i, :].reshape(1, locs.shape[1])
+            ## Loop over the possible reindices
+            for k in range(n_calc):
+                # 1. Retrieve local characterizers
+                val_i = self.sp_descriptormodel.get_value_i(i, k)
+                chars = self.sp_descriptormodel.get_characterizers(i, k)
+                #### (compute them or retrieve precomputed)
+#                val_i, chars =\
+#                    self.sp_descriptormodel.get_characterizers(i, k, feat_arr,
+#                                                               point_i,
+#                                                               reindices)
+                # 2. Computation of the local measure
+                corr_loc_i =\
+                    self.sp_descriptormodel.compute_descriptors(val_i, chars)
+                # 3. Aggregation
+                corr_loc[val_i, :, k] =\
+                    self.sp_descriptormodel.adding(corr_loc[val_i, :, k],
+                                                   corr_loc_i)
+            ## Finish to track this process
+            t0, bun = self.messaging_loop(i, t0, bun)
+        return corr_loc
+
+##########################################################
+#### Descriptor models 2016-01-10
+
+
+    def get_neighbourhood_info(self, i, typeret):
+        "Getting neighbourhood information."
+        if typeret != 0:
+            neighs, dists = self.aggretriever[typeret].retrieve_neigh(i)
+        else:
+            neighs, dists = self.aggretriever[typeret].retrieve_neigh(i)
+        return neighs, dists
+
+    def get_characs_i_neighs(self, i, neighs, k, typeret):
+        'TODO: aggregate not precomputed'
+        if typeret != 0:
+            disc_i = self.retriever[typeret].discretize(i)
+            chars_i = self.feats_agg[typeret].get_aggcharacs(disc_i, k)
+            chars_neigh = self.feats_agg[typeret].get_aggcharacs(neighs, k)
+        else:
+            chars_i = self.feats_arr[[self.reindices[i, k]], :]
+            chars_neigh = self.feats_arr[[self.reindices[neighs, k]], :]
+        return chars_i, chars_neigh
+
+    def compute_characs(self, feats_i, chars_i, chars_neigh, dists, typeret):
+        'TODO: descriptormodel function compute_characs'
+        characs = self.descriptormodel.compute_characs(feats_i, chars_i,
+                                                       chars_neigh, dists)
+        return characs
+
+    def get_characterizers(self, i, k):
+        """
+        Dictionary
+        ----------
+        typeret: integer type of return. Index of Retrievers
+        disc_i: formatted i
+        neighs: neighs retrieved by the retriever number typeret
+        chars_i: characterizers defined using feats of i
+        chars_neigh: characterizers which define neigh using only feats.
+        characs: using all the information of the point and its neighbourhood.
+        """
+        ## Retrieve type retriever
+        typeret = self.cond_agg[i]
+        ## Retrieve
+        neighs, dists = self.get_neighbourhood_info(i, typeret)
+        chars_i, chars_neigh = self.get_characs_i_neighs(i, neighs, k, typeret)
+        characs = self.compute_characs(chars_i, chars_neigh, dists, typeret)
+        return characs
+
+
+
+#### Descriptor models 2016-01-04
+
+#    def get_characterizers(self, i, reindice):
+#        '''Get characterizers knowing the i array and the reindices.'''
+#        ## Retrieve neighbourhood information
+#        typeret = self.cond_agg[i]
+#
+#        neighs, dists = self.retriever.retrieve_neigh(i, typeret)
+#        ## Compute characs
+#        characs = self.compute_characs(i, neighs, dists, reindice, typeret)
+#        ## Retrieve characterizers from neighbourhood information
+#        val_i = self.descriptormodel.compute_value_i(i, reindice)
+#        return val_i, characs
+
+#    def compute_characs(self, i, neighs, dists, reindice, typeret):
+#        ## We have to use descriptor and retriever. Depends on precomputed.
+#        if self.precomputed:
+#            self.retriever
+#            i_disc = self.retriever.discretized_i(i)  # TODO
+#            characs = self.feats_agg[typeret][i_disc, :, k]
+#            ### ??? dists?
+#        else:
+#            pass
+#        ## Deal with reindices
+#        pass
+
+
+
+#### Descriptor models 2016-01-03
+
+#    def get_neighbourhood_info(self, i, typeret):
+#        "Getting neighbourhood information."
+#        if typeret != 0:
+#            disc_i = self.retriever[typeret].discretize(i)
+#            neighs, dists = self.retriever[typeret].retrieve_neigh(disc_i)
+#        else:
+#            neighs, dists = self.retriever[typeret].retrieve_neigh(i)
+#        return neighs, dists
+#
+#    def get_characs_i_neighs(self, i, neighs, k, typeret):
+#        'TODO: aggregate not precomputed'
+#        if typeret != 0:
+#            disc_i = self.retriever[typeret].discretize(i)
+#            chars_i = self.feats_agg[typeret][disc_i, :, k]
+#            chars_neigh = self.feats_agg[typeret][neighs, :, k]
+#        else:
+#            chars_i = self.feats_arr[[self.reindices[i, k]], :]
+#            chars_neigh = self.feats_arr[[self.reindices[neighs, k]], :]
+#        ## Retrieve in proper format
+#        chars_i = ensure_2dim(chars_i, sh_known=(1, None))
+#        chars_neigh = ensure_2dim(chars_neigh, sh_known=(len(neighs), None))
+#        return chars_i, chars_neigh
