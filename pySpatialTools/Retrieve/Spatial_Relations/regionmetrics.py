@@ -13,7 +13,8 @@ Create a superClass.
 import networkx as nx
 import numpy as np
 from scipy.sparse import coo_matrix, issparse
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, cdist
+from itertools import combinations_with_replacement
 
 from aux_regionmetrics import get_regions4distances,\
     create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs
@@ -42,6 +43,13 @@ class RegionDistances:
         ## Relations management
         self.relations = relations
         if relations is not None:
+            # Store associated data
+            if issparse(relations):
+                sh0 = relations.shape[0]
+                self._data = np.arange(sh0).reshape((sh0, 1))
+            else:
+                self._data = np.arange(len(relations)).reshape((len(relations), 1))
+            # Type of input
             if type(relations) == np.ndarray:
                 self._store = 'matrix'
             elif type(relations) == nx.Graph:
@@ -57,6 +65,10 @@ class RegionDistances:
         ## IO parameters
         self._input = input_
         self._out = output
+
+    @property
+    def data(self):
+        return self._data
 
     def retrieve_neighs(self, reg):
         """Retrieve the neighbourhood regions of the region in input.
@@ -81,7 +93,7 @@ class RegionDistances:
         if type(reg) == list:
             if len(reg) == 1:
                 reg = reg[0]
-                if reg not in self.data[:, 0]:
+                if reg not in self._data[:, 0]:
                     neighs = np.array([])
                     dists = np.array([])
                     return neighs, dists
@@ -90,8 +102,11 @@ class RegionDistances:
                 raise TypeError("Not correct input.")
         elif type(reg) == np.ndarray:
             if len(reg.shape) == 1 and reg.shape[0] == 1:
-                reg = reg[0]
-                if reg not in self.data[:, 0]:
+                reg = int(reg[0])
+            else:
+                reg = int(reg)
+            if type(reg) == int:
+                if reg not in self._data[:, 0]:
                     neighs = np.array([])
                     dists = np.array([])
                     return neighs, dists
@@ -99,30 +114,30 @@ class RegionDistances:
                 print reg, reg.shape
                 raise Exception("Not correct input.")
         elif type(reg) == int:
-            reg = self.data[reg, 0]
+            reg = self._data[reg, 0]
         ## 1. Perform the retrieve
         if self.relations is not None:
-            if self.store == 'matrix':
-                logi = self.relations[self.data == reg, :] != self.null_value
+            if self._store == 'matrix':
+                logi = self.relations[self._data == reg, :] != self.null_value
                 logi = logi[:, 0]
                 if self._out == 'elements_id':
-                    neighs = self.data[logi, 0]
+                    neighs = self._data[logi, 0]
                 else:
                     neighs = np.where(logi)[0]
-                dists = self.relations[self.data[:, 0] == reg, logi]
-            elif self.store == 'sparse':
-                i_reg = np.where(self.data[:, 0] == reg)[0][0]
+                dists = self.relations[self._data[:, 0] == reg, logi]
+            elif self._store == 'sparse':
+                i_reg = np.where(self._data[:, 0] == reg)[0][0]
                 idxs = self.relations.getrow(i_reg).nonzero()[1]
-                if self.symmetric:
+                if self._symmetric:
                     idxs2 = self.relations.getcol(i_reg).nonzero()[0]
                     idxs = np.unique(np.hstack([idxs, idxs2]))
                 dists = [self.relations.getrow(i_reg).getcol(i).A[0, 0]
                          for i in idxs]
                 if self._out == 'elements_id':
-                    neighs = self.data[idxs, 0]
+                    neighs = self._data[idxs, 0]
                 else:
                     neighs = idxs
-            elif self.store == 'network':
+            elif self._store == 'network':
                 neighs = self.relations.neighbors(reg)
                 dists = [self.relations[reg][nei]['weight'] for nei in neighs]
         else:
@@ -137,13 +152,13 @@ class RegionDistances:
     @property
     def data_input(self):
         if self._data_input is None:
-            return self.data
+            return self._data
         else:
             return self.data_input
 
     @property
     def data_output(self):
-        return self.data
+        return self._data
 
     def __getitem__(self, i):
         if type(i) == list:
@@ -156,9 +171,11 @@ class RegionDistances:
             if self.shape[0] <= i or i < 0:
                 raise IndexError('Index i out of bounds.')
             neighs, dists = self.retrieve_neighs(i)
+        if type(i) == np.ndarray:
+            neighs, dists = self.retrieve_neighs(i)
         if isinstance(i, slice):
             neighs, dists = self[list(range(i.start, i.stop, i.step))]
-        if type(i) not in [int, list, slice]:
+        if type(i) not in [int, list, slice, np.ndarray]:
             raise TypeError("Not correct index")
         return neighs, dists
 
@@ -241,6 +258,64 @@ class ContiguityRegionDistances(RegionDistances):
         self._data = discretizor
         self._data = self._data.reshape((self._data.shape[0], 1))
         self.relations = discretizor.retrieve_contiguity_regions(store)
+
+
+class AvgDistanceRegions(RegionDistances):
+    """Average distance of points of the different regions.
+    """
+
+    def compute_distances(self, locs, discretizor, regretriever,
+                          store='network', elements=None, activated=None):
+        """Function to compute the spatial distances between regions.
+
+        Parameters
+        ----------
+        locs: np.ndarray
+            the locations of the elements.
+        discretizor: pst.Discretization object
+            the discretization information to transform locations into regions.
+        store: optional, ['network', 'sparse', 'matrix']
+            the type of object we want to store the relation metric.
+        elements: array_like, list or None
+            the regions we want to use for measure the metric distance between
+            them.
+        activated: numpy.ndarray or None
+            the location points we want to know if we use the regions non-empty
+            or None if we want to use all of them.
+        """
+        self._symmetric = True
+        self._store = store
+
+        regs = discretizor.discretize(locs)
+        u_regs = np.unique(regs)
+        n_regs = len(u_regs)
+        self._data = u_regs.reshape((len(u_regs), 1))
+
+        dts, iss, jss = [], [], []
+        for i in xrange(len(u_regs)):
+            locs_i = locs[regs == u_regs[i]]
+            neighs_i, _ = regretriever.retrieve_neighs(u_regs[i])
+            for j in range(len(neighs_i)):
+                locs_j = locs[regs == neighs_i[j]]
+                dists_j = np.where(neighs_i[j] == u_regs)[0]
+                if len(locs_j):
+                    dts.append(cdist(locs_i, locs_j).mean())
+                    iss.append(i)
+                    jss.append(dists_j[0])
+
+        dts, iss, jss = np.hstack(dts), np.hstack(iss), np.hstack(jss)
+        iss, jss = iss.astype(int), jss.astype(int)
+        relations = coo_matrix((dts, (iss, jss)), shape=(n_regs, n_regs))
+
+        if store == 'matrix':
+            self.relations = relations
+        elif store == 'sparse':
+            self.relations = coo_matrix(relations)
+        elif store == 'network':
+            relations = coo_matrix(relations)
+            self.relations = nx.from_scipy_sparse_matrix(relations)
+            mapping = dict(zip(self.relations.nodes(), u_regs))
+            self.relations = nx.relabel_nodes(self.relations, mapping)
 
 
 class PointsNeighsIntersection(RegionDistances):

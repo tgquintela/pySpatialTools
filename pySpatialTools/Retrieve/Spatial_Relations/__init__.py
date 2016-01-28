@@ -8,7 +8,7 @@ elements.
 
 ## Class methods
 from regionmetrics import CenterLocsRegionDistances,\
-    ContiguityRegionDistances, PointsNeighsIntersection
+    ContiguityRegionDistances, PointsNeighsIntersection, AvgDistanceRegions
 
 ## Individual functions for preparing the computation of relations
 from aux_regionmetrics import get_regions4distances,\
@@ -18,3 +18,4 @@ from aux_regionmetrics import get_regions4distances,\
 from region_spatial_relations import regions_relation_points
 from general_spatial_relations import general_spatial_relation,\
     general_spatial_relations
+from formatters import format_out_relations

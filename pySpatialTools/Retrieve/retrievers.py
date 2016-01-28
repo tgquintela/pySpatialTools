@@ -169,6 +169,8 @@ class Retriever:
                 else:
                     info_i = self._info_ret
             else:
+                if self._info_f is None:
+                    return {}
                 if type(self._info_f).__name__ == 'name':
                     info_i = self._info_f(i_loc, info_i)
                 else:
@@ -232,7 +234,11 @@ class Retriever:
         if self._autodata:
             return self.retriever.data
         else:
-            return self.data
+            if self.data is None:
+                self._autodata = True
+                return self.data_input
+            else:
+                return self.data
 
     @property
     def data_output(self):

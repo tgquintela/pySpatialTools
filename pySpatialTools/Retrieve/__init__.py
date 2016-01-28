@@ -18,3 +18,4 @@ from collectionretrievers import CollectionRetrievers
 from element_retrievers import ElementRetriever
 
 ## Import useful functions
+from aux_retriever import create_retriever_input_output

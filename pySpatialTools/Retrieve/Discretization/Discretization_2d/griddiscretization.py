@@ -7,6 +7,8 @@ The class and functions related with the 2d-grid discretization.
 """
 
 import numpy as np
+from scipy.sparse import coo_matrix
+
 from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
     SpatialDiscretizor
 from pySpatialTools.Retrieve.Discretization.spatial_utils import \
@@ -106,13 +108,20 @@ class GridSpatialDisc(SpatialDiscretizor):
         ## 0. Compute needed variables
         nx, ny = self.borders[0].shape[0]-1, self.borders[1].shape[0]-1
         ## 1. Only compute neighs of a specific region if it is required
-        if region_id is None:
+        if region_id is not None:
             return compute_contiguity_grid(region_id, (nx, ny))
         ## 2. Compute contiguity for all regions
-        contiguous = [[] for i in xrange(nx*ny)]
+        iss, jss, dts = [], [], []
         for i in range(nx):
             for j in range(ny):
-                contiguous[i*nx+j] = compute_contiguity_grid(i*nx+j, (nx, ny))
+                aux_ = compute_contiguity_grid(i*nx+j, (nx, ny))
+                n_aux = len(aux_)
+                dts.append(np.ones(n_aux).astype(int))
+                iss.append(np.ones(n_aux).astype(int)*i*nx+j)
+                jss.append(np.array(aux_).astype(int))
+        iss, jss = np.hstack(iss).astype(int), np.hstack(jss).astype(int)
+        dts = np.hstack(dts).astype(int)
+        contiguous = coo_matrix((dts, (iss, jss)), shape=(nx*ny, nx*ny))
         return contiguous
 
     ##################### Definition of particularities ######################

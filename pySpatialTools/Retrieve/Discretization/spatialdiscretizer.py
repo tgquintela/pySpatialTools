@@ -40,6 +40,7 @@ TODO
 
 
 import numpy as np
+from pySpatialTools.Retrieve.Spatial_Relations import format_out_relations
 #from scipy.spatial.distance import cdist
 #from sklearn.neighbors import KDTree
 #from pythonUtils.parallel_tools import distribute_tasks
@@ -154,7 +155,7 @@ class SpatialDiscretizor:
             boolean = self.map_loc2regionid(point) == region_id
         return boolean
 
-    def get_contiguity(self, region_id=None):
+    def get_contiguity(self, region_id=None, out_='sparse'):
         """Get the whole contiguity or the contiguos regions of a given region.
 
         Parameters
@@ -162,6 +163,8 @@ class SpatialDiscretizor:
         region_id: int or None
             the regions we want to get their contiguous regions. If it is None
             it is retrieved the whole map of contiguity.
+        out_: optional ['sparse', 'list', 'network', 'sp_relations']
+            how to present the results.
 
         Returns
         -------
@@ -169,7 +172,9 @@ class SpatialDiscretizor:
             the contiguous regions.
 
         """
-        contiguity = self.compute_contiguity(region_id)
+        contiguity = self.compute_contiguity_geom(region_id)
+        if region_id is None:
+            contiguity = format_out_relations(contiguity, out_)
         return contiguity
 
     def get_limits(self, region_id=None):

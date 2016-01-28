@@ -59,7 +59,7 @@ class ElementRetriever(Retriever):
     ###########################################################################
     def _format_output(self, i_locs, neighs, dists):
         "Format output."
-        neighs, dists = self.exclude_auto(i_locs, neighs, dists)
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists)
         ## If not auto not do it
         return neighs, dists
 
@@ -216,7 +216,7 @@ class NetworkRetriever(Retriever):
     """
 
     typeret = 'network'
-    default_ret_val = {}
+    _default_ret_val = {}
 
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
                  flag_auto=True, ifdistance=True, info_f=None,
@@ -239,7 +239,7 @@ class NetworkRetriever(Retriever):
         """Retrieve element neighbourhood information.
         """
         info_i = self._format_info_i_reg(info_i, elem_i)
-        neighs, dists = self._retrieve_neighs_spec(elem_i, **info_i)
+        neighs, dists = self._retrieve_neighs_spec2(elem_i, **info_i)
         neighs = neighs.ravel()
         dists = dists if ifdistance else [[] for i in range(len(neighs))]
         return neighs, dists
@@ -263,11 +263,11 @@ class NetworkRetriever(Retriever):
 
     def _format_output(self, i_locs, neighs, dists, output):
         "Format output."
-        neighs, dists = self.exclude_auto(i_locs, neighs, dists)
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists)
         neighs, dists = np.array(neighs), np.array(dists)
         n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
         dists = dists.reshape((len(dists), n_dim))
-        self._output_map[output](i_locs, (neighs, dists))
+        neighs, dists = self._output_map[output](i_locs, (neighs, dists))
         return neighs, dists
 
     def _format_info_i_reg(self, info_i, i=-1):
@@ -304,9 +304,10 @@ class NetworkRetriever(Retriever):
 class LimDistanceEleNeigh(NetworkRetriever):
     """Region Neighbourhood based on the limit distance bound.
     """
+    _default_ret_val = {}
 
-    def _retrieve_neighs_spec(self, elem_i, lim_distance=None, maxif=True,
-                              ifdistance=True):
+    def _retrieve_neighs_spec2(self, elem_i, lim_distance=None, maxif=True,
+                               ifdistance=True):
         """Retrieve the elements which are defined by the parameters of the
         inputs and the nature of this object method. This function retrieve
         neighbours defined by the map object defined in the parameter retriever
@@ -388,8 +389,9 @@ class SameEleNeigh(NetworkRetriever):
     """Network retriever which returns the same element as the mapper defined
     in the retriever maps.
     """
+    _default_ret_val = {}
 
-    def _retrieve_neighs_spec(self, elem_i):
+    def _retrieve_neighs_spec2(self, elem_i):
         """Retrieve the elements which are defined by the parameters of the
         inputs and the nature of this object method.
         TODEPRECATE: or particular use.
@@ -445,8 +447,9 @@ class OrderEleNeigh(NetworkRetriever):
     """
 
     exactorlimit = False
+    _default_ret_val = {}
 
-    def _retrieve_neighs_spec(self, elem_i, order=0, exactorlimit=False):
+    def _retrieve_neighs_spec2(self, elem_i, order=0, exactorlimit=False):
         """Retrieve the elements which are defined by the parameters of the
         inputs and the nature of this object method.
 
@@ -481,6 +484,7 @@ class OrderEleNeigh(NetworkRetriever):
                 to_reg_i = np.array(to_reg[i])
                 neighs_oi, dists_oi = self.retriever[to_reg_i]
                 if self.retriever._distanceorweighs:
+                    dists_oi = dists_oi.astype(float)
                     dists_oi += to_dists[i]
                 else:
                     dists_oi += 1
@@ -516,7 +520,11 @@ class OrderEleNeigh(NetworkRetriever):
         if exactorlimit:
             neighs = neighs_o
             dists = dists_o
-
+        neighs_, dists_ = [], []
+        for i in range(len(neighs)):
+            neighs_ += neighs[i]
+            dists_ += dists[i]
+        neighs, dists = neighs_, dists_
         neighs, dists = np.hstack(neighs).ravel(), np.hstack(dists)
         return neighs, dists
 
