@@ -10,6 +10,10 @@ models from puntual features.
 import numpy as np
 from pySpatialTools.Feature_engineering.features_retriever import AggFeatures,\
     FeaturesRetriever, PointFeatures
+from pySpatialTools.IO.general_mapper import Map_Vals_i
+
+from pySpatialTools.Feature_engineering.aux_descriptormodels import\
+    append_addresult_function
 
 
 class DescriptorModel:
@@ -46,10 +50,6 @@ class DescriptorModel:
 
     ####################### Compulsary general functions ######################
     ###########################################################################
-    def get_characs(self, i, neighs, typeret, k):
-        typeret, k = self._map_indices(typeret, k)
-        self._features[typeret][k]
-
     def _get_typefeats(self, typefeats):
         return typefeats
 
@@ -70,18 +70,18 @@ class DescriptorModel:
     ###########################################################################
     ########################## Formatter functions ############################
     ###########################################################################
-    def _format_features(self, features, reindices):
+    def _format_features(self, features):
         "Format features."
         if type(features) == np.ndarray:
             sh = features.shape
             if len(sh) == 1:
                 features = features.reshape((sh[0], 1))
                 fea = self._compute_featuresnames(features)
-                features = PointFeatures(features, reindices, out_features=fea,
+                features = PointFeatures(features, out_features=fea,
                                          characterizer=self.compute_characs)
             if len(sh) == 2:
                 fea = self._compute_featuresnames(features)
-                features = PointFeatures(features, reindices, out_features=fea,
+                features = PointFeatures(features, out_features=fea,
                                          characterizer=self.compute_characs)
             elif len(sh) == 3:
                 features = AggFeatures(features)
@@ -90,6 +90,83 @@ class DescriptorModel:
             self.features = features
         ## Setting features (linking descriptor and its featuresobjects)
         self.features.set_descriptormodel(self)
+
+    def _compute_featuresnames(self, featureobject):
+        "Compute the possible feature names from the pointfeatures."
+        if type(featureobject) == np.ndarray:
+            featuresnames = self._f_default_names(featureobject)
+            return featuresnames
+        if featureobject._type == 'aggregated':
+            featuresnames = featureobject.variables
+        elif featureobject._type == 'point':
+            if featureobject.variables is None:
+                featuresnames = self._f_default_names(featureobject)
+            else:
+                featuresnames = featureobject.variables
+        return featuresnames
+
+    def _format_result_building(self):
+        "Format how to build and aggregate results."
+        "TODO: Dict-array."
+        ## Size of the possible results.
+        n_vals_i = self._map_vals_i.n_out
+        n_feats = self.features.nfeats
+        ## Initialization features
+        self.initialization_desc = lambda: np.zeros((1, n_feats))
+        ## Global construction of result
+        if n_vals_i is not None:
+            n_pert = self.features.k_perturb + 1
+            ## Init global result
+            self.initialization_output =\
+                lambda: np.zeros((n_vals_i, n_feats, n_pert))
+            ## Adding result
+            self.add2result = self._defult_add2result
+        else:
+            ##### WARNING: Problem not solved
+            ## Init global result
+            self.initialization_output = lambda: []
+            ## Adding result
+            self.add2result = append_addresult_function
+
+    def _format_map_vals_i(self, sp_typemodel):
+        "Format mapper to indicate external val_i to aggregate result."
+        ## Preparing input
+        n_in, n_out = None, None
+        if type(sp_typemodel) == tuple:
+            if len(sp_typemodel) == 2:
+                n_out = sp_typemodel[1]
+            elif len(sp_typemodel) == 3:
+                n_in = sp_typemodel[1]
+                n_out = sp_typemodel[2]
+            sp_typemodel = sp_typemodel[0]
+        ## Preparing mapper
+        if type(sp_typemodel) == str:
+            if sp_typemodel == 'correlation':
+                array = self.features[0].features.features[:, 0].astype(int)
+                self._map_vals_i = Map_Vals_i(array)
+            elif sp_typemodel == 'matrix':
+                funct = lambda idx: idx
+                self._map_vals_i = Map_Vals_i(funct)
+        elif type(sp_typemodel) == np.ndarray:
+            self._map_vals_i = Map_Vals_i(sp_typemodel)
+        ## TODO: Correct that
+        elif type(sp_typemodel).__name__ in ['instance', 'function']:
+            self._map_vals_i = Map_Vals_i(sp_typemodel)
+        self._map_vals_i.n_in = n_in
+        self._map_vals_i.n_out = n_out
+
+
+def get_individuals(neighs, dists, discretized):
+    "Transform individual regions."
+    logi = np.zeros(discretized.shape[0]).astype(bool)
+    dists_i = np.zeros(discretized.shape[0])
+    for i in range(len(neighs)):
+        logi_i = (discretized == neighs[i]).ravel()
+        logi = np.logical_or(logi, logi_i).ravel()
+        dists_i[logi_i] = dists[i]
+    neighs_i = np.where(logi)[0]
+    dists_i = dists_i[logi]
+    return neighs_i, dists_i
 
 #    def compute_aggdescriptors(self, discretizor, regionretriever, locs):
 #        """Compute aggregate region desctiptors for each region in order to
@@ -173,16 +250,3 @@ class DescriptorModel:
 #        descriptors = self._compute_descriptors_spec(i, neighs, desc_i,
 #                                                     desc_neigh)
 #        return descriptors
-
-
-def get_individuals(neighs, dists, discretized):
-    "Transform individual regions."
-    logi = np.zeros(discretized.shape[0]).astype(bool)
-    dists_i = np.zeros(discretized.shape[0])
-    for i in range(len(neighs)):
-        logi_i = (discretized == neighs[i]).ravel()
-        logi = np.logical_or(logi, logi_i).ravel()
-        dists_i[logi_i] = dists[i]
-    neighs_i = np.where(logi)[0]
-    dists_i = dists_i[logi]
-    return neighs_i, dists_i
