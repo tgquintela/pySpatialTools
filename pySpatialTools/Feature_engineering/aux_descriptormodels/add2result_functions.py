@@ -25,7 +25,7 @@ OUTPUTS:
 """
 
 
-def sum_addresult_functions(x, x_i):
+def sum_addresult_function(x, x_i):
     "Sum the result to the final result."
     return x + x_i
 
