@@ -1,0 +1,159 @@
+
+
+
+###### 2016-02-01 count descriptor
+
+
+#    def _compute_descriptors_spec(self, i, neighs, desc_i, desc_neigh):
+#        "Specific computation of descriptors from partial information."
+#        descriptors = desc_neigh
+#        return descriptors
+#
+#    def _precompute_desc_i(self, i, neighs_info, k, typefeats):
+#        pass
+#
+#    def _compute_descriptors_pre(self, i, neighs_info, k, typefeats):
+#        pass
+#
+#    def _compute_descriptors_npre(self, i, neighs_info, k, typefeats):
+#        pass
+
+#    def compute_value_i(self, i):
+#        "Compute the val of a specific point."
+#        if type(self.sp_typemodel) == str:
+#            if self.sp_typemodel == 'correlation':
+#                val_i = self.features[i, :].astype(int)[0]
+#                val_i = self.mapper[val_i]
+#            elif self.sp_typemodel == 'matrix':
+#                val_i = i
+#        else:
+#            val_i = self.sp_typemodel.get_val_i(self, i)
+#        return val_i
+#
+#    @property
+#    def nvals_i(self):
+#        "Compute the val of a specific point."
+#        if type(self.sp_typemodel) == str:
+#            if self.sp_typemodel == 'correlation':
+#                aux = np.unique(self.features.features[0].features[:, 0])
+#                nvals_i = aux.shape[0]
+#            elif self.sp_typemodel == 'matrix':
+#                nvals_i = len(self.features[0])
+#        else:
+#            nvals_i = self.sp_typemodel.get_nvals_i(self)
+#        return nvals_i
+
+#    def compute_predescriptors(self, i, neighs, dists):
+#        """Compute descriptors from the i, neigh and distances values regarding
+#        the permutation information.
+#
+#        Parameters
+#        ----------
+#        i: int
+#            the indice of the element we want to compute the spatial
+#            descriptors using their relative position with its environment
+#            represented as their neighs and the dists information.
+#        neighs: list or numpy.ndarray
+#            the information of the neighbourhood elements of i.
+#        dists: numpy.ndarray
+#            a measure of the relative position between i and its neighs.
+#        reindices: numpy.ndarray
+#            the reindices matrix of a permutation.
+#        k: int
+#            the index of permutation used.
+#
+#        Returns
+#        -------
+#        descriptors: numpy.ndarray
+#            the information descriptors.
+#
+#        """
+#        ## Compute descriptors
+#        counts = Counter(self.features[neighs, :].ravel())
+#        descriptors = self.initialization_desc()
+#        keys = [self.mapper[key] for key in counts.keys()]
+#        descriptors[0, keys] = counts.values()
+#        return descriptors
+
+
+###### 2016-02-01 Avg descriptor
+
+    ###########################################################################
+    ####################### Compulsary main functions #########################
+    ###########################################################################
+#    def compute_predescriptors(self, i, neighs, dists):
+#        """Compute descriptors from the i, neigh and distances values regarding
+#        the permutation information.
+#
+#        Parameters
+#        ----------
+#        i: int
+#            the indice of the element we want to compute the spatial
+#            descriptors using their relative position with its environment
+#            represented as their neighs and the dists information.
+#        neighs: list or numpy.ndarray
+#            the information of the neighbourhood elements of i.
+#        dists: numpy.ndarray
+#            a measure of the relative position between i and its neighs.
+#        reindices: numpy.ndarray
+#            the reindices matrix of a permutation.
+#        k: int
+#            the index of permutation used.
+#
+#        Returns
+#        -------
+#        descriptors: numpy.ndarray
+#            the information descriptors.
+#
+#        """
+#        ## Compute descriptors
+#        descriptors = self.initialization_desc()
+#        descriptors[0, :] = np.mean(self.features[neighs, :], axis=0)
+#        return descriptors
+#
+#    def compute_value_i(self, i, k, reindices):
+#        "Compute the val of a specific point."
+#        if type(self.sp_typemodel) == str:
+#            if self.sp_typemodel == 'correlation':
+#                val_i = self.features[reindices[i, k], :].astype(int)
+#            elif self.sp_typemodel == 'matrix':
+#                val_i = reindices[i, k]
+#        else:
+#            self.sp_typemodel(self, i, k, reindices)
+#        return val_i
+#
+#    @property
+#    def nvals_i(self):
+#        "Compute the val of a specific point."
+#        if type(self.sp_typemodel) == str:
+#            if self.sp_typemodel == 'correlation':
+#                nvals_i = 1
+#            elif self.sp_typemodel == 'matrix':
+#                nvals_i = self.features.shape[0]
+#        else:
+#            nvals_i = self.sp_typemodel.get_nvals_i(self)
+#        return nvals_i
+
+    ###########################################################################
+    ####################### Non-compulsary functions ##########################
+    ###########################################################################
+#    def compute_aggcharacs_i(self, neighs_i, dists_i):
+#        """Compute aggregated characters for the region i from neighs_i points
+#        and relative position of neighbourhood points dists_i.
+#
+#        Parameters
+#        ----------
+#        neighs_i: numpy.ndarray
+#            the points which conforms the neighbourhood.
+#        dists_i: numpy.ndarray
+#            the relative position respect the original region.
+#
+#        Returns
+#        -------
+#        aggcharacs_i: numpy.ndarray
+#            the information aggregated information features.
+#
+#        """
+#        aggcharacs_i = self.initialization_desc()
+#        aggcharacs_i = np.mean(self.features[list(neighs_i), :], axis=0)
+#        return aggcharacs_i
