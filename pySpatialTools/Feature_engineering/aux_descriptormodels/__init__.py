@@ -23,3 +23,6 @@ from completers import null_completer, weighted_completer
 ## Invocable aggregation functions
 from aggreation_functions import aggregator_1sh_counter, aggregator_summer,\
     aggregator_average
+
+## Invocable featurenames functions
+from featurenames_functions import counter_featurenames, array_featurenames
