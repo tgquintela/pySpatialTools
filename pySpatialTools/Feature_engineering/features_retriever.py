@@ -35,15 +35,16 @@ class FeaturesRetriever:
     _variables = {}
     _maps_input = None
     _maps_output = None
+    _maps_vals_i = None
     _out = 'ndarray'  # dict
     __name__ = "pst.FeaturesRetriever"
 
     def __init__(self, features_objects, maps_input=None, maps_output=None,
-                 out=None):
+                 out=None, maps_vals_i=None):
         out = out if out in ['ndarray', 'dict'] else None
         self._out = self._out if out is None else out
         self._format_features(features_objects)
-        self._format_maps(maps_input, maps_output)
+        self._format_maps(maps_input, maps_output, maps_vals_i)
 
     def __len__(self):
         return len(self.features)
@@ -52,6 +53,10 @@ class FeaturesRetriever:
         if i_feat < 0 or i_feat >= len(self.features):
             raise IndexError("Not correct index for features.")
         return self.features[i_feat]
+
+    def set_map_vals_i(self, _maps_vals_i):
+        "Set how it maps each element of the "
+        self._maps_vals_i = _maps_vals_i
 
     def set_descriptormodel(self, descriptormodel):
         "Set descriptor model."
@@ -95,56 +100,67 @@ class FeaturesRetriever:
         for i in range(nfeat):
             self.features[i]._out = self._out
 
-    def _format_maps(self, maps_input, maps_output):
+    def _format_maps(self, maps_input, maps_output, maps_vals_i):
         "Formatter of maps."
         if maps_input is None:
-            self._maps_input = lambda i, k, typeret: (typeret, i, k)
+            self._maps_input = [lambda i, k=0: (i, k)]
         else:
-            if type(maps_output).__name__ == 'function':
-                self._maps_input =\
-                    lambda i, k=0, typeret=0: maps_output(self, i, k, typeret)
+            if type(maps_input).__name__ == 'function':
+                self._maps_input = [lambda i, k=0: maps_input(i, k)]
             else:
-                self._maps_input = maps_input
+                self._maps_input = [maps_input]
         if maps_output is None:
-            self._maps_output = lambda i, k, typeret: (typeret, i, k)
+            self._maps_output = lambda i, k=0: (i, k)
         else:
             if type(maps_output).__name__ == 'function':
-                self._maps_output =\
-                    lambda i, k=0, typeret=0: maps_output(self, i, k, typeret)
+                self._maps_output = [lambda i, k=0: maps_output(self, i, k)]
             else:
-                self._maps_output = maps_output
+                self._maps_output = [maps_output]
+        if maps_vals_i is None:
+            self._maps_vals_i = [lambda i, k=0: i]
+        else:
+            if type(maps_vals_i).__name__ == 'function':
+                self._maps_vals_i = [lambda i, k=0: i]
+            else:
+                self._maps_vals_i = [maps_vals_i]
 
     def _get_input_features(self, i, k, typefeats):
         "Get input features."
         ## Retrieve features
-        feat_o, i_input, k_input = self._maps_input(i, k, typefeats)
-        feats_i = self.features[feat_o][i_input, k_input]
+        i_input, k_input = self._maps_input[typefeats[0]](i, k)
+        feats_i = self.features[typefeats[1]][i_input, k_input]
         return feats_i
 
     def _get_output_features(self, idxs, k, typefeats):
         "Get output features."
         ## Retrieve features
-        feat_o, idxs_input, k_input = self._maps_output(idxs, k, typefeats)
-        feats_idxs = self.features[feat_o][idxs_input, k_input]
+        idxs_input, k_input = self._maps_output[typefeats[0]](idxs, k)
+        feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
         return feats_idxs
 
     def _get_prefeatures(self, i, neighs_info, k, typefeats):
         """General interaction with features object to get point features from
         it.
         """
-        if k is None:
-            desc_i, desc_neigh = [], []
-            for k in range(self.k_perturb+1):
-                desc_i = self._get_input_features(i, typefeats[0])
-                desc_neigh = self._get_output_features(neighs_info[0], k,
-                                                       typefeats[1])
-            desc_i = np.vstack(desc_i)
-            desc_neigh = np.vstack(desc_neigh)
-        else:
-            desc_i = self._get_input_features(i, k, typefeats[0])
-            desc_neigh = self._get_output_features(neighs_info[0], k,
-                                                   typefeats[1])
+        ## 0. Prepare list of k
+        ks = range(self.k_perturb+1) if k is None else k
+        ks = [ks] if type(ks) == int else ks
+        ## 1. Loop over possible ks and compute descriptors
+        t_feat_in, t_feat_out = typefeats[[0, 1]], typefeats[[2, 3]]
+        desc_i = self._get_input_features(i, ks, t_feat_in)
+        desc_neigh = self._get_output_features(neighs_info[0], ks, t_feat_out)
         return desc_i, desc_neigh
+
+    def _get_vals_i(self, i, k, typefeats):
+        "Get how to store the final result."
+        ## 0. Prepare variable needed
+        vals_i = []
+        ks = list(range(self.k_perturb+1)) if k is None else k
+        ks = [ks] if type(ks) == int else ks
+        ## 1. Loop over possible ks and compute vals_i
+        for k in ks:
+            vals_i.append(self._maps_vals_i[typefeats[4]](i, k))
+        return vals_i
 
 
 class DummyReindiceMapper:
