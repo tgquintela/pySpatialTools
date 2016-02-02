@@ -30,7 +30,7 @@ class DescriptorModel:
         desc_i, desc_neigh = self._get_prefeatures(i, neighs_info, k,
                                                    typefeats)
         ## Map vals_i
-        vals_i = self._compute_vals_i(i, k)
+        vals_i = self._compute_vals_i(i, k, typefeats)
         ## Complete descriptors
         descriptors = self._complete_desc_i(i, neighs_info, desc_i, desc_neigh,
                                             vals_i)
