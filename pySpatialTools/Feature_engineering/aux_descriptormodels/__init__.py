@@ -21,7 +21,7 @@ from add2result_functions import sum_addresult_function,\
 from completers import null_completer, weighted_completer
 
 ## Invocable aggregation functions
-from aggreation_functions import aggregator_1sh_counter, aggregator_summer,\
+from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\
     aggregator_average
 
 ## Invocable featurenames functions
