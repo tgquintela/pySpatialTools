@@ -29,7 +29,7 @@ class DescriptorModel:
         ## Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i, desc_neigh = self._get_prefeatures(i, neighs_info, k,
                                                    typefeats)
-        ## Map vals_i (TODO: Reindices here??????)
+        ## Map vals_i
         vals_i = self._compute_vals_i(i, k)
         ## Complete descriptors
         descriptors = self._complete_desc_i(i, neighs_info, desc_i, desc_neigh,
@@ -64,7 +64,7 @@ class DescriptorModel:
         return typefeats
 
     def _compute_vals_i(self, i, k):
-        self.features._get_vals_i(i, k)
+        return self.features._get_vals_i(i, k)
 
     ################# Dummy compulsary overwritable functions #################
     def to_complete_measure(self, corr_loc):
