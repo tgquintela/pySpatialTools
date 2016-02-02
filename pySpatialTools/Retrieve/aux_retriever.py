@@ -17,7 +17,8 @@ def create_retriever_input_output(regions):
             neighs_ip = np.where(regions == neighs[i])[0]
             neighs_p.append(neighs_ip)
             dists_p.append(np.ones(len(neighs_ip)) * dists[i])
-        neighs_p, dists_p = np.hstack(neighs_p), np.hstack(dists_p)
+        if neighs_p:
+            neighs_p, dists_p = np.hstack(neighs_p), np.hstack(dists_p)
         return neighs_p, dists_p
 
     map_input = lambda idxs: np.array([regions[idxs]])
