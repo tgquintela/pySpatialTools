@@ -81,6 +81,8 @@ class SpatialDescriptorModel:
                 msg = "Incorrect input for spatial descriptor mapper."
                 raise TypeError(msg)
             self._map_spdescriptor = map_spdescriptor
+        ##### TEMPORAL
+        self._map_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0)
 
     def _format_loop(self, pos_inputs):
         "Format the possible loop to go through."
@@ -98,7 +100,7 @@ class SpatialDescriptorModel:
 
     def _get_methods(self, i):
         "Obtain the possible mappers we have to use in the process."
-        methods = self._map_spdescriptor[i]
+        methods = self._map_spdescriptor(i)
         staticneighs = methods[0]
         typeret = methods[1:3]
         typefeats = methods[3:]

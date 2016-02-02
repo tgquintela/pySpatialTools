@@ -1,6 +1,23 @@
 
 
 
+#### Feature retriever  2016-02-02
+
+class DummyReindiceMapper:
+    "Dummy mapper."
+    reindices = None
+
+    def __init__(self, reindices=None):
+        self.reindices = reindices
+
+    def __getitem__(self, key):
+        i, k = key
+        if self.reindices is None:
+            return i
+        else:
+            return self.reindices[i, k]
+
+
 #### Feature retriever (point retriever) 2016-01-27
 
 #    def _format_reindices(self, reindices):
