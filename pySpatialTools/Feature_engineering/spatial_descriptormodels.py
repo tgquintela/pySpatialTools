@@ -104,6 +104,9 @@ class SpatialDescriptorModel:
         typefeats = methods[3:]
         return staticneighs, typeret, typefeats
 
+    def _get_methods_possibilies(self):
+        pass
+
     ###########################################################################
     ###########################################################################
     def compute_descriptors(self, i):
