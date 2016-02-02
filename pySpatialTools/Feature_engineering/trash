@@ -1,5 +1,26 @@
 
 
+
+#### Feature retriever (point retriever) 2016-01-27
+
+#    def _format_reindices(self, reindices):
+#        "Format reindices."
+#        if reindices is None:
+#            self._reindices = DummyReindiceMapper()
+#            self._k_reindices = 1
+#        else:
+#            if type(reindices) == np.ndarray:
+#                if len(reindices.shape) == 1:
+#                    reindices = reindices.reshape((reindices.shape[0], 1))
+#                self._reindices = reindices
+#                self._k_reindices = reindices.shape[1]
+#            else:
+#                try:
+#                    reindices[0, 0]
+#                    self._reindices = reindices
+#                except:
+#                    raise Exception("Incorrect reindices.")
+
 #### Spatial dzescriptor models 2016-01-26
 
 #
