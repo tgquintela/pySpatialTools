@@ -82,7 +82,7 @@ class SpatialDescriptorModel:
                 raise TypeError(msg)
             self._map_spdescriptor = map_spdescriptor
         ##### TEMPORAL
-        self._map_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0)
+        self._map_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0, 0)
 
     def _format_loop(self, pos_inputs):
         "Format the possible loop to go through."
@@ -114,7 +114,7 @@ class SpatialDescriptorModel:
     def compute_descriptors(self, i):
         "Compute the descriptors assigned to element i."
         staticneighs, typeret, typefeats = self._get_methods(i)
-        if staticneighs:
+        if staticneighs or not staticneighs:  # WARNING
             characs, vals_i = self._compute_descriptors_seq0(i, typeret,
                                                              typefeats)
         else:
@@ -127,6 +127,7 @@ class SpatialDescriptorModel:
         "Computation descriptors for non-aggregated data."
         ## Model1
         neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
+        print neighs_info
         characs, vals_i =\
             self.descriptormodel.compute_descriptors(i, neighs_info,
                                                      typefeats=typefeats)
@@ -134,13 +135,13 @@ class SpatialDescriptorModel:
 
     def _compute_descriptors_seq1(self, i, typeret, typefeats):
         "Computation descriptors for aggregated data."
-        k_rein = self.descriptormodel.features._k_reindices
-        for k in range(k_rein):
-            i_k = self.descriptormodel.features.apply_reindice(i, k)
+        k_pert = self.descriptormodel.features.k_perturb+1
+        for k in range(k_pert):
+#            i_k = self.descriptormodel.features.apply_reindice(i, k)
             neighs_info =\
-                self.retrievers.retrieve_neighs(i_k, typeret_i=typeret)
+                self.retrievers.retrieve_neighs(i, typeret_i=typeret)
             characs, vals_i =\
-                self.descriptormodel.compute_descriptors(i_k, neighs_info,
+                self.descriptormodel.compute_descriptors(i, neighs_info,
                                                          k, typefeats)
         return characs, vals_i
 

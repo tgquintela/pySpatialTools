@@ -62,11 +62,13 @@ class FeaturesRetriever:
         "Set descriptor model."
         ## We are assuming feature 0 is the representative one.
         self.featuresnames =\
-            descriptormodel._compute_featuresnames(self.features[0])
+            descriptormodel._compute_featuresnames(self.features[0].features)
         ## Set out_features
         for i in range(len(self)):
             out_feat = descriptormodel._compute_featuresnames(self.features[i])
             self.features[i].out_features = out_feat
+        ## TODO: Check if all are equal
+        self.out_features = out_feat
         init_ = np.ones(self.nfeats) * descriptormodel._nullvalue
 
         def init_features(_out):
@@ -75,6 +77,9 @@ class FeaturesRetriever:
             elif _out == 'ndarray':
                 return init_
         self.initialization_features = init_features
+        ## Set each one of the features
+        for i in range(len(self.features)):
+            self.features[i].set_descriptormodel(descriptormodel)
 
     @property
     def nfeats(self):
@@ -110,7 +115,7 @@ class FeaturesRetriever:
             else:
                 self._maps_input = [maps_input]
         if maps_output is None:
-            self._maps_output = lambda i, k=0: (i, k)
+            self._maps_output = [lambda i, k=0: (i, k)]
         else:
             if type(maps_output).__name__ == 'function':
                 self._maps_output = [lambda i, k=0: maps_output(self, i, k)]
@@ -127,14 +132,22 @@ class FeaturesRetriever:
     def _get_input_features(self, i, k, typefeats):
         "Get input features."
         ## Retrieve features
-        i_input, k_input = self._maps_input[typefeats[0]](i, k)
+        if type(i) == tuple:
+            i_input, k_input = self._maps_input[typefeats[0]](i[0], k)
+            i_input = i_input, i[1]
+        else:
+            i_input, k_input = self._maps_input[typefeats[0]](i, k)
         feats_i = self.features[typefeats[1]][i_input, k_input]
         return feats_i
 
     def _get_output_features(self, idxs, k, typefeats):
         "Get output features."
         ## Retrieve features
-        idxs_input, k_input = self._maps_output[typefeats[0]](idxs, k)
+        if type(idxs) == tuple:
+            idxs_input, k_input = self._maps_output[typefeats[0]](idxs[0], k)
+            idxs_input = idxs_input, idxs[1]
+        else:
+            idxs_input, k_input = self._maps_output[typefeats[0]](idxs, k)
         feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
         return feats_idxs
 
@@ -146,9 +159,9 @@ class FeaturesRetriever:
         ks = range(self.k_perturb+1) if k is None else k
         ks = [ks] if type(ks) == int else ks
         ## 1. Loop over possible ks and compute descriptors
-        t_feat_in, t_feat_out = typefeats[[0, 1]], typefeats[[2, 3]]
+        t_feat_in, t_feat_out = typefeats[0:2], typefeats[2:4]
         desc_i = self._get_input_features(i, ks, t_feat_in)
-        desc_neigh = self._get_output_features(neighs_info[0], ks, t_feat_out)
+        desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
         return desc_i, desc_neigh
 
     def _get_vals_i(self, i, k, typefeats):
@@ -163,26 +176,12 @@ class FeaturesRetriever:
         return vals_i
 
 
-class DummyReindiceMapper:
-    "Dummy mapper."
-    reindices = None
-
-    def __init__(self, reindices=None):
-        self.reindices = reindices
-
-    def __getitem__(self, key):
-        i, k = key
-        if self.reindices is None:
-            return i
-        else:
-            return self.reindices[i, k]
-
-
 class Features:
     "Features object."
 
     _out = 'ndarray'
     __name__ = 'pst.FeaturesObject'
+    _setdescriptor = False
 
     def __len__(self):
         return len(self.features)
@@ -208,35 +207,39 @@ class Features:
                 else:
                     i, k, d = key[0][0], key[1], None
             else:
-                i = [key[0]] if type(key[0]) == int else key[0]
-                i = list(i) if type(i) == np.ndarray else i
-                assert type(i) in [list, slice]
-                if type(i) == list:
-                    n_len_i = len(i)
+                if type(key[0]) == int:
+                    i = [key[0]]
+                    k = key[1]
                 else:
-                    i = self._get_possible_indices(i)
-                    n_len_i = len(range(i.start, i.stop, i.step))
-                msg = "Ambiguous input in __getitem__ of pst.Features."
-                warnings.warn(msg, SyntaxWarning)
-                if type(key[1]) in [slice, int]:
-                    d = None
-                    k = [key[1]] if type(key[1]) == int else key[1]
-                else:
-                    # Assumption of list or np.ndarray
-                    types = [type(j) == int for j in key[1]]
-                    if len(key[1]) == n_len_i:
-                        d = None
-                        if np.all(types):
-                            k = list(key[1])
-                        else:
-                            k = range(self.k_perturb+1)
-                            d = [float(j) for j in key[1]]
+                    i = [key[0]] if type(key[0]) == int else key[0]
+                    i = list(i) if type(i) == np.ndarray else i
+                    assert type(i) in [list, slice]
+                    if type(i) == list:
+                        n_len_i = len(i)
                     else:
-                        msg = "Too ambiguous..."
-                        msg += " Dangerous casting to integers is done."
-                        warnings.warn(msg, SyntaxWarning)
-                        k = [int(j) for j in key[1]]
+                        i = self._get_possible_indices(i)
+                        n_len_i = len(range(i.start, i.stop, i.step))
+                    msg = "Ambiguous input in __getitem__ of pst.Features."
+                    warnings.warn(msg, SyntaxWarning)
+                    if type(key[1]) in [slice, int]:
                         d = None
+                        k = [key[1]] if type(key[1]) == int else key[1]
+                    else:
+                        # Assumption of list or np.ndarray
+                        types = [type(j) == int for j in key[1]]
+                        if len(key[1]) == n_len_i:
+                            d = None
+                            if np.all(types):
+                                k = list(key[1])
+                            else:
+                                k = range(self.k_perturb+1)
+                                d = [float(j) for j in key[1]]
+                        else:
+                            msg = "Too ambiguous..."
+                            msg += " Dangerous casting to integers is done."
+                            warnings.warn(msg, SyntaxWarning)
+                            k = [int(j) for j in key[1]]
+                            d = None
         # If the input is with neighs_info
         if type(i) == tuple:
             i, d = i
@@ -278,41 +281,41 @@ class Features:
         feats = self._retrieve_feats(i, k, d)
         return feats
 
-    def set_descriptormodel(self, characterizer, aggreducer):
-        pass
+    def set_descriptormodel(self, descriptormodel):
+        "Link the descriptormodel and the feature retriever."
+        if self._type == 'point':
+            self._format_characterizer(descriptormodel.compute_characs,
+                                       descriptormodel._out_formatter)
+        elif self._type == 'aggregated':
+            self._format_characterizer(descriptormodel.reducer,
+                                       descriptormodel._out_formatter)
+        self._format_variables([])
+        self._setdescriptor = True
 
     @property
     def shape(self):
         return (len(self.features), len(self.variables), self.k_perturb+1)
 
     def _format_out(self, feats):
-        if type(feats).__name__ == self._out:
-            return feats
-        try:
-            if type(feats) == dict:
-                # so out==array
-                feats_o = np.ones(len(self.out_features))*self._nullvalue
-                for e in feats:
-                    feats_o[list(self.out_features).index(e)] = feats[e]
-                if len(feats_o.shape) == 1:
-                    feats_o = feats_o.reshape((1, feats_o.shape[0]))
-            elif type(feats) == np.ndarray:
-                feats_o = dict(zip(self.out_features, feats.ravel()))
-        except:
-            raise Exception("Incorrect _out format.")
+        "Transformation array-dict."
+        feats_o = self._format_out_k(feats, self.out_features, self._out,
+                                     self._nullvalue)
         return feats_o
 
-    def _format_characterizer(self, characterizer):
+    def _format_characterizer(self, characterizer, out_formatter):
         """Format characterizer function. It is needed to homogenize outputs in
         order to have the same output type as the aggfeatures.
         """
         if characterizer is not None:
             self._characterizer = characterizer
-        self[(0, 0.), 0]
-        try:
-            self[(0, 0), 0]
-        except:
-            raise TypeError("Incorrect characterizer.")
+        if out_formatter is not None:
+            self._format_out_k = out_formatter
+        if not (characterizer is None or out_formatter is None):
+            self[(0, 0.), 0]
+            try:
+                self[(0, 0), 0]
+            except:
+                raise TypeError("Incorrect characterizer.")
 
 
 class PointFeatures(Features):
@@ -331,6 +334,7 @@ class PointFeatures(Features):
     _nullvalue = 0
     ## Function to homogenize output respect aggfeatures
     _characterizer = lambda s, x, d: x
+    _format_out_k = lambda s, x, y1, y2, y3: x
     # Type
     _type = 'point'
     ## Perturbation
@@ -340,9 +344,9 @@ class PointFeatures(Features):
     k_perturb = 0
 
     def __init__(self, features, perturbations=None, names=[], out_features=[],
-                 characterizer=None):
+                 characterizer=None, out_formatter=None):
         self._format_features(features, out_features)
-        self._format_characterizer(characterizer)
+        self._format_characterizer(characterizer, out_formatter)
         self._format_variables(names)
         self._format_perturbation(perturbations)
 
@@ -361,14 +365,15 @@ class PointFeatures(Features):
             else:
                 feats_k =\
                     self._perturbators[k_p].apply_ind(self.features, idxs, k_i)
-            feats_k = self._format_out(self._characterizer(feats_k, d))
-            if hasattr(idxs, "__len__"):
-                length = len(idxs)
-            else:
-                length = len(range(idxs.start, idxs.stop, idxs.step))
-            feats_k = feats_k.reshape((length, feats_k.shape[1], 1))
+            print '00', feats_k
+            feats_k = self._characterizer(feats_k, d)
+            print '01', feats_k
+            feats_k = self._format_out(feats_k)
+            print '02', feats_k
             feats.append(feats_k)
-        feats = np.concatenate(feats, axis=2)
+        if np.all([type(fea) == np.ndarray for fea in feats]):
+            if feats:
+                feats = np.concatenate(feats, axis=0)
         return feats
 
     def _get_possible_indices(self, idxs=None):
@@ -391,6 +396,7 @@ class PointFeatures(Features):
     def _format_variables(self, names):
         "Format variables."
         feats = self[(0, 0), 0]
+        print feats
         if names:
             self.variables = names
             if len(names) != feats.shape[1]:
@@ -486,6 +492,7 @@ class PointFeatures(Features):
 
 class AggFeatures(Features):
     "Aggregate features class."
+    "TODO: adaptation of not only np.ndarray format"
 
     ## Main attributes
     features = None
@@ -501,10 +508,10 @@ class AggFeatures(Features):
     _type = 'aggregated'
 
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
-                 characterizer=None):
+                 characterizer=None, out_formatter=None):
         self._format_aggfeatures(aggfeatures, names, indices)
         self._nullvalue = self._nullvalue if nullvalue is None else nullvalue
-        self._format_characterizer(characterizer)
+        self._format_characterizer(characterizer, out_formatter)
 
     def _retrieve_feats(self, idxs, c_k, d):
         "Retrieve and prepare output of the features."
@@ -525,6 +532,15 @@ class AggFeatures(Features):
                 if self.possible_regions is not None:
                     if new_idxs[0] not in self.possible_regions:
                         raise Exception("Incorrect region selected.")
+##          Ensure feats dim
+#            if hasattr(idxs, "__len__"):
+#                length = len(idxs)
+#            else:
+#                length = len(range(idxs.start, idxs.stop, idxs.step))
+#            if type(feats_k) == np.ndarray:
+#                feats_k = feats_k.reshape((length, feats_k.shape[1], 1))
+#                feats.append(feats_k)
+
         feats = np.concatenate(feats, axis=0)
         feats = self._format_out(self._characterizer(feats, d))
         return feats
@@ -554,13 +570,16 @@ class AggFeatures(Features):
             self.features = aggfeatures
         elif len(aggfeatures.shape) > 3:
             raise IndexError("Aggfeatures with more than 3 dimensions.")
+        self._format_variables(names)
+        self.indices = indices
+        self.k_perturb = aggfeatures.shape[2]-1
+
+    def _format_variables(self, names):
         nfeats = self.features.shape[1]
         self.variables = names if names else list(range(nfeats))
         self.out_features = self.variables
         if len(self.variables) != self.features.shape[1]:
             raise IndexError("Incorrect length of variables list.")
-        self.indices = indices
-        self.k_perturb = aggfeatures.shape[2]-1
 
     def add_aggregation(self, aggfeatures, indices):
         self.aggfeatures.append(aggfeatures)

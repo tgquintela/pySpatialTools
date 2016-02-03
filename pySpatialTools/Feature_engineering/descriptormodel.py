@@ -29,6 +29,7 @@ class DescriptorModel:
         ## Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i, desc_neigh = self._get_prefeatures(i, neighs_info, k,
                                                    typefeats)
+        print desc_i, desc_neigh
         ## Map vals_i
         vals_i = self._compute_vals_i(i, k, typefeats)
         ## Complete descriptors
@@ -63,8 +64,8 @@ class DescriptorModel:
     def _get_typefeats(self, typefeats):
         return typefeats
 
-    def _compute_vals_i(self, i, k):
-        return self.features._get_vals_i(i, k)
+    def _compute_vals_i(self, i, k, typefeats):
+        return self.features._get_vals_i(i, k, typefeats)
 
     ################# Dummy compulsary overwritable functions #################
     def to_complete_measure(self, corr_loc):
@@ -104,17 +105,12 @@ class DescriptorModel:
         self.features.set_descriptormodel(self)
 
     def _compute_featuresnames(self, featureobject):
-        "Compute the possible feature names from the pointfeatures."
+        """Compute the possible feature names from the pointfeatures."""
         if type(featureobject) == np.ndarray:
             featuresnames = self._f_default_names(featureobject)
             return featuresnames
-        if featureobject._type == 'aggregated':
-            featuresnames = featureobject.variables
-        elif featureobject._type == 'point':
-            if featureobject.variables is None:
-                featuresnames = self._f_default_names(featureobject)
-            else:
-                featuresnames = featureobject.variables
+        if '_type' in dir(featureobject):
+            featuresnames = self._f_default_names(featureobject.features)
         return featuresnames
 
     def _format_result_building(self):
