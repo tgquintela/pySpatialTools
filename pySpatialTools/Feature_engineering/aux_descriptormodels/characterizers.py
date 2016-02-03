@@ -29,6 +29,7 @@ def characterizer_1sh_counter(pointfeats, point_pos):
     neighbourhood of the element studied."""
     pointfeats = np.array(pointfeats).astype(int)
     descriptors = dict(Counter(pointfeats.ravel()))
+    print '0', descriptors
     return descriptors
 
 

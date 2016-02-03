@@ -22,6 +22,7 @@ def counter_featurenames(features_o):
             msg = "Incorrect feature type input in order to compute its "
             msg += "features names."
             raise TypeError(msg)
+    featurenames = [str(int(e)) for e in featurenames]
     return featurenames
 
 
