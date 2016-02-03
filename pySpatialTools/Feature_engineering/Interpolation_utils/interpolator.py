@@ -10,7 +10,15 @@ TODO
 """
 
 
-class Interpolator:
+from pySpatialTools.Feature_engineering.descriptormodel import DescriptorModel
+
+## Specific functions
+from pySpatialTools.Feature_engineering.aux_descriptormodels import\
+    sum_reducer, sum_addresult_function, array_featurenames,\
+    null_out_formatter
+
+
+class Interpolator(DescriptorModel):
     """
     TODO
     ----
@@ -22,53 +30,28 @@ class Interpolator:
 
     name_desc = "Density assignation descriptor"
 
-    f_weights = None
-    params_w = {}
-    f_dens = None
-    params_d = {}
-
-    def __init__(self, f_weights, params_w, f_dens, params_d, feat_arr):
+    def __init__(self, weighting_avg, features, sp_typemodel='matrix'):
         """
         Parameters
         ----------
-        f_weights: function
-            function which eats dists and parameters and returns the weights
-            associated with the related disctances.
-        params_w: dict
-            specific extra parameters of the f_weights
-        f_dens: function
-            function which eats weights, values and parameters and it returns
-            the measure we want to compute.
-        params_d: dict
-            specific extra parameters of the f_dens.
-        feat_arr: numpy.ndarray
-            the feature array
-
+        weighting_avg: function
+            the function created from the functions and parameters coded in
+            the interpolation module.
+        features: py.FeatureRetriever
+            the pst data type which contains the whole information of element
+            features and retrieving spatial features.
         """
-
-        self.f_weights = f_weights
-        self.params_w = params_w
-        self.f_dens = f_dens
-        self.params_d = params_d
-
-        self.features = feat_arr
-        self.stype_model = stype_model   # Information about output
-
-        ## Compulsary preset functions
-        self.compute_value_i = lambda i: i
-        self.to_complete_measure = lambda x: x
-
-        self.compute_aggcharacs_i = lambda x:\
-            x.mean(1).reshape((1, x.shape[1]))
-        # todo: complete
-        self.initialization_desc = lambda: np.zeros((1, n_feats))
-        self.initialization_output = lambda x: np.zeros((nvals_i, n_feats, x))
-
-    def compute_characs(self, i, neighs, dists):
-        """Function for computing spatial descriptors from the characterizers
-        and distances of its neighbours.
-        """
-        weights = self.f_weights(dists, **self.params_w)
-        feat_i, feat_neighs = self.features[neighs], self.features[neighs]
-        characs = self.f_dens(feat_i, feat_neighs, weights, **self.params_d)
-        return characs
+        ## Specific class settings
+        self.compute_characs = weighting_avg
+        self.reducer = sum_reducer
+        self.aggdescriptor = weighting_avg
+        ## Initial function set
+        self._out_formatter = null_out_formatter
+        self._f_default_names = array_featurenames
+        self._defult_add2result = sum_addresult_function
+        ## Format features
+        self._format_features(features)
+        ## Type of built result
+        self._format_map_vals_i(sp_typemodel)
+        ## Format function to external interaction and building results
+        self._format_result_building()
