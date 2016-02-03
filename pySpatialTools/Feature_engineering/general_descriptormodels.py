@@ -9,7 +9,8 @@ Module which contains general useful definitions of descriptor models.
 from descriptormodel import DescriptorModel
 ## Specific functions
 from pySpatialTools.Feature_engineering.aux_descriptormodels import\
-    sum_addresult_function, null_completer, array_featurenames
+    sum_addresult_function, null_completer, array_featurenames,\
+    null_out_formatter
 
 
 class DescriptorGeneral(DescriptorModel):
@@ -32,6 +33,7 @@ class DescriptorGeneral(DescriptorModel):
         self._format_input_functions(compute_characs, reducer, aggdescriptor,
                                      to_complete_measure)
         ## Initial function set
+        self._out_formatter = null_out_formatter
         self._f_default_names = array_featurenames
         self._defult_add2result = sum_addresult_function
         ## Format features

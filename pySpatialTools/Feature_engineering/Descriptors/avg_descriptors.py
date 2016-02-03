@@ -12,7 +12,8 @@ from pySpatialTools.Feature_engineering.descriptormodel import DescriptorModel
 ## Specific functions
 from pySpatialTools.Feature_engineering.aux_descriptormodels import\
     characterizer_average, avg_reducer, null_completer,\
-    aggregator_summer, sum_addresult_function, array_featurenames
+    aggregator_summer, sum_addresult_function, array_featurenames,\
+    null_out_formatter
 
 
 class AvgDescriptor(DescriptorModel):
@@ -34,6 +35,7 @@ class AvgDescriptor(DescriptorModel):
     def __init__(self, features, sp_typemodel='matrix'):
         "The inputs are the needed to compute model_dim."
         ## Initial function set
+        self._out_formatter = null_out_formatter
         self._f_default_names = array_featurenames
         self._defult_add2result = sum_addresult_function
         ## Format features
