@@ -10,7 +10,7 @@ models from puntual features.
 import numpy as np
 from pySpatialTools.Feature_engineering.features_retriever import AggFeatures,\
     FeaturesRetriever, PointFeatures
-from pySpatialTools.IO.general_mapper import Map_Vals_i
+from pySpatialTools.IO import create_mapper_vals_i
 
 from pySpatialTools.Feature_engineering.aux_descriptormodels import\
     append_addresult_function
@@ -29,7 +29,6 @@ class DescriptorModel:
         ## Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i, desc_neigh = self._get_prefeatures(i, neighs_info, k,
                                                    typefeats)
-        print desc_i, desc_neigh
         ## Map vals_i
         vals_i = self._compute_vals_i(i, k, typefeats)
         ## Complete descriptors
@@ -101,6 +100,8 @@ class DescriptorModel:
             self.features = FeaturesRetriever(features)
         elif features.__name__ == "pst.FeaturesRetriever":
             self.features = features
+        elif features.__name__ == 'pst.FeaturesObject':
+            self.features = FeaturesRetriever(features)
         ## Setting features (linking descriptor and its featuresobjects)
         self.features.set_descriptormodel(self)
 
@@ -117,7 +118,10 @@ class DescriptorModel:
         "Format how to build and aggregate results."
         "TODO: Dict-array."
         ## Size of the possible results.
-        n_vals_i = self._map_vals_i.n_out
+        try:
+            n_vals_i = self._maps_vals_i.n_out
+        except:
+            n_vals_i = self.features.shape[0]
         n_feats = self.features.nfeats
         ## Initialization features
         self.initialization_desc = lambda: np.zeros((1, n_feats))
@@ -138,30 +142,9 @@ class DescriptorModel:
 
     def _format_map_vals_i(self, sp_typemodel):
         "Format mapper to indicate external val_i to aggregate result."
-        ## Preparing input
-        n_in, n_out = None, None
-        if type(sp_typemodel) == tuple:
-            if len(sp_typemodel) == 2:
-                n_out = sp_typemodel[1]
-            elif len(sp_typemodel) == 3:
-                n_in = sp_typemodel[1]
-                n_out = sp_typemodel[2]
-            sp_typemodel = sp_typemodel[0]
-        ## Preparing mapper
-        if type(sp_typemodel) == str:
-            if sp_typemodel == 'correlation':
-                array = self.features[0].features.features[:, 0].astype(int)
-                self._map_vals_i = Map_Vals_i(array)
-            elif sp_typemodel == 'matrix':
-                funct = lambda idx: idx
-                self._map_vals_i = Map_Vals_i(funct)
-        elif type(sp_typemodel) == np.ndarray:
-            self._map_vals_i = Map_Vals_i(sp_typemodel)
-        ## TODO: Correct that
-        elif type(sp_typemodel).__name__ in ['instance', 'function']:
-            self._map_vals_i = Map_Vals_i(sp_typemodel)
-        self._map_vals_i.n_in = n_in
-        self._map_vals_i.n_out = n_out
+        if sp_typemodel is not None:
+            map_vals_i = create_mapper_vals_i(self.features, sp_typemodel)
+            self.features._maps_vals_i = map_vals_i
 
 
 def get_individuals(neighs, dists, discretized):

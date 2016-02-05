@@ -84,7 +84,7 @@ class Countdescriptor(DescriptorModel):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
         """
-        corr_loc = null_completer(corr_loc, None)
+        corr_loc = null_completer(corr_loc)
         return corr_loc
 
     ###########################################################################

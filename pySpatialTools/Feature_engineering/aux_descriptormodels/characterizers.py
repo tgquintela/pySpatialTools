@@ -16,6 +16,7 @@ INPUTS:
 OUTPUTS:
 - descriptors: in dict or array format depending on the descriptors convenience
 
+WARNING: output requires TWO dimensions
 """
 
 import numpy as np
@@ -29,7 +30,6 @@ def characterizer_1sh_counter(pointfeats, point_pos):
     neighbourhood of the element studied."""
     pointfeats = np.array(pointfeats).astype(int)
     descriptors = dict(Counter(pointfeats.ravel()))
-    print '0', descriptors
     return descriptors
 
 
@@ -45,6 +45,9 @@ def characterizer_summer(pointfeats, point_pos):
     neighbourhood of the element studied."""
     pointfeats = np.array(pointfeats)
     descriptors = np.sum(pointfeats, axis=0)
+    ## 2-dim shape
+    new_sh = tuple([1] + list(descriptors.shape))
+    descriptors = descriptors.reshape(new_sh)
     return descriptors
 
 
@@ -53,6 +56,9 @@ def characterizer_average(pointfeats, point_pos):
     neighbourhood of the element studied."""
     pointfeats = np.array(pointfeats)
     descriptors = np.mean(pointfeats, axis=0)
+    ## 2-dim shape
+    new_sh = tuple([1] + list(descriptors.shape))
+    descriptors = descriptors.reshape(new_sh)
     return descriptors
 
 

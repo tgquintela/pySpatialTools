@@ -23,24 +23,28 @@ TODO
 import numpy as np
 import warnings
 warnings.filterwarnings("always")
+from pySpatialTools.IO import Map_Vals_i
+from pySpatialTools.utils import NonePerturbation
 
 
 class FeaturesRetriever:
     "Method for retrieving features."
 
-    features = []
-    featuresnames = []
-    #_k_reindices = 1
-    k_perturb = 0
-    _variables = {}
-    _maps_input = None
-    _maps_output = None
-    _maps_vals_i = None
     _out = 'ndarray'  # dict
     __name__ = "pst.FeaturesRetriever"
 
+    def _initialization(self):
+        self.features = []
+        self.featuresnames = []
+        self.k_perturb = 0
+        self._variables = {}
+        self._maps_input = None
+        self._maps_output = None
+        self._maps_vals_i = None
+
     def __init__(self, features_objects, maps_input=None, maps_output=None,
                  out=None, maps_vals_i=None):
+        self._initialization()
         out = out if out in ['ndarray', 'dict'] else None
         self._out = self._out if out is None else out
         self._format_features(features_objects)
@@ -80,6 +84,10 @@ class FeaturesRetriever:
         ## Set each one of the features
         for i in range(len(self.features)):
             self.features[i].set_descriptormodel(descriptormodel)
+
+    @property
+    def shape(self):
+        return self.features[0].shape
 
     @property
     def nfeats(self):
@@ -122,12 +130,12 @@ class FeaturesRetriever:
             else:
                 self._maps_output = [maps_output]
         if maps_vals_i is None:
-            self._maps_vals_i = [lambda i, k=0: i]
+            self._maps_vals_i = Map_Vals_i(lambda self, i, k=0: i)
         else:
             if type(maps_vals_i).__name__ == 'function':
-                self._maps_vals_i = [lambda i, k=0: i]
+                self._maps_vals_i = Map_Vals_i(lambda self, i, k=0: i)
             else:
-                self._maps_vals_i = [maps_vals_i]
+                self._maps_vals_i = Map_Vals_i(maps_vals_i)
 
     def _get_input_features(self, i, k, typefeats):
         "Get input features."
@@ -148,7 +156,11 @@ class FeaturesRetriever:
             idxs_input = idxs_input, idxs[1]
         else:
             idxs_input, k_input = self._maps_output[typefeats[0]](idxs, k)
-        feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
+        if np.any(idxs_input):
+            feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
+        else:
+            null_value = self.features[typefeats[1]]._nullvalue
+            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
         return feats_idxs
 
     def _get_prefeatures(self, i, neighs_info, k, typefeats):
@@ -172,7 +184,8 @@ class FeaturesRetriever:
         ks = [ks] if type(ks) == int else ks
         ## 1. Loop over possible ks and compute vals_i
         for k in ks:
-            vals_i.append(self._maps_vals_i[typefeats[4]](i, k))
+            vals_i.append(self._maps_vals_i.apply(self, i, k))
+        vals_i = np.array(vals_i).ravel()
         return vals_i
 
 
@@ -253,7 +266,7 @@ class Features:
             stop = self.k_perturb+1 if k.stop is None else k.stop
             step = 1 if k.step is None else k.step
             k = range(start, stop, step)
-        ## 1. Check indices into the bounds
+        ## 1. Check indices into the bounds (WARNING)
         if type(i) == int:
             if i < 0 or i >= len(self.features):
                 raise IndexError("Index out of bounds.")
@@ -326,25 +339,30 @@ class PointFeatures(Features):
     Support for other type of feature collections.
 
     """
-    ## Main attributes
-    features = None
-    variables = None
-    out_features = None
-    ## Other attributes
-    _nullvalue = 0
-    ## Function to homogenize output respect aggfeatures
-    _characterizer = lambda s, x, d: x
-    _format_out_k = lambda s, x, y1, y2, y3: x
     # Type
     _type = 'point'
-    ## Perturbation
-    _perturbators = [[]]
-    _map_perturb = lambda s, x: (0, 0)
-    _dim_perturb = []
-    k_perturb = 0
+
+    def _initialization(self):
+        ## Main attributes
+        self.features = None
+        self.variables = None
+        self.out_features = None
+        ## Other attributes
+        self._nullvalue = 0
+        ## Perturbation
+        self._perturbators = [NonePerturbation()]
+        self._map_perturb = lambda x: (0, 0)
+        self._dim_perturb = []
+        self.k_perturb = 0
+        ## Other attributes
+        self._nullvalue = 0
+        ## Function to homogenize output respect aggfeatures
+        self._characterizer = lambda x, d: x
+        self._format_out_k = lambda x, y1, y2, y3: x
 
     def __init__(self, features, perturbations=None, names=[], out_features=[],
                  characterizer=None, out_formatter=None):
+        self._initialization()
         self._format_features(features, out_features)
         self._format_characterizer(characterizer, out_formatter)
         self._format_variables(names)
@@ -365,11 +383,8 @@ class PointFeatures(Features):
             else:
                 feats_k =\
                     self._perturbators[k_p].apply_ind(self.features, idxs, k_i)
-            print '00', feats_k
             feats_k = self._characterizer(feats_k, d)
-            print '01', feats_k
             feats_k = self._format_out(feats_k)
-            print '02', feats_k
             feats.append(feats_k)
         if np.all([type(fea) == np.ndarray for fea in feats]):
             if feats:
@@ -396,7 +411,6 @@ class PointFeatures(Features):
     def _format_variables(self, names):
         "Format variables."
         feats = self[(0, 0), 0]
-        print feats
         if names:
             self.variables = names
             if len(names) != feats.shape[1]:
@@ -494,21 +508,24 @@ class AggFeatures(Features):
     "Aggregate features class."
     "TODO: adaptation of not only np.ndarray format"
 
-    ## Main attributes
-    features = None
-    variables = None
-    out_features = None
-    _characterizer = None
-    ## Other attributes
-    _nullvalue = 0
-    possible_regions = None
-    k_perturb = 0
-    indices = []
     ## Type
     _type = 'aggregated'
 
+    def _initialization(self):
+        ## Main attributes
+        self.features = None
+        self.variables = None
+        self.out_features = None
+        self._characterizer = None
+        ## Other attributes
+        self._nullvalue = 0
+        self.possible_regions = None
+        self.k_perturb = 0
+        self.indices = []
+
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
                  characterizer=None, out_formatter=None):
+        self._initialization()
         self._format_aggfeatures(aggfeatures, names, indices)
         self._nullvalue = self._nullvalue if nullvalue is None else nullvalue
         self._format_characterizer(characterizer, out_formatter)
@@ -524,7 +541,6 @@ class AggFeatures(Features):
         feats = []
         for i in xrange(len(idxs)):
             new_idxs = list(np.where(self.indices == idxs[i])[0])
-            print new_idxs
             if new_idxs != []:
                 feats.append(self.features[new_idxs][:, :, c_k])
             else:
@@ -532,14 +548,6 @@ class AggFeatures(Features):
                 if self.possible_regions is not None:
                     if new_idxs[0] not in self.possible_regions:
                         raise Exception("Incorrect region selected.")
-##          Ensure feats dim
-#            if hasattr(idxs, "__len__"):
-#                length = len(idxs)
-#            else:
-#                length = len(range(idxs.start, idxs.stop, idxs.step))
-#            if type(feats_k) == np.ndarray:
-#                feats_k = feats_k.reshape((length, feats_k.shape[1], 1))
-#                feats.append(feats_k)
 
         feats = np.concatenate(feats, axis=0)
         feats = self._format_out(self._characterizer(feats, d))

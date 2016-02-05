@@ -9,7 +9,7 @@ This module contain possible functions to complete the final measure.
 import numpy as np
 
 
-def null_completer(measure, global_info):
+def null_completer(measure, global_info=None):
     "Do not change the measure."
     return measure
 

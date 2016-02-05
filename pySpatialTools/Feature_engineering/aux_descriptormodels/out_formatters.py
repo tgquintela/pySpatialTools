@@ -30,3 +30,10 @@ def count_out_formatter(feats, out_features, _out, _nullvalue):
         raise Exception("Incorrect _out format.")
 
     return feats_o
+
+
+def null_out_formatter(feats, out_features, _out, _nullvalue):
+    """Function which contains the out formatting. It has to deal with
+    aggregated and point data."""
+
+    return feats

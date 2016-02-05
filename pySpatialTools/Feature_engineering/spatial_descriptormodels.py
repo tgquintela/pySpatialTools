@@ -14,7 +14,7 @@ TODO
 import numpy as np
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import CollectionRetrievers
-from aux_spatialdesc import Sp_DescriptorMapper
+from pySpatialTools.IO import Sp_DescriptorMapper
 
 
 class SpatialDescriptorModel:
@@ -34,22 +34,26 @@ class SpatialDescriptorModel:
     -
 
     """
-    ## Main classes
-    descriptormodel = None
-    retrievers = None
-    ## Mapper
-    _map_spdescriptor = 0
+
     ## Global params
     name_desc = None
-    ## Parameters useful
-    n_inputs = 0
-    _pos_inputs = slice(0, 0, 1)
+
+    def _initialization(self):
+        ## Main classes
+        self.descriptormodel = None
+        self.retrievers = None
+        ## Mapper
+        self._map_spdescriptor = 0
+        ## Parameters useful
+        self.n_inputs = 0
+        self._pos_inputs = slice(0, 0, 1)
 
     def __init__(self, retrievers, descriptormodel, map_spdescriptor=None,
                  pos_inputs=None):
+        self._initialization()
         self._format_retrievers(retrievers)
         self._format_descriptormdodels(descriptormodel)
-        self._format_mapper(map_spdescriptor)
+        self._format_mapper_selectors(map_spdescriptor)
         self._format_loop(pos_inputs)
 
     def _format_retrievers(self, retrievers):
@@ -62,8 +66,8 @@ class SpatialDescriptorModel:
     def _format_descriptormdodels(self, descriptormodel):
         self.descriptormodel = descriptormodel
 
-    def _format_mapper(self, map_spdescriptor):
-        "Format mapper."
+    def _format_mapper_selectors(self, map_spdescriptor):
+        "Format selectors."
         if map_spdescriptor is None:
             map_spdescriptor = Sp_DescriptorMapper()
         if type(map_spdescriptor) == np.ndarray:
@@ -114,7 +118,7 @@ class SpatialDescriptorModel:
     def compute_descriptors(self, i):
         "Compute the descriptors assigned to element i."
         staticneighs, typeret, typefeats = self._get_methods(i)
-        if staticneighs or not staticneighs:  # WARNING
+        if staticneighs:
             characs, vals_i = self._compute_descriptors_seq0(i, typeret,
                                                              typefeats)
         else:
@@ -127,7 +131,6 @@ class SpatialDescriptorModel:
         "Computation descriptors for non-aggregated data."
         ## Model1
         neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
-        print neighs_info
         characs, vals_i =\
             self.descriptormodel.compute_descriptors(i, neighs_info,
                                                      typefeats=typefeats)
@@ -136,13 +139,18 @@ class SpatialDescriptorModel:
     def _compute_descriptors_seq1(self, i, typeret, typefeats):
         "Computation descriptors for aggregated data."
         k_pert = self.descriptormodel.features.k_perturb+1
+        characs, vals_i = [], []
         for k in range(k_pert):
 #            i_k = self.descriptormodel.features.apply_reindice(i, k)
             neighs_info =\
                 self.retrievers.retrieve_neighs(i, typeret_i=typeret)
-            characs, vals_i =\
+            characs_k, vals_i_k =\
                 self.descriptormodel.compute_descriptors(i, neighs_info,
                                                          k, typefeats)
+            characs.append(characs_k)
+            vals_i.append(vals_i_k)
+        characs = np.concatenate(characs)
+        vals_i = np.concatenate(vals_i)
         return characs, vals_i
 
     ###########################################################################
