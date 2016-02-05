@@ -5,11 +5,13 @@
 from pySpatialTools.Feature_engineering.features_retriever import Features,\
     AggFeatures, FeaturesRetriever, PointFeatures
 import numpy as np
+from pySpatialTools.utils.perturbations import PermutationPerturbation,\
+    PointFeaturePertubation
 
 
 def test():
     ## Definition parameters
-    n = 100000
+    n = 1000
     m = 5
     rei = 10
     ## Definition arrays
@@ -20,11 +22,19 @@ def test():
     reindices0 = np.arange(n)
     reindices = np.vstack([reindices0]+[np.random.permutation(n)
                                         for i in range(rei-1)]).T
+    perturbation = PermutationPerturbation(reindices)
+
     ## Definition classes
     Feat = AggFeatures(aggfeatures)
-    Feat0 = PointFeatures(features0, reindices)
-    Feat1 = PointFeatures(features1, reindices)
-    Feat2 = PointFeatures(features2, reindices)
+    Feat0 = PointFeatures(features0, perturbation)
+    Feat1 = PointFeatures(features1, perturbation)
+    Feat2 = PointFeatures(features2, perturbation)
 
-    features_objects = [Feat, Feat0, Feat1, Feat2]
+    features_objects = [Feat0, Feat1, Feat2]
     featret = FeaturesRetriever(features_objects)
+    try:
+        features_objects = [Feat, Feat0, Feat1, Feat2]
+        featret = FeaturesRetriever(features_objects)
+        raise Exception("It should not accept that inputs.")
+    except:
+        pass

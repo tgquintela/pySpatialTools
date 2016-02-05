@@ -10,7 +10,7 @@ from pySpatialTools.Feature_engineering.Descriptors import Countdescriptor
 
 def test():
     ## Paramters
-    n = 10000
+    n = 1000
     ngx, ngy = 100, 100
 
     ## Artificial distribution in space

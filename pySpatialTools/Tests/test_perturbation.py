@@ -24,7 +24,7 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 
 
 def test():
-    n = 10000
+    n = 1000
     locs = np.random.random((n, 2))*100
     feat_arr0 = np.random.randint(0, 20, (n, 1))
     feat_arr1 = np.random.random((n, 10))

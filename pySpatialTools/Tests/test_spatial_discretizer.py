@@ -7,7 +7,7 @@ from pySpatialTools.Retrieve.Discretization import GridSpatialDisc
 
 def test():
     ## Paramters
-    n = 10000
+    n = 1000
     ngx, ngy = 100, 100
 
     ## Artificial distribution in space
@@ -24,5 +24,3 @@ def test():
     disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
     regions = disc.discretize(locs)
     regions2 = disc2.discretize(locs2)
-
-
