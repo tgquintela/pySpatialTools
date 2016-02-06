@@ -4,7 +4,7 @@ In some systems, due to the huge amount of data, the complexity of their topolog
 
 pySpatialTools is useful for complex topological systems with different type of spatial data elements and feature data elements in which we are not able to study alls at once because of the data size.
 
-pySpatialTools could be not recommendable for treating some specific problems with homogeneous and/or regular data which could be treated with other python packages, as for example [*computational linguistics*](http://www.nltk.org/), *computer vision* or *grid data* ([scipy.ndimage](http://docs.scipy.org/doc/scipy/reference/ndimage.html) and [openCV](https://opencv-python-tutroals.readthedocs.org/en/latest/#)) or others.
+pySpatialTools could be not recommendable for treating some specific problems with homogeneous and/or regular data which could be treated with other python packages, as for example *computational linguistics*([nltk](http://www.nltk.org/)), *computer vision* or *grid data* ([scipy.ndimage](http://docs.scipy.org/doc/scipy/reference/ndimage.html) and [openCV](https://opencv-python-tutroals.readthedocs.org/en/latest/#)) or others.
 
 
 # Technical considerations
@@ -18,13 +18,18 @@ pySpatialTools is code trying to respect [**PEP8**](https://www.python.org/dev/p
 + tools: 
 + utils: 
 
-The main pipeline application is by building a ...
+The main pipeline application is:
+1. Build the whole possible retrievers we are going to use.
+2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
+3. Create the descriptor model we are going to use.
+4. Design the selectors in order to be consistent with the retriever-output/descriptor-input.
+5. Join altogether in the spatial descriptor model object and compute.
 
 
 ## Main features
-* Generic framework to deal easily and quickly with non-regular heterogeneous spatial-like data (any data which could be embedded in a topological space).
-* Provides a generic interface to code new compatible methods and functions to check its compatibility.
-* Support of n-dimensional spaces or any other topological space as we want to define it through the definition of each associated neighborhood for each element using [Retrieve](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve) module.
+* Generic framework to deal easily and quickly with irregular heterogeneous spatial-like data (any data which could be embedded in a topological space).
+* Provides a generic interface to code new compatible methods and functions to check their compatibility.
+* Support for n-dimensional spaces or any other topological space as we want to define it through the definition of each associated neighborhood for each element using [Retrieve](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve) module.
 * Possibility to define irregular neighborhoods regarding on the the elements spatial information, main features of each point or even by combination of simple definitions of retrievers with [collection of retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/collectionretrievers.py) and a [selector mapper]().
 * Some specific simple retrievers coded in [Retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py) submodule.
 * Some specific simple descriptor models coded in [Descriptors](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/Descriptors) submodule.
@@ -32,10 +37,10 @@ The main pipeline application is by building a ...
 
 ## Applications
 ### Abstract applications
-* 
+* Transform topological data into another topological space, more appropriate for the study of the system.
+* Explore cross-information between aggregated information and punctual features.
 ### General applications
 * Spatial game theory: study and prediction in [*spatial games*]().
-* Explore cross-information between aggregated information and punctual features.
 
 
 ## Installation
