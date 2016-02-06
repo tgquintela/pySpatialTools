@@ -32,11 +32,11 @@ It is convenient to design the maps and the selectors.
 
 The main pipeline that the user has to perform is:
 
-1. Build the whole possible retrievers we are going to use.
-2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
-3. Create the descriptor model we are going to use.
-4. Design the selectors in order to be consistent with the retriever-output/descriptor-input.
-5. Join altogether in the spatial descriptor model object and compute.
+> 1. Build the whole possible retrievers we are going to use.
+> 2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
+> 3. Create the descriptor model we are going to use.
+> 4. Design the selectors in order to be consistent with the retriever-output/descriptor-input.
+> 5. Join altogether in the spatial descriptor model object and compute.
 
 
 ## Main features
