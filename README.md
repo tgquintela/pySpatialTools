@@ -4,7 +4,7 @@ In some systems, due to the huge amount of data, the complexity of their topolog
 
 pySpatialTools is useful for complex topological systems with different type of spatial data elements and feature data elements in which we are not able to study alls at once because of the data size.
 
-pySpatialTools could be not recommendable for treating some specific problems with homogeneous and/or regular data which could be treated with other python packages, as for example *computational linguistics*([nltk](http://www.nltk.org/)), *computer vision* or *grid data* ([scipy.ndimage](http://docs.scipy.org/doc/scipy/reference/ndimage.html) and [openCV](https://opencv-python-tutroals.readthedocs.org/en/latest/#)) or others.
+pySpatialTools could be not recommendable for treating some specific problems with homogeneous and/or regular data which could be treated with other python packages, as for example *computational linguistics* ([nltk](http://www.nltk.org/)), *computer vision* or *grid data* ([scipy.ndimage](http://docs.scipy.org/doc/scipy/reference/ndimage.html) and [openCV](https://opencv-python-tutroals.readthedocs.org/en/latest/#)) or others.
 
 
 # Technical considerations
@@ -19,6 +19,7 @@ pySpatialTools is code trying to respect [**PEP8**](https://www.python.org/dev/p
 + utils: 
 
 The main pipeline application is:
+
 1. Build the whole possible retrievers we are going to use.
 2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
 3. Create the descriptor model we are going to use.
@@ -36,9 +37,11 @@ The main pipeline application is:
 
 
 ## Applications
+
 ### Abstract applications
 * Transform topological data into another topological space, more appropriate for the study of the system.
 * Explore cross-information between aggregated information and punctual features.
+
 ### General applications
 * Spatial game theory: study and prediction in [*spatial games*]().
 
