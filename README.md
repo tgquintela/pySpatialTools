@@ -67,7 +67,6 @@ The interface of this package could be summarized with this tools:
 Example of 2d grid.
 
 ```python
-from pySpatialTools.Retrieve.Discretization import GridSpatialDisc
 
 grid_size, xlim, ylim = (100, 100), (0, 100), (0, 100)
 disc0 = GridSpatialDisc(grid_size, xlim, ylim)
@@ -77,10 +76,6 @@ disc0 = GridSpatialDisc(grid_size, xlim, ylim)
 Example of 
 
 ```python
-from pySpatialTools.Feature_engineering.count_descriptor import Countdescriptor
-from pySpatialTools.Retrieve import KRetriever
-from pySpatialTools.Retrieve.Spatial_Relations.regionmetrics import CenterLocsRegionDistances
-
 disc0 = GridSpatialDisc(grid_size, xlim, ylim)
 locs = np.random.random((n, 2))*100
 
@@ -94,9 +89,6 @@ regionmetrics.compute_distances(sp_descriptor, activated=locs)
 Example of retriever k-neighbors.
 
 ```python
-from pySpatialTools.Retrieve.relative_positioner import diff_vectors
-from pySpatialTools.Retrieve import KRetriever
-
 locs = np.random.random((n, 2))*100
 info_ret = np.random.randint(1, 10, n)
 
@@ -165,14 +157,16 @@ nosetests path/to/dir
 ```
 
 ## Project and contributions
-This package is in an early stage. If there is any idea to improve it or even code do not hesitate to do it or comunicate with the main developer through mail:
+This package is in an early stage. If there is any idea to improve it or even code do not hesitate to do it or communicate with the main developer through mail:
 tgq.spm@gmail.com
 
 
 ### Next steps
-- [x] Format package into the standards.
+- [x] Format package into some conventions.
 - [ ] Code Testing module.
 - [ ] Prediction module.
 - [ ] Examples
 
+### License
+pySpatialTools is available as open source under the terms of the [MIT License](https://github.com/tgquintela/pySpatialTools/blob/master/LICENSE).
 
