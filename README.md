@@ -24,12 +24,14 @@ The main pipeline application in order to match points with features of their ne
 | :------: | :------: | :------: | :------: | :------: | :------: |
 | **element** | i | i_s | neighs | neighs_o | neighs_f |
 | **topology** | T_0  | T_1 | T_2 | T_3 | T_4 |
-| **functions** | ret.input_map | ret | ret.output_map | features._maps_output |
+| **functions** | ret.input_map | ret | ret.output_map | features._maps_output | - |
 
 The topologies can be repeated or totally different. We can choose the different paths of the pipeline through the choose of the selectors.
+It is convenient to design the maps and the selectors.
 
 
 The main pipeline that the user has to perform is:
+
 1. Build the whole possible retrievers we are going to use.
 2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
 3. Create the descriptor model we are going to use.
