@@ -1,0 +1,6 @@
+matplotlib
+scipy
+numpy
+nose
+pandas
+networkx
