@@ -21,93 +21,183 @@ import numpy as np
 ###############################################################################
 ############################ Location perturbation ############################
 ###############################################################################
-class Jitter:
+class GeneralPerturbation:
+    """General perturbation. It constains default functions for perturbation
+    objects.
+    """
+
+    def _initialization(self):
+        self.locations_p = None
+        self.features_p = None
+        self.relations_p = None
+        self.k_perturb = 1
+
+    def apply2indice(self, i, k):
+        return i
+
+    def apply2locs(self, locations):
+        return locations
+
+    def apply2features(self, features):
+        return features
+
+    def apply2relations(self, relations):
+        return relations
+
+    def apply2features_ind(self, features, i, k):
+        """For precomputed applications."""
+        return self.features_p[i, :, k]
+
+    def apply2locs_ind(self, locations, i, k):
+        """For precomputed applications."""
+        return self.locations_p[i, :, k]
+
+    def apply2locs_relations(self, relations, i, k):
+        """For precomputed applications."""
+        return self.relations_p[i, :, k]
+
+    def selfcompute_features(self, features):
+        pass
+
+    def selfcompute_locations(self, locations):
+        pass
+
+    def selfcompute_relations(self, relations):
+        pass
+
+#    def selfcompute_locations(self, locations):
+#        self.locations_p = self.apply2locs(locations)
+#
+#    def selfcompute_features(self, features):
+#        self.features_p = self.apply2features(features)
+
+
+###############################################################################
+############################## None perturbation ##############################
+###############################################################################
+class NonePerturbation(GeneralPerturbation):
+    """None perturbation. Default perturbation which not alters the system."""
+    _categorytype = "general"
+    _perturbtype = "none"
+
+    def __init__(self, k_perturb=1):
+        self._initialization()
+        self.k_perturb = k_perturb
+
+
+###############################################################################
+############################ Location perturbation ############################
+###############################################################################
+class JitterLocations(GeneralPerturbation):
     """Jitter module to perturbe locations of the system in order of testing
     methods.
-
     TODO: Fit some model for infering stds.
-
     """
-    _stds = 0
+    _categorytype = "location"
+    _perturbtype = "jitter_coordinate"
 
-    def __init(self, stds):
-        stds = np.array(stds)
+    def __init__(self, stds=0, k_perturb=1):
+        self._stds = np.array(stds)
+        self.k_perturb = k_perturb
 
-    def apply(self, coordinates):
-        jitter_d = np.random.random(coordinates.shape)
-        new_coordinates = np.multiply(self._stds, jitter_d)
-        return new_coordinates
+    def apply2locs(self, locations, k=None):
+        ## Preparation of ks
+        ks = range(self.k_perturb) if k is None else k
+        ks = [k] if type(k) == int else ks
+        locations_p = np.zeros((len(locations), locations.shape[1], len(ks)))
+        for ik in range(len(ks)):
+            jitter_d = np.random.random(locations.shape)
+            locations_pj = np.multiply(self._stds, jitter_d) + locations
+            locations_p[:, :, ik] = locations_pj
+        return locations_p
+
+
+###############################################################################
+########################### Permutation perturbation ##########################
+###############################################################################
+class PermutationPerturbation(GeneralPerturbation):
+    "Reindice perturbation for the whole features variables."
+    _categorytype = "feature"
+    _perturbtype = "element_permutation"
+
+    def __init__(self, reindices):
+        self._initialization()
+        self._format_reindices(reindices)
+
+    def _format_reindices(self, reindices):
+        if type(reindices) == np.ndarray:
+            self.k_perturb = reindices.shape[1]
+            self.reindices = reindices
+        elif type(reindices) == tuple:
+            n, k_perturb = reindices
+            if type(n) == int and type(k_perturb) == int:
+                self.k_perturb = k_perturb
+                self.reindices = np.vstack([np.random.permutation(n)
+                                            for i in xrange(k_perturb)]).T
+
+    def apply2features(self, features, k=None):
+        ## Assert good features
+        assert len(features) == len(self.reindices)
+        ## Prepare ks
+        ks = range(self.k_perturb) if k is None else k
+        ks = [k] if type(k) == int else ks
+        ## Computation of new prturbated features
+        sh = len(features), features.shape[1], len(ks)
+        features_p = np.zeros(sh)
+        for ik in range(len(ks)):
+            features_p[:, :, ik] = features[self.reindices[:, ks[ik]], :]
+        return features_p
+
+    def apply2features_ind(self, features, i, k):
+        return features[self.reindices[i, k]]
+
+    def apply2indice(self, i, k):
+        return self.reindices[i, k]
 
 
 ###############################################################################
 ############################# Element perturbation ############################
 ###############################################################################
-class PointFeaturePertubation:
-    "An individual column perturbation of individual elements."
-    _perturbtype = "point_mixed"
-    k_perturb = 0
+## TODO:
+class MixedFeaturePertubation(GeneralPerturbation):
+    """An individual-column-created perturbation of individual elements."""
+    _categorytype = "feature"
+    _perturbtype = "element_mixed"
 
     def __init__(self, perturbations):
+        msg = "Perturbations is not a list of individual perturbation methods."
+        self._initialization()
         if type(perturbations) != list:
-            msg = "Perturbations is not a list of perturbation methods."
             raise TypeError(msg)
         try:
             self.typefeats = [p._perturbtype for p in perturbations]
+            k_perturbs = [p.k_perturb for p in perturbations]
+            assert all([k == k_perturbs[0] for k in k_perturbs])
+            self.k_perturb = k_perturbs[0]
             self.perturbations = perturbations
         except:
-            msg = "Perturbations is not a list of perturbation methods."
             raise TypeError(msg)
 
-    def apply(self, features):
+    def apply2features(self, features):
         assert features.shape[1] == len(self.perturbations)
         ## Apply individual perturbation for each features
         features_p, n = [], len(features)
         k_pos = list(range(self.k_perturb))
         for i in range(len(self.perturbations)):
-            features_p_k = self.perturbations[i].apply(features[:, i], k_pos)
+            features_p_k = self.perturbations[i].apply2features(features[:, i],
+                                                                k_pos)
             features_p_k = features_p_k.reshape((n, 1, self.k_perturb))
             features_p.append(features_p_k)
         features_p = np.concatenate(features_p, axis=1)
         return features_p
 
-    def selfcompute(self, features):
-        self.features_p = self.apply(features)
 
-    def apply_ind(self, features, i, k):
-        return self.features_p[i, :, k]
-
-
-class PermutationPerturbation:
-    "Reindice perturbation for the whole features variables."
-    _perturbtype = "point_permutation"
-    k_perturb = 0
-
-    def __init__(self, reindices):
-        self._format_reindices(reindices)
-
-    def apply(self, features):
-        assert len(features) == len(self.reindices)
-        sh = len(features), features.shape[1], self.reindices.shape[1]
-        features_p = np.zeros(sh)
-        for i in range(sh[2]):
-            features_p[:, :, i] = features[self.reindices[:, i], :]
-        return features_p
-
-    def _format_reindices(self, reindices):
-        self.k_perturb = reindices.shape[1]
-        self.reindices = reindices
-
-    def selfcompute(self, features):
-        pass
-
-    def apply_ind(self, features, i, k):
-        return features[self.reindices[i, k], :]
-
-
-class DiscreteIndPerturbation:
+########################### Individual perturbation ###########################
+###############################################################################
+class DiscreteIndPerturbation(GeneralPerturbation):
     "Discrete perturbation of a discrete feature variable."
+    _categorytype = "feature"
     _perturbtype = "discrete"
-    k_perturb = 0
 
     def __init__(self, probs):
         if np.all(probs.sum(1)) != 1:
@@ -116,7 +206,7 @@ class DiscreteIndPerturbation:
             raise IndexError("Probs is noot a square matrix.")
         self.probs = probs.cumsum(1)
 
-    def apply(self, feature, k=None):
+    def apply2features(self, feature, k=None):
         ## Prepare loop
         categories = np.unique(feature)
         if len(categories) != len(self.probs):
@@ -137,15 +227,15 @@ class DiscreteIndPerturbation:
         return feature_p
 
 
-class ContiniousIndPerturbation:
+class ContiniousIndPerturbation(GeneralPerturbation):
     "Continious perturbation for an individual feature variable."
+    _categorytype = "feature"
     _perturbtype = "continious"
-    k_perturb = 0
 
     def __init__(self, pstd):
         self.pstd = pstd
 
-    def apply(self, feature, k=None):
+    def apply2features(self, feature, k=None):
         if k is None:
             k = list(range(k))
         if type(k) == int:
@@ -157,17 +247,17 @@ class ContiniousIndPerturbation:
         return feature_p
 
 
-class PermutationIndPerturbation:
-    "Reindice perturbation for an individual feature variable."
+class PermutationIndPerturbation(GeneralPerturbation):
+    """Reindice perturbation for an individual feature variable."""
+    _categorytype = "feature"
     _perturbtype = "permutation_ind"
-    k_perturb = 0
 
     def __init__(self, reindices=None):
         if type(reindices) == np.array:
             self.reindices = reindices
             self.k_perturb = reindices.shape[1]
 
-    def apply(self, feature, k=None):
+    def apply2features(self, feature, k=None):
         if k is None:
             k = list(range(self.k_perturb))
         if type(k) == int:
@@ -177,9 +267,15 @@ class PermutationIndPerturbation:
             feature_p[:, i_k] = feature[self.reindices[:, i_k]]
         return feature_p
 
-    def apply_ind(self, feature, i, k):
+    def apply2features_ind(self, feature, i, k):
         return feature[self.reindices[i, k]]
+
 
 ###############################################################################
 ########################### Aggregation perturbation ##########################
 ###############################################################################
+class JitterRelationsPerturbation(GeneralPerturbation):
+    """Jitter module to perturbe relations of the system in order of testing
+    methods.
+    """
+    _categorytype = "relations"
