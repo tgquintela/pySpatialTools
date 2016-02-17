@@ -7,13 +7,16 @@ It is possible to install this package with
 python setup.py install
 """
 
+from glob import glob
 import sys
 import os
 import warnings
+from pySpatialTools import release
 
 ## Temporally commented
 #if os.path.exists('MANIFEST'):
 #    os.remove('MANIFEST')
+
 
 ## Definition of useful functions
 def read(fname):
@@ -34,38 +37,49 @@ if sys.argv[-1] == 'setup.py':
 version = release.write_versionfile()
 
 packages = ['pySpatialTools',
-			'pySpatialTools.Feature_engineering',
-			'pySpatialTools.io',
-			'pySpatialTools.Preprocess',
-			'pySpatialTools.Recommender',
-			'pySpatialTools.Retrieve',
-			'pySpatialTools.Sampling',
-			'pySpatialTools.Simulations',
-			'pySpatialTools.Testers',
-			'pySpatialTools.Transformations',
-			'pySpatialTools.tools',
-			'pySpatialTools.utils'],
+            'pySpatialTools.Discretization',
+            'pySpatialTools.Discretization.Discretization_2d',
+            'pySpatialTools.Discretization.Discretization_3d',
+            'pySpatialTools.Discretization.Discretization_nd',
+            'pySpatialTools.Discretization.Discretization_set',
+            'pySpatialTools.FeatureManagement',
+            'pySpatialTools.FeatureManagement.aux_descriptormodels',
+            'pySpatialTools.FeatureManagement.Descriptors',
+            'pySpatialTools.FeatureManagement.Interpolation_utils',
+            'pySpatialTools.io',
+            'pySpatialTools.Preprocess',
+            'pySpatialTools.Retrieve',
+            'pySpatialTools.SpatialRelations',
+            'pySpatialTools.tests',
+            'pySpatialTools.Testers',
+            'pySpatialTools.Transformations',
+            'pySpatialTools.Transformations.Transformation_2d',
+            'pySpatialTools.Transformations.Transformation_3d',
+            'pySpatialTools.Transformations.Transformation_nd',
+            'pySpatialTools.tools',
+            'pySpatialTools.utils',
+            'pySpatialTools.utils.util_classes',
+            'pySpatialTools.utils.util_external']
 
-docdirbase  = 'share/doc/pySpatialTools-%s' % version
+docdirbase = 'share/doc/pySpatialTools-%s' % version
 # add basic documentation
 data = [(docdirbase, glob("*.txt"))]
 # add examples
 for d in ['advanced',
           'algorithms']:
-    dd = os.path.join(docdirbase,'examples', d)
+    dd = os.path.join(docdirbase, 'examples', d)
     pp = os.path.join('examples', d)
-    data.append((dd, glob(os.path.join(pp ,"*.py"))))
-    data.append((dd, glob(os.path.join(pp ,"*.bz2"))))
-    data.append((dd, glob(os.path.join(pp ,"*.gz"))))
-    data.append((dd, glob(os.path.join(pp ,"*.mbox"))))
-    data.append((dd, glob(os.path.join(pp ,"*.edgelist"))))
+    data.append((dd, glob(os.path.join(pp, "*.py"))))
+    data.append((dd, glob(os.path.join(pp, "*.bz2"))))
+    data.append((dd, glob(os.path.join(pp, "*.gz"))))
+    data.append((dd, glob(os.path.join(pp, "*.mbox"))))
+    data.append((dd, glob(os.path.join(pp, "*.edgelist"))))
 
 # add the tests
-package_data     = {
-    'pySpatialTools': ['tests/*.py']
-    }
+package_data = {'pySpatialTools': ['tests/*.py']
+                }
 
-install_requires=['numpy', 'scipy', 'pandas']
+install_requires = ['numpy', 'scipy', 'pandas']
 
 ## Setup
 setup(name=release.name,
@@ -78,9 +92,8 @@ setup(name=release.name,
       author=release.author,
       author_email=release.author_email,
       url=release.url,
-	  classifiers=release.classifiers,
+      classifiers=release.classifiers,
       long_description=read('README.md'),
       packages=packages,
       install_requires=install_requires,
-)
-
+      )

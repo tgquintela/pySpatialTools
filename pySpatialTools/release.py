@@ -42,7 +42,8 @@ def write_versionfile():
     versionfile = os.path.join(basedir, 'version.py')
 
     text = '''"""
-Version information for pySpatialTools, created during installation by setup.py.
+Version information for pySpatialTools, created during installation by
+setup.py.
 
 Do not add this file to the repository.
 
@@ -73,7 +74,7 @@ vcs_info = %(vcs_info)r
     def writefile():
         fh = open(versionfile, 'w')
         subs = {
-            'dev' : dev,
+            'dev': dev,
             'version': version,
             'version_info': version_info,
             'date': date,
@@ -100,6 +101,7 @@ vcs_info = %(vcs_info)r
             writefile()
     return version
 
+
 def get_revision():
     """Returns revision and vcs information, dynamically obtained."""
     vcs, revision, tag = None, None, None
@@ -114,6 +116,7 @@ def get_revision():
     vcs_info = (vcs, (revision, tag))
 
     return revision, vcs_info
+
 
 def get_info(dynamic=True):
     ## Date information
@@ -135,7 +138,8 @@ def get_info(dynamic=True):
         # no vcs information will be provided.
         sys.path.insert(0, basedir)
         try:
-            from version import date, date_info, version, version_info, vcs_info
+            from version import date, date_info, version, version_info,\
+                vcs_info
         except ImportError:
             import_failed = True
             vcs_info = (None, (None, None))
@@ -164,47 +168,68 @@ micro = "0"
 ## Change to False before tagging a release; then change back.
 dev = True
 
-mino
-description = "Python package for studying spatial irregular heterogenous data."
+description = """Python package for studying spatial irregular heterogenous
+data."""
+long_description = """
+This package is built in order to provide prototyping tools in python to deal
+with spatial data in python and model spatial-derived relations between
+different elements in a system. In some systems, due to the huge amount of
+data, the complexity of their topology their local nature or because other
+practical reasons we are forced to use only local information for model the
+system properties and dynamics.
+
+pySpatialTools is useful for complex topological systems with different type
+of spatial data elements and feature data elements in which we are not able to
+study alls at once because of the data size.
+
+pySpatialTools could be not recommendable for treating some specific problems
+with homogeneous and/or regular data which could be treated with other python
+packages, as for example computational linguistics (nltk), computer vision or
+grid data (scipy.ndimage and openCV) or others.
+
+"""
 
 ## Main author
-author='T. Gonzalez Quintela',
-author_email='tgq.spm@gmail.com',
+author = 'T. Gonzalez Quintela',
+author_email = 'tgq.spm@gmail.com',
 
 license = 'MIT'
-authors = {'tgquintela' : ('T. Gonzalez Quintela' ,'tgq.spm@gmail.com')}
+authors = {'tgquintela': ('T. Gonzalez Quintela', 'tgq.spm@gmail.com')}
 
 maintainer = ""
 maintainer_email = ""
 
 url = ''
-download_url= ''
+download_url = ''
 
-platforms = ['Linux','Mac OSX','Windows','Unix']
+platforms = ['Linux', 'Mac OSX', 'Windows', 'Unix']
 
-keywords = ['math', 'data analysis', 'Mathematics', 'spatial networks', 'spatial correlations', 'framework', 'social sciences', 'spatial analysis', 'spatial ecology']
+keywords = ['math', 'data analysis', 'Mathematics', 'spatial networks',
+            'spatial correlations', 'framework', 'social sciences',
+            'spatial analysis', 'spatial ecology']
 
 classifiers = [
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
-        # Indicate who your project is intended for
-	    'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        # Specify the Python versions you support here
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        # Topic information
-	    'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Scientific/Engineering :: Sociology',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: Scientific/Engineering :: Mathematics']
+    #  How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    'Development Status :: 3 - Alpha',
+    # Indicate who your project is intended for
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    # Pick your license as you wish (should match "license" above)
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+    # Specify the Python versions you support here
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    # Topic information
+    'Topic :: Software Development :: Build Tools',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Scientific/Engineering :: Sociology',
+    'Topic :: Scientific/Engineering :: Data Analysis',
+    'Topic :: Scientific/Engineering :: Information Analysis',
+    'Topic :: Scientific/Engineering :: Mathematics']
 
 date, date_info, version, version_info, vcs_info = get_info()
 
