@@ -79,7 +79,7 @@ for d in ['advanced',
 package_data = {'pySpatialTools': ['tests/*.py']
                 }
 
-install_requires = ['numpy', 'scipy', 'pandas']
+install_requires = ['numpy', 'scipy', 'pandas', 'matplotlib']
 
 ## Setup
 setup(name=release.name,
