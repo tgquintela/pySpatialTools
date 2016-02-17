@@ -1,7 +1,7 @@
 
 
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
-    CollectionRetrievers
+    RetrieverManager
 import numpy as np
 from scipy.sparse import coo_matrix
 
@@ -15,7 +15,7 @@ def test():
     ret0 = KRetriever(locs, 3, ifdistance=True)
     ret1 = CircRetriever(locs, 3, ifdistance=True)
 
-    gret = CollectionRetrievers([ret0, ret1])
+    gret = RetrieverManager([ret0, ret1])
 
     for i in xrange(n):
         neighs_info = ret0.retrieve_neighs(i)

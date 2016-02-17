@@ -2,7 +2,7 @@
 ## Imports
 import numpy as np
 import matplotlib.pyplot as plt
-from pySpatialTools.Retrieve.Discretization import GridSpatialDisc
+from pySpatialTools.Discretization import GridSpatialDisc
 
 
 def test():

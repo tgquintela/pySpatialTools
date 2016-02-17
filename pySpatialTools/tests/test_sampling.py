@@ -15,4 +15,3 @@ def test():
     ## Generate sp_relations
     sp_relations = generate_random_relations(100)
     connected = nx.connected_components(sp_relations.relations)
-
