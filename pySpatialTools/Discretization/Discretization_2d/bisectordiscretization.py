@@ -5,59 +5,56 @@ Bisector discretization
 Module oriented to group all the classes and functions related to the
 discretization of a space using bisector borders.
 
-TODO
-----
-Compute contiguity_geom
-
 """
 
+from shapely import ops
 import numpy as np
-from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
-    SpatialDiscretizor
-from polygondiscretization import fit_polygondiscretizer
 from sklearn.neighbors import KDTree
 
-from pySpatialTools.Retrieve.Discretization.spatial_utils import \
-    tesselation, match_regions
-import shapely
+from ..metricdiscretizor import MetricDiscretizor
+from utils import tesselation, match_regions
 
 
-class BisectorSpatialDisc(SpatialDiscretizor):
+class BisectorSpatialDisc(MetricDiscretizor):
     """A method of defining regions by only giving the central points and
     using the bisector as a border.
     """
+    n_dim = 2
+    multiple = False
 
     def __init__(self, r_points, regions_id):
         """The bisector discretizor needs the regionlocs points and the
         region ids of these points.
         """
+        self._initialization()
+        assert len(r_points) == len(regions_id)
         self.regionlocs = r_points
-        self.regionretriever = KDTree(r_points)
         self.regions_id = regions_id
-        self.compute_limits()
+        self._compute_limits()
+        self.regionretriever = KDTree(r_points)
 
-    def map_loc2regionid(self, locs):
-        """Discretize locs returning their region_id.
+    def _map_loc2regionid(self, locations):
+        """Discretize locations returning their region_id.
 
         Parameters
         ----------
-        locs: numpy.ndarray
+        locations: numpy.ndarray
             the locations for which we want to obtain their region given that
             discretization.
 
         Returns
         -------
         regions_id: numpy.ndarray
-            the region_id of each locs for this discretization.
+            the region_id of each location for this discretization.
 
         """
-        ## Use kd trees in order to retrieve nearest points.
-        idxs = self.regionretriever.query(locs, 1, False)[:, 0]
-        ## Replace the indices by the regions_id
-        regions_id = self.region_id[idxs]
+        ## 0. Use kd trees in order to retrieve nearest points.
+        idxs = self.regionretriever.query(locations, 1, False)[:, 0]
+        ## 1. Replace the indices by the regions_id
+        regions_id = self.regions_id[idxs]
         return regions_id
 
-    def map_regionid2regionlocs(self, regions_id):
+    def _map_regionid2regionlocs(self, regions_id):
         """Function which maps the regions ID to their most representative
         location.
         """
@@ -72,38 +69,33 @@ class BisectorSpatialDisc(SpatialDiscretizor):
             regionlocs[i, :] = self.regionlocs[idx, :]
         return regionlocs
 
-    def map_locs2regionlocs(self, locs):
+    def _map_locs2regionlocs(self, locs):
         "Map locations to regionlocs."
-        ## Use kd trees in order to retrieve nearest points.
+        ## 0. Use kd trees in order to retrieve nearest points.
         idxs = self.regionretriever.query(locs, 1, False)[:, 0]
-        ## Return regionlocs
+        ## 1. Return regionlocs
         regionlocs = self.regionlocs[idxs, :]
         return regionlocs
 
-    def compute_contiguity_geom(self, limits):
+    def _compute_contiguity_geom(self, limits):
         "Compute which regions are contiguous and returns a graph."
+        ## TODO:
+        raise Exception("Not implemented function yet.")
         ## Obtain random points around all the r_points
         ## Compute the two nearest points with different region_id
         ## Remove repeated pairs
         return
 
-    def compute_limits(self, region_id=None):
+    def _compute_limits(self, region_id=None):
+        """WARNING: probably not yet completely implemented."""
         if region_id is None:
-            polygons = self.tesselation()
-            whole = shapely.ops.unary_union(polygons)
+            polygons = tesselation(self.regionlocs)
+            whole = ops.unary_union(polygons)
             limits = np.array(whole.bounds).reshape((2, 2)).T
         else:
-            polygons = self.tesselation()
+            polygons = tesselation(self.regionlocs)
             i_r = match_regions(polygons, self.regionlocs)
             regionsid = self.regions_id[i_r]
             p = polygons[np.where(regionsid == region_id)[0]]
             limits = np.array(p.bounds).reshape((2, 2)).T
         return limits
-
-    def transform2polygondiscretizer(self):
-        discretizer = fit_polygondiscretizer(self.regionlocs, self.regions_id)
-        return discretizer
-
-    def tesselation(self):
-        polygons = tesselation(self.regionlocs)
-        return polygons

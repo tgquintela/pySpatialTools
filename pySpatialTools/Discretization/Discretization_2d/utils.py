@@ -1,9 +1,8 @@
 
 """
-Spatial utils
--------------
-Module which groups the functions related with spatial utils which can be
-useful.
+utils
+-----
+Utils for 2-dim spatial discretization.
 
 
 TODO
@@ -12,11 +11,11 @@ Create voronoi diagram from line segments:
 [1] http://gis.stackexchange.com/questions/104631/create-voronoi-diagram-from-
 line-segments
 
-
 """
 
 import numpy as np
 import shapely
+from shapely import ops
 from scipy.spatial import Voronoi
 from sklearn.neighbors import KDTree
 
@@ -30,7 +29,7 @@ def indices_assignation(indices, regions_id):
     return regions
 
 
-def mask_application(p, points):
+def mask_application_grid(p, points):
     "Returns the index in which is placed the point."
     if p < points[0] or p > points[-1]:
         return -1
@@ -67,6 +66,27 @@ def tesselation(regionlocs):
     for line in vor.ridge_vertices:
         if -1 not in line:
             lines.append(shapely.geometry.LineString(vor.vertices[line]))
-    pols = shapely.ops.polygonize(lines)
+    pols = ops.polygonize(lines)
     polygons = [poly for poly in pols]
     return polygons
+
+#from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
+#    SpatialDiscretizor
+
+#from polygondiscretization import fit_polygondiscretizer
+#    def transform2polygondiscretizer(self):
+#        discretizer = fit_polygondiscretizer(self.regionlocs, self.regions_id)
+#        return discretizer
+
+    ##################### Definition of particularities #######################
+    ###########################################################################
+#    def fit_spatialmodel(self, data):
+#        """Fit regions from distribution of tagged points in space.
+#        TODO: Tesselation.
+#        """
+#        self.regionlocs, self.borders = somefunction(data)
+
+
+#from sklearn.neighbors import KDTree
+#from scipy.spatial.distance import cdist
+#from pythonUtils.parallel_tools import distribute_tasks

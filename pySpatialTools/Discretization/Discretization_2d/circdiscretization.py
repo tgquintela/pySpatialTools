@@ -8,32 +8,42 @@ discretization of space.
 """
 
 import numpy as np
-from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
-    SpatialDiscretizor
-#from sklearn.neighbors import KDTree
 from scipy.spatial.distance import cdist
+
+from ..metricdiscretizor import MetricDiscretizor
+
+## TOMOVE
 from pythonUtils.parallel_tools import distribute_tasks
 
 
-############################### Circular based ################################
-###############################################################################
-class CircularSpatialDisc(SpatialDiscretizor):
+class CircularSpatialDisc(MetricDiscretizor):
     """Circular spatial discretization. The regions are circles with different
     sizes. One point could belong to zero, one or more than one region.
     """
-    multiple_regions = False
+    n_dim = 2
 
-    ## TODO: map loc_grid to a id region: map_gridloc2regionid
     def __init__(self, centerlocs, radios, multiple_regions=False):
-        "Main information to built the regions."
+        """Main information to built the regions."""
+        self._initialization()
         if type(radios) in [float, int]:
             radios = np.ones(centerlocs.shape[0])*radios
         self.borders = radios
         self.regionlocs = centerlocs
+        self._compute_limits()
 
-    ################################ Functions ###############################
-    ##########################################################################
-    def map_loc2regionid(self, locs):
+    def _compute_limits(self, region_id=None):
+        """Compute bounding box limits of the selected region or the whole
+        discretization."""
+        if region_id is None:
+            limits = compute_limits_circ(self.regionlocs, self.borders,
+                                         self.regions_id)
+            self.limits = limits
+        else:
+            limits = compute_limits_circ(self.regionlocs, self.borders,
+                                         self.regions_id, region_id)
+            return limits
+
+    def _map_loc2regionid(self, locs):
         """Discretize locs returning their region_id.
 
         Parameters
@@ -49,49 +59,47 @@ class CircularSpatialDisc(SpatialDiscretizor):
 
         """
         regionid = map_circloc2regionid(locs, self.regionlocs, self.borders,
-                                        self.multiple_regions)
+                                        self.multiple)
         return regionid
 
-    def map_regionid2regionlocs(self, regions):
+    def _compute_contiguity_geom(self, region_id=None):
+        """Compute contiguity geometry between regions following the
+        instructions passed through the given parameters."""
+        # TODO:
+        raise Exception("Not implemented function yet.")
+
+    def _map_regionid2regionlocs(self, regions):
         """Function which maps the regions ID to their most representative
         location.
         """
-        regionlocs = np.zeros((regions.shape[0], self.regionslocs.shape[1]))
+        regionlocs = np.zeros((regions.shape[0], self.regionlocs.shape[1]))
         for i in xrange(regions.shape):
+            ## Only get the first one
             idx = np.where(self.regions_id == regions[i])[0][0]
             regionlocs[i, :] = self.regionlocs[idx, :]
         return regionlocs
 
-    def map_locs2regionlocs(self, locs):
-        "Map locations to regionlocs."
-        regionid = self.map_loc2regionid(locs)
-        regionlocs = self.map_regionid2regionlocs(regionid)
-        return regionlocs
 
-    def map2aggloc_spec(self, locs):
-        n_locs = locs.shape[0]
-        agglocs = np.zeros(locs.shape).astype(float)
-        regions = self.discretize(locs)
-        # Average between all the locs circles
-        for i in xrange(n_locs):
-            agglocs[i, :] = np.mean(self.regionlocs[regions[i], :], axis=0)
-        return agglocs
-
-    def compute_limits(self, region_id=None):
-        if region_id is None:
-            limits = compute_limits_circ(self.regionslocs, self.borders,
-                                         self.regions_id)
-            self.limits = limits
-        else:
-            limits = compute_limits_circ(self.regionslocs, self.borders,
-                                         self.regions_id, region_id)
-            return limits
-
-    def compute_contiguity_geom(self, region_id=None):
-        pass
+############################### Circular based ################################
+###############################################################################
+class CircularExcludingSpatialDisc(CircularSpatialDisc):
+    """Circular spatial discretization. The regions are circles with different
+    sizes. One point only could belong to one region or anyone (-1).
+    """
+    multiple = False
 
 
+class CircularInclusiveSpatialDisc(CircularSpatialDisc):
+    """Circular spatial discretization. The regions are circles with different
+    sizes. One point could belong to zero, one or more than one region.
+    """
+    multiple = True
+
+
+################################## Functions #################################
+##############################################################################
 def compute_limits_circ(regionslocs, radis, regions_id, regionid=None):
+    """Function to compute the limits in a circular base discretization."""
     limits = np.zeros((2, 2))
     if regionid is None:
         idx1, idx2 = np.argmin(regionslocs[:, 0]), np.argmax(regionslocs[:, 0])

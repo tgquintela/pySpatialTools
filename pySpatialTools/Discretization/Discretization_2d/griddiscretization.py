@@ -9,30 +9,31 @@ The class and functions related with the 2d-grid discretization.
 import numpy as np
 from scipy.sparse import coo_matrix
 
-from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
-    SpatialDiscretizor
-from pySpatialTools.Retrieve.Discretization.spatial_utils import \
-    mask_application
+from ..metricdiscretizor import MetricDiscretizor
+from utils import mask_application_grid
 
 
 ################################# Grid based ##################################
 ###############################################################################
-class GridSpatialDisc(SpatialDiscretizor):
+class GridSpatialDisc(MetricDiscretizor):
     "Grid spatial discretization. The regions are rectangular with equal size."
+    multiple = False
+    n_dim = 2
 
     def __init__(self, grid_size, xlim=(None, None), ylim=(None, None)):
         "Main function to map a group of points in a 2d to a grid."
-        self.create_grid(grid_size, xlim=xlim, ylim=ylim)
-        self.compute_limits()
+        self._initialization()
+        self._create_grid(grid_size, xlim=xlim, ylim=ylim)
+        self._compute_limits()
 
     ########################### Automatic Functions ##########################
     ##########################################################################
-    def create_grid(self, grid_size, xlim=(None, None), ylim=(None, None)):
+    def _create_grid(self, grid_size, xlim=(None, None), ylim=(None, None)):
         "Create a grid with the parameters we want."
         self.borders = create_grid(grid_size=grid_size, xlim=xlim, ylim=ylim)
 
     ## Automatic
-    def compute_limits(self, region_id=None):
+    def _compute_limits(self, region_id=None):
         "Build the limits of the region discretized."
         if region_id is None:
             limits = compute_limits_grid(self.borders)
@@ -55,11 +56,11 @@ class GridSpatialDisc(SpatialDiscretizor):
 
     def get_regionslocs(self):
         "Get the regionslocs (representative region location) described here."
-        return self.map_regionid2regionlocs(self.get_regions_id())
+        return self._map_regionid2regionlocs(self.get_regions_id())
 
     ########################### Compulsary mappers ###########################
     ##########################################################################
-    def map_loc2regionid(self, locs):
+    def _map_loc2regionid(self, locs):
         """Discretize locs returning their region_id.
 
         Parameters
@@ -82,13 +83,13 @@ class GridSpatialDisc(SpatialDiscretizor):
         regions_id = map_gridloc2regionid(locs_grid, grid_size)
         return regions_id
 
-    def map_locs2regionlocs(self, locs):
+    def _map_locs2regionlocs(self, locs):
         "Map locations to regionlocs."
-        grid_locs = self.apply_grid(locs)
+        grid_locs = self._apply_grid(locs)
         regionlocs = map_gridloc2regionlocs(grid_locs, self.borders)
         return regionlocs
 
-    def map_regionid2regionlocs(self, regions):
+    def _map_regionid2regionlocs(self, regions):
         """Function which maps the regions ID to their most representative
         location.
         """
@@ -103,7 +104,7 @@ class GridSpatialDisc(SpatialDiscretizor):
 
     ########################## Contiguity definition #########################
     ##########################################################################
-    def compute_contiguity_geom(self, region_id=None):
+    def _compute_contiguity_geom(self, region_id=None):
         "Compute which regions are contiguous and returns a graph."
         ## 0. Compute needed variables
         nx, ny = self.borders[0].shape[0]-1, self.borders[1].shape[0]-1
@@ -126,7 +127,7 @@ class GridSpatialDisc(SpatialDiscretizor):
 
     ##################### Definition of particularities ######################
     ##########################################################################
-    def apply_grid(self, locs):
+    def _apply_grid(self, locs):
         """Discretize locs given their region_id.
 
         Parameters
@@ -236,6 +237,6 @@ def create_grid(grid_size, locs=None, xlim=(None, None), ylim=(None, None)):
 def apply_grid(locs, x, y):
     locs_agg_grid = -1*np.ones(locs.shape).astype(int)
     for i in xrange(locs.shape[0]):
-        locs_agg_grid[i, 0] = mask_application(locs[i, 0], x)
-        locs_agg_grid[i, 1] = mask_application(locs[i, 1], y)
+        locs_agg_grid[i, 0] = mask_application_grid(locs[i, 0], x)
+        locs_agg_grid[i, 1] = mask_application_grid(locs[i, 1], y)
     return locs_agg_grid

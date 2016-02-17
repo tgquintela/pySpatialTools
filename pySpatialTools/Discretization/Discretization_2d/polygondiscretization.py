@@ -11,30 +11,24 @@ Fit from distribution of points tagged with region types.
 """
 
 import numpy as np
-from pySpatialTools.Retrieve.Discretization.spatialdiscretizer import \
-    SpatialDiscretizor
-from pySpatialTools.Retrieve.Discretization.spatial_utils import \
-    match_regions, tesselation
-#from sklearn.neighbors import KDTree
-#from scipy.spatial.distance import cdist
-#from pythonUtils.parallel_tools import distribute_tasks
-import shapely
+from shapely import ops
 from shapely.geometry import Point
+from utils import match_regions, tesselation
+
+from ..metricdiscretizor import MetricDiscretizor
 
 
 ############################### Polygon based #################################
 ###############################################################################
-class IrregularSpatialDisc(SpatialDiscretizor):
-    "Grid spatial discretization."
-
-#    limits = None
-#    borders = None
-#    regionlocs = None
-#    regions_id = None
-#    regionretriever = None
+class IrregularSpatialDisc(MetricDiscretizor):
+    """Grid spatial discretization."""
+    n_dim = 2
+    multiple = None
 
     def __init__(self, polygons, regions_id=None):
         "Main information to built the regions."
+        self.multiple = None
+        self._initialization()
         self.borders = polygons
         if regions_id is None:
             self.regions_id = np.arange(len(polygons))
@@ -111,11 +105,11 @@ class IrregularSpatialDisc(SpatialDiscretizor):
 
     def compute_limits(self, region_id=None):
         if region_id is None:
-            whole = shapely.ops.cascaded_union(self.borders)
+            whole = ops.cascaded_union(self.borders)
             limits = np.array(whole.bounds).reshape((2, 2)).T
         else:
             idxs = np.where(self.regions_id == region_id)[0]
-            reg = shapely.ops.cascaded_union([self.borders[i] for i in idxs])
+            reg = ops.cascaded_union([self.borders[i] for i in idxs])
             limits = np.array(reg.bounds).reshape((2, 2)).T
         return limits
 
@@ -123,18 +117,12 @@ class IrregularSpatialDisc(SpatialDiscretizor):
     ##########################################################################
     def compute_contiguity_geom(self, limits):
         "Compute which regions are contiguous and returns a graph."
+        # TODO:
+        raise Exception("Not implemented function yet.")
         ## Obtain random points around all the r_points
         ## Compute the two nearest points with different region_id
         ## Remove repeated pairs
         return
-
-    ##################### Definition of particularities #######################
-    ###########################################################################
-#    def fit_spatialmodel(self, data):
-#        """Fit regions from distribution of tagged points in space.
-#        TODO: Tesselation.
-#        """
-#        self.regionlocs, self.borders = somefunction(data)
 
 
 def fit_polygondiscretizer(regionlocs, regions_id):
@@ -154,6 +142,5 @@ Intelligent selection of pairs and polygon1.intersection(polygon2).area == 0
 or polygon1.overlaps(polygon2)
 * Contiguous_geom
 Intelligent selection of pairs and polygon1.intersection(polygon2).area == 0
-
 
 """
