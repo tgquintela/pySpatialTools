@@ -3,7 +3,7 @@
 """
 
 import numpy as np
-from collections import product
+from itertools import product
 
 
 def create_typevars(feat_arr):

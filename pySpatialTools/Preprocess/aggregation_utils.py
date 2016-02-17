@@ -11,7 +11,7 @@ TODO:
 
 import numpy as np
 import pandas as pd
-from IO.format_utils import create_formatted_spdf
+from format_utils import create_formatted_spdf
 
 
 ###############################################################################
