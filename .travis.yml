@@ -1,4 +1,5 @@
 language: python
+sudo: false
 python:
 #  - "2.6"
   - "2.7"
@@ -10,12 +11,12 @@ python:
 #  - "nightly" # currently points to 3.6-dev
 # installation
 #before_install:
-   - apt-get install python-numpy
-   - apt-get install python-scipy
+#   - apt-get install python-numpy
+#   - apt-get install python-scipy
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
-   - ./install.sh
+   - pip install setup.py
 # command to run tests
 script:
   - nosetests
