@@ -8,14 +8,15 @@ neighbourhood or local properties related with the neighbourhood.
 """
 
 ## Import Builded retrievers
-from element_retrievers import KRetriever, CircRetriever, SameEleNeigh,\
-    OrderEleNeigh, LimDistanceEleNeigh
+from implicit_retrievers import KRetriever, CircRetriever
+from explicit_retrievers import SameEleNeigh, OrderEleNeigh,\
+    LimDistanceEleNeigh
 
 ## Import wrapper retrievers
-from collectionretrievers import CollectionRetrievers
+from collectionretrievers import RetrieverManager
 
 ## Import 'abstract' retrievers
-from element_retrievers import ElementRetriever
+#from element_retrievers import ElementRetriever
 
 ## Import useful functions
 from aux_retriever import create_retriever_input_output

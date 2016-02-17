@@ -2,6 +2,9 @@
 """
 General retriever
 -----------------
+General retriever which acts as a container of some son class we wanna code
+in order to fit with the requisits of the module and be useful for the
+retriever task.
 
 """
 
@@ -17,13 +20,11 @@ class GeneralRetriever(Retriever):
     retriever.data: object with different elements, __getitem__ with one index
         and element-like __eq__ function.
     retriever.retrieve_neighs
-
+    retriever.__init__ needs to call _initialization()
 
     """
 
     _default_ret_val = None
-    _heterogenous_output = False
-    _heterogenous_input = False
 
     def retrieve_neighs(self, i_loc, info_i={}, ifdistance=None, output=0):
         """Retrieve neighs and distances. This function acts as a wrapper to
