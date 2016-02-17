@@ -20,7 +20,7 @@ def check_in_square_area(coord, lim_points):
         the coordinates of the points we want to check.
     lim_points: array_like shape(2, 2)
         the limit coordinates. The order is (x coordinate, y coordinate).
-    
+
     Returns
     -------
     logi: boolean array_like
