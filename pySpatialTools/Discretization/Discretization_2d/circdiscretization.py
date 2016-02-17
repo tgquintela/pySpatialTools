@@ -11,9 +11,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from ..metricdiscretizor import MetricDiscretizor
-
-## TOMOVE
-from pythonUtils.parallel_tools import distribute_tasks
+from pyStatialTools.utils.util_classes import distribute_tasks
 
 
 class CircularSpatialDisc(MetricDiscretizor):
