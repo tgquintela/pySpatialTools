@@ -14,9 +14,9 @@ python:
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
-   - apt-get install python-numpy
-   - apt-get install python-scipy
-   - python setup.py install
+   - sudo apt-get install python-numpy
+   - sudo apt-get install python-scipy
+   - sudo python setup.py install
 # command to run tests
 script:
   - nosetests
