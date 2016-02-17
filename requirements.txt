@@ -1,6 +1,6 @@
-matplotlib
-scipy
-numpy
 nose
+numpy
+scipy
+matplotlib
 pandas
 networkx
