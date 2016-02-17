@@ -21,8 +21,8 @@ WARNING: output requires TWO dimensions
 
 import numpy as np
 from collections import Counter
-from pySpatialTools.Feature_engineering.Interpolation_utils.\
-    density_assignation import from_distance_to_weights, compute_measure_i
+from ..Interpolation_utils.density_assignation import\
+    from_distance_to_weights, compute_measure_i
 
 
 def characterizer_1sh_counter(pointfeats, point_pos):

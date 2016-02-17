@@ -8,7 +8,7 @@ This function can act as a compute_characs function.
 
 """
 
-from pySpatialTools.Feature_engineering.Interpolation_utils.\
+from ..Interpolation_utils.\
     density_assignation import from_distance_to_weights, compute_measure_i
 
 

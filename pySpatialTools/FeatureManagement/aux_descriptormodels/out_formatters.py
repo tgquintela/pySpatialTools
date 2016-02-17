@@ -15,6 +15,18 @@ def count_out_formatter(feats, out_features, _out, _nullvalue):
     if type(feats).__name__ == _out:
         return feats
     ## Change the format
+
+    if type(feats) == dict:
+        # so _out == ndarray
+        feats_o = np.ones(len(out_features))*_nullvalue
+        for e in feats:
+            feats_o[list(out_features).index(str(e))] = feats[e]
+        if len(feats_o.shape) == 1:
+            feats_o = feats_o.reshape((1, feats_o.shape[0]))
+    elif type(feats) == np.ndarray:
+        # so _out == dict
+        feats_o = dict(zip(out_features, feats.ravel()))
+
     try:
         if type(feats) == dict:
             # so _out == ndarray

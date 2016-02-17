@@ -5,7 +5,7 @@ mappers vals i
 Some examples of mappers for vals i
 """
 
-from pySpatialTools.IO import create_mapper_vals_i
+from pySpatialTools.utils.util_classes import create_mapper_vals_i
 
 
 def null_mapper_vals_i():

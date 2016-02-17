@@ -8,7 +8,7 @@ Module which contains general useful definitions of descriptor models.
 
 from descriptormodel import DescriptorModel
 ## Specific functions
-from pySpatialTools.Feature_engineering.aux_descriptormodels import\
+from aux_descriptormodels import\
     sum_addresult_function, null_completer, array_featurenames,\
     null_out_formatter
 

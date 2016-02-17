@@ -12,10 +12,10 @@ Parameters
 
 import numpy as np
 from collections import Counter
-from pySpatialTools.Feature_engineering.descriptormodel import DescriptorModel
+from ..descriptormodel import DescriptorModel
 
 ## Specific functions
-from pySpatialTools.Feature_engineering.aux_descriptormodels import\
+from ..aux_descriptormodels import\
     characterizer_1sh_counter, sum_reducer, counter_featurenames,\
     aggregator_1sh_counter, sum_addresult_function, count_out_formatter
 

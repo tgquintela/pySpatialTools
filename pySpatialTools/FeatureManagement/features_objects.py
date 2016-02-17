@@ -1,200 +1,23 @@
 
 """
-Feature Retriever
------------------
-Information about features which groups all together in the homogenious ouput
-of features, but they can have heterogenous input as it is retrieved by the
-element retrievers.
-This module contains the tools to store and retrieve features from a pool of
-features.
-
-
-Check: same type variables output
-Check: same k dimension
-
-
-TODO
-----
-- Indentify different type of feaures we can have: point, aggregate...
-- Support for dictionary
+Features Objects
+----------------
+Objects to manage features in order to retrieve them.
+This objects are equivalent to the retrievers object. Retrievers object manage
+location points which have to be retrieved from a location input and here it is
+manage the retrieving of features from a elements retrieved.
 
 """
 
 import numpy as np
 import warnings
 warnings.filterwarnings("always")
-from pySpatialTools.IO import Map_Vals_i
-from pySpatialTools.utils import NonePerturbation
-
-
-class FeaturesRetriever:
-    "Method for retrieving features."
-
-    _out = 'ndarray'  # dict
-    __name__ = "pst.FeaturesRetriever"
-
-    def _initialization(self):
-        self.features = []
-        self.featuresnames = []
-        self.k_perturb = 0
-        self._variables = {}
-        self._maps_input = None
-        self._maps_output = None
-        self._maps_vals_i = None
-
-    def __init__(self, features_objects, maps_input=None, maps_output=None,
-                 out=None, maps_vals_i=None):
-        self._initialization()
-        out = out if out in ['ndarray', 'dict'] else None
-        self._out = self._out if out is None else out
-        self._format_features(features_objects)
-        self._format_maps(maps_input, maps_output, maps_vals_i)
-
-    def __len__(self):
-        return len(self.features)
-
-    def __getitem__(self, i_feat):
-        if i_feat < 0 or i_feat >= len(self.features):
-            raise IndexError("Not correct index for features.")
-        return self.features[i_feat]
-
-    def set_map_vals_i(self, _maps_vals_i):
-        "Set how it maps each element of the "
-        self._maps_vals_i = _maps_vals_i
-
-    def set_descriptormodel(self, descriptormodel):
-        "Set descriptor model."
-        ## We are assuming feature 0 is the representative one.
-        self.featuresnames =\
-            descriptormodel._compute_featuresnames(self.features[0].features)
-        ## Set out_features
-        for i in range(len(self)):
-            out_feat = descriptormodel._compute_featuresnames(self.features[i])
-            self.features[i].out_features = out_feat
-        ## TODO: Check if all are equal
-        self.out_features = out_feat
-        init_ = np.ones(self.nfeats) * descriptormodel._nullvalue
-
-        def init_features(_out):
-            if _out == 'dict':
-                return dict(zip(self.featuresnames, init_))
-            elif _out == 'ndarray':
-                return init_
-        self.initialization_features = init_features
-        ## Set each one of the features
-        for i in range(len(self.features)):
-            self.features[i].set_descriptormodel(descriptormodel)
-
-    @property
-    def shape(self):
-        return self.features[0].shape
-
-    @property
-    def nfeats(self):
-        return len(self.featuresnames)
-
-    def _format_features(self, features_objects):
-        "Formatter of features."
-        ## Check variables
-        if type(features_objects) != list:
-            features_objects = [features_objects]
-        nfeat = len(features_objects)
-        k_perturb = [features_objects[i].k_perturb for i in range(nfeat)]
-        vars_o = [set(features_objects[i].variables) for i in range(nfeat)]
-        k_rei_bool = [k_perturb[i] == k_perturb[0] for i in range(nfeat)]
-        ## Check k perturbations
-        if not all(k_rei_bool):
-            msg = "Not all the feature objects have the same perturbations."
-            raise Exception(msg)
-        ## Storing variables
-        self._variables = vars_o[0]
-        self.k_perturb = k_perturb[0]
-        self.features = features_objects
-        for i in range(nfeat):
-            self.features[i]._out = self._out
-
-    def _format_maps(self, maps_input, maps_output, maps_vals_i):
-        "Formatter of maps."
-        if maps_input is None:
-            self._maps_input = [lambda i, k=0: (i, k)]
-        else:
-            if type(maps_input).__name__ == 'function':
-                self._maps_input = [lambda i, k=0: maps_input(i, k)]
-            else:
-                self._maps_input = [maps_input]
-        if maps_output is None:
-            self._maps_output = [lambda i, k=0: (i, k)]
-        else:
-            if type(maps_output).__name__ == 'function':
-                self._maps_output = [lambda i, k=0: maps_output(self, i, k)]
-            else:
-                self._maps_output = [maps_output]
-        if maps_vals_i is None:
-            self._maps_vals_i = Map_Vals_i(lambda self, i, k=0: i)
-        else:
-            if type(maps_vals_i).__name__ == 'function':
-                self._maps_vals_i = Map_Vals_i(lambda self, i, k=0: i)
-            else:
-                self._maps_vals_i = Map_Vals_i(maps_vals_i)
-
-    def _get_input_features(self, i, k, typefeats):
-        "Get input features."
-        ## Retrieve features
-        if type(i) == tuple:
-            i_input, k_input = self._maps_input[typefeats[0]](i[0], k)
-            i_input = i_input, i[1]
-        else:
-            i_input, k_input = self._maps_input[typefeats[0]](i, k)
-        feats_i = self.features[typefeats[1]][i_input, k_input]
-        return feats_i
-
-    def _get_output_features(self, idxs, k, typefeats):
-        "Get output features."
-        ## Retrieve features
-        if type(idxs) == tuple:
-            idxs_input, k_input = self._maps_output[typefeats[0]](idxs[0], k)
-            idxs_input = idxs_input, idxs[1]
-        else:
-            idxs_input, k_input = self._maps_output[typefeats[0]](idxs, k)
-        if np.any(idxs_input):
-            feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
-        else:
-            null_value = self.features[typefeats[1]]._nullvalue
-            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
-        return feats_idxs
-
-    def _get_prefeatures(self, i, neighs_info, k, typefeats):
-        """General interaction with features object to get point features from
-        it.
-        """
-        ## 0. Prepare list of k
-        ks = range(self.k_perturb+1) if k is None else k
-        ks = [ks] if type(ks) == int else ks
-        ## 1. Loop over possible ks and compute descriptors
-        t_feat_in, t_feat_out = typefeats[0:2], typefeats[2:4]
-        desc_i = self._get_input_features(i, ks, t_feat_in)
-        desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
-        return desc_i, desc_neigh
-
-    def _get_vals_i(self, i, k, typefeats):
-        "Get how to store the final result."
-        ## 0. Prepare variable needed
-        vals_i = []
-        ks = list(range(self.k_perturb+1)) if k is None else k
-        ks = [ks] if type(ks) == int else ks
-        ## 1. Loop over possible ks and compute vals_i
-        for k in ks:
-            vals_i.append(self._maps_vals_i.apply(self, i, k))
-        vals_i = np.array(vals_i).ravel()
-        return vals_i
+from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
 
 
 class Features:
-    "Features object."
-
-    _out = 'ndarray'
-    __name__ = 'pst.FeaturesObject'
-    _setdescriptor = False
+    """Features object."""
+    __name__ = 'pySpatialTools.FeaturesObject'
 
     def __len__(self):
         return len(self.features)
@@ -294,21 +117,25 @@ class Features:
         feats = self._retrieve_feats(i, k, d)
         return feats
 
+    @property
+    def shape(self):
+        return (len(self.features), len(self.variables), self.k_perturb+1)
+
+    ################################# Setters #################################
+    ###########################################################################
     def set_descriptormodel(self, descriptormodel):
-        "Link the descriptormodel and the feature retriever."
-        if self._type == 'point':
+        """Link the descriptormodel and the feature retriever."""
+        if self.typefeat == 'implicit':
             self._format_characterizer(descriptormodel.compute_characs,
                                        descriptormodel._out_formatter)
-        elif self._type == 'aggregated':
+        elif self.typefeat == 'explicit':
             self._format_characterizer(descriptormodel.reducer,
                                        descriptormodel._out_formatter)
         self._format_variables([])
         self._setdescriptor = True
 
-    @property
-    def shape(self):
-        return (len(self.features), len(self.variables), self.k_perturb+1)
-
+    ################################ Formatters ###############################
+    ###########################################################################
     def _format_out(self, feats):
         "Transformation array-dict."
         feats_o = self._format_out_k(feats, self.out_features, self._out,
@@ -323,6 +150,7 @@ class Features:
             self._characterizer = characterizer
         if out_formatter is not None:
             self._format_out_k = out_formatter
+
         if not (characterizer is None or out_formatter is None):
             self[(0, 0.), 0]
             try:
@@ -331,34 +159,28 @@ class Features:
                 raise TypeError("Incorrect characterizer.")
 
 
-class PointFeatures(Features):
-    """Point features.
-
-    TODO
-    ----
-    Support for other type of feature collections.
-
+class ImplicitFeatures(Features):
+    """Element features.
     """
     # Type
-    _type = 'point'
+    typefeat = 'implicit'
 
     def _initialization(self):
         ## Main attributes
         self.features = None
         self.variables = None
         self.out_features = None
+        self._setdescriptor = False
         ## Other attributes
         self._nullvalue = 0
         ## Perturbation
         self._perturbators = [NonePerturbation()]
         self._map_perturb = lambda x: (0, 0)
-        self._dim_perturb = []
-        self.k_perturb = 0
-        ## Other attributes
-        self._nullvalue = 0
+        self._dim_perturb = [1]
         ## Function to homogenize output respect aggfeatures
         self._characterizer = lambda x, d: x
         self._format_out_k = lambda x, y1, y2, y3: x
+        self._out = 'ndarray'
 
     def __init__(self, features, perturbations=None, names=[], out_features=[],
                  characterizer=None, out_formatter=None):
@@ -382,7 +204,8 @@ class PointFeatures(Features):
                 feats_k = self.features[idxs]
             else:
                 feats_k =\
-                    self._perturbators[k_p].apply_ind(self.features, idxs, k_i)
+                    self._perturbators[k_p].apply2features_ind(self.features,
+                                                               idxs, k_i)
             feats_k = self._characterizer(feats_k, d)
             feats_k = self._format_out(feats_k)
             feats.append(feats_k)
@@ -391,6 +214,8 @@ class PointFeatures(Features):
                 feats = np.concatenate(feats, axis=0)
         return feats
 
+    ################################# Getters #################################
+    ###########################################################################
     def _get_possible_indices(self, idxs=None):
         if idxs is None:
             idxs = slice(0, len(self.features), 1)
@@ -401,21 +226,22 @@ class PointFeatures(Features):
             idxs = slice(start, stop, step)
         return idxs
 
+    ################################ Formatters ###############################
+    ###########################################################################
     def _format_features(self, features, out_features):
-        "Format features."
+        """Format features."""
         sh = features.shape
         features = features if len(sh) == 2 else features.reshape((sh[0], 1))
         self.features = features
         self.out_features = out_features
 
     def _format_variables(self, names):
-        "Format variables."
+        """Format variables."""
         feats = self[(0, 0), 0]
         if names:
             self.variables = names
             if len(names) != feats.shape[1]:
-                msg = """Not matching lengths of variable names and output
-                    feats."""
+                msg = "Not matching lengths of variablenames and output feats."
                 raise IndexError(msg)
         else:
             if type(feats) == dict:
@@ -424,8 +250,10 @@ class PointFeatures(Features):
                 n_feats = feats.shape[1]
                 self.variables = list(range(n_feats))
 
+    ######################### Perturbation management #########################
+    ###########################################################################
     def _format_perturbation(self, perturbations):
-        "Format initial perturbations."
+        """Format initial perturbations."""
         if perturbations is None:
             def _map_perturb(x):
                 if x != 0:
@@ -437,11 +265,11 @@ class PointFeatures(Features):
             self.add_perturbations(perturbations)
 
     def add_perturbations(self, perturbations):
-        "Add perturbations."
+        """Add perturbations."""
+        perturbations = feat_filter_perturbations(perturbations)
         if type(perturbations) == list:
             for p in perturbations:
                 self._dim_perturb.append(p.k_perturb)
-                self.k_perturb = np.sum(self._dim_perturb)-1
                 self._create_map_perturbation()
                 self._perturbators.append(p)
         else:
@@ -450,7 +278,7 @@ class PointFeatures(Features):
             self._perturbators.append(perturbations)
 
     def _create_map_perturbation(self):
-        "Create the map for getting the perturbation object."
+        """Create the map for getting the perturbation object."""
         ## 0. Creation of the mapper array
         limits = np.cumsum([0] + list(self._dim_perturb))
         sl = [slice(limits[i], limits[i+1]) for i in range(len(limits)-1)]
@@ -473,43 +301,46 @@ class PointFeatures(Features):
         ## 2. Storing mapper function
         self._map_perturb = map_perturb
 
-    def add_aggregations(self, discretization_info, regret, agg_funct):
-        "Create aggregation of fetures to favour the computation."
-        ## 0. Preparing the inputs
-        if type(discretization_info) == tuple:
-            locs, discretizor = discretization_info
-            regs = discretizor.discretize(locs)
-        else:
-            regs = discretization_info
-        u_regs = np.unique(regs)
-        u_regs = u_regs.reshape((len(u_regs), 1))
+    ########################## Aggregation management #########################
+    ###########################################################################
+#    def add_aggregations(self, discretization_info, regret, agg_funct):
+#        """Create aggregation of fetures to favour the computation."""
+#        ## 0. Preparing the inputs
+#        if type(discretization_info) == tuple:
+#            locs, discretizor = discretization_info
+#            regs = discretizor.discretize(locs)
+#        else:
+#            regs = discretization_info
+#        u_regs = np.unique(regs)
+#        u_regs = u_regs.reshape((len(u_regs), 1))
+#
+#        ## 1. Compute aggregation
+#        sh = self.shape
+#        agg = np.ones((len(u_regs), sh[1], sh[2])) * self._nullvalue
+#        for i in xrange(len(u_regs)):
+#            neighs_info = regret.retrieve_neighs(u_regs[i])
+#            if list(neighs_info[0]) != []:
+#                for k in range(self.k_perturb+1):
+#                    agg[i, :, k] = agg_funct(self[neighs_info, k],
+#                                             neighs_info[1])
+#            else:
+#                sh = self.shape
+#                agg[i, :, :] = np.ones((sh[1], sh[2])) * self._nullvalue
+#
+#        ## 2. Prepare output
+#        agg = AggFeatures(agg, indices=u_regs,
+#                          characterizer=self._characterizer)
+#
+#        return agg
 
-        ## 1. Compute aggregation
-        sh = self.shape
-        agg = np.ones((len(u_regs), sh[1], sh[2])) * self._nullvalue
-        for i in xrange(len(u_regs)):
-            neighs_info = regret.retrieve_neighs(u_regs[i])
-            if list(neighs_info[0]) != []:
-                for k in range(self.k_perturb+1):
-                    agg[i, :, k] = agg_funct(self[neighs_info, k],
-                                             neighs_info[1])
-            else:
-                sh = self.shape
-                agg[i, :, :] = np.ones((sh[1], sh[2])) * self._nullvalue
 
-        ## 2. Prepare output
-        agg = AggFeatures(agg, indices=u_regs,
-                          characterizer=self._characterizer)
-
-        return agg
-
-
-class AggFeatures(Features):
-    "Aggregate features class."
+class ExplicitFeatures(Features):
+    """Explicit features class. In this class we have explicit representation
+    of the features.
+    """
     "TODO: adaptation of not only np.ndarray format"
-
     ## Type
-    _type = 'aggregated'
+    typefeat = 'explicit'
 
     def _initialization(self):
         ## Main attributes
@@ -522,6 +353,7 @@ class AggFeatures(Features):
         self.possible_regions = None
         self.k_perturb = 0
         self.indices = []
+        self._out = 'ndarray'
 
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
                  characterizer=None, out_formatter=None):
@@ -531,7 +363,7 @@ class AggFeatures(Features):
         self._format_characterizer(characterizer, out_formatter)
 
     def _retrieve_feats(self, idxs, c_k, d):
-        "Retrieve and prepare output of the features."
+        """Retrieve and prepare output of the features."""
         ## 0. Variable needed
         if type(idxs) == slice:
             idxs = list(range(idxs.start, idxs.stop, idxs.step))
@@ -553,6 +385,8 @@ class AggFeatures(Features):
         feats = self._format_out(self._characterizer(feats, d))
         return feats
 
+    ################################# Getters #################################
+    ###########################################################################
     def _get_possible_indices(self, idxs=None):
         if idxs is None:
             idxs = slice(0, len(self.features), 1)
@@ -563,8 +397,10 @@ class AggFeatures(Features):
             idxs = slice(start, stop, step)
         return idxs
 
+    ################################ Formatters ###############################
+    ###########################################################################
     def _format_aggfeatures(self, aggfeatures, names, indices):
-        "Formatter for aggfeatures."
+        """Formatter for aggfeatures."""
         if len(aggfeatures.shape) == 1:
             self._k_reindices = 1
             aggfeatures = aggfeatures.reshape((len(aggfeatures), 1, 1))
@@ -589,9 +425,19 @@ class AggFeatures(Features):
         if len(self.variables) != self.features.shape[1]:
             raise IndexError("Incorrect length of variables list.")
 
-    def add_aggregation(self, aggfeatures, indices):
-        self.aggfeatures.append(aggfeatures)
-        self.indices.append(indices)
+    ######################### Perturbation management #########################
+    ###########################################################################
+    def add_perturbations(self, perturbations):
+        """Add perturbations."""
+        msg = "Aggregated features can not be perturbated."
+        msg += "Change order of aggregation."
+        raise Exception(msg)
+
+    ########################## Aggregation management #########################
+    ###########################################################################
+#    def add_aggregation(self, aggfeatures, indices):
+#        self.aggfeatures.append(aggfeatures)
+#        self.indices.append(indices)
 
 
 def checker_sp_descriptor(retriever, features_o):

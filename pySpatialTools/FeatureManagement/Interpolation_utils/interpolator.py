@@ -10,10 +10,10 @@ TODO
 """
 
 
-from pySpatialTools.Feature_engineering.descriptormodel import DescriptorModel
+from ..descriptormodel import DescriptorModel
 
 ## Specific functions
-from pySpatialTools.Feature_engineering.aux_descriptormodels import\
+from ..aux_descriptormodels import\
     sum_reducer, sum_addresult_function, array_featurenames,\
     null_out_formatter
 
