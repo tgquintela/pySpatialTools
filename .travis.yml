@@ -10,10 +10,7 @@ python:
 #  - "nightly" # currently points to 3.6-dev
 # installation
 before_install:
-   - "sudo pip install -r requirements.txt"
-#install: false
-#install: pip install --user -r requirements.txt
+   - "pip install -r requirements.txt"
 # command to install dependencies
-#install: "sudo pip install -r requirements.txt"
 # command to run tests
 script: nosetests
