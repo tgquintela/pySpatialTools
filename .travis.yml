@@ -18,7 +18,19 @@ before_install:
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
-   - python setup.py install
+  # Installation from trackpy
+  # - conda update --yes --no-deps conda
+  # OK, this used to *fix* the build, but now it *breaks* the build.
+  - conda update --yes conda
+  - conda config --add channels soft-matter
+  - conda create -n testenv --yes $DEPS pip nose setuptools python=$TRAVIS_PYTHON_VERSION
+  - source activate testenv
+  # for debugging...
+  - echo $PATH
+  - which python
+  - conda info
+  - conda list
+  - python setup.py install
 # command to run tests
 script:
   - nosetests
