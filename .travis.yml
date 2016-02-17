@@ -11,8 +11,8 @@ python:
 #  - "nightly" # currently points to 3.6-dev
 # installation
 #before_install:
-#   - apt-get install python-numpy
-#   - apt-get install python-scipy
+   - apt-get install python-numpy
+   - apt-get install python-scipy
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
