@@ -10,7 +10,9 @@ python:
 #  - "nightly" # currently points to 3.6-dev
 # installation
 before_install:
-   - "pip install -r requirements.txt"
+   - travis_wait pip install -r requirements.txt
+install:
+   - ./install.sh
 # command to install dependencies
 # command to run tests
 script: nosetests
