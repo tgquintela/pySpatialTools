@@ -37,14 +37,13 @@ def regions_relation_points(locs, regions, retriever, info_ret):
     return coincidence, regs
 
 
-
-
 def f_measure(regs, dists, u_regs):
     ""
     count = Counter(regs)
     counts = np.zeros(u_regs.shape[0])
     counts[count.keys()] = np.array(count.values())
     return counts
+
 
 def normalization_f(regs, dists, u_regs):
     ""

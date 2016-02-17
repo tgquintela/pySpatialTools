@@ -9,7 +9,7 @@ Auxiliary functions to complement the regionmetrics object.
 from scipy.sparse import coo_matrix
 import networkx as nx
 import numpy as np
-from pySpatialTools.Feature_engineering import SpatialDescriptorModel
+from ..FeatureManagement import SpatialDescriptorModel
 
 
 def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):

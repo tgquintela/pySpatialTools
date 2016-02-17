@@ -7,8 +7,8 @@ position of the neighbours.
 
 Requisits
 ---------
-- The output need to be a matrix with 2dim. 1dim has to be the number of
-neighs.
+- The output need to be a iterable of elements with __len__ function and the
+possibility to index indices range(n_neighs).
 
 """
 

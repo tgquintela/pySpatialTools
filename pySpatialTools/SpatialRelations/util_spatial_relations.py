@@ -1,12 +1,14 @@
 
 """
-General function for computing spatial relation between spatial elements. This
-module contains the general functions to compute the matrix or individual
-relations.
+utils spatial relations
+-----------------------
+Module which contains utils to compute spatial relations between spatial
+elements.
+
 """
 
-from itertools import combinations_with_replacement, product
 import numpy as np
+from itertools import combinations_with_replacement, product
 
 
 def general_spatial_relation(sp_el1, sp_el2, f):
