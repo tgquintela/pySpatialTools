@@ -96,5 +96,6 @@ fi
 #pushd package-code-name
 #python setup.py install
 #popd
+python setup.py install
 
 pip install .
