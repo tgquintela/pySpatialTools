@@ -5,7 +5,7 @@ matrix:
   include:
     # "Recommended" environments: More recent versions, for Py2 and Py3.
     - python: "2.7"
-      env: DEPS="numpy=1.9 scipy=0.16 matplotlib=1.4 pandas=0.16 networkx>=1.8 nose"
+      env: DEPS="numpy=1.9 scipy=0.16 matplotlib=1.4 pandas=0.16 networkx>=1.8 nose shapely>=1.5.13"
 
 
 # installation
