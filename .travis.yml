@@ -34,8 +34,7 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - chmod +x "$TRAVIS_BUILD_DIR"/../administrative_tools/continuous_integration/test_script.sh
-  - ."$TRAVIS_BUILD_DIR"/../administrative_tools/continuous_integration/test_script.sh
+  -  bash administrative_tools/continuous_integration/test_script.sh
 #  - nosetests
 after_success:
   - coveralls
