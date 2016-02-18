@@ -20,6 +20,7 @@ before_install:
 # command to install dependencies
 install:
   - source administrative_tools/continuous_integration/install.sh
+  - bash install.sh
 # command to run tests
 script:
   -  bash administrative_tools/continuous_integration/test_script.sh

@@ -90,8 +90,6 @@ if [[ "$COVERAGE" == "true" ]]; then
     pip install coveralls
 fi
 
-bash ../../install.sh
-
 ## Example of installing personal required packages
 #wget https://github.com/../archive/snapshot-code.tar.gz
 #tar -xzvf snapshot-code.tar.gz
