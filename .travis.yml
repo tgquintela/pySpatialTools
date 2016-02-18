@@ -8,21 +8,11 @@ matrix:
     - python: "2.7"
       env: DEPS="scikit-learn>=0.17 numpy scipy=0.16 matplotlib=1.4 pandas=0.16 networkx>=1.8 nose shapely>=1.5.13 libgfortran nose libgfortran coverage" DISTRIB="conda" COVERAGE="true"
 
-
 # installation
-#before_install:
-#  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/#miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://#repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
-#  - chmod +x miniconda.sh
-#  - ./miniconda.sh -b -p /home/travis/mc
-#  - export PATH=/home/travis/mc/bin:$PATH
-#   - sudo apt-get update
-#   - travis_wait pip install -r requirements.txt
-# command to install dependencies
 install:
   - source administrative_tools/continuous_integration/install.sh
 # command to run tests
 script:
   -  bash administrative_tools/continuous_integration/test_script.sh
-#  - nosetests
 after_success:
   - coveralls
