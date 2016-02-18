@@ -8,7 +8,7 @@ environment:
       env: DISTRIB="conda" COVERAGE="true"
     - PYTHON_VERSION: 2.7
       MINICONDA: C:\Miniconda-x64
-      env: DISTRIB="conda" COVERAGE="true"
+      env: DEPS="" DISTRIB="conda" COVERAGE="true"
 
 branches:
   only:
