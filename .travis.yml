@@ -9,11 +9,11 @@ addons:
       - nose
       - libgfortran
       - coverage
-matrix:
-  include:
-    # "Recommended" environments: More recent versions, for Py2 and Py3.
-    - python: "2.7"
-      env: DEPS="nose libgfortran coverage" DISTRIB="conda" COVERAGE="true"
+#matrix:
+#  include:
+#    # "Recommended" environments: More recent versions, for Py2 and Py3.
+#    - python: "2.7"
+#      env: DEPS="nose libgfortran coverage" DISTRIB="conda" COVERAGE="true"
 
 # installation
 #before_install:
@@ -21,14 +21,15 @@ matrix:
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
-  - chmod +x administrative_tools/continuous_integration/install.sh
-  - .administrative_tools/continuous_integration/install.sh
-#  - python setup.py install
+#  - chmod +x administrative_tools/continuous_integration/install.sh
+#  - .administrative_tools/continuous_integration/install.sh
+  - python setup.py install
 #  - pip install coveralls
    - pip install -r requirements.txt
 # command to run tests
 script:
-  - chmod +x administrative_tools/continuous_integration/test_script.sh
-  - .administrative_tools/continuous_integration/test_script.sh
+   - nosetests
+#  - chmod +x administrative_tools/continuous_integration/test_script.sh
+#  - .administrative_tools/continuous_integration/test_script.sh
 after_success:
   - coveralls
