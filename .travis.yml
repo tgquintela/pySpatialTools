@@ -13,8 +13,7 @@ matrix:
   include:
     # "Recommended" environments: More recent versions, for Py2 and Py3.
     - python: "2.7"
-      env: DEPS="nose libgfortran coverage"
-      DISTRIB="conda" COVERAGE="true"
+      env: DEPS="nose libgfortran coverage" DISTRIB="conda" COVERAGE="true"
 
 # installation
 before_install:
