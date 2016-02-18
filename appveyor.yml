@@ -26,7 +26,7 @@ install:
   - conda update -q conda
   - conda update --yes conda
   - conda info -a
-  - conda create -n testenv --yes %DEPS python=%PYTHON_VERSION
+  - conda create -n testenv --yes %DEPS% python=%PYTHON_VERSION%
   - pip install coveralls
 
 build_script:
