@@ -19,7 +19,7 @@ install:
   - set PATH=C:\\MinGW\\bin;%PATH%
   - set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
   - echo %PATH%
-  - conda install anaconda-client
+  - conda install anaconda-client -y -q
   - conda config --set always_yes yes
   - conda update -q conda
   - conda info -a
