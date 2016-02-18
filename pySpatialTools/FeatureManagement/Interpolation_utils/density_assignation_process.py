@@ -8,7 +8,7 @@ to a point considering a spatial distributions of features in the space.
 """
 
 import numpy as np
-from pythonUtils.ProcessTools import Processer
+from pySpatialTools.utils.util_external.ProcessTools import Processer
 from density_assignation import general_density_assignation
 
 
