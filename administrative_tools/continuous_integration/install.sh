@@ -32,7 +32,7 @@ if [[ "$DISTRIB" == "conda_min" ]]; then
     #    numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file requirements.txt -y
+    conda install --file administrative_tools/continuous_integration/ -y
     #conda install libgfortran
 
   # for debugging...
@@ -59,7 +59,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # provided versions
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file requirements.txt -y
+    conda install --file administrative_tools/continuous_integration/ -y
   # for debugging...
     echo $PATH
     which python
@@ -77,7 +77,7 @@ elif [[ "$DISTRIB" == "ubuntu" ]]; then
     # Create a new virtualenv using system site packages for numpy and scipy
     virtualenv --system-site-packages testenv
     source testenv/bin/activate
-    pip install -r requirements.txt
+    pip install -r administrative_tools/continuous_integration/requirements.txt
     #pip install nose
     #pip install coverage
     #pip install numpy==$NUMPY_VERSION
