@@ -25,7 +25,7 @@ install:
   - .administrative_tools/continuous_integration/install.sh
 #  - python setup.py install
 #  - pip install coveralls
-   pip install -r requirements.txt
+   - pip install -r requirements.txt
 # command to run tests
 script:
   - chmod +x administrative_tools/continuous_integration/test_script.sh
