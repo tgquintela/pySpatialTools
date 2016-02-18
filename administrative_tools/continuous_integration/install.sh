@@ -32,7 +32,7 @@ if [[ "$DISTRIB" == "conda_min" ]]; then
     #    numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file .requirements.txt -y
+    conda install --file requirements.txt -y
     #conda install libgfortran
 
   # for debugging...
@@ -59,7 +59,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # provided versions
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file .requirements.txt -y
+    conda install --file requirements.txt -y
   # for debugging...
     echo $PATH
     which python
@@ -90,8 +90,7 @@ if [[ "$COVERAGE" == "true" ]]; then
     pip install coveralls
 fi
 
-chmod +x "$TRAVIS_BUILD_DIR"/install.sh
-."$TRAVIS_BUILD_DIR"/install.sh
+bash ../../install.sh
 
 ## Example of installing personal required packages
 #wget https://github.com/../archive/snapshot-code.tar.gz
