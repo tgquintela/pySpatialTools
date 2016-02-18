@@ -28,6 +28,7 @@ install:
   - conda info -a
   - conda create -n testenv --yes %DEPS% python=%PYTHON_VERSION%
   - pip install coveralls
+  - pip install shapely
 
 build_script:
   - conda install python=%PYTHON_VERSION% -y -q
