@@ -20,7 +20,7 @@ import test_perturbation
 import test_descriptormodels
 import test_spdescriptormodels
 # TODO: test_spatial_relations
-import test_spatial_relations
+#import test_spatial_relations
 
 # Messages
 message_init_tests =\
