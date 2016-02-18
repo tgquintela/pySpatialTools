@@ -1,13 +1,14 @@
 version: "{build}"
-
 os: Windows Server 2012 R2
 
 environment:
   matrix:
     - PYTHON_VERSION: 2.7
       MINICONDA: C:\Miniconda
+      env: DISTRIB="conda" COVERAGE="true"
     - PYTHON_VERSION: 2.7
       MINICONDA: C:\Miniconda-x64
+      env: DISTRIB="conda" COVERAGE="true"
 
 branches:
   only:
