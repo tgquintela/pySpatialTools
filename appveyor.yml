@@ -30,8 +30,9 @@ install:
   - conda install gdal
   - conda install proj4
   - conda install geos
-  - conda install coveralls
   - conda install shapely
+  - conda install coverage
+  - pip install coveralls
 
 build_script:
   - conda install python=%PYTHON_VERSION% -y -q
@@ -42,9 +43,5 @@ build_script:
   - pip install --pre --no-index --find-links dist/ pySpatialTools
 
 test_script:
-  - if [[ "%COVERAGE" == "true" ]]; then
-    nosetests --with-coverage --cover-package=pySpatialTools
-    else
-    nosetests
-    fi
+  - if [[ "%COVERAGE" == "true" ]]; then nosetests --with-coverage --cover-package=pySpatialTools || nosetests; fi
 
