@@ -26,12 +26,13 @@ install:
   - conda info -a
 
 build_script:
-  - conda install python=%PYTHON_VERSION% -y -q
-  - conda install --file administrative_tools/continuous_integration/requirements.txt -y -q
-  - pip install -r administrative_tools/continuous_integration/requirements.txt
-  - python setup.py bdist_wheel
-  - ls dist
-  - pip install --pre --no-index --find-links dist/ pySpatialTools
+#  - conda install python=%PYTHON_VERSION% -y -q
+#  - conda install --file administrative_tools/continuous_integration/requirements.txt -y -q
+  - source administrative_tools/continuous_integration/install.sh
+#  - pip install -r administrative_tools/continuous_integration/requirements.txt
+#  - python setup.py bdist_wheel
+#  - ls dist
+#  - pip install --pre --no-index --find-links dist/ pySpatialTools
 
 test_script:
   - nosetests
