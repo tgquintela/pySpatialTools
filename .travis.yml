@@ -34,6 +34,8 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - nosetests
+  - chmod +x administrative_tools/continuous_integration/test_script.sh
+  - .administrative_tools/continuous_integration/test_script.sh
+#  - nosetests
 after_success:
   - coveralls
