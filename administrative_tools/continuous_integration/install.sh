@@ -32,7 +32,7 @@ if [[ "$DISTRIB" == "conda_min" ]]; then
     #    numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file administrative_tools/continuous_integration/ -y
+    conda install --file administrative_tools/continuous_integration/requirements.txt -y
     #conda install libgfortran
 
   # for debugging...
@@ -59,7 +59,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # provided versions
     conda create -n testenv --yes $DEPS python=$TRAVIS_PYTHON_VERSION
     source activate testenv
-    conda install --file administrative_tools/continuous_integration/ -y
+    conda install --file administrative_tools/continuous_integration/requirements.txt -y
   # for debugging...
     echo $PATH
     which python
