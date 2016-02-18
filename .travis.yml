@@ -1,35 +1,39 @@
+
 language: python
 sudo: false
-#virtualenv:
-#  system_site_packages: true
-#addons:
-#   apt:
-#      packages:
-#      - gfortran
-#      - nose
-#      - libgfortran
-#      - coverage
-#matrix:
-#  include:
-#    # "Recommended" environments: More recent versions, for Py2 and Py3.
-#    - python: "2.7"
-#      env: DEPS="nose libgfortran coverage" DISTRIB="conda" COVERAGE="true"
+
+matrix:
+  include:
+    # "Recommended" environments: More recent versions, for Py2 and Py3.
+    - python: "2.7"
+      env: DEPS="scikit-learn>=0.17 numpy scipy=0.16 matplotlib=1.4 pandas=0.16 networkx>=1.8 nose shapely>=1.5.13 libgfortran"
+
 
 # installation
-#before_install:
+before_install:
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p /home/travis/mc
+  - export PATH=/home/travis/mc/bin:$PATH
 #   - sudo apt-get update
 #   - travis_wait pip install -r requirements.txt
 # command to install dependencies
 install:
-#  - chmod +x administrative_tools/continuous_integration/install.sh
-#  - .administrative_tools/continuous_integration/install.sh
+  # Installation from trackpy
+  # - conda update --yes --no-deps conda
+  # OK, this used to *fix* the build, but now it *breaks* the build.
+  - conda update --yes conda
+  - conda config --add channels soft-matter
+  - conda create -n testenv --yes $DEPS pip nose setuptools python=$TRAVIS_PYTHON_VERSION
+  - source activate testenv
+  # for debugging...
+  - echo $PATH
+  - which python
+  - conda info
+  - conda list
   - python setup.py install
-#  - pip install coveralls
-   - pip install -r requirements.txt
 # command to run tests
 script:
-   - nosetests
-#  - chmod +x administrative_tools/continuous_integration/test_script.sh
-#  - .administrative_tools/continuous_integration/test_script.sh
+  - nosetests
 after_success:
   - coveralls
