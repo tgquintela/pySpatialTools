@@ -30,7 +30,7 @@ install:
   - conda install gdal
   - conda install proj4
   - conda install geos
-  - conda install shapely
+  - pip install shapely
   - conda install coverage
   - pip install coveralls
 
