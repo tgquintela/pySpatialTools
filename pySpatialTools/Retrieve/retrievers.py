@@ -179,8 +179,8 @@ class Retriever:
         self._flag_auto = False
         self._ifdistance = False
         self._autoret = False
-        self._heterogenous_input = True
-        self._heterogenous_output = True
+        self._heterogenous_input = False
+        self._heterogenous_output = False
         ## IO methods
         self._input_map = lambda s, i: i
         self._output_map = [lambda s, i, x: x]
@@ -376,11 +376,12 @@ class Retriever:
             neighs, dists = self[i]
             #dists = np.array(dists).reshape((len(dists), n_data))
             n_i = len(neighs)
-            iss_i, jss_i = [i]*n_i, list(neighs)
-            iss.append(iss_i)
-            jss.append(jss_i)
-            for k in range(n_data):
-                data[k].append(dists[:, k])
+            if n_i != 0:
+                iss_i, jss_i = [i]*n_i, list(neighs)
+                iss.append(iss_i)
+                jss.append(jss_i)
+                for k in range(n_data):
+                    data[k] += dists
         ## 2. Format output
         iss, jss = np.hstack(iss), np.hstack(jss)
         data = [np.hstack(data[k]) for k in range(n_data)]
@@ -388,4 +389,6 @@ class Retriever:
         for k in range(n_data):
             nets.append(coo_matrix((data[k], (iss, jss)), shape=sh))
         #nets = [format_relationship(nets[k], out) for k in range(n_data)]
+        if n_data == 1:
+            nets = nets[0]
         return nets
