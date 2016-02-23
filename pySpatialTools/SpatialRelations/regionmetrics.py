@@ -33,23 +33,37 @@ class RegionDistances:
     _input = 'indices'  # indices, elements_id
 
     def __init__(self, relations=None, distanceorweighs=True, symmetric=True,
-                 input_='indices', output='indices', _data=None):
+                 input_='indices', output='indices', _data=None, data_in=None):
         ## Relations management
         self.relations = relations
         if relations is not None:
             # Store associated data
             if issparse(relations):
-                sh0 = relations.shape[0]
+                sh1 = relations.shape[1]
                 if _data is None:
-                    self._data = np.arange(sh0).reshape((sh0, 1))
+                    self._data = np.arange(sh1).reshape((sh1, 1))
                 else:
-                    self._data = _data
+                    if type(_data) == list:
+                        _data = np.array(_data)
+                    if len(_data.shape) == 1:
+                        self._data = _data.reshape((len(_data), 1))
+                    elif len(_data.shape) == 2:
+                        self._data = _data
+                    elif len(_data.shape) not in [1, 2]:
+                        raise TypeError("Not correct shape of data.")
             else:
                 if _data is None:
-                    _data = np.arange(len(relations))
-                    self._data = _data.reshape((len(relations), 1))
+                    _data = np.arange(relations.shape[1])
+                    self._data = _data.reshape((relations.shape[1], 1))
                 else:
-                    self._data = _data
+                    if type(_data) == list:
+                        _data = np.array(_data)
+                    if len(_data.shape) == 1:
+                        self._data = _data.reshape((len(_data), 1))
+                    elif len(_data.shape) == 2:
+                        self._data = _data
+                    elif len(_data.shape) not in [1, 2]:
+                        raise TypeError("Not correct shape of data.")
             # Type of input
             if type(relations) == np.ndarray:
                 self._store = 'matrix'
@@ -57,6 +71,20 @@ class RegionDistances:
                 self._store = 'network'
             elif issparse(relations):
                 self._store = 'sparse'
+        if self._store != 'network':
+            if data_in is None:
+                data_in = np.arange(relations.shape[0])
+                self._data_input = data_in.reshape((relations.shape[0], 1))
+            else:
+                if type(data_in) == list:
+                    data_in = np.array(data_in)
+                if len(data_in.shape) == 1:
+                    self._data_input = data_in.reshape((len(data_in), 1))
+                elif len(data_in.shape) == 2:
+                    self._data_input = data_in
+                elif len(data_in.shape) not in [1, 2]:
+                    raise TypeError("Not correct shape of data input.")
+
         ## Type of values
         self._distanceorweighs = distanceorweighs
         if not distanceorweighs:

@@ -113,10 +113,11 @@ def compute_ContiguityRegionDistances(discretizor, store='network'):
         how we want to store the relations.
     """
     ## 0. Preparing variables
-    _data = discretizor.reshape((discretizor.shape[0], 1))
+    #_data = discretizor.reshape((discretizor.shape[0], 1))
+    _data = discretizor.get_regions_id()
 
     ## 1. Computation of relations
-    relations = discretizor.retrieve_contiguity_regions()
+    relations = discretizor.get_contiguity()
 
     ## 2. Formatting output
     symmetric = np.all((relations.T - relations).A)
@@ -181,7 +182,6 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
                 dts.append(cdist(locs_i, locs_j).mean())
                 iss.append(i)
                 jss.append(dists_j[0])
-
     dts, iss, jss = np.hstack(dts), np.hstack(iss), np.hstack(jss)
     iss, jss = iss.astype(int), jss.astype(int)
     relations = coo_matrix((dts, (iss, jss)), shape=(n_regs, n_regs))
