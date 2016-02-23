@@ -22,6 +22,7 @@ TODO:
 import numpy as np
 import warnings
 from scipy.sparse import coo_matrix
+from aux_retriever import _check_retriever
 from ..utils import NonePerturbation
 from ..utils import ret_filter_perturbations
 from ..utils.util_classes import SpatialElementsCollection
@@ -184,6 +185,8 @@ class Retriever:
         ## IO methods
         self._input_map = lambda s, i: i
         self._output_map = [lambda s, i, x: x]
+        ## Check
+        _check_retriever(self)
 
     def _format_retriever_info(self, info_ret, info_f):
         "Format properly the retriever information."

@@ -11,7 +11,7 @@ this manager, but in this case it is not the output, it is the input.
 
 """
 
-from aux_retriever import create_aggretriever
+from tools_retriever import create_aggretriever
 
 
 class RetrieverManager:
