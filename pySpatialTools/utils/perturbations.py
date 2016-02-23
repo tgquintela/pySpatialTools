@@ -97,6 +97,7 @@ class JitterLocations(GeneralPerturbation):
     _perturbtype = "jitter_coordinate"
 
     def __init__(self, stds=0, k_perturb=1):
+        self._initialization()
         self._stds = np.array(stds)
         self.k_perturb = k_perturb
 
@@ -184,8 +185,8 @@ class MixedFeaturePertubation(GeneralPerturbation):
         features_p, n = [], len(features)
         k_pos = list(range(self.k_perturb))
         for i in range(len(self.perturbations)):
-            features_p_k = self.perturbations[i].apply2features(features[:, i],
-                                                                k_pos)
+            features_p_k =\
+                self.perturbations[i].apply2features(features[:, [i]], k_pos)
             features_p_k = features_p_k.reshape((n, 1, self.k_perturb))
             features_p.append(features_p_k)
         features_p = np.concatenate(features_p, axis=1)
@@ -200,6 +201,7 @@ class DiscreteIndPerturbation(GeneralPerturbation):
     _perturbtype = "discrete"
 
     def __init__(self, probs):
+        self._initialization()
         if np.all(probs.sum(1)) != 1:
             raise TypeError("Not correct probs input.")
         if probs.shape[0] != probs.shape[1]:
@@ -217,7 +219,7 @@ class DiscreteIndPerturbation(GeneralPerturbation):
         if type(k) == int:
             k = [k]
         ## Compute each change
-        feature_p = np.zeros((len(feature, len(k))))
+        feature_p = np.zeros((len(feature), len(k)))
         for i_k in k:
             for i in xrange(len(feature)):
                 r = np.random.random()
@@ -233,14 +235,15 @@ class ContiniousIndPerturbation(GeneralPerturbation):
     _perturbtype = "continious"
 
     def __init__(self, pstd):
+        self._initialization()
         self.pstd = pstd
 
     def apply2features(self, feature, k=None):
         if k is None:
-            k = list(range(k))
+            k = list(range(self.k_perturb))
         if type(k) == int:
             k = [k]
-        feature_p = np.zeros((len(feature, len(k))))
+        feature_p = np.zeros((len(feature), len(k)))
         for i_k in k:
             jitter_d = np.random.random(len(feature))
             feature_p[:, i_k] = np.multiply(self.pstd, jitter_d)
@@ -253,9 +256,12 @@ class PermutationIndPerturbation(GeneralPerturbation):
     _perturbtype = "permutation_ind"
 
     def __init__(self, reindices=None):
-        if type(reindices) == np.array:
+        self._initialization()
+        if type(reindices) == np.ndarray:
             self.reindices = reindices
             self.k_perturb = reindices.shape[1]
+        else:
+            raise TypeError("Incorrect reindices.")
 
     def apply2features(self, feature, k=None):
         if k is None:
@@ -264,7 +270,7 @@ class PermutationIndPerturbation(GeneralPerturbation):
             k = [k]
         feature_p = np.zeros((len(feature), len(k)))
         for i_k in k:
-            feature_p[:, i_k] = feature[self.reindices[:, i_k]]
+            feature_p[:, [i_k]] = feature[self.reindices[:, i_k]]
         return feature_p
 
     def apply2features_ind(self, feature, i, k):
