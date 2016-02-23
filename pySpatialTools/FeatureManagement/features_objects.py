@@ -35,6 +35,8 @@ class Features:
             i, k, d = [key], range(self.k_perturb+1), None
         if type(key) == list:
             i, k, d = key, range(self.k_perturb+1), None
+        if type(key) == slice:
+            i, k, d = key, range(self.k_perturb+1), None
         if type(key) == tuple:
             assert len(key) == 2
             if type(key[0]) == tuple:
@@ -98,7 +100,8 @@ class Features:
             if np.min(i) < 0 or np.max(i) >= len(self.features):
                 raise IndexError("Indices out of bounds.")
         elif type(i) == slice:
-            if i.start < 0 or i.stop >= len(self.features):
+            i = self._get_possible_indices(i)
+            if i.start < 0 or i.stop > len(self.features):
                 raise IndexError("Indices out of bounds.")
         ## 2. Format k
         if k is None:
@@ -217,6 +220,8 @@ class ImplicitFeatures(Features):
         return feats
 
     def _features_null_saver(self, idxs, k_p, k_i):
+        if type(idxs) == slice:
+            idxs = list(range(idxs.start, idxs.stop, idxs.step))
         new_indices = self._perturbators[k_p].apply2indice(idxs, k_i)
         idxs_notnull = [i for i in range(len(new_indices))
                         if not new_indices[i] >= len(self.features)]
@@ -231,7 +236,8 @@ class ImplicitFeatures(Features):
             idxs = slice(0, len(self.features), 1)
         if isinstance(idxs, slice):
             start = 0 if idxs.start is None else idxs.start
-            stop = len(self.features)-1 if idxs.stop is None else idxs.stop
+            stop = len(self.features) if idxs.stop is None else idxs.stop
+            stop = len(self.features) if idxs.stop > 10*16 else idxs.stop
             step = 1 if idxs.step is None else idxs.step
             idxs = slice(start, stop, step)
         return idxs
@@ -378,7 +384,8 @@ class ExplicitFeatures(Features):
             idxs = slice(0, len(self.features), 1)
         if isinstance(idxs, slice):
             start = 0 if idxs.start is None else idxs.start
-            stop = len(self.features)-1 if idxs.stop is None else idxs.stop
+            stop = len(self.features) if idxs.stop is None else idxs.stop
+            stop = len(self.features) if idxs.stop > 10**16 else idxs.stop
             step = 1 if idxs.step is None else idxs.step
             idxs = slice(start, stop, step)
         return idxs

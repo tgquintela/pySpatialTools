@@ -66,6 +66,12 @@ def test():
     Feat1[([0], [0.])]
     Feat2[([0], [0.])]
 
+    Feat[0:3]
+    Feat[:]
+    Feat0[:]
+    Feat1[:]
+    Feat2[:]
+
     Feat[((0, 0), 0)]
     Feat0[((0, 0), 0)]
     Feat1[((0, 0), 0)]
