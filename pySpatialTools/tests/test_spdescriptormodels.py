@@ -8,6 +8,7 @@ testing spatial descriptor models utilities.
 
 
 import numpy as np
+import os
 import copy
 
 ## Retrieve
@@ -30,6 +31,8 @@ from pySpatialTools.utils.util_classes import create_mapper_vals_i
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
+
+from ..utils.util_external.Logger import Logger
 
 
 def test():
@@ -79,3 +82,10 @@ def test():
         aux_spdesc.set_loop(idxs[i])
         spdescs.append(aux_spdesc)
     netss = [spdescs[i].compute() for i in range(4)]
+
+    try:
+        logfile = Logger('logfile.log')
+        spdesc.compute_process(logfile, lim_rows=0, n_procs=0)
+        os.remove('logfile.log')
+    except:
+        raise Exception("Not usable compute_process.")

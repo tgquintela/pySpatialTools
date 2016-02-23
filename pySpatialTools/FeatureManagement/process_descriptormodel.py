@@ -16,7 +16,9 @@ class SpatialDescriptorModelProcess(Processer):
     """Spatial descriptor model processer."""
     proc_name = "Spatial descriptor model computation"
 
-    def __init__(self, spdescmodel, logfile, lim_rows=0, n_procs=0):
+    def __init__(self, spdescmodel, logfile, lim_rows=0, n_procs=0,
+                 prompt_inform=False):
+        self._initialization()
         # Logfile
         self.logfile = logfile
         # Main class
@@ -24,6 +26,7 @@ class SpatialDescriptorModelProcess(Processer):
         # Other parameters
         self.lim_rows = lim_rows
         self.bool_inform = True if self.lim_rows != 0 else False
+        self.prompt_inform = prompt_inform
         self.n_procs = n_procs
         self.proc_desc = "Computation %s with %s"
 
@@ -34,7 +37,8 @@ class SpatialDescriptorModelProcess(Processer):
         - Sequential
         """
         ## 0. Setting needed variables (TODO: cambiar sptypemodel)
-        m_aux0 = self.sp_descriptormodel.sptypemodel
+#        m_aux0 = self.sp_descriptormodel.sptypemodel
+        m_aux0 = "Matrix"  # Temporal
         name_desc = self.sp_descriptormodel.name_desc
         self.proc_desc = self.proc_desc % (m_aux0, name_desc)
         t00 = self.setting_global_process()
@@ -57,11 +61,11 @@ class SpatialDescriptorModelProcess(Processer):
         desc = self.sp_descriptormodel.featurers.initialization_output()
         i = 0
         # Begin to track the process
-        t0, bun = self.setting_loop(self.descriptormodel.n_inputs)
-        for desc_i, vals_i in self.sp_descriptormodel.compute_nets_i:
+        t0, bun = self.setting_loop(self.sp_descriptormodel.n_inputs)
+        for desc_i, vals_i in self.sp_descriptormodel.compute_nets_i():
             for k in range(len(vals_i)):
-                desc[vals_i[k], :, k] =\
-                    self.featurers.add2result(desc[vals_i[k], :, k], desc_i[k])
+                desc[vals_i[k], :, k] = self.sp_descriptormodel.featurers.\
+                    add2result(desc[vals_i[k], :, k], desc_i[k])
             ## Finish to track this process
             t0, bun = self.messaging_loop(i, t0, bun)
             i += 1
