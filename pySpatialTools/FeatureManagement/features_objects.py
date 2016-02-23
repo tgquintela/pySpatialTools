@@ -203,9 +203,11 @@ class ImplicitFeatures(Features):
             if k_p == 0:
                 feats_k = self.features[idxs]
             else:
-                feats_k =\
+                idxs_notnull, new_idxs, feats_k =\
+                    self._features_null_saver(idxs, k_p, k_i)
+                feats_k[idxs_notnull] =\
                     self._perturbators[k_p].apply2features_ind(self.features,
-                                                               idxs, k_i)
+                                                               new_idxs, k_i)
             feats_k = self._characterizer(feats_k, d)
             feats_k = self._format_out(feats_k)
             feats.append(feats_k)
@@ -213,6 +215,14 @@ class ImplicitFeatures(Features):
             if feats:
                 feats = np.concatenate(feats, axis=0)
         return feats
+
+    def _features_null_saver(self, idxs, k_p, k_i):
+        new_indices = self._perturbators[k_p].apply2indice(idxs, k_i)
+        idxs_notnull = [i for i in range(len(new_indices))
+                        if not new_indices[i] >= len(self.features)]
+        new_idxs = [idxs[i] for i in idxs_notnull]
+        feats = self._nullvalue*np.ones((len(idxs), self.features.shape[1]))
+        return idxs_notnull, new_idxs, feats
 
     ################################# Getters #################################
     ###########################################################################
@@ -301,38 +311,6 @@ class ImplicitFeatures(Features):
         ## 2. Storing mapper function
         self._map_perturb = map_perturb
 
-    ########################## Aggregation management #########################
-    ###########################################################################
-#    def add_aggregations(self, discretization_info, regret, agg_funct):
-#        """Create aggregation of fetures to favour the computation."""
-#        ## 0. Preparing the inputs
-#        if type(discretization_info) == tuple:
-#            locs, discretizor = discretization_info
-#            regs = discretizor.discretize(locs)
-#        else:
-#            regs = discretization_info
-#        u_regs = np.unique(regs)
-#        u_regs = u_regs.reshape((len(u_regs), 1))
-#
-#        ## 1. Compute aggregation
-#        sh = self.shape
-#        agg = np.ones((len(u_regs), sh[1], sh[2])) * self._nullvalue
-#        for i in xrange(len(u_regs)):
-#            neighs_info = regret.retrieve_neighs(u_regs[i])
-#            if list(neighs_info[0]) != []:
-#                for k in range(self.k_perturb+1):
-#                    agg[i, :, k] = agg_funct(self[neighs_info, k],
-#                                             neighs_info[1])
-#            else:
-#                sh = self.shape
-#                agg[i, :, :] = np.ones((sh[1], sh[2])) * self._nullvalue
-#
-#        ## 2. Prepare output
-#        agg = AggFeatures(agg, indices=u_regs,
-#                          characterizer=self._characterizer)
-#
-#        return agg
-
 
 class ExplicitFeatures(Features):
     """Explicit features class. In this class we have explicit representation
@@ -347,11 +325,18 @@ class ExplicitFeatures(Features):
         self.features = None
         self.variables = None
         self.out_features = None
-        self._characterizer = None
+        self._setdescriptor = False
         ## Other attributes
         self._nullvalue = 0
+        ## Perturbation
+        self._perturbators = [NonePerturbation()]
+        self._map_perturb = lambda x: (0, 0)
+        self._dim_perturb = [1]
+        ## Function to homogenize output respect aggfeatures
+        self._characterizer = lambda x, d: x
+        self._format_out_k = lambda x, y1, y2, y3: x
+        self._out = 'ndarray'
         self.possible_regions = None
-        self.k_perturb = 0
         self.indices = []
         self._out = 'ndarray'
 
@@ -382,7 +367,8 @@ class ExplicitFeatures(Features):
                         raise Exception("Incorrect region selected.")
 
         feats = np.concatenate(feats, axis=0)
-        feats = self._format_out(self._characterizer(feats, d))
+        feats = self._characterizer(feats, d)
+        feats = self._format_out(feats)
         return feats
 
     ################################# Getters #################################
@@ -432,12 +418,6 @@ class ExplicitFeatures(Features):
         msg = "Aggregated features can not be perturbated."
         msg += "Change order of aggregation."
         raise Exception(msg)
-
-    ########################## Aggregation management #########################
-    ###########################################################################
-#    def add_aggregation(self, aggfeatures, indices):
-#        self.aggfeatures.append(aggfeatures)
-#        self.indices.append(indices)
 
 
 def checker_sp_descriptor(retriever, features_o):

@@ -45,3 +45,31 @@ def test():
         raise Exception("It should not accept that inputs.")
     except:
         pass
+
+    ## Other functions
+    # Indexing
+    Feat[0]
+    Feat0[0]
+    Feat1[0]
+    Feat2[0]
+
+    Feat[(0, 0)]
+    Feat0[(0, 0)]
+    Feat1[(0, 0)]
+    Feat2[(0, 0)]
+
+    Feat[((0, 0), 0)]
+    Feat0[((0, 0), 0)]
+    Feat1[((0, 0), 0)]
+    Feat2[((0, 0), 0)]
+
+    # shape
+    Feat.shape
+    Feat0.shape
+    Feat1.shape
+    Feat2.shape
+
+    featret[0]
+    featret.shape
+    featret.nfeats
+    len(featret)
