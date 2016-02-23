@@ -104,7 +104,7 @@ class GridSpatialDisc(MetricDiscretizor):
 
     ########################## Contiguity definition #########################
     ##########################################################################
-    def _compute_contiguity_geom(self, region_id=None):
+    def _compute_contiguity_geom(self, region_id=None, params={}):
         "Compute which regions are contiguous and returns a graph."
         ## 0. Compute needed variables
         nx, ny = self.borders[0].shape[0]-1, self.borders[1].shape[0]-1

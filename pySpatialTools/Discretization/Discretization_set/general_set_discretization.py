@@ -136,7 +136,7 @@ class SetDiscretization(SpatialDiscretizor):
         else:
             return region_id
 
-    def _compute_contiguity_geom(self, region_id, params):
+    def _compute_contiguity_geom(self, region_id, params={}):
         """Compute geometric contiguity."""
         if 'metric' in dir(self):
             if self.metric is not True:
@@ -199,6 +199,7 @@ def format_membership(membership):
                 aux = np.hstack(membership)
                 collections_id = np.unique(aux)
     elif issparse(membership):
+        collections = None
         _membership = membership
         n_elements = membership.shape[0]
         collections_id = np.arange(membership.shape[1])
@@ -216,6 +217,8 @@ def to_sparse(_membership, out):
     n_elements, _unique, _weighted, collections, collections_id = out
     sh = n_elements, len(collections_id)
     aux_map = dict(zip(collections_id, range(sh[1])))
+    if issparse(_membership):
+        return _membership, (range(n_elements), collections_id)
     if _unique:
         matrix = np.array([aux_map[e] for e in _membership])
         matrix = matrix.astype(int)
