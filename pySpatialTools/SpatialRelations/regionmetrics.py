@@ -206,7 +206,7 @@ class RegionDistances:
         if self._data_input is None:
             return self._data
         else:
-            return self.data_input
+            return self._data_input
 
     @property
     def data_output(self):
@@ -221,6 +221,14 @@ class DummyRegDistance(RegionDistances):
     """Dummy abstract region distance."""
 
     def __init__(self, regs):
+        if type(regs) not in [np.ndarray, list]:
+            raise TypeError("Incorrect ids of elements.")
+        if type(regs) == list:
+            regs = np.array(regs)
+        if len(regs.shape) not in [1, 2]:
+            raise TypeError("Incorrect shape of elements id.")
+        if len(regs.shape) == 1:
+            regs = regs.reshape((len(regs), 1))
         self._data = regs
 
     def __getitem__(self, i):
