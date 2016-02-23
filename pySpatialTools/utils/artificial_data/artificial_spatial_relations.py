@@ -62,8 +62,8 @@ def generate_random_relations_cutoffs(n, p0=0.5, p1=0.9, sym=True,
     if store == 'network':
         net = nx.from_scipy_sparse_matrix(sparse)
         mapping = dict(zip(net.nodes(), regs.ravel()))
-        sp_relations = RegionDistances(nx.relabel_nodes(net, mapping))
+        sp_relations = RegionDistances(nx.relabel_nodes(net, mapping),
+                                       _data=regs)
     elif store == 'sparse':
-        sp_relations = RegionDistances(sparse)
-    sp_relations._data = regs
+        sp_relations = RegionDistances(sparse, _data=regs)
     return sp_relations
