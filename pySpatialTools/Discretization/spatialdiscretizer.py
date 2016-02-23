@@ -213,7 +213,12 @@ class SpatialDiscretizor:
                 assert len(limits) == self.n_dim * 2
                 return True
             except:
-                return False
+                try:
+                    assert len(limits.shape) == self.n_dim
+                    assert limits.shape == tuple([2]*self.n_dim)
+                    return True
+                except:
+                    return False
         ## Compute limits
         if region_id is None:
             limits = self.limits
@@ -240,7 +245,17 @@ class SpatialDiscretizor:
             the regions which have some elements in them.
 
         """
-        regions = np.unique(self.discretize(elements))
+        if self.multiple:
+            discretized = self.discretize(elements)
+            ## for weighted
+            if type(discretized) == tuple:
+                discretized = discretized[0]
+            regions = []
+            for e in discretized:
+                regions += list(e)
+            regions = np.unique(regions)
+        else:
+            regions = np.unique(self.discretize(elements))
         return regions
 
     def check_neighbors(self, regions, region):

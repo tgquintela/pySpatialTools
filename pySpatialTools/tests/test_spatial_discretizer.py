@@ -59,7 +59,9 @@ def test():
     regions = disc5.discretize(locs1)
     regions = disc5.discretize(locs2)
     regions = disc6.discretize(elements1)
-    regions = disc7.discretize(elements2)
+    regions7 = disc7.discretize(elements2)
+
+    a = randint_sparse_matrix(0.2, (2000, 100), 1)
 
     # Inverse discretization action
 
@@ -86,3 +88,25 @@ def test():
     disc9 = SetDiscretization(relations)
     disc8.discretize(np.random.randint(0, 20, 100))
     disc9.discretize(np.random.randint(0, 20, 100))
+
+
+    ## Check regions
+    neighs = disc1.check_neighbors(np.array([0, 1]), 0)
+
+    activated = disc1.get_activated_regions(locs1[:10])
+    activated = disc2.get_activated_regions(locs1[:10])
+    activated = disc3.get_activated_regions(locs1[:10])
+    activated = disc4.get_activated_regions(locs1[:10])
+    activated = disc5.get_activated_regions(locs1[:10])
+    activated = disc6.get_activated_regions(elements1[:10])
+    activated = disc7.get_activated_regions(elements2[:10])
+    activated = disc8.get_activated_regions(np.array([0, 1]))
+    activated = disc9.get_activated_regions(np.array([0, 1]))
+
+    disc1.belong_region(locs1[0], 0)
+    disc2.belong_region(locs1[1], 0)
+    limits = disc1.get_limits()
+    limits = disc1.get_limits(0)
+    limits = disc2.get_limits()
+#    limits = disc3.get_limits()
+#    limits = disc4.get_limits(0)
