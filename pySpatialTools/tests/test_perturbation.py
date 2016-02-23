@@ -17,7 +17,8 @@ from pySpatialTools.FeatureManagement.features_retriever import\
 from pySpatialTools.FeatureManagement.features_objects import Features,\
     ImplicitFeatures, ExplicitFeatures
 from pySpatialTools.utils.perturbations import PermutationPerturbation,\
-    NonePerturbation, JitterLocations
+    NonePerturbation, JitterLocations, PermutationIndPerturbation,\
+    ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor
@@ -38,6 +39,7 @@ def test():
     locs = np.random.random((n, 2))*100
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+
     ## Create perturbations
     reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
     perturbation1 = PermutationPerturbation(reind.T)
@@ -110,6 +112,27 @@ def test():
     avgdesc = AvgDescriptor()
     features = FeaturesManager(features, avgdesc)
     assert(features.k_perturb == k_perturb4)
+
+    ## Individual perturbations
+    reind_ind = np.random.permutation(100).reshape((100, 1))
+    perm_ind = PermutationIndPerturbation(reind_ind)
+    perm_ind.reindices
+    feat_perm = np.random.random((100, 1))
+    perm_ind.apply2features(feat_perm)
+
+    cont_ind = ContiniousIndPerturbation(0.5)
+    feat_cont = np.random.random((100, 1))
+    cont_ind.apply2features(feat_cont)
+
+    disc_ind = DiscreteIndPerturbation(np.random.random((10, 10)))
+    feat_disc = np.random.randint(0, 10, 100)
+    disc_ind.apply2features(feat_disc)
+
+    mix_coll = MixedFeaturePertubation([perm_ind, cont_ind, disc_ind])
+    feat_mix = np.hstack([feat_perm, feat_cont, feat_disc.reshape((100, 1))])
+    mix_coll.apply2features(feat_mix)
+
+
 
 #    griddisc = GridSpatialDisc((100, 100), (0, 10), (0, 10))
 #    locs = np.random.random((n, 2)) * 10
