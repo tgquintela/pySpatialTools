@@ -45,6 +45,9 @@ def test():
 
     ## Test functions
     mainmapper1[0]
+    mainmapper1[[0, 1]]
+    mainmapper1[slice(0, 3)]
+    mainmapper1[[mainmapper1.data[0], mainmapper1.data[1]]]
     mainmapper1[mainmapper1.data[0]]
     mainmapper1.retrieve_neighs(0)
     mainmapper1.retrieve_neighs(mainmapper1.data[0])
@@ -63,6 +66,8 @@ def test():
     mainmapper2.shape
 
     dummymapper[0]
+    dummymapper[[0, 1]]
+    dummymapper[slice(0, 3)]
     dummymapper[dummymapper.data[0]]
     dummymapper.retrieve_neighs(0)
     dummymapper.retrieve_neighs(dummymapper.data[0])

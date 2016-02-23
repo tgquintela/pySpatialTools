@@ -109,7 +109,9 @@ class RegionDistances:
         if type(i) == np.ndarray:
             neighs, dists = self.retrieve_neighs(i)
         if isinstance(i, slice):
-            neighs, dists = self[list(range(i.start, i.stop, i.step))]
+            start, stop, step = i.start, i.stop, i.step
+            step = 1 if step is None else step
+            neighs, dists = self[list(range(start, stop, step))]
         if type(i) not in [int, list, slice, np.ndarray]:
             raise TypeError("Not correct index")
         return neighs, dists
@@ -155,7 +157,7 @@ class RegionDistances:
                     dists = np.array([])
                     return neighs, dists
             else:
-                print reg, reg.shape
+#                print(reg, reg.shape)
                 raise Exception("Not correct input.")
         elif type(reg) == int:
             reg = self._data[reg, 0]
@@ -245,7 +247,9 @@ class DummyRegDistance(RegionDistances):
         if type(i) == np.ndarray:
             neighs, dists = self.retrieve_neighs(i)
         if isinstance(i, slice):
-            neighs, dists = self[list(range(i.start, i.stop, i.step))]
+            start, stop, step = i.start, i.stop, i.step
+            step = 1 if step is None else step
+            neighs, dists = self[list(range(start, stop, step))]
         if type(i) not in [int, list, slice, np.ndarray]:
             raise TypeError("Not correct index")
         return neighs, dists

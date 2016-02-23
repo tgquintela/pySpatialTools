@@ -55,5 +55,16 @@ def test():
         neighs_info = ret5.retrieve_neighs(i)
         neighs_info = gret.retrieve_neighs(i)
 
+    ## Main functions
+    ret1.data_input
+    ret1.data_output
+    ret1.shape
+    ret1[0]
+
+    ret2.data_input
+    ret2.data_output
+    ret2.shape
+    ret2[0]
+
     net = ret1.compute_neighnet()
     net = ret2.compute_neighnet()

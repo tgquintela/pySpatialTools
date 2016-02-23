@@ -340,6 +340,10 @@ class Retriever:
         return n1
 
     @property
+    def shape(self):
+        return (self._n0, self._n1)
+
+    @property
     def data_input(self):
         if self._autodata:
             return np.array(self.retriever[0].data)
