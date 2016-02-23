@@ -2,6 +2,177 @@
 """
 """
 
+##########2016-02-23 Retrievers
+
+
+    def _check_coord(self, i_locs, k=0, inorout=True):
+        """Function to check if the input are coordinates or indices. The input
+        is a coordinate when is an array with the same dimension that the pool
+        of retrievable locations stored in retriever.data or in self.data.
+
+        Parameters
+        ----------
+        i_locs: int, list of ints, numpy.ndarray or list of numpy.ndarray
+            the locations information.
+
+        Returns
+        -------
+        checker_coord: boolean
+            if there are coordinates True, if there are indices False.
+
+        """
+        ## Get individuals
+        if type(i_locs) == list:
+            check_loc = i_locs[0]
+        else:
+            check_loc = i_locs
+        ## Get checker
+        if type(check_loc) in [int, np.int32, np.int64, np.ndarray]:
+            if type(check_loc) != np.ndarray:
+                checker_coord = False
+            else:
+                flag = inorout and not self._autoret
+                self.locations.shape
+                if flag:
+                    d_sh = self.data.shape
+                else:
+                    d_sh = self.retriever[k].data.shape
+                if len(check_loc.shape) == len(d_sh):
+                    checker_coord = True
+                else:
+                    raise IndexError("Not correct shape for coordinates.")
+        else:
+            checker_coord = None
+        return checker_coord
+
+    def _retrieve_neighs_reg(self, elem_i, i_disc=0, lim_distance=None,
+                             maxif=True, ifdistance=True):
+        """Retrieve the elements which are defined by the parameters of the
+        inputs and the nature of this object method.
+        TODEPRECATE: or for particular use.
+
+        Parameters
+        ----------
+        elem_i: int or numpy.ndarray
+            the elements we want to get its neighbor element.
+        i_disc: int
+            the discretization we want to apply.
+        lim_distance: float
+            the bound distance to define neighbourhood.
+        maxif: boolean
+            if True the bound is the maximum accepted, if False it is the
+            minimum.
+
+        Returns
+        -------
+        neighs: numpy.ndarray
+            the ids of the neighbourhood elements.
+        dists: numpy.ndarray
+            the distances between elements.
+        """
+        neighs, dists = self.retriever.retrieve_neighs(elem_i)
+        if neighs.any():
+            if lim_distance is None:
+                logi = np.ones(len(list(dists))).astype(bool)
+            else:
+                if maxif:
+                    logi = dists < lim_distance
+                else:
+                    logi = dists > lim_distance
+            neighs = neighs[logi]
+            dists = dists[logi]
+        neighs = neighs.ravel()
+        return neighs, dists
+
+
+    def _retrieve_neighs_reg(self, elem_i, i_disc=0):
+        """Retrieve the elements which are defined by the parameters of the
+        inputs and the nature of this object method.
+        TODEPRECATE: or particular use.
+
+        Parameters
+        ----------
+        elem_i: int or numpy.ndarray
+            the element we want to get its neighsbour elements.
+        i_disc: int
+            the discretization we want to apply.
+
+        Returns
+        -------
+        neighs: numpy.ndarray
+            the ids of the neighbourhood elements.
+        dists: numpy.ndarray
+            the distances between elements.
+        """
+        if type(elem_i) == np.ndarray:
+            neighs, dists = np.array(elem_i), np.array([0])
+        else:
+            neighs = np.array(self.retriever.data[elem_i])
+            dists = np.array([0]*neighs.shape[0])
+        neighs = neighs.ravel()
+        return neighs, dists
+
+    def _retrieve_neighs_reg(self, elem_i, i_disc=0, order=0,
+                             exactorlimit=False):
+        """Retrieve the elements which are defined by the parameters of the
+        inputs and the nature of this object method.
+        TODEPRECATE: and suspicious of bad results.
+
+        Parameters
+        ----------
+        elem_i: int or np.ndarray
+            the element we want to get its neighsbour elements.
+        order: int
+            the order we want to retrieve the object.
+        exactorlimit: boolean
+            if True we retrieve the neighs in this exact order, if False we
+            retrieve the neighs up to this order (included).
+
+        Returns
+        -------
+        neighs: numpy.ndarray
+            the ids of the neighbourhood elements.
+        dists: numpy.ndarray
+            the distances between elements.
+
+        """
+        elem_i = self.retriever.data[elem_i] if type(elem_i) == int else elem_i
+        ## 0. Needed variables
+        neighs, dists, to_reg = [], [], [elem_i]
+        ## Crawling in net variables
+        to_reg, to_dists = [elem_i], [self.retriever._inv_null_value]
+        reg_explored = []
+
+        ## 1. Crawling in network
+        for o in range(order+1):
+            neighs_o, dists_o = [], []
+            for i in range(len(to_reg)):
+                to_reg_i = np.array(to_reg[i])
+                neighs_o, dists_o = self.retriever.retrieve_neighs(to_reg_i)
+                if self.retriever._distanceorweighs:
+                    dists_o += to_dists[i]
+                else:
+                    dists_o += 1
+            ## Add to globals
+            n_o = len(neighs_o)
+            idx_excl = [i for i in range(n_o) if neighs_o[i]
+                        not in reg_explored]
+            to_reg = [neighs_o[i] for i in range(n_o) if i not in idx_excl]
+            to_dists = [dists_o[i] for i in range(n_o) if i not in idx_excl]
+            reg_explored += to_reg
+            ## Add to results
+            neighs.append(neighs_o)
+            dists.append(dists_o)
+
+        ## Exact or limit order formatting output
+        if exactorlimit:
+            neighs = neighs_o
+            dists = dists_o
+
+        neighs, dists = np.hstack(neighs).ravel(), np.hstack(dists)
+        return neighs, dists
+
+
 
 ##########2016-01-14
 

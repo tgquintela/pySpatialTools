@@ -12,43 +12,6 @@ from retrievers import Retriever
 
 
 ###############################################################################
-############################# Element Retrievers ##############################
-###############################################################################
-class ElementRetriever(Retriever):
-    """Retreiver of elements given other elements and only considering the
-    information of the non-retrivable elements.
-    """
-    typeret = 'element'
-
-    def discretize(self, i_locs):
-        """Format the index retrieving for the proper index of retrieving of
-        the type of retrieving.
-        """
-        if self._input_map is not None:
-            i_locs = self._input_map[i_locs]
-        else:
-            if self.check_coord(i_locs):
-                if type(i_locs) == list:
-                    i_locs = -1 * np.ones(len(i_locs))
-                else:
-                    i_locs = -1
-        return i_locs
-
-    ############################ Auxiliar functions ###########################
-    ###########################################################################
-    def _format_output(self, i_locs, neighs, dists):
-        "Format output."
-        neighs, dists = self._exclude_auto(i_locs, neighs, dists)
-        ## If not auto not do it
-        return neighs, dists
-
-    def _check_relative_position(self, relative_position, neighs):
-        "Check if the relative position computed is correct."
-        if not len(neighs) == len(relative_position):
-            raise Exception("Not correct relative position computed.")
-
-
-###############################################################################
 ############################ Space-Based Retrievers ###########################
 ###############################################################################
 class SpaceRetriever(Retriever):
@@ -59,7 +22,8 @@ class SpaceRetriever(Retriever):
 
     def __init__(self, locs, info_ret=None, autolocs=None, pars_ret=None,
                  flag_auto=True, ifdistance=False, info_f=None,
-                 relative_pos=None, input_map=None, output_map=None):
+                 perturbations=None, relative_pos=None, input_map=None,
+                 output_map=None):
         "Creation a element space retriever class method."
         ## Reset globals
         self._initialization()
@@ -73,6 +37,8 @@ class SpaceRetriever(Retriever):
         self._flag_auto = flag_auto
         self._ifdistance = ifdistance
         self.relative_pos = relative_pos
+        # Perturbations
+        self._format_perturbation(perturbations)
         # IO mappers
         self._format_maps(input_map, output_map)
 

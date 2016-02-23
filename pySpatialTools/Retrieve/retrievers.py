@@ -47,6 +47,7 @@ class Retriever:
         ## 0. Prepare variables
         # Prepare information retrieve
         info_i = self._get_info_i(i_loc, info_i)
+
         ifdistance = self._ifdistance if ifdistance is None else ifdistance
         # Prepare perturbation index
         ks = [k] if type(k) == int else k
@@ -230,45 +231,6 @@ class Retriever:
 #            logi = np.logical_and(logi, aux_logi)
         to_exclude_points = np.where(logi)[0]
         return to_exclude_points
-
-    def _check_coord(self, i_locs, k=0, inorout=True):
-        """Function to check if the input are coordinates or indices. The input
-        is a coordinate when is an array with the same dimension that the pool
-        of retrievable locations stored in retriever.data or in self.data.
-
-        Parameters
-        ----------
-        i_locs: int, list of ints, numpy.ndarray or list of numpy.ndarray
-            the locations information.
-
-        Returns
-        -------
-        checker_coord: boolean
-            if there are coordinates True, if there are indices False.
-
-        """
-        ## Get individuals
-        if type(i_locs) == list:
-            check_loc = i_locs[0]
-        else:
-            check_loc = i_locs
-        ## Get checker
-        if type(check_loc) in [int, np.int32, np.int64, np.ndarray]:
-            if type(check_loc) != np.ndarray:
-                checker_coord = False
-            else:
-                flag = inorout and not self._autoret
-                if flag:
-                    d_sh = self.data.shape
-                else:
-                    d_sh = self.retriever[k].data.shape
-                if len(check_loc.shape) == len(d_sh):
-                    checker_coord = True
-                else:
-                    raise IndexError("Not correct shape for coordinates.")
-        else:
-            checker_coord = None
-        return checker_coord
 
     def _get_info_i(self, i_loc, info_i):
         """Get information of retrieving point for each i_loc. Comunicate the

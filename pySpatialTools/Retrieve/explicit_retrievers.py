@@ -22,7 +22,8 @@ class NetworkRetriever(Retriever):
 
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
                  flag_auto=True, ifdistance=True, info_f=None,
-                 relative_pos=None, input_map=None, output_map=None):
+                 perturbations=None, relative_pos=None, input_map=None,
+                 output_map=None):
         "Creation a element network retriever class method."
         # Reset globals
         self._initialization()
@@ -34,6 +35,8 @@ class NetworkRetriever(Retriever):
         self._flag_auto = flag_auto
         self._ifdistance = ifdistance
         self.relative_pos = relative_pos
+        # Perturbations
+        self._format_perturbation(perturbations)
         # IO mappers
         self._format_maps(input_map, output_map)
 
