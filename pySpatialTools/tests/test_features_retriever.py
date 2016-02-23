@@ -1,5 +1,9 @@
 
 """
+test features_retriever
+-----------------------
+Testing the feature retriever.
+
 """
 
 from pySpatialTools.FeatureManagement.features_retriever import\

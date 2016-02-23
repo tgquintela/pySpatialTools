@@ -1,0 +1,18 @@
+
+
+### test_sp_descriptormodels 2016-02-23
+
+#    info_ret = {'order': 4}
+#    contiguity = griddisc.get_contiguity()
+#    contiguity = RegionDistances(relations=contiguity)
+#    ret = OrderEleNeigh(contiguity, info_ret)
+#    relations, _data, symmetric, store =\
+#        compute_AvgDistanceRegions(locs, griddisc, ret)
+#    regdists = RegionDistances(relations=relations, _data=_data,
+#                               symmetric=symmetric)
+#    regret = OrderEleNeigh(regdists, {'order': 1})
+#    regdists = generate_random_relations(nx*ny, p0=0., p1=0.01, store='sparse')
+#    regdists = generate_random_relations(nx*ny, p0=0., p1=0.01, store='sparse')
+#    agg_funct = lambda x, y: x.sum(0).ravel()
+#    aggfeatures = feats_ret.add_aggregations((locs, griddisc), regret,
+#                                             agg_funct)

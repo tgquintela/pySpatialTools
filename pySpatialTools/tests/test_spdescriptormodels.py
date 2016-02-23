@@ -1,17 +1,21 @@
 
 """
+test_spdescriptormodels
+-----------------------
+testing spatial descriptor models utilities.
 
 """
 
+
+import numpy as np
+import copy
+
 ## Retrieve
 from pySpatialTools.Discretization import GridSpatialDisc
-from pySpatialTools.SpatialRelations.regiondistances_computers\
-    import compute_AvgDistanceRegions
-from pySpatialTools.SpatialRelations import RegionDistances
-
 from pySpatialTools.Retrieve import create_retriever_input_output,\
-    OrderEleNeigh, SameEleNeigh, KRetriever, CircRetriever,\
-    RetrieverManager
+    SameEleNeigh, KRetriever, CircRetriever, RetrieverManager
+# Artificial data
+from pySpatialTools.utils.artificial_data import generate_randint_relations
 
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
@@ -23,17 +27,13 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.util_classes import create_mapper_vals_i
 
 ## Descriptormodel
-from pySpatialTools.FeatureManagement.aux_descriptormodels import\
-    aggregator_1sh_counter
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
-import numpy as np
-import copy
 
 def test():
-    n = 1000
+    n, nx, ny = 1000, 100, 100
     locs = np.random.random((n, 2))*10
     ## Retrievers management
     ret0 = KRetriever(locs, 3, ifdistance=True)
@@ -41,18 +41,9 @@ def test():
     #countdesc = Countdescriptor()
 
     # Creation of retriever of regions
-    griddisc = GridSpatialDisc((100, 100), (0, 10), (0, 10))
-    info_ret = {'order': 4}
-    contiguity = griddisc.get_contiguity()
-    contiguity = RegionDistances(relations=contiguity)
-    ret = OrderEleNeigh(contiguity, info_ret)
-
-    relations, _data, symmetric, store =\
-        compute_AvgDistanceRegions(locs, griddisc, ret)
-    regdists = RegionDistances(relations=relations, _data=_data,
-                               symmetric=symmetric)
-
-    regret = OrderEleNeigh(regdists, {'order': 1})
+    griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
+    regdists = generate_randint_relations(0.001, (nx, ny), p0=0., maxvalue=1)
+    regret = SameEleNeigh(regdists)
     m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
     regret._output_map = [m_out]
     gret = RetrieverManager([ret0, ret1, regret])
@@ -76,21 +67,15 @@ def test():
     feats_ret = FeaturesManager([features], countdesc, maps_vals_i=map_vals_i)
     feats_ret.add_aggregations((locs, griddisc), regret)
 
-#    agg_funct = lambda x, y: x.sum(0).ravel()
-#    aggfeatures = feats_ret.add_aggregations((locs, griddisc), regret,
-#                                             agg_funct)
-
     ## Descriptor
     #avgdesc = AvgDescriptor(feats_ret)
-
     spdesc = SpatialDescriptorModel(gret, feats_ret)
     nets = spdesc.compute()
-
     spdescs = []
-    idxs = slice(0, 250, 1), slice(250, 500, 1), slice(500, 750, 1), slice(750, 1000, 1)
+    idxs = [slice(0, 250, 1), slice(250, 500, 1), slice(500, 750, 1)]
+    idxs += [slice(750, 1000, 1)]
     for i in range(4):
         aux_spdesc = copy.copy(spdesc)
         aux_spdesc.set_loop(idxs[i])
         spdescs.append(aux_spdesc)
-
     netss = [spdescs[i].compute() for i in range(4)]

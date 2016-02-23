@@ -1,4 +1,11 @@
 
+"""
+test_spdescriptormodels
+-----------------------
+testing descriptor models utilities.
+
+"""
+
 ## Retrieve
 #from pySpatialTools.Discretization import GridSpatialDisc
 #from pySpatialTools.Retrieve.SpatialRelations import AvgDistanceRegions

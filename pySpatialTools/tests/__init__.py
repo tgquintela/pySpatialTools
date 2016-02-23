@@ -15,12 +15,11 @@ import numpy as np
 ###############################################################################
 import test_spatial_discretizer
 import test_retriever
+import test_spatial_relations
 import test_features_retriever
 import test_perturbation
 import test_descriptormodels
 import test_spdescriptormodels
-# TODO: test_spatial_relations
-#import test_spatial_relations
 
 # Messages
 message_init_tests =\
@@ -48,6 +47,7 @@ def test():
     ## Performing tests
     test_spatial_discretizer.test()
     test_retriever.test()
+    test_spatial_relations.test()
     test_features_retriever.test()
     test_perturbation.test()
     test_descriptormodels.test()
