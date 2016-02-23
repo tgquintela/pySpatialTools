@@ -113,6 +113,8 @@ class Locations:
         return self.n_points
 
     def __getitem__(self, i):
+        if isinstance(i, slice):
+            raise IndexError("Not possible to get collectively.")
         if self.points_id is None:
             if self.n_points <= i or i < 0:
                 raise IndexError("Index out of bonds")
@@ -153,9 +155,11 @@ class Locations:
     def in_block_distance_d(self, loc, d):
         "If there is in less than d distance in all the dimensions."
         loc = self._to_loc(loc)
-        logi = np.ones(self.n_dim)
+        loc = loc if len(loc.shape) == 2 else loc.reshape((1, len(loc)))
+        logi = np.ones(len(self.locations))
         for i_dim in range(self.n_dim):
-            logi_i = cdist(loc[[i_dim]], self.locations[[i_dim], :]) < d
+            dist_i = cdist(loc[:, [i_dim]], self.locations[:, [i_dim]])
+            logi_i = dist_i < d
             logi = np.logical_and(logi, logi_i)
         return logi
 
