@@ -18,7 +18,7 @@ def randint_sparse_matrix(density, shape, maxvalue=10):
     iss, jss, data = [], [], []
     for i in xrange(shape[0]):
         row = np.random.random(shape[1]) < density
-        data.append(np.random.randint(0, maxvalue, row.sum()))
+        data.append(np.random.randint(0, maxvalue+1, row.sum()))
         jss.append(np.where(row)[0])
         iss.append(np.array([i]*row.sum()))
     data, iss, jss = np.hstack(data), np.hstack(iss), np.hstack(jss)
@@ -27,7 +27,7 @@ def randint_sparse_matrix(density, shape, maxvalue=10):
 
 
 def generate_randint_relations(density, shape, p0=0., maxvalue=1):
-    sparse = randint_sparse_matrix(density, shape, maxvalue)
+    sparse = randint_sparse_matrix(density, shape, maxvalue+1)
     data_in, data_out, i = [], [], 0
     while True:
         if len(data_in) != shape[0]:

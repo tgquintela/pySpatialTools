@@ -11,6 +11,7 @@ location parameter for each element
 """
 
 import numpy as np
+import warnings
 from scipy.spatial.distance import cdist
 
 
@@ -147,6 +148,42 @@ class Locations:
         loc = loc.reshape((1, self.n_dim))
         distances = cdist(loc, np.array(self.locations), **kwargs)
         return distances
+
+    def _check_coord(self, i_locs):
+        """Function to check if the input are coordinates or indices. The input
+        is a coordinate when is an array with the same dimension that the pool
+        of retrievable locations stored in retriever.data or in self.data.
+
+        Parameters
+        ----------
+        i_locs: int, list of ints, numpy.ndarray or list of numpy.ndarray
+            the locations information.
+
+        Returns
+        -------
+        checker_coord: boolean
+            if there are coordinates True, if there are indices False.
+
+        """
+        ## Get individuals
+        if type(i_locs) == list:
+            check_loc = i_locs[0]
+        else:
+            check_loc = i_locs
+        ## Get checker
+        if type(check_loc) in [int, np.int32, np.int64, np.ndarray]:
+            if type(check_loc) != np.ndarray:
+                checker_coord = False
+            else:
+                d_sh = self.locations.shape
+                if len(check_loc.shape) == len(d_sh):
+                    checker_coord = True
+                else:
+                    checker_coord = False
+                    warnings.warn("Not correct shape for coordinates.")
+        else:
+            checker_coord = None
+        return checker_coord
 
     @property
     def data(self):

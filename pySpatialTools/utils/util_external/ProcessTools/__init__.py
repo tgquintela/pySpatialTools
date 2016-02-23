@@ -44,19 +44,21 @@ class Processer():
     """Abstract class for the processers some computations.
     """
 
-    ### Class parameters
-    ## Process descriptors
-    time_expended = 0.  # Time expended along the process
-    t_expended_subproc = []  # Time expended in each subprocesses
-    n_procs = 0  # Number of cpu used in parallelization (0 no parallel)
-    proc_name = ""  # Name of the process
-    proc_desc = ""  # Process description
-    subproc_desc = []  # Subprocess description
-    ## Logger info
-    lim_rows = 0  # Lim of rows done in a bunch. For matrix comp or information
-    logfile = None  # Log file
-    ## Bool options
-    bool_inform = False  # Give information of the process
+    def _initialization(self):
+        ### Class parameters
+        ## Process descriptors
+        self.time_expended = 0.  # Time expended along the process
+        self.t_expended_subproc = []  # Time expended in each subprocesses
+        self.n_procs = 0  # Number of cpu used in parallelization
+        self.proc_name = ""  # Name of the process
+        self.proc_desc = ""  # Process description
+        self.subproc_desc = []  # Subprocess description
+        ## Logger info
+        self.lim_rows = 0  # Lim of rows done in a bunch.
+        self.logfile = None  # Log file
+        ## Bool options
+        self.bool_inform = False  # Give information of the process
+        self.prompt_inform = False  # Prompt the information in the screen
 
     def save_process_info(self, outputfile):
         database = shelve.open(outputfile)
@@ -73,7 +75,8 @@ class Processer():
         return out
 
     def setting_loop(self, N_t):
-        self.logfile.write_log(message_init_loop % str(N_t))
+        self.logfile.write_log(message_init_loop % str(N_t),
+                               self.prompt_inform)
         t0, bun = time.time(), 0
         return t0, bun
 
@@ -82,7 +85,8 @@ class Processer():
         if self.bool_inform and (i % self.lim_rows) == 0 and i != 0:
             t_sp = time.time()-t0
             bun += 1
-            self.logfile.write_log(message_loop % (bun, self.lim_rows, t_sp))
+            self.logfile.write_log(message_loop % (bun, self.lim_rows, t_sp),
+                                   self.prompt_inform)
             t0 = time.time()
         return t0, bun
 
@@ -90,16 +94,16 @@ class Processer():
         "Closing process."
         ## Closing process
         t_expended = time.time()-t00
-        self.logfile.write_log(message_close0)
-        self.logfile.write_log(message_last % t_expended)
-        self.logfile.write_log(message_close)
+        self.logfile.write_log(message_close0, self.prompt_inform)
+        self.logfile.write_log(message_last % t_expended, self.prompt_inform)
+        self.logfile.write_log(message_close, self.prompt_inform)
         self.time_expended = t_expended
 
     def setting_global_process(self):
         "Setting up the process."
         ## Initiating process
         message0 = initial_message_creation(self.proc_name, self.proc_desc)
-        self.logfile.write_log(message0)
+        self.logfile.write_log(message0, self.prompt_inform)
         t00 = time.time()
         return t00
 
@@ -131,19 +135,19 @@ class Processer():
             i3 = index_sub[3]
             self.t_expended_subproc[i0][i1][i2][i3] = t_expended
             proc_name = self.subproc_desc[i0][i1][i2][i3]
-        elif len(index_sub) == 5:            
+        elif len(index_sub) == 5:
             i0, i1, i2 = index_sub[0], index_sub[1], index_sub[2]
             i3, i4 = index_sub[3], index_sub[4]
             self.t_expended_subproc[i0][i1][i2][i3][i4] = t_expended
             proc_name = self.subproc_desc[i0][i1][i2][i3][i4]
-        elif len(index_sub) == 6:            
+        elif len(index_sub) == 6:
             i0, i1, i2 = index_sub[0], index_sub[1], index_sub[2]
-            i0, i1, i2 = index_sub[3], index_sub[4], index_sub[5]
+            i3, i4, i5 = index_sub[3], index_sub[4], index_sub[5]
             self.t_expended_subproc[i0][i1][i2][i3][i4][i5] = t_expended
             proc_name = self.subproc_desc[i0][i1][i2][i3][i4][i5]
         ## Logfile writing
-        self.logfile.write_log(message1 % proc_name)
-        self.logfile.write_log(message2 % t_expended)
+        self.logfile.write_log(message1 % proc_name, self.prompt_inform)
+        self.logfile.write_log(message2 % t_expended, self.prompt_inform)
 
     def check_subprocess(self):
         "Check if the subprocess is properly formatted."
