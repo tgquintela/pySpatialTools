@@ -10,6 +10,9 @@ import numpy as np
 
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh
+
+from pySpatialTools.Retrieve import create_retriever_input_output
+
 #from scipy.sparse import coo_matrix
 
 from pySpatialTools.utils.artificial_data import \
@@ -68,3 +71,6 @@ def test():
 
     net = ret1.compute_neighnet()
     net = ret2.compute_neighnet()
+
+    ## Other external functions
+    m_in, m_out = create_retriever_input_output(np.random.randint(0, 100, 1000))

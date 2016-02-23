@@ -71,3 +71,18 @@ def test():
     #contiguity = disc5.get_contiguity()
     #contiguity = disc6.get_contiguity()
     #contiguity = disc7.get_contiguity()
+
+    ## Other parameters and functions
+    disc1.borders, disc5.borders, disc6.borders
+
+    ## Extending coverage
+    n_in, n_out = 100, 20
+    relations = [np.unique(np.random.randint(0, n_out,
+                                             np.random.randint(n_out)))
+                 for i in range(n_in)]
+
+    disc8 = SetDiscretization(relations)
+    relations = [list(e) for e in relations]
+    disc9 = SetDiscretization(relations)
+    disc8.discretize(np.random.randint(0, 20, 100))
+    disc9.discretize(np.random.randint(0, 20, 100))
