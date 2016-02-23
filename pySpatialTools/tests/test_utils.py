@@ -38,6 +38,10 @@ def test():
     assert((locs == locs1[0])[0])
     locs.compute_distance(locs[1])
     locs.space_transformation(sptrans, {})
+    locs._check_coord(0)
+    locs._check_coord(locs1[0])
+    locs._check_coord([0, 3])
+    locs._check_coord([locs1[0], locs1[3]])
     locs.in_radio(locs[0], 0.2)
 
     locs = Locations(locs2)

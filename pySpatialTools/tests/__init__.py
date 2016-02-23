@@ -9,10 +9,12 @@ prediction out-of-sample.
 
 import time
 import numpy as np
+import warnings
 
 ###############################################################################
 ############################## Testing function ###############################
 ###############################################################################
+import test_utils
 import test_spatial_discretizer
 import test_retriever
 import test_spatial_relations
@@ -44,15 +46,18 @@ def test():
     print("")
     print(message_init_tests)
     print(ref_computer_stats)
+    print(message_ref_computer % time_ref_computer)
     ## Performing tests
-    test_spatial_discretizer.test()
-    test_retriever.test()
-    test_spatial_relations.test()
-    test_features_retriever.test()
-    test_perturbation.test()
-    test_descriptormodels.test()
-    test_spdescriptormodels.test()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        test_utils.test()
+        test_spatial_discretizer.test()
+        test_retriever.test()
+        test_spatial_relations.test()
+        test_features_retriever.test()
+        test_perturbation.test()
+        test_descriptormodels.test()
+        test_spdescriptormodels.test()
     ## Closing tests
     time_own_computer = str(np.round(time.time()-t0, 2))
-    print(message_ref_computer % time_ref_computer)
     print(message_own_computer % time_own_computer)
