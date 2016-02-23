@@ -1,7 +1,7 @@
 
 """
-test SpatialRelations
----------------------
+test Perturbations
+------------------
 test for perturbations.
 
 """
@@ -22,16 +22,6 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
 
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor
-
-#from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
-#    RetrieverManager
-#from pySpatialTools.FeatureManagement import SpatialDescriptorModel
-#from pySpatialTools.Discretization import GridSpatialDisc
-#from pySpatialTools.Retrieve import OrderEleNeigh, SameEleNeigh
-#from pySpatialTools.SpatialRelations.regiondistances_computers\
-#    import compute_AvgDistanceRegions
-#from pySpatialTools.SpatialRelations import RegionDistances
-#from pySpatialTools.Retrieve import create_retriever_input_output
 
 
 def test():
@@ -118,37 +108,69 @@ def test():
     perm_ind = PermutationIndPerturbation(reind_ind)
     perm_ind.reindices
     feat_perm = np.random.random((100, 1))
-    perm_ind.apply2features(feat_perm)
 
     cont_ind = ContiniousIndPerturbation(0.5)
     feat_cont = np.random.random((100, 1))
-    cont_ind.apply2features(feat_cont)
 
     disc_ind = DiscreteIndPerturbation(np.random.random((10, 10)))
     feat_disc = np.random.randint(0, 10, 100)
-    disc_ind.apply2features(feat_disc)
 
     mix_coll = MixedFeaturePertubation([perm_ind, cont_ind, disc_ind])
     feat_mix = np.hstack([feat_perm, feat_cont, feat_disc.reshape((100, 1))])
+
+    ## TESTING MAIN FUNCTIONS FOR ALL PERTURBATIONS
+    perturbation1.apply2indice(0, 0)
+    perturbation1.apply2locs(locs)
+#    perturbation1.apply2locs_ind(locs, 0, 0)
+    perturbation1.selfcompute_locations(locs)
+    perturbation1.apply2features(feat_arr)
+    perturbation1.apply2features_ind(feat_arr, 0, 0)
+    perturbation1.selfcompute_features(feat_arr)
+
+    perturbation2.apply2indice(0, 0)
+    perturbation2.apply2locs(locs)
+#    perturbation2.apply2locs_ind(locs, 0, 0)
+    perturbation2.selfcompute_locations(locs)
+    perturbation2.apply2features(feat_arr)
+#    perturbation2.apply2features_ind(feat_arr, 0, 0)
+    perturbation2.selfcompute_features(feat_arr)
+
+    perturbation3.apply2indice(0, 0)
+    perturbation3.apply2locs(locs)
+#    perturbation3.apply2locs_ind(locs, 0, 0)
+    perturbation3.selfcompute_locations(locs)
+    perturbation3.apply2features(feat_arr)
+#    perturbation3.apply2features_ind(feat_arr, 0, 0)
+    perturbation3.selfcompute_features(feat_arr)
+
+    perm_ind.apply2indice(0, 0)
+    perm_ind.apply2locs(locs)
+#    perm_ind.apply2locs_ind(locs, 0, 0)
+    perm_ind.selfcompute_locations(locs)
+    perm_ind.apply2features(feat_perm)
+    perm_ind.apply2features_ind(feat_perm, 0, 0)
+    perm_ind.selfcompute_features(feat_perm)
+
+    cont_ind.apply2indice(0, 0)
+    cont_ind.apply2locs(locs)
+#    cont_ind.apply2locs_ind(locs, 0, 0)
+    cont_ind.selfcompute_locations(locs)
+    cont_ind.apply2features(feat_cont)
+#    cont_ind.apply2features_ind(feat_cont, 0, 0)
+    cont_ind.selfcompute_features(feat_cont)
+
+    disc_ind.apply2indice(0, 0)
+    disc_ind.apply2locs(locs)
+#    disc_ind.apply2locs_ind(locs, 0, 0)
+    disc_ind.selfcompute_locations(locs)
+    disc_ind.apply2features(feat_disc)
+#    disc_ind.apply2features_ind(feat_disc, 0, 0)
+    disc_ind.selfcompute_features(feat_disc)
+
+    mix_coll.apply2indice(0, 0)
+    mix_coll.apply2locs(locs)
+#    mix_coll.apply2locs_ind(locs, 0, 0)
+    mix_coll.selfcompute_locations(locs)
     mix_coll.apply2features(feat_mix)
-
-
-
-#    griddisc = GridSpatialDisc((100, 100), (0, 10), (0, 10))
-#    locs = np.random.random((n, 2)) * 10
-#    info_ret = {'order': 4}
-#    contiguity = griddisc.get_contiguity()
-#    contiguity = RegionDistances(contiguity)
-#    ret = OrderEleNeigh(contiguity, info_ret)
-#    relations, _data, symmetric, store =\
-#        compute_AvgDistanceRegions(locs, griddisc, ret)
-#    regdists = RegionDistances(relations=relations, _data=_data,
-#                               symmetric=symmetric)
-#    regret = OrderEleNeigh(regdists, {'order': 1})
-#    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
-#    regret._output_map = [m_out]
-#    agg_funct = lambda x, y: x.sum(0).ravel()
-#    aggfeatures = features.add_aggregations((locs, griddisc), regret,
-#                                            agg_funct)
-#
-#    feats_ret = FeaturesManager([features, aggfeatures], AvgDescriptor())
+#    mix_coll.apply2features_ind(feat_mix, 0, 0)
+    mix_coll.selfcompute_features(feat_mix)
