@@ -20,48 +20,58 @@ class SpatialElementsCollection:
     and utilites to perform main computations with them.
     """
 
-    def __init__(self, sp_ele_collection, points_id=None):
+    def __init__(self, sp_ele_collection, elements_id=None):
         self.elements = self._format_elements(sp_ele_collection)
-        self.points_id = self._format_tags(points_id)
+        self.elements_id = self._format_tags(elements_id)
         self.n_elements = len(self.elements)
 
     def __getitem__(self, i):
-        if self.points_id is None:
-            if self.n_points <= i or i < 0:
+        if self.elements_id is None:
+            if len(self) <= i or i < 0:
                 raise IndexError("Index out of bonds")
-            loc_i = self.locations[i, :]
+            ele_i = self.elements[i]
         else:
             try:
-                idx = np.where(self.points_id == i)[0][0]
-                loc_i = self.locations[idx, :]
+                idx = np.where(self == i)[0][0]
+                ele_i = self.elements[idx]
             except:
                 raise IndexError("Index out of bonds")
-        return loc_i
+        return ele_i
+
+    def __len__(self):
+        return len(self.elements)
 
     def __iter__(self):
-        for i in xrange(self.n_points):
-            yield self[i]
+        if self.elements_id is None:
+            for i in xrange(len(self)):
+                yield self[i]
+        else:
+            for e in self.elements_id:
+                yield self[e]
 
     def __eq__(self, loc):
         "Retrieve which points have the same coordinates."
-        logi = self.elements == loc
+        if type(self.elements) == list:
+            logi = np.array([e == loc for e in self.elements])
+        else:
+            logi = self.elements == loc
         return logi
 
-    def relabel_points(self, relabel_map):
+    def relabel_elements(self, relabel_map):
         "Relabel the elements."
-        if self.points_id is None:
-            if relabel_map == np.ndarray:
-                self.points_id = relabel_map
+        if self.elements_id is None:
+            if type(relabel_map) == np.ndarray:
+                self.elements_id = relabel_map
             else:
                 raise TypeError("Not correct input.")
         else:
-            new_tags = -2 * np.ones(self.points_id.shape[0])
-            for p in np.unique(self.points_id):
+            new_tags = -2 * np.ones(self.elements_id.shape[0])
+            for p in np.unique(self.elements_id):
                 if p in relabel_map.keys():
-                    new_tags[self.points_id == p] = relabel_map[p]
+                    new_tags[self.elements_id == p] = relabel_map[p]
             logi = new_tags == -2
-            new_tags[logi] = self.points_id[logi]
-            self.points_id = new_tags
+            new_tags[logi] = self.elements_id[logi]
+            self.elements_id = new_tags
 
     def _format_elements(self, sp_ele_collection):
         "Format properly the elements."
@@ -70,6 +80,7 @@ class SpatialElementsCollection:
         else:
             try:
                 len(sp_ele_collection)
+                return sp_ele_collection
             except:
                 raise TypeError("Collection don't have __len__ function.")
 

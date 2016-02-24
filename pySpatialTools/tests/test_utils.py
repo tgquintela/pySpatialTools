@@ -22,18 +22,44 @@ from ..utils.util_classes import Locations, SpatialElementsCollection,\
 
 
 def test():
+    ## Parameters
     words = m.replace('\n', ' ').replace('.', ' ').strip().split(" ")
     ids = [hash(e) for e in words]
     functs = [lambda x: str(x)+words[i] for i in range(len(words))]
+
+    ## Testing Elemets
+    words_id = np.arange(len(words))
+    words_elements = SpatialElementsCollection(words, words_id)
+    words_elements = SpatialElementsCollection(words, list(words_id))
+    words_elements = SpatialElementsCollection(words)
+    ids_elements = SpatialElementsCollection(ids)
+    functs_elements = SpatialElementsCollection(functs)
+
+    # Class functions
+    words_elements[0]
+    for e in words_elements:
+        pass
+    words_elements == words[0]
+    relabel_map = np.arange(len(words))
+    words_elements.relabel_elements(relabel_map)
+    relabel_map = dict(zip(relabel_map, relabel_map))
+    words_elements.relabel_elements(relabel_map)
+
+    ids_elements[0]
+    for e in ids_elements:
+        pass
+    ids_elements == words[0]
+
+    functs_elements[0]
+    for e in functs_elements:
+        pass
+    functs_elements == words[0]
+
+    ## Locations
     locs1 = np.random.random((100, 5))
     locs2 = np.random.random((100, 1))
     locs3 = np.random.random(100)
     locs4 = np.random.random((100, 2))
-
-    ## Testing locations
-    #SpatialElementsCollection(words)
-    #SpatialElementsCollection(ids)
-    #SpatialElementsCollection(functs)
     sptrans = lambda x, p: np.sin(x)
 
     locs = Locations(locs1)
@@ -101,8 +127,8 @@ def test():
 
     sparse = randint_sparse_matrix(0.2, (200, 100), 1)
     memb3 = Membership(sparse)
-    memb3.to_network()
     memb3.to_dict()
+    memb3.to_network()
     memb3.to_sparse()
     memb3.reverse_mapping()
     memb3.getcollection(0)
