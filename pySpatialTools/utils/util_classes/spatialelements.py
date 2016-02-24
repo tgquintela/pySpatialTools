@@ -22,8 +22,8 @@ class SpatialElementsCollection:
 
     def __init__(self, sp_ele_collection, elements_id=None):
         self.elements = self._format_elements(sp_ele_collection)
-        self.elements_id = self._format_tags(elements_id)
         self.n_elements = len(self.elements)
+        self.elements_id = self._format_tags(elements_id)
 
     def __getitem__(self, i):
         if self.elements_id is None:

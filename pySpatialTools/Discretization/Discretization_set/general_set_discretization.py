@@ -105,13 +105,14 @@ class SetDiscretization(SpatialDiscretizor):
         """Function which maps the regions ID to their elements.
         """
         regions = self.regions_id if regions is None else regions
-
+        if type(regions) == int:
+            regions = np.array([regions])
         elements, weights = [], []
         for i in xrange(len(regions)):
             ## Getting col indice
             idx = np.where(regions[i] == self.regions_id)[0]
             if self.multiple:
-                j_col = idx
+                j_col = idx[0]
             else:
                 j_col = regions[i]
             ## Getting relations

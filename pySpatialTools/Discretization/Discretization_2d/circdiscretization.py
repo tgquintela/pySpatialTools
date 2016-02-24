@@ -20,14 +20,23 @@ class CircularSpatialDisc(MetricDiscretizor):
     """
     n_dim = 2
 
-    def __init__(self, centerlocs, radios, multiple_regions=False):
+    def __init__(self, centerlocs, radios, regions_id=None,
+                 multiple_regions=False):
         """Main information to built the regions."""
         self._initialization()
         if type(radios) in [float, int]:
             radios = np.ones(centerlocs.shape[0])*radios
         self.borders = radios
         self.regionlocs = centerlocs
+        self._format_regionsid(regions_id)
         self._compute_limits()
+
+    def _format_regionsid(self, regions_id):
+        if regions_id is None:
+            self.regions_id = np.arange(len(self.regionlocs))
+        else:
+            assert(len(regions_id) == len(self.regionlocs))
+            self.regions_id = regions_id
 
     def _compute_limits(self, region_id=None):
         """Compute bounding box limits of the selected region or the whole
@@ -70,11 +79,15 @@ class CircularSpatialDisc(MetricDiscretizor):
         """Function which maps the regions ID to their most representative
         location.
         """
+        if type(regions) == int:
+            regions = np.array([regions])
         regionlocs = np.zeros((regions.shape[0], self.regionlocs.shape[1]))
-        for i in xrange(regions.shape):
+        for i in xrange(len(regions)):
             ## Only get the first one
-            idx = np.where(self.regions_id == regions[i])[0][0]
-            regionlocs[i, :] = self.regionlocs[idx, :]
+            idx = np.where(self.regions_id == regions[i])[0]
+            if len(idx) == 0:
+                raise Exception("Region not in the discretization.")
+            regionlocs[i, :] = self.regionlocs[idx[0], :]
         return regionlocs
 
 

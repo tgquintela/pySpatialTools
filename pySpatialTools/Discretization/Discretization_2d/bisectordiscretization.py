@@ -60,7 +60,7 @@ class BisectorSpatialDisc(MetricDiscretizor):
         """
         ## 0. Variable needed
         if type(regions_id) == int:
-            regions_id = np.array(regions_id)
+            regions_id = np.array([regions_id])
         n = regions_id.shape[0]
         ## 1. Regionlocs computing
         regionlocs = np.zeros((n, self.regionlocs.shape[1]))

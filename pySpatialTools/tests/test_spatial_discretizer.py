@@ -89,7 +89,6 @@ def test():
     disc8.discretize(np.random.randint(0, 20, 100))
     disc9.discretize(np.random.randint(0, 20, 100))
 
-
     ## Check regions
     neighs = disc1.check_neighbors(np.array([0, 1]), 0)
 
@@ -110,3 +109,13 @@ def test():
     limits = disc2.get_limits()
 #    limits = disc3.get_limits()
 #    limits = disc4.get_limits(0)
+
+    disc1._map_regionid2regionlocs(0)
+    disc2._map_regionid2regionlocs(0)
+    disc3._map_regionid2regionlocs(0)
+    disc4._map_regionid2regionlocs(0)
+    disc5._map_regionid2regionlocs(0)
+    disc6._map_regionid2regionlocs(0)
+    disc7._map_regionid2regionlocs(0)
+    disc8._map_regionid2regionlocs(0)
+    disc9._map_regionid2regionlocs(0)
