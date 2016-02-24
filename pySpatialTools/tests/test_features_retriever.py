@@ -82,8 +82,6 @@ def test():
     Feat1[(([0], [0]), [0])]
     Feat2[(([0], [0]), [0])]
 
-
-
     # shape
     Feat.shape
     Feat0.shape
