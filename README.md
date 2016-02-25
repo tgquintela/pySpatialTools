@@ -1,8 +1,7 @@
-# pySpatialTools
 [![Build Status](https://travis-ci.org/tgquintela/pySpatialTools.svg?branch=master)](https://travis-ci.org/tgquintela/pySpatialTools)
 [![Coverage Status](https://coveralls.io/repos/github/tgquintela/pySpatialTools/badge.svg?branch=master)](https://coveralls.io/github/tgquintela/pySpatialTools?branch=master)
 
-
+# pySpatialTools
 This package is built in order to provide prototyping tools in python to deal with spatial data in python and model spatial-derived relations between different elements in a system.
 In some systems, due to the huge amount of data, the complexity of their topology their local nature or because other practical reasons we are forced to use only local information for model the system properties and dynamics.
 
@@ -18,9 +17,9 @@ pySpatialTools is code trying to respect [**PEP8**](https://www.python.org/dev/p
 + Model: module to code prediction or recommendations tasks.
 + Testing: Testing functions to study how good your model it is regarding different considerations.
 + io: functions which can help to interact with another packages and help to read and output data from pySpatialTools.
-+ tests: tests coded in order to ensure the good installation of the package.
-+ tools: 
-+ utils: 
++ tests: tests coded in order to ensure the good installation and performance of the package.
++ tools: util functions to be used by the user.
++ utils: util functions used by other modules of the package.
 
 The main pipeline application in order to match points with features of their neighborhood is:
 
@@ -48,8 +47,8 @@ The main pipeline that the user has to perform is:
 * Provides a generic interface to code new compatible methods and functions to check their compatibility.
 * Support for n-dimensional spaces or any other topological space as we want to define it through the definition of each associated neighborhood for each element using [Retrieve](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve) module.
 * Possibility to define irregular neighborhoods regarding on the the elements spatial information, main features of each point or even by combination of simple definitions of retrievers with [collection of retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/collectionretrievers.py) and a [selector mapper]().
-* Some specific simple retrievers coded in [Retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py) submodule.
-* Some specific simple descriptor models coded in [Descriptors](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/Descriptors) submodule.
+* Some specific simple retrievers (as K-order, k-neighbour, radius retriever) coded in [Retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py) submodule.
+* Some specific simple descriptor models (as histogram or averaging desc) coded in [Descriptors](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/Descriptors) submodule.
 
 
 ## Applications
@@ -83,22 +82,14 @@ The interface of this package could be summarized with this tools:
 Example of 2d grid.
 
 ```python
-
 grid_size, xlim, ylim = (100, 100), (0, 100), (0, 100)
 disc0 = GridSpatialDisc(grid_size, xlim, ylim)
 ```
 
 * [Region relations](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/Spatial_Relations/__init__.py): used to compute and store relations between regions.
-Example of 
 
 ```python
-disc0 = GridSpatialDisc(grid_size, xlim, ylim)
-locs = np.random.random((n, 2))*100
-
-sp_descriptor = (disc0, locs, KRetriever, 5, Countdescriptor)
-regionmetrics = CenterLocsRegionDistances()
-regionmetrics.compute_distances(sp_descriptor, activated=locs)
-
+mainmapper = RegionDistances(relations=relations, _data=_data, symmetric=symmetric)
 ```
 
 * [Retriever](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py): used to define neighborhood of spatial elements. Introducing some parameters in the class we are able to define an individualized neighborhood for each spatial element.
@@ -110,7 +101,6 @@ info_ret = np.random.randint(1, 10, n)
 
 ret0 = KRetriever(locs, info_ret, ifdistance=True, relative_pos=diff_vectors)
 neighs, relative_positions = ret0.retrieve_neighs(0)
-
 ```
 
 * [Descriptor](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/descriptormodel.py#L11): used to measure a descriptors of each desired and defined element in order to model the system.
@@ -119,24 +109,9 @@ spatial situation of each neighborhood element.
 
 ```python
 gret = CollectionRetrievers(retrievers_list)
-map_vals_i = create_mapper_vals_i(type_elements_corr)
-feats_ret = FeaturesRetriever(features_list)
-desc = Countdescriptor(feats_ret, map_vals_i)
+feats_ret = FeaturesRetriever(features_list, Countdescriptor())
 sp_model = SpatialDescriptorModel(gret, desc)
 sp_corr = sp_model.compute_nets()
-
-```
-
-* Aggregation: used to compute descriptors for regions by aggregating the point features of the defined region neighborhood.
-
-```python
-grid_size, xlim, ylim = (100, 100), (0, 100), (0, 100)
-disc0 = GridSpatialDisc(grid_size, xlim, ylim)
-locs = np.random.random((n, 2))*100
-sp_descriptor = (disc0, locs, KRetriever, 5, Countdescriptor)
-regionmetrics = CenterLocsRegionDistances()
-regionmetrics.compute_distances(sp_descriptor, activated=locs)
-aggcharacs, u_regs, null_vals = countdesc.compute_aggdescriptors(disc, regionmetrics, locs)
 ```
 
 ## Testing
@@ -161,8 +136,8 @@ Intel Core i7-3537U
 4GB de RAM
 NVidia GeForce GT720M 2GB
 -------------------------------
-Average time in ref. computer: 20.58 seconds.
-Time testing in this computer: 20.83 seconds.
+Average time in ref. computer: 3.50 seconds.
+Time testing in this computer: 3.83 seconds.
 
 ```
 
@@ -179,7 +154,7 @@ tgq.spm@gmail.com
 
 ### Next steps
 - [x] Format package into some conventions.
-- [ ] Code Testing module.
+- [ ] Code Tester module.
 - [ ] Prediction module.
 - [ ] Examples
 
