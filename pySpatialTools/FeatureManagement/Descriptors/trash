@@ -1,4 +1,17 @@
 
+##### 2016-02-25 Pjensen
+
+def replace2indices(uniques, array):
+    """Transformation to indices."""
+    new_array = (-1)*np.ones(len(array))
+    for i in range(len(uniques)):
+        new_array[(uniques[i] == array).ravel()] = i
+    try:
+        assert(np.sum(new_array == (-1)) == 0)
+    except:
+        msg = "Failed the pjensenDescriptor transformation to indices."
+        raise Exception(msg)
+    return new_array
 
 
 ###### 2016-02-24 count descriptor

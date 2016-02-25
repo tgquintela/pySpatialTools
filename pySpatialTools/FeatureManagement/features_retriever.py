@@ -148,6 +148,9 @@ class FeaturesManager:
         else:
             raise Exception("Not the same output features.")
         ## Set descriptormodel
+        # Set global information (using first features as default)
+        descriptormodel.set_global_info(self.features[0].features)
+        # Link to this class
         self.descriptormodel = descriptormodel
         for i in range(len(self)):
             self.features[i].set_descriptormodel(descriptormodel)

@@ -140,6 +140,10 @@ class SpatialDescriptorModel:
         if isinstance(pos_inputs, int):
             self.n_inputs = pos_inputs
             self._pos_inputs = slice(0, pos_inputs, 1)
+        elif isinstance(pos_inputs, tuple):
+            step = 1 if len(pos_inputs) == 2 else pos_inputs[2]
+            self.n_inputs = pos_inputs[1]-pos_inputs[0]
+            self._pos_inputs = slice(pos_inputs[0], pos_inputs[1], step)
         elif isinstance(pos_inputs, slice):
             st0, st1, stp = pos_inputs.start, pos_inputs.stop, pos_inputs.step
             n_inputs = len(range(st0, st1, stp))

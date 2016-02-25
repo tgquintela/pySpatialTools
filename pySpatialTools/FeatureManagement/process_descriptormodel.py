@@ -37,8 +37,7 @@ class SpatialDescriptorModelProcess(Processer):
         - Sequential
         """
         ## 0. Setting needed variables (TODO: cambiar sptypemodel)
-#        m_aux0 = self.sp_descriptormodel.sptypemodel
-        m_aux0 = "Matrix"  # Temporal
+        m_aux0 = self.sp_descriptormodel.featurers._maps_vals_i.sptype
         name_desc = self.sp_descriptormodel.name_desc
         self.proc_desc = self.proc_desc % (m_aux0, name_desc)
         t00 = self.setting_global_process()

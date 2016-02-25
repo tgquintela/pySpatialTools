@@ -20,40 +20,20 @@ from ..aux_descriptormodels import\
     aggregator_1sh_counter, sum_addresult_function, count_out_formatter
 
 
-class Countdescriptor(DescriptorModel):
+class PjensenDescriptor(DescriptorModel):
     """Model of spatial descriptor computing by counting the type of the
     neighs represented in feat_arr.
 
-    Parameters
-    ----------
-    features: numpy.ndarray, shape (n, 2)
-        the element-features of the system.
-    sp_typemodel: str, object, ...
-        the information of the type global output return.
-
     """
     name_desc = "Pjensen descriptor"
-    _n = 0
     _nullvalue = 0
 
-    def __init__(self, features, sp_typemodel='matrix'):
+    def __init__(self):
         "The inputs are the needed to compute model_dim."
         ## Initial function set
         self._out_formatter = count_out_formatter
         self._f_default_names = counter_featurenames
         self._defult_add2result = sum_addresult_function
-        ## Format features
-        self._format_features(features)
-        ## Type of built result
-        self._format_map_vals_i(sp_typemodel)
-        ## Format function to external interaction and building results
-        self._format_result_building()
-        ##Globals
-        counts = dict(Counter(self.features.features[0][:, 0]))
-        n_vals = np.unique(self.features.features[0][:, 0])
-        self._n = len(self.features[0])
-        self.globals_ =\
-            counts, n_vals, global_constants_jensen(n_vals, self._n, counts)
 
     ###########################################################################
     ####################### Compulsary main functions #########################
@@ -71,7 +51,7 @@ class Countdescriptor(DescriptorModel):
         information of the individual descriptor of point to its neighbourhood
         descriptor.
         """
-        descriptors = compute_loc_M_index(desc_i, desc_neigh, self.globals_)
+        descriptors = compute_loc_M_index(vals_i, desc_neigh, self.globals_)
         return descriptors
 
     def reducer(self, aggdescriptors_idxs, point_aggpos):
@@ -97,14 +77,30 @@ class Countdescriptor(DescriptorModel):
         corr_loc = normalization_jensen(corr_loc, self.globals_)
         return corr_loc
 
+    def set_global_info(self, features):
+        """Set the global stats info in order to get information to normalize
+        the measure.
+        """
+        ##Globals
+        if len(features.shape) >= 2:
+            assert(np.prod(features.shape[1:]) == 1)
+            features = features.ravel().astype(int)
+        ## Compute the global information
+        counts = dict(Counter(features))
+        n_vals = len(np.unique(features))
+        n = len(features)
+        self.globals_ =\
+            counts, n_vals, global_constants_jensen(n_vals, n, counts)
+
 
 ###############################################################################
 ####################### Asociated auxiliary functions #########################
 ###############################################################################
 def compute_loc_M_index(idx, counts_i, globals_, sm_par=1e-10):
-    "Computing the M index."
+    """Computing the M index."""
     ## 0. Needed variables
-    _, N_x, n_vals, C = globals_
+    N_x, n_vals, C = globals_
+    idx_val = N_x.keys()[idx]
     ## Compute the correlation contribution
     counts_i[idx] -= 1
     tot = counts_i.sum()
@@ -112,10 +108,13 @@ def compute_loc_M_index(idx, counts_i, globals_, sm_par=1e-10):
         corr_loc_i = np.ones(n_vals)*sm_par
     elif counts_i[idx] == tot:
         corr_loc_i = np.zeros(n_vals)
-        corr_loc_i[idx] = (counts_i[idx]+sm_par)/(float(tot)+N_x[idx]*sm_par)
+        aux = float(tot)+N_x[idx_val]*sm_par
+        corr_loc_i[idx] = (counts_i[idx]+sm_par)/aux
     else:
-        corr_loc_i = (counts_i+sm_par)/float(tot-counts_i[idx]+N_x[idx]*sm_par)
-        corr_loc_i[idx] = (counts_i[idx]+sm_par)/(float(tot)+N_x[idx]*sm_par)
+        aux = float(tot-counts_i[idx]+N_x[idx_val]*sm_par)
+        corr_loc_i = (counts_i+sm_par)/aux
+        aux = (float(tot)+N_x[idx_val]*sm_par)
+        corr_loc_i[idx] = (counts_i[idx]+sm_par)/aux
     # Avoid nan values
     corr_loc_i[np.isnan(corr_loc_i)] = sm_par
     corr_loc_i[corr_loc_i < 0] = sm_par
@@ -129,18 +128,20 @@ def global_constants_jensen(n_vals, N_t, N_x):
     """
     ## Building the normalizing constants
     C = np.zeros((n_vals, n_vals))
+    rep2idx = N_x.keys()
     for i in range(n_vals):
         for j in range(n_vals):
+            i_val, j_val = rep2idx[i], rep2idx[j]
             if i == j:
-                if N_x[i] <= 1:
+                if N_x[i_val] <= 1:
                     C[i, j] = 0.
                 else:
-                    C[i, j] = (N_t-1)/float(N_x[i]*(N_x[i]-1))
+                    C[i, j] = (N_t-1)/float(N_x[i_val]*(N_x[i_val]-1))
             else:
-                if N_x[i] == 0 or N_x[j] == 0:
+                if N_x[i_val] == 0 or N_x[j_val] == 0:
                     C[i, j] = 0.
                 else:
-                    C[i, j] = (N_t-N_x[i])/float(N_x[i]*N_x[j])
+                    C[i, j] = (N_t-N_x[i_val])/float(N_x[i_val]*N_x[j_val])
     C[C < 0] = 0
     return C
 
@@ -150,7 +151,7 @@ def normalization_jensen(corr_loc, globals_):
     from the matrix of estimated counts.
     """
     ## 0. Needed variables
-    N_t, _, n_vals, C = globals_
+    _, n_vals, C = globals_
     ## 1. Computing the nets
     n_calc = corr_loc.shape[2]
     net = np.zeros((n_vals, n_vals, n_calc))

@@ -22,12 +22,12 @@ from pySpatialTools.Discretization import SetDiscretization
 
 def test():
     ## Parameters
-    n = 1000
+    n = 100
     # Implicit
     locs = np.random.random((n, 2))*100
     locs1 = random_transformed_space_points(n, 2, None)*10
     # Explicit
-    disc0 = SetDiscretization(np.random.randint(0, 20, 1000))
+    disc0 = SetDiscretization(np.random.randint(0, 20, 100))
     input_map = lambda s, x: disc0.discretize(x)
     pars4 = {'order': 4}
     pars5 = {'lim_distance': 2}

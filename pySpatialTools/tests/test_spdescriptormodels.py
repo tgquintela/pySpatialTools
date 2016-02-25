@@ -36,7 +36,7 @@ from ..utils.util_external.Logger import Logger
 
 
 def test():
-    n, nx, ny = 1000, 100, 100
+    n, nx, ny = 100, 100, 100
     locs = np.random.random((n, 2))*10
     ## Retrievers management
     ret0 = KRetriever(locs, 3, ifdistance=True)
@@ -45,7 +45,7 @@ def test():
 
     # Creation of retriever of regions
     griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
-    regdists = generate_randint_relations(0.001, (nx, ny), p0=0., maxvalue=1)
+    regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
     regret = SameEleNeigh(regdists)
     m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
     regret._output_map = [m_out]
@@ -60,10 +60,16 @@ def test():
 
     features.add_perturbations(perturbation)
 
+    ## Create MAP VALS (indices)
+    corr_arr = -1*np.ones(n)
+    for i in range(len(np.unique(feat_arr0))):
+        corr_arr[(feat_arr0 == np.unique(feat_arr0)[i]).ravel()] = i
+    assert(np.sum(corr_arr == (-1)) == 0)
+
     def map_vals_i_t(s, i, k):
         k_p, k_i = s.features[0]._map_perturb(k)
         i_n = s.features[0]._perturbators[k_p].apply2indice(i, k_i)
-        return feat_arr0[i_n].ravel()[0]
+        return corr_arr[i_n]
     map_vals_i = create_mapper_vals_i(map_vals_i_t, feat_arr0)
 
     countdesc = Countdescriptor()
@@ -75,8 +81,8 @@ def test():
     spdesc = SpatialDescriptorModel(gret, feats_ret)
     nets = spdesc.compute()
     spdescs = []
-    idxs = [slice(0, 250, 1), slice(250, 500, 1), slice(500, 750, 1)]
-    idxs += [slice(750, 1000, 1)]
+    idxs = [slice(0, 25, 1), slice(25, 50, 1), slice(50, 75, 1)]
+    idxs += [slice(75, 100, 1)]
     for i in range(4):
         aux_spdesc = copy.copy(spdesc)
         aux_spdesc.set_loop(idxs[i])

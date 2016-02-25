@@ -47,6 +47,12 @@ class DescriptorModel:
         """
         return corr_loc
 
+    def set_global_info(self, features):
+        """Set the global stats info in order to get information to normalize
+        the measure.
+        """
+        pass
+
     ###########################################################################
     ########################## Formatter functions ############################
     ###########################################################################
@@ -134,21 +140,3 @@ class Interpolator(DescriptorModel):
         self._f_default_names = array_featurenames
         self._defult_add2result = sum_addresult_function
         self._checker_descriptormodel()
-
-
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-# TO RETRIEVER ??
-def get_individuals(neighs, dists, discretized):
-    "Transform individual regions."
-    logi = np.zeros(discretized.shape[0]).astype(bool)
-    dists_i = np.zeros(discretized.shape[0])
-    for i in range(len(neighs)):
-        logi_i = (discretized == neighs[i]).ravel()
-        logi = np.logical_or(logi, logi_i).ravel()
-        dists_i[logi_i] = dists[i]
-    neighs_i = np.where(logi)[0]
-    dists_i = dists_i[logi]
-    return neighs_i, dists_i
