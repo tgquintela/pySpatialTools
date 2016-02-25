@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/tgquintela/pySpatialTools.svg?branch=master)](https://travis-ci.org/tgquintela/pySpatialTools)
 [![Coverage Status](https://coveralls.io/repos/github/tgquintela/pySpatialTools/badge.svg?branch=master)](https://coveralls.io/github/tgquintela/pySpatialTools?branch=master)
-
 # pySpatialTools
 This package is built in order to provide prototyping tools in python to deal with spatial data in python and model spatial-derived relations between different elements in a system.
 In some systems, due to the huge amount of data, the complexity of their topology their local nature or because other practical reasons we are forced to use only local information for model the system properties and dynamics.
