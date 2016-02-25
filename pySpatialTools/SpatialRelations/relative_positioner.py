@@ -56,3 +56,21 @@ def metric_distances(loc_i, loc_neighs, info_pos={}):
 def diff_vectors(loc_i, loc_neighs, info_pos={}):
     diff_vects = loc_neighs - loc_i
     return diff_vects
+
+
+###############################################################################
+###############################################################################
+###############################################################################
+###############################################################################
+# TO RETRIEVER ??
+def get_individuals(neighs, dists, discretized):
+    "Transform individual regions."
+    logi = np.zeros(discretized.shape[0]).astype(bool)
+    dists_i = np.zeros(discretized.shape[0])
+    for i in range(len(neighs)):
+        logi_i = (discretized == neighs[i]).ravel()
+        logi = np.logical_or(logi, logi_i).ravel()
+        dists_i[logi_i] = dists[i]
+    neighs_i = np.where(logi)[0]
+    dists_i = dists_i[logi]
+    return neighs_i, dists_i
