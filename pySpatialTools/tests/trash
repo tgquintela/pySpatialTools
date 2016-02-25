@@ -1,5 +1,36 @@
 
 
+### test_perturbations 2016-02-23
+#from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
+#    RetrieverManager
+#from pySpatialTools.FeatureManagement import SpatialDescriptorModel
+#from pySpatialTools.Discretization import GridSpatialDisc
+#from pySpatialTools.Retrieve import OrderEleNeigh, SameEleNeigh
+#from pySpatialTools.SpatialRelations.regiondistances_computers\
+#    import compute_AvgDistanceRegions
+#from pySpatialTools.SpatialRelations import RegionDistances
+#from pySpatialTools.Retrieve import create_retriever_input_output
+
+#    griddisc = GridSpatialDisc((100, 100), (0, 10), (0, 10))
+#    locs = np.random.random((n, 2)) * 10
+#    info_ret = {'order': 4}
+#    contiguity = griddisc.get_contiguity()
+#    contiguity = RegionDistances(contiguity)
+#    ret = OrderEleNeigh(contiguity, info_ret)
+#    relations, _data, symmetric, store =\
+#        compute_AvgDistanceRegions(locs, griddisc, ret)
+#    regdists = RegionDistances(relations=relations, _data=_data,
+#                               symmetric=symmetric)
+#    regret = OrderEleNeigh(regdists, {'order': 1})
+#    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
+#    regret._output_map = [m_out]
+#    agg_funct = lambda x, y: x.sum(0).ravel()
+#    aggfeatures = features.add_aggregations((locs, griddisc), regret,
+#                                            agg_funct)
+#
+#    feats_ret = FeaturesManager([features, aggfeatures], AvgDescriptor())
+
+
 ### test_sp_descriptormodels 2016-02-23
 
 #    info_ret = {'order': 4}

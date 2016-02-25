@@ -17,6 +17,8 @@ threaten tens of millions of jobs.
 
 import numpy as np
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
+from pySpatialTools.utils.util_classes import create_mapper_vals_i
+
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 
@@ -192,3 +194,28 @@ def test():
     memb6 == 0
     for e in memb6:
         pass
+
+    ## Mapper vals
+    feat_arr0 = np.random.randint(0, 20, 100)
+
+    def map_vals_i_t(s, i, k):
+        k_p, k_i = s.features[0]._map_perturb(k)
+        i_n = s.features[0]._perturbators[k_p].apply2indice(i, k_i)
+        return feat_arr0[i_n].ravel()[0]
+    map_vals_i = create_mapper_vals_i(map_vals_i_t, feat_arr0)
+
+    # correlation
+    map_vals_i = create_mapper_vals_i('correlation', feat_arr0)
+    map_vals_i = create_mapper_vals_i(('correlation', 100, 20), feat_arr0)
+    map_vals_i = create_mapper_vals_i('matrix')
+    map_vals_i = create_mapper_vals_i('matrix', feat_arr0)
+    map_vals_i = create_mapper_vals_i(('matrix', 20), list(feat_arr0))
+    map_vals_i = create_mapper_vals_i(('matrix', 100, 20), len(feat_arr0))
+    map_vals_i = create_mapper_vals_i('matrix', slice(0, 100, 1))
+    map_vals_i.set_prefilter(slice(0, 100, 1))
+    map_vals_i.set_prefilter(10)
+    map_vals_i.set_prefilter([0, 2])
+
+    map_vals_i = create_mapper_vals_i(map_vals_i)
+    map_vals_i = create_mapper_vals_i(feat_arr0.reshape(100, 1))
+    map_vals_i = create_mapper_vals_i(None)

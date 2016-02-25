@@ -18,7 +18,7 @@ from pySpatialTools.SpatialRelations.regiondistances_computers\
 
 def test():
     info_ret = {'order': 2}
-    locs = np.random.random((10000, 2))
+    locs = np.random.random((1000, 2))
 
 #    mainmapper1 = generate_random_relations(25, store='sparse')
 #    mainmapper2 = generate_random_relations(100, store='sparse')
