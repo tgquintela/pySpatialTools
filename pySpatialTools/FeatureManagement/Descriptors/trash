@@ -1,6 +1,32 @@
 
 
 
+###### 2016-02-24 count descriptor
+#    def compute_aggcharacs_i(self, neighs_i, dists_i):
+#        """Compute aggregated characters for the region i from neighs_i points
+#        and relative position of neighbourhood points dists_i.
+#
+#        Parameters
+#        ----------
+#        neighs_i: numpy.ndarray
+#            the points which conforms the neighbourhood.
+#        dists_i: numpy.ndarray
+#            the relative position respect the original region.
+#
+#        Returns
+#        -------
+#        aggcharacs_i: numpy.ndarray
+#            the information aggregated information features.
+#
+#        """
+#        counts = Counter(self.features[list(neighs_i), :].ravel())
+#        aggcharacs_i = self.initialization_desc()
+#        keys = [self.mapper[key] for key in counts.keys()]
+#        aggcharacs_i[0, keys] = counts.values()
+#        return aggcharacs_i
+
+
+
 ###### 2016-02-01 count descriptor
 
 

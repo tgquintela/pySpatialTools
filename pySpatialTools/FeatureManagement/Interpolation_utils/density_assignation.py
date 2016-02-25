@@ -63,13 +63,15 @@ def general_density_assignation(locs, retriever, info_ret, values, f_weights,
 def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
                     f_dens, params_d):
     ## Computation of the measure based in the distances as weights.
-    M = np.zeros(locs.shape[0])
+    #M = np.zeros(locs.shape[0])
+    M = []
     for i in xrange(locs.shape[0]):
         neighs, dist = retriever.retrieve_neighs(locs[i, :], info_ret[i], True)
         neighs, dist = np.array(neighs).astype(int).ravel(), np.array(dist)
         weights = from_distance_to_weights(dist, f_weighs, params_w)
-        M[i] = compute_measure_i(weights, values[neighs, :], f_dens, params_d)
-
+        M_aux = compute_measure_i(weights, values[neighs], f_dens, params_d)
+        M.append(M_aux)
+    M = np.array(M)
     return M
 
 
@@ -98,7 +100,7 @@ def compute_measure_wavg(weights, values):
     """Measure to compute density based on the weighted average of selected
     elements around the point considered.
     """
-    measure = np.sum(weights * values)
+    measure = np.sum((weights * values.T).T, axis=0)
     return measure
 
 
@@ -125,6 +127,8 @@ def from_distance_to_weights(dist, method, params):
             weights = dist2weights_surgauss(dist, **params)
         elif method == 'sigmoid':
             weights = dist2weights_sigmoid(dist, **params)
+        else:
+            weights = dist
     else:
         weights = method(dist, **params)
     weights = weights.ravel()
@@ -158,7 +162,8 @@ def dist2weights_invers(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
         tau = (max_w/min_w-1)/max_r
     if rescale:
         floor_f = 1./float(1.+tau*max_r)
-        weights = max_w/(1.-floor_f) * (1./float(1.+tau*dist)-floor_f)
+        aux_dist = (1.+tau*dist).astype(float)
+        weights = max_w/(1.-floor_f) * (1./aux_dist-floor_f)
     else:
         weights = max_w/float(1.+tau*dist)
     return weights
@@ -212,7 +217,6 @@ def dist2weights_sigmoid(dist, max_r, max_w=1, min_w=1e-3, r_char=0, B=None,
     C = r_char*max_r
     if B is None:
         B = set_scale_sigmoid(max_r, max_w, min_w, r_char)
-
     sigmoid = lambda x: 1./(1.+B*np.exp(x+C))
     if rescale:
         floor_f = sigmoid(max_r)
@@ -259,10 +263,10 @@ def set_scale_gauss(max_r, max_w, min_w):
 def set_scale_sigmoid(max_r, max_w, min_w, r_char):
     "Set scale for sigmoidal functions."
     C = r_char*max_r
-    sigmoid_c = lambda B: 1./(1.+B*np.exp(max_r+C)) - min_w
-    B = minimize((sigmoid_c)**2,
-                 x0=np.array([1]), method='BFGS',
+    sigmoid_c = lambda B: (1./(1.+B*np.exp(max_r+C)) - min_w)**2
+    B = minimize(sigmoid_c, x0=np.array([1]), method='BFGS',
                  tol=1e-8, bounds=(0, None))
+    B = B['x'][0]
     return B
 
 

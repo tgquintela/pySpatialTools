@@ -28,20 +28,15 @@ class AvgDescriptor(DescriptorModel):
 
     """
     name_desc = "Sum descriptor"
-    _n = 0
     _nullvalue = 0
 
-    def __init__(self, features, sp_typemodel='matrix'):
-        "The inputs are the needed to compute model_dim."
+    def __init__(self):
+        """The inputs are the needed to compute model_dim."""
         ## Initial function set
         self._f_default_names = array_featurenames
         self._defult_add2result = sum_addresult_function
-        ## Format features
-        self._format_features(features)
-        ## Type of built result
-        self._format_map_vals_i(sp_typemodel)
-        ## Format function to external interaction and building results
-        self._format_result_building()
+        ## Check descriptormodel
+        self._checker_descriptormodel()
 
     ###########################################################################
     ####################### Compulsary main functions #########################

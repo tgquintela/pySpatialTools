@@ -8,8 +8,7 @@ This function can act as a compute_characs function.
 
 """
 
-from ..Interpolation_utils.\
-    density_assignation import from_distance_to_weights, compute_measure_i
+from density_assignation import from_distance_to_weights, compute_measure_i
 
 
 def create_weighted_function(f_weighs, params_w, f_dens, params_d):
