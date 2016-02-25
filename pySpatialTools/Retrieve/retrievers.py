@@ -277,7 +277,7 @@ class Retriever:
                     loc_i = np.array(self.retriever[k].data[i_loc])
                     loc_i = loc_i.reshape((1, sh[1]))
         elif type(i_loc) in [list, np.ndarray]:
-            loc_i = np.array(loc_i).reshape((1, sh[1]))
+            loc_i = np.array(i_loc).reshape((1, sh[1]))
         elif isinstance(i_loc, SpatialElementsCollection):
             i_loc = np.array(i_loc.location).reshape((1, sh[1]))
         return loc_i
