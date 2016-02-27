@@ -22,4 +22,3 @@ def random_membership(n_elements, n_collections, multiple=True):
         membership = np.random.randint(0, n_collections, n_elements)
     set_disc = SetDiscretization(membership)
     return set_disc
-

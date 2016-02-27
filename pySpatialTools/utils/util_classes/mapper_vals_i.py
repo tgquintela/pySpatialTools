@@ -57,11 +57,16 @@ class Map_Vals_i:
 
     def _format_mapper(self, mapper, n_in, n_out):
         if type(mapper) in [int, float, list, tuple]:
+            if mapper in [int, float]:
+                mapper = int(mapper)
+            else:
+                mapper = [int(m) for m in mapper]
             self.mapper = lambda s, i, k: mapper
             self.n_out = 1
             self.n_in = n_in
         elif type(mapper) == np.ndarray:
             ## Transform indice
+            mapper = mapper.astype(int)
             self.mapper = lambda s, idx, k: mapper[idx]
             self.n_in = len(mapper)
             self.n_out = len(np.unique(mapper))
