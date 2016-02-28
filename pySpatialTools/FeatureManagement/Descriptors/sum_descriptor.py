@@ -15,7 +15,7 @@ from ..aux_descriptormodels import\
     sum_addresult_function, array_featurenames
 
 
-class AvgDescriptor(DescriptorModel):
+class SumDescriptor(DescriptorModel):
     """Model of spatial descriptor computing by averaging the type of the
     neighs represented in feat_arr.
 

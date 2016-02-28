@@ -26,7 +26,9 @@ from pySpatialTools.utils.util_classes import create_mapper_vals_i
 from pySpatialTools.FeatureManagement.aux_descriptormodels import\
     aggregator_1sh_counter
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
-    AvgDescriptor, PjensenDescriptor
+    AvgDescriptor, PjensenDescriptor, SumDescriptor, NBinsHistogramDesc,\
+    SparseCounter
+
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
 import numpy as np
@@ -61,6 +63,32 @@ def test():
     avgdesc = AvgDescriptor()
     countdesc = Countdescriptor()
     pjensendesc = PjensenDescriptor()
+    sumdesc = SumDescriptor()
+    nbinsdesc = NBinsHistogramDesc(5)
+    sparsedesc = SparseCounter()
+
+    contfeats, point_pos = np.random.random(5), np.random.random(5)
+    catfeats = np.random.randint(0, 10, 5)
+    aggdescriptors_idxs = np.random.random((10, 5))
+
+    avgdesc.compute_characs(contfeats, point_pos)
+    avgdesc.reducer(aggdescriptors_idxs, point_pos)
+    avgdesc.aggdescriptor(contfeats, point_pos)
+    countdesc.compute_characs(catfeats, point_pos)
+    countdesc.reducer(aggdescriptors_idxs, point_pos)
+    countdesc.aggdescriptor(catfeats, point_pos)
+    pjensendesc.compute_characs(catfeats, point_pos)
+    pjensendesc.reducer(aggdescriptors_idxs, point_pos)
+    pjensendesc.aggdescriptor(catfeats, point_pos)
+    sumdesc.compute_characs(contfeats, point_pos)
+    sumdesc.reducer(aggdescriptors_idxs, point_pos)
+    sumdesc.aggdescriptor(contfeats, point_pos)
+    nbinsdesc.compute_characs(contfeats, point_pos)
+    nbinsdesc.reducer(aggdescriptors_idxs, point_pos)
+    nbinsdesc.aggdescriptor(contfeats, point_pos)
+    sparsedesc.compute_characs(catfeats, point_pos)
+    sparsedesc.reducer(aggdescriptors_idxs, point_pos)
+    sparsedesc.aggdescriptor(catfeats, point_pos)
 
     feats_ret0 = FeaturesManager(feats0, countdesc, maps_vals_i=map_vals_i)
     feats_ret1 = FeaturesManager([feats1], avgdesc, maps_vals_i=map_vals_i)
