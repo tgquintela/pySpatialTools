@@ -25,12 +25,31 @@ OUTPUTS:
 """
 
 
-def sum_addresult_function(x, x_i):
+def sum_addresult_function(x, x_i, vals_i):
     "Sum the result to the final result."
-    return x + x_i
+    for k in range(len(vals_i)):
+        x[[vals_i[k]], :, k] += x_i[k]
+    return x
 
 
-def append_addresult_function(x, x_i):
-    "Append the result to the final result."
-    assert type(x) == list
-    return x.append(x_i)
+def append_addresult_function(x, x_i, vals_i):
+    """Append the result to the final result."""
+#    assert(type(x) == list)
+    for k in range(len(vals_i)):
+        x[k].append(x_i)
+    return x
+
+
+def replacelist_addresult_function(x, x_i, vals_i):
+    """Replace the element in a preinitialized list.
+
+    See also:
+    ---------
+    sparse_dict_completer
+
+    """
+    ## Adding to result
+    for k in range(len(vals_i)):
+        x[k][0].append(x_i[k])
+        x[k][1].append(vals_i[k])
+    return x

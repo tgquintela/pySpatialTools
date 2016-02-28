@@ -7,6 +7,47 @@ This module contain possible functions to complete the final measure.
 """
 
 import numpy as np
+from scipy.sparse import coo_matrix
+
+
+def sparse_dict_completer(measure, global_info=None):
+    """Sparse completer transform the dictionaries into a sparse matrices.
+
+    See also:
+    ---------
+    replacelist_addresult_function
+
+    """
+    ## Completing measure
+    for k in range(len(measure)):
+        data, iss, jss = [], [], []
+        vals_res = np.array(measure[k][1])
+        if len(np.unique(vals_res)) == len(vals_res):
+            for i in range(len(vals_res)):
+                jss += measure[k][0][i].keys()
+                data += measure[k][0][i].values()
+                iss += len(measure[k][0][i])*[vals_res[i]]
+        else:
+            for v in np.unique(vals_res):
+                idxs = np.where(v == vals_res)[0]
+                dicti = {}
+                for i in idxs:
+                    keys = measure[k][0][i].keys()
+                    values = measure[k][0][i].values()
+                    for j in xrange(len(keys)):
+                        try:
+                            dicti[keys[j]] += values[j]
+                        except:
+                            dicti[keys[j]] = values[j]
+                    jss += dicti.keys()
+                    iss += len(dicti.keys())*[v]
+                    data += dicti.values()
+
+        ## Building the matrix and storing it in measure
+        shape = (int(np.max(iss))+1, int(np.max(jss))+1)
+        data, iss, jss = np.array(data), np.array(iss), np.array(jss)
+        measure[k] = coo_matrix((data, (iss, jss)), shape=shape)
+    return measure
 
 
 def null_completer(measure, global_info=None):

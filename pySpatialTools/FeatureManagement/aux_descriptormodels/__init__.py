@@ -15,10 +15,11 @@ from reducers import sum_reducer, avg_reducer
 
 ## Invocable add2result functions
 from add2result_functions import sum_addresult_function,\
-    append_addresult_function
+    append_addresult_function, replacelist_addresult_function
 
 ## Invocable completers
-from completers import null_completer, weighted_completer
+from completers import null_completer, weighted_completer,\
+    sparse_dict_completer
 
 ## Invocable aggregation functions
 from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\
