@@ -106,8 +106,7 @@ def test():
     sum_reducer([aggdescriptors_idxs], point_pos)
     sum_reducer([{9: 0, 8: 1, 4: 7, 3: 0, 1: 0}], point_pos)
     avg_reducer(aggdescriptors_idxs, point_pos)
-    sum_reducer([{9: 0, 8: 1, 4: 7, 3: 0, 1: 0}], point_pos)
-
+    avg_reducer([{9: 0, 8: 1, 4: 7, 3: 0, 1: 0}], point_pos)
 
     # Add2result
     sum_addresult_function(x, x_i, vals_i)

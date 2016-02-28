@@ -33,7 +33,7 @@ class Logger:
 
     def mark_datetime(self, message=''):
         """Function to write the datetime in this momment."""
-        dtime = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+        dtime = self.get_datetime()
         message = message+': ' if len(message) > 0 else message
         m = ' ' + message + dtime + ' '
         n = ((80-len(m))/2)

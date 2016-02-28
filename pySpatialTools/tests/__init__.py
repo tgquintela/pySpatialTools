@@ -14,6 +14,7 @@ import warnings
 ###############################################################################
 ############################## Testing function ###############################
 ###############################################################################
+import test_pythonUtils
 import test_utils
 import test_preprocess
 import test_spatial_discretizer
@@ -52,6 +53,7 @@ def test():
     ## Performing tests
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        test_pythonUtils.test()
         test_utils.test()
         test_preprocess.test()
         test_spatial_discretizer.test()
