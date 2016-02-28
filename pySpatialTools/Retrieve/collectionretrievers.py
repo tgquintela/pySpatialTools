@@ -89,7 +89,7 @@ class RetrieverManager:
         elif not(type(retrievers) == list):
             raise TypeError("Incorrect type. Not retrievers list.")
         ## WARNING: By default it is determined by the first retriever
-        self.n_inputs = len(self.retrievers[0].data_input)
+        self.n_inputs = len(self.retrievers[0])
         ## Set staticneighs
         n_ret = len(self.retrievers)
         self.staticneighs = all([self[i].staticneighs for i in range(n_ret)])

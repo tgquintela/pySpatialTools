@@ -25,19 +25,13 @@ from scipy.sparse import coo_matrix
 from aux_retriever import _check_retriever
 from ..utils import NonePerturbation
 from ..utils import ret_filter_perturbations
-from ..utils.util_classes import SpatialElementsCollection
+from ..utils.util_classes import SpatialElementsCollection, Locations
 
 
 class Retriever:
-    """Class which contains the retriever of points.
+    """Class which contains the retriever of elements.
     """
     __name__ = 'pySpatialTools.Retriever'
-
-    def set_locs(self, locs, info_ret, info_f):
-        "Set locations for retrieving their neighs."
-        self.data = SpatialElementsCollection(locs)
-        self._autodata = False
-        self._format_retriever_info(info_ret, info_f)
 
     def retrieve_neighs(self, i_loc, info_i={}, ifdistance=None, k=None,
                         output=0):
@@ -45,13 +39,9 @@ class Retriever:
         more specific functions designed in the specific classes and methods.
         """
         ## 0. Prepare variables
-        # Prepare information retrieve
-        info_i = self._get_info_i(i_loc, info_i)
+        info_i, ifdistance, ks =\
+            self._format_inputs_retriever(i_loc, info_i, ifdistance, k, output)
 
-        ifdistance = self._ifdistance if ifdistance is None else ifdistance
-        # Prepare perturbation index
-        ks = [k] if type(k) == int else k
-        ks = 0 if ks is None else ks
         ## 1. Retrieve neighs
         if ks == 0 or self.staticneighs:
             # Prepare coordinates information (depending on coord or index)
@@ -82,6 +72,20 @@ class Retriever:
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
         return neighs_info
+
+    def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):
+        """Format inputs retriever check and format the inputs for retrieving.
+        """
+        # Prepare information retrieve
+        info_i = self._get_info_i(i_loc, info_i)
+        #i_loc = self._get_loc_i(i_loc)
+        ifdistance = self._ifdistance if ifdistance is None else ifdistance
+        # Prepare perturbation index
+        ks = [k] if type(k) == int else k
+        ks = 0 if ks is None else ks
+        ## Check output (TODO)
+
+        return info_i, ifdistance, ks
 
     ######################### Perturbation management #########################
     ###########################################################################
@@ -178,7 +182,7 @@ class Retriever:
         ## External objects to apply
         self.relative_pos = None
         ## IO information
-        self._flag_auto = False
+        self._autoexclude = False
         self._ifdistance = False
         self._autoret = False
         self._heterogenous_input = False
@@ -189,52 +193,72 @@ class Retriever:
         ## Check
         _check_retriever(self)
 
+    ################################ Formatters ###############################
+    ###########################################################################
+    def _format_output_information(self, autoexclude, ifdistance, relativepos):
+        """Format functions to use in output creation."""
+        self._autoexclude = autoexclude
+        if autoexclude:
+            self._format_output = self._format_output_exclude
+        else:
+            self._format_output = self._format_output_noexclude
+        self._ifdistance = ifdistance
+        self.relative_pos = relativepos
+
     def _format_retriever_info(self, info_ret, info_f):
-        "Format properly the retriever information."
+        """Format properly the retriever information."""
         if type(info_ret).__name__ == 'function':
             self._info_f = info_ret
+            self._info_ret = self._default_ret_val
         else:
             self._info_f = info_f
-        aux_default = self._default_ret_val
-        self._info_ret = aux_default if info_ret is None else info_ret
+            aux_default = self._default_ret_val
+            self._info_ret = aux_default if info_ret is None else info_ret
 
-    def _exclude_auto(self, i_loc, neighs, dists, k=0):
-        "Exclude auto points if there exist in the neighs retrieved."
-        ## 0. Detect input i_loc and retrieve to_exclude_points list
+    ################################# Auxiliar ################################
+    ###########################################################################
+    def _exclude_auto(self, i_loc, neighs, dists, kr=0):
+        """Exclude auto elements if there exist in the neighs retrieved.
+        This is a generic function independent on the type of the element.
+        """
+        ## 0. Detect input i_loc and retrieve to_exclude_elements list
+        # If it is an indice
         if type(i_loc) in [int, np.int32, np.int64]:
-            to_exclude_points = [i_loc]
-        elif type(i_loc) == np.ndarray:
-            ###########################################################
-            to_exclude_points = self._build_excluded_points(i_loc, k)
-            ###########################################################
+            to_exclude_elements = [i_loc]
+        # If it is an element spatial information
+        else:
+            to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
         n_p = np.array(neighs).shape[0]
         idxs_exclude = [i for i in xrange(n_p) if neighs[i]
-                        in to_exclude_points]
+                        in to_exclude_elements]
         neighs = [neighs[i] for i in xrange(n_p) if i not in idxs_exclude]
         if dists is not None:
             dists = [dists[i] for i in xrange(n_p) if i not in idxs_exclude]
         return neighs, dists
 
-    def _build_excluded_points(self, i_loc, k=0):
-        "Build the excluded points from i_loc."
-        sh = i_loc.shape
-        i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
+    def _build_excluded_elements(self, i_loc, kr=0):
+        """Build the excluded points from i_loc if it is not an index."""
+        if type(i_loc) == np.ndarray:
+            sh = i_loc.shape
+            i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
         try:
-            logi = np.all(self.retriever[k].data == i_loc, axis=1).ravel()
+            logi = np.all(self.retriever[kr].data == i_loc, axis=1).ravel()
         except:
-            logi = np.all(self.retriever[k].data == i_loc)
-        assert len(logi) == len(self.retriever[k].data)
-#        logi = np.ones(len(self.retriever.data)).astype(bool)
-#        for i in range(self.retriever.data.shape[1]):
-#            aux_logi = np.array(self.retriever.data)[:, i] == i_loc[:, i]
-#            logi = np.logical_and(logi, aux_logi)
+            try:
+                logi = np.all(self.retriever[kr].data == i_loc)
+            except:
+                n = len(self.retriever[kr].data)
+                logi = np.array([self.retriever[kr].data[i] == i_loc
+                                 for i in xrange(n)])
+        assert len(logi) == len(self.retriever[kr].data)
         to_exclude_points = np.where(logi)[0]
         return to_exclude_points
 
     def _get_info_i(self, i_loc, info_i):
-        """Get information of retrieving point for each i_loc. Comunicate the
-        input i with the data_input.
+        """Get retrieving information for each element i_loc. Comunicate the
+        input i with the data_input. It is a generic function independent on
+        the type of the elements we want to retrieve.
         """
         if not info_i:
             if type(i_loc) in [int, np.int32, np.int64]:
@@ -252,35 +276,65 @@ class Retriever:
         return info_i
 
     def _get_loc_i(self, i_loc, k=0, inorout=True):
-        "Get location."
+        """Get element spatial information. Generic function."""
         ## 0. Needed variable computations
         ifdata = inorout and not self._autodata
         sh = self.data_input.shape
         if ifdata:
-            flag = isinstance(self.data, SpatialElementsCollection)
+            flag = isinstance(self.data, Locations)
         else:
-            flag = isinstance(self.retriever[k].data,
-                              SpatialElementsCollection)
+            flag = isinstance(self.retriever[k].data, Locations)
         ## 1. Loc retriever
         if type(i_loc) in [int, np.int32, np.int64]:
-            if flag:
-                if ifdata:
-                    i_loc = self.data_input[i_loc].location
-                    i_loc = np.array(i_loc).reshape((1, sh[1]))
+            try:
+                if flag:
+                    if ifdata:
+                        i_loc = self.data_input[i_loc].location
+                        i_loc = np.array(i_loc).reshape((1, sh[1]))
+                    else:
+                        i_loc = self.data_input[i_loc].location
+                        i_loc = np.array(i_loc).reshape((1, sh[1]))
                 else:
-                    i_loc = self.data_input[i_loc].location
-                    i_loc = np.array(i_loc).reshape((1, sh[1]))
-            else:
+                    if ifdata:
+                        loc_i = np.array(self.data[i_loc]).reshape((1, sh[1]))
+                    else:
+                        loc_i = np.array(self.retriever[k].data[i_loc])
+                        loc_i = loc_i.reshape((1, sh[1]))
+            except:
                 if ifdata:
-                    loc_i = np.array(self.data[i_loc]).reshape((1, sh[1]))
-                else:
-                    loc_i = np.array(self.retriever[k].data[i_loc])
-                    loc_i = loc_i.reshape((1, sh[1]))
+                    loc_i = self.data_input[i_loc]
         elif type(i_loc) in [list, np.ndarray]:
             loc_i = np.array(i_loc).reshape((1, sh[1]))
-        elif isinstance(i_loc, SpatialElementsCollection):
-            i_loc = np.array(i_loc.location).reshape((1, sh[1]))
+        elif isinstance(i_loc, Locations):
+            i_loc = np.array(i_loc.locations).reshape((1, sh[1]))
+        else:
+            loc_i = i_loc
         return loc_i
+
+    def _get_indice_i(self, loc_i, kr=0):
+        """Obtain the indices from the elements, element-wise."""
+        try:
+            indices = np.where(self.retriever[kr].data == loc_i)[0]
+        except:
+            indices = np.where([self.retriever[kr].data[i] == loc_i
+                                for i in range(len(self.retriever[kr].data))])
+        return indices
+
+    def _apply_relative_pos(self, neighs_info, element_i, element_neighs):
+        """Intraclass interface for manage the interaction with relative
+        position function."""
+        if self.relative_pos is not None:
+            ## Relative position computation
+            if type(self.relative_pos).__name__ == 'function':
+                rel_pos = self.relative_pos(element_i, element_neighs)
+            else:
+                rel_pos = self.relative_pos.compute(element_i, element_neighs)
+            ## Neighs information
+            if type(neighs_info) == tuple:
+                neighs_info = neighs_info[0], rel_pos
+            else:
+                neighs_info = neighs_info, rel_pos
+        return neighs_info
 
     ###########################################################################
     ########################### Auxiliary functions ###########################
@@ -290,18 +344,30 @@ class Retriever:
         neighs, dists = self.retrieve_neighs(i)
         return neighs, dists
 
+    def __len__(self):
+        return self._n0
+
     @property
     def _n0(self):
         if self._heterogenous_input:
             raise Exception("Impossible action. Heterogenous input.")
-        n0 = len(self.data_input)
+        try:
+            if self._autodata:
+                n0 = len(self.retriever[0])
+            else:
+                n0 = len(self.data)
+        except:
+            n0 = len(self.data_input)
         return n0
 
     @property
     def _n1(self):
         if self._heterogenous_output:
             raise Exception("Impossible action. Heterogenous output.")
-        n1 = len(self.data_output)
+        try:
+            n1 = np.prod(self.retriever[0].shape)
+        except:
+            n1 = len(self.data_output)
         return n1
 
     @property
@@ -323,7 +389,7 @@ class Retriever:
     def data_output(self):
         return np.array(self.retriever[0].data)
 
-    def compute_neighnet(self, out='sparse'):
+    def compute_neighnet(self):
         """Compute the relations neighbours and build a network or multiplex
         with the defined retriever class"""
         ## 0. Conditions to ensure
@@ -357,7 +423,6 @@ class Retriever:
         nets = []
         for k in range(n_data):
             nets.append(coo_matrix((data[k], (iss, jss)), shape=sh))
-        #nets = [format_relationship(nets[k], out) for k in range(n_data)]
         if n_data == 1:
             nets = nets[0]
         return nets

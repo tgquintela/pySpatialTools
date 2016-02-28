@@ -21,7 +21,7 @@ class NetworkRetriever(Retriever):
     _default_ret_val = {}
 
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
-                 flag_auto=True, ifdistance=True, info_f=None,
+                 autoexclude=True, ifdistance=True, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
                  output_map=None):
         "Creation a element network retriever class method."
@@ -32,9 +32,7 @@ class NetworkRetriever(Retriever):
         ## Info_ret mangement
         self._format_retriever_info(info_ret, info_f)
         # Output information
-        self._flag_auto = flag_auto
-        self._ifdistance = ifdistance
-        self.relative_pos = relative_pos
+        self._format_output_information(autoexclude, ifdistance, relative_pos)
         # Perturbations
         self._format_perturbation(perturbations)
         # IO mappers
@@ -68,13 +66,21 @@ class NetworkRetriever(Retriever):
         check = True
         return check
 
-    def _format_output(self, i_locs, neighs, dists, output, k=0):
+    def _format_output_exclude(self, i_locs, neighs, dists, output, k=0):
         "Format output."
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
         neighs, dists = np.array(neighs), np.array(dists)
         n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
         dists = dists.reshape((len(dists), n_dim))
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
+        return neighs, dists
+
+    def _format_output_noexclude(self, i_locs, neighs, dists, output, k=0):
+        "Format output."
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
+        neighs, dists = np.array(neighs), np.array(dists)
+        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
+        dists = dists.reshape((len(dists), n_dim))
         return neighs, dists
 
     def _format_info_i_reg(self, info_i, i=-1):

@@ -2,6 +2,172 @@
 """
 """
 
+########## 2016-02-27 Retrievers
+############################# LWindows Neighbours #############################
+###############################################################################
+class LWindows2GridRetriever(SpaceRetriever):
+    """Class which contains a retriever of L window neighbours for
+    2-dimensional grid data.
+    """
+    _default_ret_val = 1  # {'l': 1}
+
+    def _retrieve_neighs_spec(self, element_i, l, ifdistance=False, kr=0):
+        """Retrieve all the neighs in the window of size l."""
+        ## Get loc
+        loc_i = self._get_loc_i(element_i)
+        ## Retrieve logical neighs
+        logi = [self.retriever[kr].data[:, 0] < loc_i.ravel()[0]+l/2.,
+                self.retriever[kr].data[:, 0] > loc_i.ravel()[0]-l/2.,
+                self.retriever[kr].data[:, 1] < loc_i.ravel()[1]+l/2.,
+                self.retriever[kr].data[:, 1] > loc_i.ravel()[1]-l/2.]
+        aux_logi = np.ones(len(self.retriever[kr].data)).astype(bool)
+        for i in range(len(logi)):
+            aux_logi = np.logical_and(aux_logi, logi[i])
+
+        ## Compute neighs_info
+        if np.any(aux_logi):
+            neighs = np.where(aux_logi)[0]
+            if ifdistance:
+                locs_neighs = self.retriever[kr].data[neighs]
+                neighs_info =\
+                    self._apply_relative_pos(neighs, loc_i, locs_neighs)
+            else:
+                neighs_info = neighs, None
+        else:
+            neighs_info = [], None
+        return neighs_info
+
+    def _define_retriever(self, locs, pars_ret=None):
+        "Define a kdtree for retrieving neighbours."
+        ## If tuple of dimensions
+        if type(locs) == tuple:
+            shape = locs[:]
+            ## Create function for mapping
+            shapes = np.cumprod(shape[1:][::-1])[::-1]
+            shapes = np.array(list(shapes)[1:] + [1])
+
+            def map2indices(x):
+                if x >= np.array(shape):
+                    raise IndexError("Indices out of bounds.")
+                return np.sum(x*shapes)
+            n = np.prod(shape)
+            ndim = len(shape)
+            locs = np.zeros((n, ndim)).astype(int)
+            dims = [xrange(shape[i]) for i in range(ndim)]
+            for p in product(*dims):
+                i = map2indices(np.array(p))
+                locs[i] = np.array(p)
+        ## Store in a correct format
+        self.retriever.append(DummyRetriever(locs))
+
+
+##########2016-02-26 Retrievers
+
+
+#    def set_locs(self, locs, info_ret, info_f):
+#        "Set locations for retrieving their neighs."
+#        self.data = SpatialElementsCollection(locs)
+#        self._autodata = False
+#        self._format_retriever_info(info_ret, info_f)
+
+
+    def _build_excluded_points(self, i_loc, k=0):
+        "Build the excluded points from i_loc."
+        sh = i_loc.shape
+        i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
+        try:
+            logi = np.all(self.retriever[k].data == i_loc, axis=1).ravel()
+        except:
+            logi = np.all(self.retriever[k].data == i_loc)
+        assert len(logi) == len(self.retriever[k].data)
+#        logi = np.ones(len(self.retriever.data)).astype(bool)
+#        for i in range(self.retriever.data.shape[1]):
+#            aux_logi = np.array(self.retriever.data)[:, i] == i_loc[:, i]
+#            logi = np.logical_and(logi, aux_logi)
+        to_exclude_points = np.where(logi)[0]
+        return to_exclude_points
+
+############################## NGram Neighbours ###############################
+###############################################################################
+class NGramRetriever(SpaceRetriever):
+    """Class which contains a retriever of Ngram window neighbours for a
+    sequential data.
+    """
+    _default_ret_val = 1
+
+    def _retrieve_neighs_spec(self, element_i, ngram, ifdistance=False, kr=0):
+        """Retrieve ngram-1 neighs previously placed in the sequence by
+        element_i and the element_i itself."""
+        ## Get loc
+
+        if element_i > ngram:
+            rel_pos = np.arange(element_i-ngram+1, element_i+1)
+            neighs = self.retriever[kr].data[rel_pos]
+        else:
+            rel_pos = np.arange(0, element_i+1)
+            neighs = self.retriever[kr].data[rel_pos]
+
+        if ifdistance:
+            neighs_info = neighs, rel_pos
+            if self.relative_pos is not None:
+                self._apply_relative_pos(neighs_info, element_i, neighs)
+        else:
+            neighs_info = neighs, None
+        return neighs_info
+
+    def _define_retriever(self, elements, pars_ret=None):
+        "Define a kdtree for retrieving neighbours."
+        self.retriever.append(DummyRetriever(elements))
+        ## Iterable elements or the classes has to have a __le__ function
+        self._data = sorted(elements)
+
+    ### Overwritting functions
+    @property
+    def data(self):
+        return self.retriever[0].
+
+    @property
+    def data_input(self):
+        self._data
+
+    @property
+    def data_output(self):
+        return self.data_input
+
+
+#class L1DWindowsRetriever(SpaceRetriever):
+#    """Class which contains a retriever of Ngram window neighbours for a
+#    sequential data.
+#    """
+#    _default_ret_val = 1
+#
+#    def _retrieve_neighs_spec(self, element_i, pars_ret, ifdistance=False,
+#                              kr=0):
+#        """Retrieve ngram-1 neighs previously placed in the sequence by
+#        element_i and the element_i itself."""
+#        ngram, centered = pars_ret
+#        ## Get loc
+#        assert(type(element_i) == int)
+#        if element_i > ngram:
+#            rel_pos = np.arange(element_i-ngram+1, element_i+1)
+#        else:
+#            rel_pos = np.arange(0, element_i+1)
+#
+#        neighs = self.retriever[kr].data[rel_pos]
+#        if ifdistance:
+#            neighs_info = neighs, rel_pos
+#            if self.relative_pos is not None:
+#                self._apply_relative_pos(neighs_info, element_i, neighs)
+#        else:
+#            neighs_info = neighs, None
+#        return neighs_info
+#
+#    def _define_retriever(self, elements, pars_ret=None):
+#        "Define a kdtree for retrieving neighbours."
+#        self.retriever.append(DummyRetriever(elements))
+
+
+
 ##########2016-02-23 Retrievers
 
 

@@ -8,7 +8,7 @@ neighbourhood or local properties related with the neighbourhood.
 """
 
 ## Import Builded retrievers
-from implicit_retrievers import KRetriever, CircRetriever
+from implicit_retrievers import KRetriever, CircRetriever, WindowsRetriever
 from explicit_retrievers import SameEleNeigh, OrderEleNeigh,\
     LimDistanceEleNeigh
 

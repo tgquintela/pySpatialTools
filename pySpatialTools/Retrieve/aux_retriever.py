@@ -9,6 +9,15 @@ Auxialiar functions for retrieving.
 import numpy as np
 
 
+class DummyRetriever:
+    """Dummy retriever container. It gives the structure desired by the
+    retrievers classes to work properly.
+    """
+
+    def __init__(self, data):
+        self.data = data
+
+
 def _check_retriever(retriever):
     """
     Conditions (code checker function)
@@ -39,7 +48,7 @@ def _check_retriever(retriever):
     lista = dir(retriever)
     required_p = ['retriever', '_default_ret_val']
     required_f = ['_retrieve_neighs_spec', '_define_retriever',
-                  '_format_output']
+                  '_format_output_exclude', '_format_output_noexclude']
 
     ## 2. Checking constraints
     logi_p, fails_p = check_requireds(required_p, lista)
