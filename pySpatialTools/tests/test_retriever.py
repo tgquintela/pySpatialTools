@@ -9,7 +9,10 @@ test for retrievers precoded and framework of retrievers.
 import numpy as np
 
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
-    RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh
+    RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
+    DummyRetriever, GeneralRetriever
+from pySpatialTools.Retrieve.aux_retriever import _check_retriever
+
 
 from pySpatialTools.Retrieve import create_retriever_input_output
 
@@ -33,8 +36,11 @@ def test():
     pars5 = {'lim_distance': 2}
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
 
+    _input_map = lambda s, i: i
+    _output_map = [lambda s, i, x: x]
     ## Implicit
-    ret0 = KRetriever(locs, 3, ifdistance=True)
+    ret0 = KRetriever(locs, 3, ifdistance=True, input_map=_input_map,
+                      output_map=_output_map)
     ret1 = CircRetriever(locs, 3, ifdistance=True)
     ret2 = KRetriever(locs1, 3, ifdistance=True)
 
@@ -73,4 +79,47 @@ def test():
     net = ret2.compute_neighnet()
 
     ## Other external functions
-    m_in, m_out = create_retriever_input_output(np.random.randint(0, 100, 1000))
+    aux = np.random.randint(0, 100, 1000)
+    m_in, m_out = create_retriever_input_output(aux)
+
+    dummyret = DummyRetriever(None)
+    try:
+        _check_retriever(dummyret)
+        raise Exception
+    except:
+        pass
+    dummyret.retriever = None
+    dummyret._default_ret_val = None
+    try:
+        _check_retriever(dummyret)
+        raise Exception
+    except:
+        pass
+    dummyret = DummyRetriever(None)
+    dummyret._retrieve_neighs_spec = None
+    dummyret._define_retriever = None
+    dummyret._format_output_exclude = None
+    dummyret._format_output_noexclude = None
+    try:
+        _check_retriever(dummyret)
+        raise Exception
+    except:
+        pass
+
+    ## General Retriever
+    class PruebaRetriever(GeneralRetriever):
+        def __init__(self, autoexclude=True, ifdistance=False):
+            self._initialization()
+            self._format_output_information(autoexclude, ifdistance, None)
+
+        def _define_retriever(self):
+            pass
+
+        def _retrieve_neighs_spec(self, point_i, p, ifdistance=False, kr=0):
+            return [0], None
+    pruebaret = PruebaRetriever(True)
+    pruebaret.retrieve_neighs(0)
+    pruebaret.retrieve_neighs(1)
+    pruebaret = PruebaRetriever(False)
+    pruebaret.retrieve_neighs(0)
+    pruebaret.retrieve_neighs(1)

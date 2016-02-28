@@ -17,6 +17,7 @@ from collectionretrievers import RetrieverManager
 
 ## Import 'abstract' retrievers
 #from element_retrievers import ElementRetriever
+from general_retriever import GeneralRetriever
 
 ## Import useful functions
-from aux_retriever import create_retriever_input_output
+from aux_retriever import create_retriever_input_output, DummyRetriever

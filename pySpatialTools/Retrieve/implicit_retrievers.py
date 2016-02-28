@@ -67,10 +67,11 @@ class SpaceRetriever(Retriever):
 
     def _format_neigh_info(self, neighs_info):
         "TODO: Extension for other type of data as shapepy objects."
-        neighs, dists = np.array(neighs_info[0]), np.array(neighs_info[1])
-        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
-        dists = dists.reshape((len(dists), n_dim))
-        return neighs, dists
+        pass
+#        neighs, dists = np.array(neighs_info[0]), np.array(neighs_info[1])
+#        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
+#        dists = dists.reshape((len(dists), n_dim))
+#        return neighs, dists
 
 
 ################################ K Neighbours #################################
@@ -96,15 +97,16 @@ class KRetriever(SpaceRetriever):
 
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
-        try:
-            for k in range(self.k_perturb):
-                _, kr = self._map_perturb(k)
-                loc = self.retriever[kr].data[0]
-                self.retriever[kr].query(loc, 2)
-            check = True
-        except:
-            check = False
-        return check
+        pass
+#        try:
+#            for k in range(self.k_perturb):
+#                _, kr = self._map_perturb(k)
+#                loc = self.retriever[kr].data[0]
+#                self.retriever[kr].query(loc, 2)
+#            check = True
+#        except:
+#            check = False
+#        return check
 
     def _define_retriever(self, locs, pars_ret=None):
         "Define a kdtree for retrieving neighbours."
@@ -140,15 +142,16 @@ class CircRetriever(SpaceRetriever):
 
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
-        try:
-            for k in range(self.k_perturb):
-                _, kr = self._map_perturb(k)
-                loc = self.retriever[kr].data[0]
-                self.retriever[kr].query_radius(loc, 0.5)
-            check = True
-        except:
-            check = False
-        return check
+        pass
+#        try:
+#            for k in range(self.k_perturb):
+#                _, kr = self._map_perturb(k)
+#                loc = self.retriever[kr].data[0]
+#                self.retriever[kr].query_radius(loc, 0.5)
+#            check = True
+#        except:
+#            check = False
+#        return check
 
     def _define_retriever(self, locs, pars_ret=None):
         "Define a kdtree for retrieving neighbours."
