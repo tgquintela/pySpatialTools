@@ -49,5 +49,8 @@ def test():
     ## Process
     proc.compute()
     ## Remove the files created
-    os.remove('logfile.log')
-    os.remove('prueba')
+    try:
+        os.remove('logfile.log')
+        os.remove('prueba')
+    except:
+        pass
