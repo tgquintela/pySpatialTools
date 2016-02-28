@@ -14,7 +14,8 @@ import copy
 ## Retrieve
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import create_retriever_input_output,\
-    SameEleNeigh, KRetriever, CircRetriever, RetrieverManager
+    SameEleNeigh, KRetriever, CircRetriever, RetrieverManager,\
+    WindowsRetriever
 # Artificial data
 from pySpatialTools.utils.artificial_data import generate_randint_relations
 
@@ -29,10 +30,12 @@ from pySpatialTools.utils.util_classes import create_mapper_vals_i
 
 ## Descriptormodel
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
-    AvgDescriptor
+    AvgDescriptor, NBinsHistogramDesc, SparseCounter
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
+from ..utils.artificial_data import create_random_image
 from ..utils.util_external.Logger import Logger
+from ..io.io_images import create_locs_features_from_image
 
 
 def test():
@@ -95,3 +98,57 @@ def test():
         os.remove('logfile.log')
     except:
         raise Exception("Not usable compute_process.")
+
+    ## Grid descriptors
+    im_example = create_random_image((20, 20))[:, :, 0]
+    shape = im_example.shape
+    feats = im_example.ravel()
+    #locs, feats = create_locs_features_from_image(im_example)
+    pars_ret, nbins = {'l': 8, 'center': 0, 'excluded': False}, 5
+    #windret = WindowsRetriever((10, 10), pars_ret)
+    windret = WindowsRetriever(shape, pars_ret)
+    binsdesc = NBinsHistogramDesc(nbins)
+    features = binsdesc.set_global_info(feats, transform=True)
+
+    gret = RetrieverManager(windret)
+    feats_ret = FeaturesManager(features, binsdesc)
+    spdesc = SpatialDescriptorModel(gret, feats_ret)
+    net = spdesc.compute()
+
+    pars_ret2 = {'l': np.array([8, 3]), 'center': np.array([0, 0]),
+                 'excluded': True}
+    locs, _ = create_locs_features_from_image(im_example)
+    windret2 = WindowsRetriever(locs, pars_ret2)
+    gret2 = RetrieverManager(windret2)
+    spdesc2 = SpatialDescriptorModel(gret2, feats_ret)
+    net2 = spdesc2.compute()
+    try:
+        windret3 = WindowsRetriever((8, 9.), pars_ret2)
+        raise
+    except:
+        pass
+
+    ## Categorical array with different windows and dict
+    cat_ts = np.random.randint(0, 20, 20)
+    pars_ret, nbins = {'l': 8, 'center': 0, 'excluded': False}, 5
+    windret = WindowsRetriever(cat_ts.shape, pars_ret)
+    gret = RetrieverManager(windret)
+
+    countdesc = SparseCounter()
+    feats_ret = FeaturesManager(cat_ts, countdesc, out='dict',
+                                maps_vals_i=cat_ts)
+    spdesc = SpatialDescriptorModel(gret, feats_ret)
+    net = spdesc.compute()
+
+    feats_ret = FeaturesManager(cat_ts, countdesc, out='dict')
+    spdesc = SpatialDescriptorModel(gret, feats_ret)
+    net = spdesc.compute()
+
+    pars_ret, nbins = {'l': 6, 'center': -1, 'excluded': False}, 5
+    windret = WindowsRetriever(cat_ts.shape, pars_ret)
+    gret = RetrieverManager(windret)
+
+    feats_ret = FeaturesManager(cat_ts, countdesc, out='dict',
+                                maps_vals_i=cat_ts)
+    spdesc = SpatialDescriptorModel(gret, feats_ret)
+    net = spdesc.compute()
