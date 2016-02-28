@@ -62,9 +62,8 @@ class SpatialDescriptorModelProcess(Processer):
         # Begin to track the process
         t0, bun = self.setting_loop(self.sp_descriptormodel.n_inputs)
         for desc_i, vals_i in self.sp_descriptormodel.compute_nets_i():
-            for k in range(len(vals_i)):
-                desc[vals_i[k], :, k] = self.sp_descriptormodel.featurers.\
-                    add2result(desc[vals_i[k], :, k], desc_i[k])
+            desc = self.sp_descriptormodel.featurers.\
+                add2result(desc, desc_i, vals_i)
             ## Finish to track this process
             t0, bun = self.messaging_loop(i, t0, bun)
             i += 1

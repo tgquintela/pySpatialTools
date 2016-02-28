@@ -1,4 +1,20 @@
 
+########## SpDesc 2016-02-27
+#    def _compute_nets(self):
+#        """Function used to compute the total measure.
+#        """
+#        desc = self.featurers.initialization_output()
+#        for i in self.iter_indices(self):
+#            ## Compute descriptors for i
+#            desc_i, vals_i = self._compute_descriptors(i)
+#            ## Multiple mappings
+#            for k in range(len(vals_i)):
+#                desc[vals_i[k], :, k] =\
+#                    self.featurers.add2result(desc[vals_i[k], :, k], desc_i[k])
+#        desc = self.featurers.to_complete_measure(desc)
+#        return desc
+
+
 ## Interpolation_utils 2016-02-24
 ## Creation function descriptors
 

@@ -25,7 +25,8 @@ TODO
 import numpy as np
 ## Check initialization of map vals i
 from ..utils.util_classes import create_mapper_vals_i
-from aux_descriptormodels import append_addresult_function
+from aux_descriptormodels import append_addresult_function,\
+    replacelist_addresult_function
 from aux_featuremanagement import create_aggfeatures, compute_featuresnames
 from features_objects import ImplicitFeatures, ExplicitFeatures
 
@@ -153,7 +154,8 @@ class FeaturesManager:
         # Link to this class
         self.descriptormodel = descriptormodel
         for i in range(len(self)):
-            self.features[i].set_descriptormodel(descriptormodel)
+            self.features[i].set_descriptormodel(descriptormodel,
+                                                 self.featuresnames)
         ## Set output
         self._format_result_building(descriptormodel)
 
@@ -197,10 +199,13 @@ class FeaturesManager:
         n_feats = self.nfeats
         ## Initialization features
         if self._out == 'ndarray':
-            self.initialization_desc = lambda: np.zeros((1, n_feats))
+            null_value = self.features[0]._nullvalue
+            self.initialization_desc =\
+                lambda: np.ones((1, n_feats))*null_value
         else:
-            ## TODO:
-            pass
+            # Empty intialization descriptor.
+            # It is composed by free dictionary length
+            self.initialization_desc = lambda: {}
         ## Global construction of result
         if n_vals_i is not None and self._out == 'ndarray':
             shape = (n_vals_i, n_feats, self.k_perturb + 1)
@@ -208,11 +213,26 @@ class FeaturesManager:
             self.initialization_output = lambda: np.zeros(shape)
             ## Adding result
             self.add2result = descriptormodel._defult_add2result
+            self._join_descriptors = lambda x: np.concatenate(x)
         else:
-            ## Init global result
-            self.initialization_output = lambda: []
-            ## Adding result
-            self.add2result = append_addresult_function
+            self._join_descriptors = lambda x: x
+            flag = 'sparse_dict_completer' in \
+                str(descriptormodel.to_complete_measure) or \
+                'replacelist_addresult_function' in \
+                str(descriptormodel._defult_add2result)
+            if not flag:
+                ## Init global result
+                self.initialization_output =\
+                    lambda: [[] for k in range(self.k_perturb+1)]
+                ## Adding result
+                self.add2result = append_addresult_function
+            else:
+                ## Init global result
+                self.initialization_output =\
+                    lambda: [[[], []] for k in range(self.k_perturb+1)]
+                ## Adding result
+                self.add2result = replacelist_addresult_function
+
         self.to_complete_measure =\
             lambda X: descriptormodel.to_complete_measure(X)
 
@@ -246,6 +266,9 @@ class FeaturesManager:
         descriptors =\
             self.descriptormodel.complete_desc_i(i, neighs_info, desc_i,
                                                  desc_neigh, vals_i)
+        ## 5. Join descriptors
+        descriptors = self._join_descriptors(descriptors)
+
         return descriptors, vals_i
 
     def _get_input_features(self, i, k, typefeats=(0, 0)):
@@ -272,11 +295,13 @@ class FeaturesManager:
             idxs_input = idxs_input, idxs[1]
         else:
             idxs_input, k_input = self._maps_input[typefeats[0]](idxs, k)
-        if np.any(idxs_input):
+        if np.any(idxs_input[0]):
             feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
         else:
-            null_value = self.features[typefeats[1]]._nullvalue
-            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
+            feats_idxs = self._join_descriptors([self.initialization_desc()
+                                                 for j in range(len(k_input))])
+#            null_value = self.features[typefeats[1]]._nullvalue
+#            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
         ## Outformat
         feats_idxs = self._maps_output(self, feats_idxs)
         return feats_idxs
@@ -293,9 +318,9 @@ class FeaturesManager:
 
     def _get_typefeats(self, typefeats):
         """Format properly typefeats selector information."""
-        if typefeats is None:
+        if typefeats is None or type(typefeats) != tuple:
             typefeats = (0, 0, 0, 0)
-        if type(typefeats) != tuple:
+        elif '__len__' not in dir(typefeats):
             typefeats = (0, 0, 0, 0)
         elif len(typefeats) != 4:
             typefeats = (0, 0, 0, 0)

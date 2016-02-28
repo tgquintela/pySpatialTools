@@ -207,14 +207,10 @@ class SpatialDescriptorModel:
         """Function used to compute the total measure.
         """
         desc = self.featurers.initialization_output()
-        ## TODO: i from n_init, n_finish
         for i in self.iter_indices(self):
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
-            ## Multiple mappings
-            for k in range(len(vals_i)):
-                desc[vals_i[k], :, k] =\
-                    self.featurers.add2result(desc[vals_i[k], :, k], desc_i[k])
+            desc = self.featurers.add2result(desc, desc_i, vals_i)
         desc = self.featurers.to_complete_measure(desc)
         return desc
 
@@ -253,7 +249,8 @@ class SpatialDescriptorModel:
                                                    k, typefeats)
             characs.append(characs_k)
             vals_i.append(vals_i_k)
-        characs = np.concatenate(characs)
+        ## Joining descriptors from different perturbations
+        characs = self.featurers._join_descriptors(characs)
         vals_i = np.concatenate(vals_i)
         return characs, vals_i
 

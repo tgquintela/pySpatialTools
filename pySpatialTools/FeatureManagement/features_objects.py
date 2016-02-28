@@ -126,7 +126,7 @@ class Features:
 
     ################################# Setters #################################
     ###########################################################################
-    def set_descriptormodel(self, descriptormodel):
+    def set_descriptormodel(self, descriptormodel, featuresnames=[]):
         """Link the descriptormodel and the feature retriever."""
         if self.typefeat == 'implicit':
             self._format_characterizer(descriptormodel.compute_characs,
@@ -134,7 +134,7 @@ class Features:
         elif self.typefeat == 'explicit':
             self._format_characterizer(descriptormodel.reducer,
                                        descriptormodel._out_formatter)
-        self._format_variables([])
+        self._format_variables(featuresnames)
         self._setdescriptor = True
 
     ################################ Formatters ###############################
@@ -256,9 +256,6 @@ class ImplicitFeatures(Features):
         feats = self[(0, 0), 0]
         if names:
             self.variables = names
-            if len(names) != feats.shape[1]:
-                msg = "Not matching lengths of variablenames and output feats."
-                raise IndexError(msg)
         else:
             if type(feats) == dict:
                 self.variables = feats.keys()

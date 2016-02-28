@@ -27,8 +27,9 @@ class DescriptorModel:
         for k in xrange(len(vals_i)):
             desc.append(self.relative_descriptors(i, neighs_info, desc_i[k],
                                                   desc_neighs[k], vals_i[k]))
-        descriptors = np.vstack(desc)
-        return descriptors
+
+#        descriptors = np.vstack(desc)
+        return desc
 
     def relative_descriptors(self, i, neighs_info, desc_i, desc_neigh, vals_i):
         "General default relative descriptors."
