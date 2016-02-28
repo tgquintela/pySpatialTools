@@ -40,13 +40,13 @@ def sum_reducer(aggdescriptors_idxs, point_aggpos):
     elif type(aggdescriptors_idxs) == list:
         if type(aggdescriptors_idxs[0]) == dict:
             vars_ = []
-            for i in xrange(aggdescriptors_idxs):
-                vars_.append(aggdescriptors_idxs[i].keys())
+            for i in xrange(len(aggdescriptors_idxs)):
+                vars_ += aggdescriptors_idxs[i].keys()
             vars_ = set(vars_)
             descriptors = {}
             for e in vars_:
                 descriptors[e] = 0
-                for i in xrange(aggdescriptors_idxs):
+                for i in xrange(len(aggdescriptors_idxs)):
                     if e in aggdescriptors_idxs[i].keys():
                         descriptors[e] += aggdescriptors_idxs[i][e]
     return descriptors
@@ -64,14 +64,14 @@ def avg_reducer(aggdescriptors_idxs, point_aggpos):
     elif type(aggdescriptors_idxs) == list:
         if type(aggdescriptors_idxs[0]) == dict:
             vars_ = []
-            for i in xrange(aggdescriptors_idxs):
-                vars_.append(aggdescriptors_idxs[i].keys())
+            for i in xrange(len(aggdescriptors_idxs)):
+                vars_ += aggdescriptors_idxs[i].keys()
             count_vars = Counter(vars_)
             vars_ = set(vars_)
             descriptors = {}
             for e in vars_:
                 descriptors[e] = 0
-                for i in xrange(aggdescriptors_idxs):
+                for i in xrange(len(aggdescriptors_idxs)):
                     if e in aggdescriptors_idxs[i].keys():
                         descriptors[e] += aggdescriptors_idxs[i][e]
                 descriptors[e] /= count_vars[e]

@@ -103,8 +103,12 @@ def test():
     characterizer_summer(contfeats, point_pos)
     characterizer_average(contfeats, point_pos)
     # Reducers
-    sum_reducer(aggdescriptors_idxs, point_pos)
+    sum_reducer([aggdescriptors_idxs], point_pos)
+    sum_reducer([{9: 0, 8: 1, 4: 7, 3: 0, 1: 0}], point_pos)
     avg_reducer(aggdescriptors_idxs, point_pos)
+    sum_reducer([{9: 0, 8: 1, 4: 7, 3: 0, 1: 0}], point_pos)
+
+
     # Add2result
     sum_addresult_function(x, x_i, vals_i)
     append_addresult_function([[]], x_i, vals_i)
@@ -112,6 +116,7 @@ def test():
     # Completers
     null_completer(np.array([1]))
     weighted_completer(np.array([1]), np.array([1]))
+    weighted_completer(np.array([1]), None)
     sparse_dict_completer([[[{0: 2}], [0]]])
     sparse_dict_completer([[[{0: 2}], [1]]])
     # Aggregators
