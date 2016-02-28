@@ -33,6 +33,16 @@ from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
 import numpy as np
 
+## Invocable characterizer functions
+from pySpatialTools.FeatureManagement.aux_descriptormodels import\
+    characterizer_1sh_counter, characterizer_summer, characterizer_average,\
+    sum_reducer, avg_reducer, sum_addresult_function,\
+    append_addresult_function, replacelist_addresult_function,\
+    null_completer, weighted_completer, sparse_dict_completer,\
+    aggregator_1sh_counter, aggregator_summer, aggregator_average,\
+    counter_featurenames, array_featurenames,\
+    count_out_formatter, null_out_formatter
+
 
 def test():
     n = 100
@@ -63,13 +73,86 @@ def test():
     avgdesc = AvgDescriptor()
     countdesc = Countdescriptor()
     pjensendesc = PjensenDescriptor()
-    sumdesc = SumDescriptor()
-    nbinsdesc = NBinsHistogramDesc(5)
-    sparsedesc = SparseCounter()
 
+    feats_ret0 = FeaturesManager(feats0, countdesc, maps_vals_i=map_vals_i)
+    feats_ret1 = FeaturesManager([feats1], avgdesc, maps_vals_i=map_vals_i)
+    feats_ret2 = FeaturesManager(feats0, pjensendesc, maps_vals_i=map_vals_i)
+
+    sp_model0 = SpatialDescriptorModel(gret0, feats_ret1)
+    sp_model1 = SpatialDescriptorModel(gret1, feats_ret1)
+    sp_model2 = SpatialDescriptorModel(gret0, feats_ret0)
+    sp_model3 = SpatialDescriptorModel(gret1, feats_ret0)
+    sp_model4 = SpatialDescriptorModel(gret0, feats_ret2)
+    sp_model5 = SpatialDescriptorModel(gret1, feats_ret2)
+
+    corr = sp_model0.compute()
+    corr = sp_model1.compute()
+    corr = sp_model2.compute()
+    corr = sp_model3.compute()
+    corr = sp_model4.compute()
+    corr = sp_model5.compute()
+
+    ### Testing auxiliar descriptormodels functions
+    # Artificial data
     contfeats, point_pos = np.random.random(5), np.random.random(5)
     catfeats = np.random.randint(0, 10, 5)
     aggdescriptors_idxs = np.random.random((10, 5))
+    x, x_i, vals_i = np.zeros((1, 1, 1)), np.zeros((1, 1)), [0]
+    # Characterizers
+    characterizer_1sh_counter(catfeats, point_pos)
+    characterizer_summer(contfeats, point_pos)
+    characterizer_average(contfeats, point_pos)
+    # Reducers
+    sum_reducer(aggdescriptors_idxs, point_pos)
+    avg_reducer(aggdescriptors_idxs, point_pos)
+    # Add2result
+    sum_addresult_function(x, x_i, vals_i)
+    append_addresult_function([[]], x_i, vals_i)
+    replacelist_addresult_function([[[], []]], x_i, vals_i)
+    # Completers
+    null_completer(np.array([1]))
+    weighted_completer(np.array([1]), np.array([1]))
+    sparse_dict_completer([[[{0: 2}], [0]]])
+    sparse_dict_completer([[[{0: 2}], [1]]])
+    # Aggregators
+    aggregator_1sh_counter(catfeats, point_pos)
+    aggregator_summer(catfeats, point_pos)
+    aggregator_average(catfeats, point_pos)
+    # Featurenames
+    counter_featurenames(np.random.randint(0, 10, 10).reshape((10, 1)))
+    try:
+        counter_featurenames([np.random.randint(0, 10, 10).reshape((10, 1))])
+        raise Exception
+    except:
+        pass
+    array_featurenames([np.random.random((10, 5))])
+    try:
+        array_featurenames(None)
+        raise Exception
+    except:
+        pass
+    # Out formatter
+    count_out_formatter(catfeats, catfeats, 'dict', 0)
+    try:
+        count_out_formatter(catfeats, catfeats[:3], 'dict', 0)
+        raise Exception
+    except:
+        pass
+    null_out_formatter(catfeats, catfeats, 'dict', 0)
+
+    ### Testing descriptors
+    # Artificial data
+    contfeats, point_pos = np.random.random(5), np.random.random(5)
+    catfeats = np.random.randint(0, 10, 5)
+    aggdescriptors_idxs = np.random.random((10, 5))
+
+    # Descriptors
+    avgdesc = AvgDescriptor()
+    countdesc = Countdescriptor()
+    pjensendesc = PjensenDescriptor()
+    sumdesc = SumDescriptor()
+    nbinsdesc = NBinsHistogramDesc(5)
+    sparsedesc = SparseCounter()
 
     avgdesc.compute_characs(contfeats, point_pos)
     avgdesc.reducer(aggdescriptors_idxs, point_pos)
@@ -90,20 +173,4 @@ def test():
     sparsedesc.reducer(aggdescriptors_idxs, point_pos)
     sparsedesc.aggdescriptor(catfeats, point_pos)
 
-    feats_ret0 = FeaturesManager(feats0, countdesc, maps_vals_i=map_vals_i)
-    feats_ret1 = FeaturesManager([feats1], avgdesc, maps_vals_i=map_vals_i)
-    feats_ret2 = FeaturesManager(feats0, pjensendesc, maps_vals_i=map_vals_i)
 
-    sp_model0 = SpatialDescriptorModel(gret0, feats_ret1)
-    sp_model1 = SpatialDescriptorModel(gret1, feats_ret1)
-    sp_model2 = SpatialDescriptorModel(gret0, feats_ret0)
-    sp_model3 = SpatialDescriptorModel(gret1, feats_ret0)
-    sp_model4 = SpatialDescriptorModel(gret0, feats_ret2)
-    sp_model5 = SpatialDescriptorModel(gret1, feats_ret2)
-
-    corr = sp_model0.compute()
-    corr = sp_model1.compute()
-    corr = sp_model2.compute()
-    corr = sp_model3.compute()
-    corr = sp_model4.compute()
-    corr = sp_model5.compute()

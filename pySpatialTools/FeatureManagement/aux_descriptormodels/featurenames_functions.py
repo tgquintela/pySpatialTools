@@ -32,7 +32,7 @@ def array_featurenames(features_o):
         featurenames = list(np.arange(features_o.shape[1]))
     else:
         try:
-            featurenames = list(np.arange(features_o.shape[1]))
+            featurenames = list(np.arange(len(features_o[0])))
         except:
             msg = "Incorrect feature type input in order to compute its "
             msg += "features names."

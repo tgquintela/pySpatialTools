@@ -47,6 +47,7 @@ def sparse_dict_completer(measure, global_info=None):
         shape = (int(np.max(iss))+1, int(np.max(jss))+1)
         data, iss, jss = np.array(data), np.array(iss), np.array(jss)
         measure[k] = coo_matrix((data, (iss, jss)), shape=shape)
+
     return measure
 
 
@@ -65,5 +66,5 @@ def weighted_completer(measure, global_info):
     if global_info is None:
         return measure
     global_info = global_info.reshape((len(global_info), 1, 1))
-    measure = np.multply(measure, global_info)
+    measure = np.multiply(measure, global_info)
     return measure
