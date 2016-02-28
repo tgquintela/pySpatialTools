@@ -1,13 +1,11 @@
 
 """
-Count descriptors
------------------
-Module which groups the methods related with computing histogram-based spatial
-descriptors.
-
-
+NBinsHistogram
+--------------
+Descriptor which counts a histogram by using nbins.
 """
 
+import numpy as np
 from ..descriptormodel import DescriptorModel
 
 ## Specific functions
@@ -17,15 +15,18 @@ from ..aux_descriptormodels import\
     count_out_formatter
 
 
-class Countdescriptor(DescriptorModel):
-    """Model of spatial descriptor computing by counting the type of the
-    neighs represented in feat_arr.
+class NBinsHistogramDesc(DescriptorModel):
+    """Model of spatial descriptor computing by binning and counting the type
+    of the neighs represented in feat_arr.
+    WARNING: Probably it is more efficient to binning first the all the feature
+    data and after apply only counting.
 
     """
-    name_desc = "Counting descriptor"
+
+    name_desc = "N-bins histogram descriptor"
     _nullvalue = 0
 
-    def __init__(self):
+    def __init__(self, n_bins):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
         self._out_formatter = count_out_formatter
@@ -33,12 +34,19 @@ class Countdescriptor(DescriptorModel):
         self._defult_add2result = sum_addresult_function
         ## Check descriptormodel
         self._checker_descriptormodel()
+        ## Globals initialization
+        self.globals_ = [n_bins, None, None, False]
 
     ###########################################################################
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute_characs(self, pointfeats, point_pos):
         "Compulsary function to pass for the feture retriever."
+        if not self.globals_[3]:
+            if type(pointfeats) != np.ndarray:
+                pointfeats = self.transform_features(pointfeats)[0]
+            else:
+                pointfeats = self.transform_features(pointfeats)
         descriptors = characterizer_1sh_counter(pointfeats, point_pos)
         ## TODO: Transform dict to array and reverse
         #keys = [self.mapper[key] for key in counts.keys()]
@@ -55,23 +63,39 @@ class Countdescriptor(DescriptorModel):
 
     def aggdescriptor(self, pointfeats, point_pos):
         "This function assigns descriptors to a aggregation unit."
-        descriptors = aggregator_1sh_counter(pointfeats, point_pos)
+        descriptors = self.compute_characs(pointfeats, point_pos)
         return descriptors
+
+    ###########################################################################
+    ############################# Extra functions #############################
+    ###########################################################################
+    def transform_features(self, features):
+        if self.globals_[2] is not None:
+            features = self.globals_[2](features)
+        return features
 
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
-        """Main function to compute the complete normalized measure of pjensen
-        from the matrix of estimated counts.
-        """
-        corr_loc = null_completer(corr_loc)
-        return corr_loc
+    def set_global_info(self, features, transform=True):
+        self.globals_[0]
+        mini, maxi = features.min(), features.max()
+        diff = (maxi - mini)/float(self.globals_[0])
+        borders = [mini+diff*i for i in range(1, self.globals_[0])]
+        borders = borders + [maxi]
+        self.globals_[1] = borders
 
-    ###########################################################################
-    ########################## Auxiliary functions ############################
-    ###########################################################################
+        def binning(feats):
+            binned_feats = -1*np.ones(feats.shape)
+            for i in range(len(borders)):
+                j = len(borders)-1-i
+                binned_feats[features <= borders[j]] = j
+            assert((binned_feats == -1).sum() == 0)
+            binned_feats = binned_feats.astype(int)
+            return binned_feats
 
-    ###########################################################################
-    ######################### Compulsary formatters ###########################
-    ###########################################################################
+        self.globals_[2] = binning
+
+        if transform:
+            self.globals_[3] = True
+            return self.transform_features(features)

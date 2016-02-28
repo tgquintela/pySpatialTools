@@ -160,12 +160,3 @@ def normalization_jensen(corr_loc, globals_):
         net[:, :, i] = np.log10(np.multiply(C, corr_loc[:, :, i]))
         net[idx_null] = 0.
     return net
-
-
-#def compute_globalstats(df, typevars):
-#    feat_vars = typevars['feat_vars']
-#    counts, counts_info = compute_global_counts(df, feat_vars)
-#    counts = counts[counts.keys()[0]]
-#    counts_info = counts_info[counts_info.keys()[0]]
-#    counts, counts_info = np.array(counts), np.array(counts_info)
-#    return counts, counts_info
