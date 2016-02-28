@@ -32,7 +32,7 @@ class SpatialElementsCollection:
             ele_i = self.elements[i]
         else:
             try:
-                idx = np.where(self == i)[0][0]
+                idx = np.where(self.elements_id == i)[0][0]
                 ele_i = self.elements[idx]
             except:
                 raise IndexError("Index out of bonds")
@@ -107,7 +107,7 @@ class Locations:
         self.n_dim = locations.shape[1]
         self.n_points = locations.shape[0]
         self.locations = locations
-        self.points_id = points_id
+        self.points_id = self._format_tags(points_id)
 
     def __eq__(self, loc):
         "Retrieve which points have the same coordinates."
@@ -138,6 +138,18 @@ class Locations:
             except:
                 raise IndexError("Index out of bonds")
         return loc_i
+
+    def _format_tags(self, tags):
+        if tags is not None:
+            if type(tags) in [np.ndarray, list]:
+                tags = np.array(tags)
+                if np.unique(tags).shape[0] != tags.shape[0]:
+                    raise Exception("Non-unique labels for elements.")
+                if tags.shape[0] != self.n_points:
+                    raise Exception("Not correct shape for tags.")
+            else:
+                raise TypeError("Not correct labels type for elements.")
+        return tags
 
     def _to_loc(self, loc):
         "Transform a location array in a locations"

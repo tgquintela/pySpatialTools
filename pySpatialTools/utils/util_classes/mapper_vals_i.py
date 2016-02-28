@@ -57,7 +57,7 @@ class Map_Vals_i:
 
     def _format_mapper(self, mapper, n_in, n_out):
         if type(mapper) in [int, float, list, tuple]:
-            if mapper in [int, float]:
+            if type(mapper) in [int, float]:
                 mapper = int(mapper)
             else:
                 mapper = [int(m) for m in mapper]

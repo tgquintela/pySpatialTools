@@ -174,7 +174,7 @@ class Membership:
                             for i in xrange(self.n_elements)]
                 elements = np.array(elements).astype(bool)
             else:
-                aux = [self._membership[e].keys() for e in self._membership]
+                aux = [e.keys() for e in self._membership]
                 elements = [collection_id in aux[i]
                             for i in xrange(self.n_elements)]
                 elements = np.array(elements).astype(bool)
@@ -262,7 +262,7 @@ def format_membership(membership):
             aux = np.hstack(aux)
             collections_id = np.unique(aux)
         # Computing if lists
-        if op3:
+        elif op3:
             if op31:
                 membership = [list(m) for m in membership]
             length = np.array([len(e) for e in membership])

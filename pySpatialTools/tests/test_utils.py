@@ -17,8 +17,8 @@ threaten tens of millions of jobs.
 
 import numpy as np
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
-from pySpatialTools.utils.util_classes import create_mapper_vals_i
-
+from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
+    Map_Vals_i
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 
@@ -32,17 +32,44 @@ def test():
     ## Testing Elemets
     words_id = np.arange(len(words))
     words_elements = SpatialElementsCollection(words, words_id)
-    words_elements = SpatialElementsCollection(words, list(words_id))
+    words_elements2 = SpatialElementsCollection(words, list(words_id))
     words_elements = SpatialElementsCollection(words)
     ids_elements = SpatialElementsCollection(ids)
     functs_elements = SpatialElementsCollection(functs)
 
     # Class functions
     words_elements[0]
+    try:
+        words_elements[len(words_elements)]
+        raise Exception
+    except:
+        pass
+    try:
+        words_elements2[words[0]]
+        raise Exception
+    except:
+        pass
+    words_elements.elements_id = None
+    try:
+        words_elements[words[0]]
+        raise Exception
+    except:
+        pass
+
+    words_elements[0]
+
     for e in words_elements:
         pass
+
+    for e in words_elements2:
+        pass
+
     words_elements == words[0]
     relabel_map = np.arange(len(words))
+    try:
+        words_elements.relabel_elements(range(len(words)))
+    except:
+        pass
     words_elements.relabel_elements(relabel_map)
     relabel_map = dict(zip(relabel_map, relabel_map))
     words_elements.relabel_elements(relabel_map)
@@ -64,12 +91,38 @@ def test():
     locs4 = np.random.random((100, 2))
     sptrans = lambda x, p: np.sin(x)
 
+    try:
+        locs = Locations(locs1, 5)
+        raise Exception
+    except:
+        pass
+    try:
+        locs = Locations(locs1, list(range(len(locs1)+1)))
+        raise Exception
+    except:
+        pass
+    try:
+        tags = list(range(len(locs1)))
+        tags[0] = 1
+        locs = Locations(locs1, tags)
+        raise Exception
+    except:
+        pass
+
     locs = Locations(locs1)
+    locsbis = Locations(locs1, list(range(len(locs1))))
+    try:
+        locsbis[-1]
+        raise Exception
+    except:
+        pass
+    locsbis[0]
+    locs[0]
     assert((locs == locs1[0])[0])
     locs.compute_distance(locs[1])
     locs.space_transformation(sptrans, {})
     locs._check_coord(0)
-    locs._check_coord(locs1[0])
+    locs._check_coord(locs[0])
     locs._check_coord([0, 3])
     locs._check_coord([locs1[0], locs1[3]])
     locs.in_radio(locs[0], 0.2)
@@ -110,6 +163,19 @@ def test():
     memb1 == 0
     for e in memb1:
         pass
+
+#    op2 = np.all([t == dict for t in types])
+    relations = [dict(zip(e, len(e)*[{'membership': 1}])) for e in relations]
+    memb1_dict = Membership(relations)
+    memb1_dict.to_network()
+    memb1_dict.to_dict()
+    memb1_dict.to_sparse()
+    memb1_dict.reverse_mapping()
+    memb1_dict.getcollection(0)
+    memb1_dict.collections_id
+    memb1_dict.n_collections
+    memb1_dict.n_elements
+    memb1_dict.membership
 
     memb2 = Membership(np.random.randint(0, 20, 100))
     memb2.to_network()
@@ -215,7 +281,14 @@ def test():
     map_vals_i.set_prefilter(slice(0, 100, 1))
     map_vals_i.set_prefilter(10)
     map_vals_i.set_prefilter([0, 2])
+    map_vals_i.set_sptype('correlation')
+    map_vals_i[(None, [0], 0)]
 
     map_vals_i = create_mapper_vals_i(map_vals_i)
     map_vals_i = create_mapper_vals_i(feat_arr0.reshape(100, 1))
     map_vals_i = create_mapper_vals_i(None)
+
+    map_vals_i = Map_Vals_i(100)
+    map_vals_i = Map_Vals_i((1000, 20))
+    map_vals_i = Map_Vals_i(map_vals_i)
+    map_vals_i = Map_Vals_i(memb1)
