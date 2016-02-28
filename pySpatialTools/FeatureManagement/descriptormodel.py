@@ -65,7 +65,7 @@ class GeneralDescriptor(DescriptorModel):
 
     name_desc = "General descriptor"
 
-    def __init__(self, interpolator, reducer, aggdescriptor, completer=None,
+    def __init__(self, characterizer, reducer, aggdescriptor, completer=None,
                  out_formatter=None, featurenames=None, add2result=None):
         """
         Parameters
@@ -78,7 +78,7 @@ class GeneralDescriptor(DescriptorModel):
             features and retrieving spatial features.
         """
         ## Specific class settings
-        self.compute_characs = interpolator
+        self.compute_characs = characterizer
         self.reducer = reducer
         self.aggdescriptor = aggdescriptor
         if completer is not None:

@@ -28,6 +28,8 @@ from pySpatialTools.FeatureManagement.aux_descriptormodels import\
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor, PjensenDescriptor, SumDescriptor, NBinsHistogramDesc,\
     SparseCounter
+from pySpatialTools.FeatureManagement.descriptormodel import\
+    GeneralDescriptor
 
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
@@ -177,4 +179,6 @@ def test():
     sparsedesc.reducer(aggdescriptors_idxs, point_pos)
     sparsedesc.aggdescriptor(catfeats, point_pos)
 
-
+    ## GeneralDescriptor
+    GeneralDescriptor(characterizer_summer, sum_reducer, characterizer_summer,
+                      null_completer)
