@@ -63,6 +63,18 @@ class RetrieverManager:
         """
         pass
 
+    ######################### Auxiliar administrative #########################
+    ###########################################################################
+    def add_retrievers(self, retrievers):
+        """Add new retrievers."""
+        self._format_retrievers(retrievers)
+
+    def set_typeret(self, typeret):
+        """Set a common typeret in order to not depend on continous external
+        orders.
+        """
+        pass
+
     def _get_type_ret(self, typeret_i, i, k=0):
         k = 0 if k is None else k
         if typeret_i is None:
@@ -70,10 +82,6 @@ class RetrieverManager:
         else:
             typeret_i, out_ret = typeret_i
         return typeret_i, out_ret
-
-    def add_retrievers(self, retrievers):
-        """Add new retrievers."""
-        self._format_retrievers(retrievers)
 
     ################################ Formatters ###############################
     ###########################################################################

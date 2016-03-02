@@ -2,6 +2,275 @@
 """
 """
 
+
+######## 2016-03-01 Auxiliar windows retriever
+
+#def get_extrem_indices(extremes, coord2ind):
+#    """Get the indices of the extremes."""
+#    ## 0. Get formatted indices of extrems
+#    ndim = len(extremes)
+#    extind = []
+#    for p in product(*[range(2) for i in range(ndim)]):
+#        extind.append(coord2ind(extremes[np.arange(ndim), np.array(p)]))
+#    extind = np.sort(np.array(extind).astype(int))
+#    extremes_ind = np.zeros((len(extind)-1, 2)).astype(int)
+#    for i in range(len(extind)-1):
+#        extremes_ind[i] = np.array([extind[i], extind[i+1]])
+#    return extremes_ind
+
+
+def get_borders_regularneighs_grid(shape, diff):
+    assert(len(shape) == len(diff))
+    borders, ranges = [], []
+    for dim in range(len(shape)):
+        borders_dim, ranges_dim =\
+            get_borders_regularneighs_grid_ind(diff[dim], shape[dim])
+        ranges.append(ranges_dim)
+        borders.append(borders_dim)
+    return borders, ranges
+
+
+def get_borders_regularneighs_grid_ind(diff_dim, shape_m):
+    maxi = np.max(np.abs(diff_dim))
+    ranges, borders = [], []
+    for m in range(maxi):
+        ranges_m, borders_m = [], []
+        ## Beginning borders
+        boolean = np.array(diff_dim) + m >= 0
+        aux_m = [diff_dim[i] for i in range(len(diff_dim)) if boolean[i]]
+        if len(aux_m) < len(diff_dim) and np.any(boolean):
+            ranges_m.append(aux_m)
+            borders_m.append(m)
+        else:
+            ranges_m.append([])
+            borders_m.append(None)
+
+        ## Ending borders
+        boolean = m - np.array(diff_dim) >= 0
+        aux_m = [diff_dim[i] for i in range(len(diff_dim)) if boolean[i]]
+        if len(aux_m) < len(diff_dim) and np.any(boolean):
+            ranges_m.append(aux_m)
+            borders_m.append(shape_m-1-m)
+        else:
+            ranges_m.append([])
+            borders_m.append(None)
+        ranges.append(ranges_m)
+        borders.append(borders_m)
+    return borders, ranges
+
+
+
+def create_hypercuble_borders(borders, ranges, shape, g_range):
+    new_borders, new_ranges = [], []
+    for p in product(*[range(2) for i in range(len(borders))]):
+        aux = [borders[i][p[i]] for i in range(len(p))]
+        aux_r = [ranges[i][p[i]] for i in range(len(p))]
+        if not np.any([a is None for a in aux]):
+            new_borders.append(tuple(aux))
+            new_ranges.append(tuple(aux_r))
+    ## Only when there are only by one
+    for j in range(len(borders)):
+        if (len(ranges[j]) + 1) != len(g_range[j]):
+            continue
+        start = 0 if borders[j][0] is None else borders[j][0]+1
+        stop = shape[j] if borders[j][1] is None else borders[j][1]
+        for p in product(*[range(2) for i in range(len(borders)-1)]):
+            new_borders_j, new_ranges_j = [[]]*len(borders), [[]]*len(borders)
+            new_borders_j[j], new_ranges_j[j] = slice(start, stop), g_range[j]
+            for k in range(len(borders)):
+                if k < j:
+                    new_borders_j[k] = borders[k][p[k]]
+                    new_ranges_j[k] = ranges[k][p[k]]
+                elif k > j:
+                    new_borders_j[k] = borders[k][p[k-1]]
+                    new_ranges_j[k] = ranges[k][p[k-1]]
+            if not np.any([e is None for e in new_borders_j]):
+                new_borders.append(tuple(new_borders_j))
+                new_ranges.append(tuple(new_ranges_j))
+    return new_borders, new_ranges
+
+#def new_get_irregular_extremes(diff, shape):
+#    init_points, init_ranges = [], []
+#    for dim in range(len(diff)):
+#        init = -1 - diff[dim][0]
+#        init = None if init < 0 else init
+#        endit = shape[dim] - diff[dim][-1]
+#        endit = None if endit >= shape[dim] else endit
+#        init_points.append([init, endit])
+#        init_r = [dr for dr in diff[dim] if dr > diff[dim][0]]
+#        endit_r = [dr for dr in diff[dim] if dr < diff[dim][-1]]
+#        init_ranges.append([init_r, endit_r])
+#    points, ranges = [init_points], [init_ranges]
+#    d_max = np.max([np.max(np.abs(e)) for e in diff])
+#    for d in range(1, d_max):
+#        points_d, ranges_d = [], []
+#        for dim in range(len(diff)):
+#            init = init_points[dim][0] - d
+#            init = None if init < 0 else init
+#            endit = init_points[dim][1] + d
+#            endit = None if endit >= shape[dim] else endit
+#            init_r = [dr for dr in diff[dim] if dr > diff[dim][0]+d
+#                      or dr >= 0]
+#            endit_r = [dr for dr in diff[dim] if dr < diff[dim][-1]-d
+#                       or dr <= 0]
+#            points_d.append([init, endit])
+#            ranges_d.append([init_r, endit_r])
+#        points.append(points_d)
+#        ranges.append(ranges_d)
+#    return points, ranges
+
+#def new_get_borders_from_irregular_extremes(extremes, shape, grange, ranges):
+#    """Get borders from irregular extremes."""
+#    new_borders, new_ranges = [], []
+#    ndim = len(extremes[0])
+#    for d in range(len(extremes)):
+#        for p in product(*[range(2) for dim in range(ndim)]):
+#            aux = [extremes[d][i][p[i]] is None for i in range(len(p))]
+#            if not np.all(aux):
+#                aux, aux_r = [], []
+#                for dim in range(len(p)):
+#                    aux_dim = extremes[d][dim][p[dim]]
+#                    aux_rdim = ranges[d][dim][p[dim]]
+#                    if aux_dim is None:
+#                        aux_dim = shape[dim]-1 if p[dim] else 0
+#                    aux.append(aux_dim)
+#                    aux_r.append(aux_rdim)
+#                new_borders.append(tuple(aux))
+#                new_ranges.append(tuple(aux_r))
+#        for n_i in range(1, ndim):
+#            ## Possible combinations
+#            for dims in combinations(range(ndim), n_i):
+#                if not dims:
+#                    continue
+#                dims = list(dims)
+#                no_dims = [i for i in range(ndim) if i not in dims]
+#                ## Check if it is possible to build slices
+##                aux = []
+##                for dim in dims:
+##                    aux.append(np.all([e is None for e in extremes[d][dim]]))
+##                if np.any(aux):
+##                    continue
+#                for p in product(*[range(2) for nodim in no_dims]):
+#                    ## Creation slices
+#                    aux_bor, aux_ranges = [[]]*ndim, [[]]*ndim
+#                    for dim in dims:
+#                        aux = extremes[d][dim]
+#                        start = 0 if aux[0] is None else aux[0]+1
+#                        stop = shape[dim] if aux[1] is None else aux[1]
+##                        for i in range(start, -grange[dim][0]):
+##                            for j in range(stop, shape[dim] - grange[dim][-1]):
+#                        aux_bor[dim] = slice(start, stop)
+##                        init = grange[dim][0] if grange[dim][0] < 0 else 0
+##                        fin = grange[dim][-1] if grange[dim][-1] > 0 else 0
+#
+#                        aux_bor[dim] = slice()
+#                        aux_ranges[dim] = grange[dim]
+#                        aux_ranges[dim] = [e for e in grange[dim]
+#                                           if e >= -start
+#                                           and e < shape[dim]-stop]
+#                    ## Creation of fixes
+#                    # Check if there is None
+#                    aux = extremes[d]
+#                    aux = [aux[no_dims[i]][p[i]] is None for i in range(len(p))]
+#                    if np.any(aux):
+#                        continue
+#                    for i in range(len(p)):
+#                        aux_bor[no_dims[i]] = extremes[d][no_dims[i]][p[i]]
+#                        aux_ranges[no_dims[i]] = ranges[d][no_dims[i]][p[i]]
+#                    new_borders.append(tuple(aux_bor))
+#                    new_ranges.append(tuple(aux_ranges))
+#    return new_borders, new_ranges
+#
+
+#def build_border_from_slices(extremes_i, ranges_i):
+#    i_sl = [i for i in range(len(extremes_i))
+#            if isinstance(extremes_i[i], slice)]
+#    [ranges_i]
+#
+#    sizes = np.array([np.prod([len(e) for e in r]) for r in ranges_i])
+
+
+
+
+#
+#def get_irregular_indices_grid(shape, l, center, excluded):
+#    """Getting not neighbourhood complete indices."""
+#    c = center
+#    l = np.array(l) if '__len__' in dir(l) else np.array(len(shape)*[l])
+#    c = np.array(c) if '__len__' in dir(c) else np.array(len(shape)*[c])
+#    diff = get_relative_neighs(shape, l, c, excluded)
+#    borders, ranges = get_borders_regularneighs_grid(shape, diff)
+#    new_borders, new_ranges = [], []
+#    comb = [range(len(borders[i])) for i in range(len(borders))]
+#    for p in product(*comb):
+#        borders_p = [borders[i][p[i]] for i in range(len(p))]
+#        ranges_p = [ranges[i][p[i]] for i in range(len(p))]
+#        borders_p, ranges_p =\
+#            create_hypercuble_borders(borders_p, ranges_p, shape, diff)
+#        new_borders.extend(borders_p)
+#        new_ranges.extend(ranges_p)
+##        borders_p.append([borders[i][p[i]] for i in range(len(p))])
+##        ranges_p.append([ranges[i][p[i]] for i in range(len(p))])
+##        size_nei_p.append(np.prod([orders[i][p[i]] for i in range(len(p))]))
+#    sizes = [np.prod([len(r) for r in range_i]) for range_i in new_ranges]
+#    return new_borders, new_ranges, sizes
+
+
+
+
+########## 2016-03-01 WindowsRetriever
+######################################
+
+#                start = 0 if aux[0] is None else aux[0]+1
+#                stop = shape[dim] if aux[1] is None else aux[1]+1
+#                aux_bor, aux_ranges = [[]]*ndim, [[]]*ndim
+#                aux_bor[dim], aux_ranges[dim] = slice(start, stop), grange[dim]
+#                i = 0
+#                for nodim in no_dims:
+#                    if aux_dim < dim:
+#                        aux_bor[aux_dim] = extremes[d][aux_dim][p[aux_dim]]
+#                        aux_ranges[aux_dim] = ranges[d][aux_dim][p[aux_dim]]
+#                    elif aux_dim > dim:
+#                        aux_bor[aux_dim] = extremes[d][aux_dim][p[aux_dim-1]]
+#                        aux_ranges[aux_dim] = ranges[d][aux_dim][p[aux_dim-1]]
+#                new_borders.append(tuple(aux_bor))
+#                new_ranges.append(tuple(aux_ranges))
+
+#
+#
+#
+#
+#    for j in range(len(extremes)):
+#        if (len(ranges[j]) + 1) != len(g_range[j]):
+#            continue
+#        start = 0 if borders[j][0] is None else borders[j][0]+1
+#        stop = shape[j] if borders[j][1] is None else borders[j][1]
+#        for p in product(*[range(2) for i in range(len(borders)-1)]):
+#            new_borders_j, new_ranges_j = [[]]*len(borders), [[]]*len(borders)
+#            new_borders_j[j], new_ranges_j[j] = slice(start, stop), g_range[j]
+#            for k in range(len(borders)):
+#                if k < j:
+#                    new_borders_j[k] = borders[k][p[k]]
+#                    new_ranges_j[k] = ranges[k][p[k]]
+#                elif k > j:
+#                    new_borders_j[k] = borders[k][p[k-1]]
+#                    new_ranges_j[k] = ranges[k][p[k-1]]
+#            if not np.any([e is None for e in new_borders_j]):
+#                new_borders.append(tuple(new_borders_j))
+#                new_ranges.append(tuple(new_ranges_j))
+#
+#    return new_borders
+#
+#
+#    new_borders, new_ranges = [], []
+#    for p in product(*[range(2) for i in range(len(borders))]):
+#        aux = [borders[i][p[i]] for i in range(len(p))]
+#        aux_r = [ranges[i][p[i]] for i in range(len(p))]
+#        if not np.any([a is None for a in aux]):
+#            new_borders.append(tuple(aux))
+#            new_ranges.append(tuple(aux_r))
+
+
 ########## 2016-02-27 Retrievers
 ############################# LWindows Neighbours #############################
 ###############################################################################

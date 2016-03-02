@@ -21,6 +21,7 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 from pySpatialTools.utils.artificial_data import \
     random_transformed_space_points, generate_random_relations_cutoffs
 from pySpatialTools.Discretization import SetDiscretization
+from pySpatialTools.Retrieve.aux_windowretriever import iteration
 
 
 def test():
@@ -123,3 +124,23 @@ def test():
     pruebaret = PruebaRetriever(False)
     pruebaret.retrieve_neighs(0)
     pruebaret.retrieve_neighs(1)
+
+    ### Auxiliar functions of window retriever
+    def iteration_auxiliar(shape, l, center, excluded):
+        matrix = np.zeros((shape)).astype(int)
+        matrix = matrix.ravel()
+        for inds, neighs, d in iteration(shape, 1000, l, center, excluded):
+            matrix[inds] += len(neighs)
+            assert(np.all(inds >= 0))
+        matrix = matrix.reshape(shape)
+        #import matplotlib.pyplot as plt
+        #plt.imshow(matrix)
+        #plt.show()
+    shape, l, center, excluded = (10, 10), [4, 5], [0, 0], False
+    iteration_auxiliar(shape, l, center, excluded)
+    shape, l, center, excluded = (10, 10), [2, 5], [2, -1], False
+    iteration_auxiliar(shape, l, center, excluded)
+    shape, l, center, excluded = (10, 10), [4, 3], [-2, -1], True
+    iteration_auxiliar(shape, l, center, excluded)
+    shape, l, center, excluded = (10, 10), [1, 5], [2, 2], False
+    iteration_auxiliar(shape, l, center, excluded)

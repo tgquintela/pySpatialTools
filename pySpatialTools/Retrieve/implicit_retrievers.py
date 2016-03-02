@@ -11,6 +11,7 @@ from itertools import product
 from sklearn.neighbors import KDTree
 from retrievers import Retriever
 from aux_retriever import DummyRetriever
+from aux_windowretriever import generate_grid_neighs_coord
 
 
 ###############################################################################
@@ -79,6 +80,7 @@ class SpaceRetriever(Retriever):
 class KRetriever(SpaceRetriever):
     "Class which contains a retriever of K neighbours."
     _default_ret_val = 1
+    constant_neighs = True
 
     def _retrieve_neighs_spec(self, point_i, kneighs, ifdistance=False, kr=0):
         "Function to retrieve neighs in the specific way we want."
@@ -124,6 +126,7 @@ class KRetriever(SpaceRetriever):
 class CircRetriever(SpaceRetriever):
     "Circular retriever."
     _default_ret_val = 0.1
+    constant_neighs = None
 
     def _retrieve_neighs_spec(self, point_i, radius_i, ifdistance=False, kr=0):
         "Function to retrieve neighs in the specific way we want."
@@ -171,6 +174,7 @@ class WindowsRetriever(SpaceRetriever):
     n-dimensional grid data.
     """
     _default_ret_val = {'l': 1, 'center': 0, 'excluded': False}
+    constant_neighs = True
 
     def _retrieve_neighs_spec(self, element_i, pars_ret, ifdistance=False,
                               kr=0):
@@ -271,52 +275,3 @@ class WindowsRetriever(SpaceRetriever):
         self._limits = limits
         self._shape = shape_
         self._ndim = len(limits)
-
-
-def generate_grid_neighs_coord(coord, shape, ndim, l, center=0,
-                               excluded=False):
-    """Generation of neighbours from a point and the pars_ret.
-    """
-    if '__len__' in dir(l):
-        window_l = np.array(l)
-    else:
-        window_l = np.array(ndim*[l])
-    if '__len__' in dir(center):
-        center = np.array(center)
-    else:
-        center = np.array(ndim*[center])
-    try:
-        center + window_l + coord
-    except:
-        raise TypeError("Incorrect parameters for window retriever.")
-    ret_coord = coord + center
-    if excluded:
-        windows = []
-        for i in range(ndim):
-            ws = []
-            for w in range(-int(window_l[i])/2, int(window_l[i])/2):
-                x = coord[i] + center[i] + w
-                if x >= 0 and x < shape[i] and (center[i]+w) != 0:
-                    ws.append(x)
-            windows.append(tuple(ws))
-    else:
-        windows = []
-        for i in range(ndim):
-            ws = []
-            for w in range(-int(window_l[i])/2, int(window_l[i])/2):
-                x = coord[i] + center[i] + w
-                if x >= 0 and x < shape[i]:
-                    ws.append(x)
-            windows.append(tuple(ws))
-    n_nei = np.prod([len(w) for w in windows])
-
-    neighs_coord = np.zeros((n_nei, ndim)).astype(int)
-    rel_pos = np.zeros((n_nei, ndim))
-    i = 0
-    for p in product(*windows):
-        neighs_coord[i] = np.array(p)
-        rel_pos = np.array(p) - ret_coord
-#        rel_pos[i] = np.array(p)
-#        neighs_coord[i] = ret_coord + rel_pos[i]
-        i += 1
-    return neighs_coord, rel_pos

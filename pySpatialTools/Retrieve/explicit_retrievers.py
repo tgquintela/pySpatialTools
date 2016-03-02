@@ -58,8 +58,10 @@ class NetworkRetriever(Retriever):
             self._output_map = output_map
 
     def _define_retriever(self, main_mapper, pars_ret={}):
-        "Define the main mapper as a special retriever."
+        """Define the main mapper as a special retriever."""
+        ## TODO: Ensure correct class
         self.retriever.append(main_mapper)
+        self.constant_neighs = False
 
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
