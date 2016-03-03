@@ -47,8 +47,8 @@ def _check_retriever(retriever):
     ## 1. Constraints
     lista = dir(retriever)
     required_p = ['retriever', '_default_ret_val']
-    required_f = ['_retrieve_neighs_spec', '_define_retriever',
-                  '_format_output_exclude', '_format_output_noexclude']
+    required_f = ['_define_retriever', '_format_output_exclude',
+                  '_format_output_noexclude']
 
     ## 2. Checking constraints
     logi_p, fails_p = check_requireds(required_p, lista)

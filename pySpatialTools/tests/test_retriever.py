@@ -21,7 +21,7 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 from pySpatialTools.utils.artificial_data import \
     random_transformed_space_points, generate_random_relations_cutoffs
 from pySpatialTools.Discretization import SetDiscretization
-from pySpatialTools.Retrieve.aux_windowretriever import iteration
+from pySpatialTools.Retrieve.aux_windowretriever import windows_iteration
 
 
 def test():
@@ -109,14 +109,21 @@ def test():
 
     ## General Retriever
     class PruebaRetriever(GeneralRetriever):
+        preferable_input_idx = True
+
         def __init__(self, autoexclude=True, ifdistance=False):
             self._initialization()
             self._format_output_information(autoexclude, ifdistance, None)
+            self._format_retriever_info(None, None, None)
+            ## Format retriever function
+            self._format_retriever_function()
+            self._format_preparators(True)
 
         def _define_retriever(self):
             pass
 
-        def _retrieve_neighs_spec(self, point_i, p, ifdistance=False, kr=0):
+        def _retrieve_neighs_general_spec(self, point_i, p, ifdistance=False,
+                                          kr=0):
             return [0], None
     pruebaret = PruebaRetriever(True)
     pruebaret.retrieve_neighs(0)
@@ -129,7 +136,8 @@ def test():
     def iteration_auxiliar(shape, l, center, excluded):
         matrix = np.zeros((shape)).astype(int)
         matrix = matrix.ravel()
-        for inds, neighs, d in iteration(shape, 1000, l, center, excluded):
+        for inds, neighs, d in windows_iteration(shape, 1000, l, center,
+                                                 excluded):
             matrix[inds] += len(neighs)
             assert(np.all(inds >= 0))
         matrix = matrix.reshape(shape)

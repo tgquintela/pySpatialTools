@@ -7,11 +7,12 @@ Implicit defined retrievers grouped in this module.
 """
 
 import numpy as np
-from itertools import product
+#from itertools import product
 from sklearn.neighbors import KDTree
 from retrievers import Retriever
 from aux_retriever import DummyRetriever
-from aux_windowretriever import generate_grid_neighs_coord
+from aux_windowretriever import generate_grid_neighs_coord,\
+    create_window_utils, windows_iteration
 
 
 ###############################################################################
@@ -26,7 +27,7 @@ class SpaceRetriever(Retriever):
     def __init__(self, locs, info_ret=None, autolocs=None, pars_ret=None,
                  autoexclude=True, ifdistance=False, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
-                 output_map=None):
+                 output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element space retriever class method."
         ## Reset globals
         self._initialization()
@@ -35,13 +36,16 @@ class SpaceRetriever(Retriever):
         ## Retrieve information
         self._define_retriever(locs, pars_ret)
         ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f)
+        self._format_retriever_info(info_ret, info_f, constant_info)
+        ## Format retriever function
+        self._format_retriever_function()
         # Location information
         self._format_locs(locs, autolocs)
         # Perturbations
         self._format_perturbation(perturbations)
         # IO mappers
         self._format_maps(input_map, output_map)
+        self._format_preparators(bool_input_idx)
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
@@ -81,10 +85,18 @@ class KRetriever(SpaceRetriever):
     "Class which contains a retriever of K neighbours."
     _default_ret_val = 1
     constant_neighs = True
+    preferable_input_idx = False
 
-    def _retrieve_neighs_spec(self, point_i, kneighs, ifdistance=False, kr=0):
-        "Function to retrieve neighs in the specific way we want."
-        point_i = self._get_loc_i(point_i)
+#    def __iter__(self, pars_ret=None, max_bunch=None):
+#        max_bunch = len(self) if max_bunch is None else max_bunch
+#        for i in xrange(max_bunch):
+#            yield inds, neighs_info
+
+    ###################### Retrieve functions candidates ######################
+    def _retrieve_neighs_general_spec(self, point_i, kneighs, ifdistance=False,
+                                      kr=0):
+        """General function to retrieve neighs in the specific way we want."""
+        point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), ifdistance)
         if ifdistance:
             res = res[1][0], res[0][0]
@@ -97,6 +109,39 @@ class KRetriever(SpaceRetriever):
             res = self._apply_relative_pos(res, point_i, loc_neighs)
         return res
 
+    def _retrieve_neighs_constant_nodistance(self, point_i, kr=0):
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        point_i: int
+            the indice of the point_i.
+        """
+        kneighs = self._get_info_i(point_i)
+        point_i = self._prepare_input(point_i, kr)
+        res = self.retriever[kr].query(point_i, int(kneighs), False)
+        res = res[0], [[] for i in range(len(res[0]))]
+        return res
+
+    def _retrieve_neighs_constant_distance(self, point_i, kr=0):
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        point_i: int
+            the indice of the point_i.
+        """
+        kneighs = self._get_info_i(point_i)
+        point_i = self._prepare_input(point_i, kr)
+        res = self.retriever[kr].query(point_i, int(kneighs), True)
+        res = res[1][0], res[0][0]
+        ## Correct for another relative spatial measure (Save time indexing)
+        if self.relative_pos is not None:
+            loc_neighs = np.array(self.retriever[kr].data)[res[0], :]
+            res = self._apply_relative_pos(res, point_i, loc_neighs)
+        return res
+
+    ########################### Auxiliar functions ############################
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
         pass
@@ -127,10 +172,13 @@ class CircRetriever(SpaceRetriever):
     "Circular retriever."
     _default_ret_val = 0.1
     constant_neighs = None
+    preferable_input_idx = False
 
-    def _retrieve_neighs_spec(self, point_i, radius_i, ifdistance=False, kr=0):
-        "Function to retrieve neighs in the specific way we want."
-        point_i = self._get_loc_i(point_i)
+    ###################### Retrieve functions candidates ######################
+    def _retrieve_neighs_general_spec(self, point_i, radius_i,
+                                      ifdistance=False, kr=0):
+        """General function to retrieve neighs in the specific way we want."""
+        point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query_radius(point_i, radius_i, ifdistance)
         if ifdistance:
             res = res[0][0], res[1][0]
@@ -143,8 +191,40 @@ class CircRetriever(SpaceRetriever):
             res = self._apply_relative_pos(res, point_i, loc_neighs)
         return res
 
+    def _retrieve_neighs_constant_nodistance(self, point_i, kr=0):
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        point_i: int
+            the indice of the point_i.
+        """
+        radius = self._get_info_i(point_i)
+        point_i = self._prepare_input(point_i, kr)
+        res = self.retriever[kr].query(point_i, radius, False)
+        res = res[0], [[] for i in range(len(res[0]))]
+        return res
+
+    def _retrieve_neighs_constant_distance(self, point_i, kr=0):
+        """Retrieve neighs computing distance by default.
+
+        Parameters
+        ----------
+        point_i: int
+            the indice of the point_i.
+        """
+        radius = self._get_info_i(point_i)
+        point_i = self._prepare_input(point_i, kr)
+        res = self.retriever[kr].query(point_i, radius, True)
+        ## Correct for another relative spatial measure (Save time indexing)
+        if self.relative_pos is not None:
+            loc_neighs = np.array(self.retriever[kr].data)[res[0], :]
+            res = self._apply_relative_pos(res, point_i, loc_neighs)
+        return res
+
+    ########################### Auxiliar functions ############################
     def _check_proper_retriever(self):
-        "Check the correctness of the retriever for this class."
+        """Check the correctness of the retriever for this class."""
         pass
 #        try:
 #            for k in range(self.k_perturb):
@@ -175,30 +255,65 @@ class WindowsRetriever(SpaceRetriever):
     """
     _default_ret_val = {'l': 1, 'center': 0, 'excluded': False}
     constant_neighs = True
+    preferable_input_idx = False
 
-    def _retrieve_neighs_spec(self, element_i, pars_ret, ifdistance=False,
-                              kr=0):
+    def __iter__(self, pars_ret=None):
+        pars_ret = self._default_ret_val if pars_ret is None else pars_ret
+        for inds, neighs, rel_pos in windows_iteration():
+            yield inds, neighs, rel_pos
+
+    ###################### Retrieve functions candidates ######################
+    def _retrieve_neighs_general_spec(self, element_i, pars_ret,
+                                      ifdistance=False, kr=0):
         """Retrieve all the neighs in the window described by pars_ret."""
         ## Get loc
-        loc_i = self._get_loc_i(element_i, kr)
+        loc_i = self._prepare_input(element_i, kr)
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
                                                  self._ndim, **pars_ret)
         neighs = self.retriever[kr].map2indices(neighs_info[0])
-
         ## Compute neighs_info
         if ifdistance:
             neighs_info = neighs, neighs_info[1]
+            ## Correct for another relative spatial measure(Save time indexing)
+            if self.relative_pos is not None:
+                neighs_info = self._apply_relative_pos(neighs_info[0],
+                                                       element_i,
+                                                       neighs_info[1])
         else:
             neighs_info = neighs, None
         return neighs_info
 
-    def _get_loc_i(self, element_i, kr):
-        """Specific class function to get locations from input. Overwrite the
-        generic function.
-        """
-        if type(element_i) == int:
-            element_i = self.retriever[kr].map2locs(element_i)
-        return element_i
+    def _retrieve_neighs_nodistance(self, element_i, pars_ret, kr=0):
+        """Retrieve neighs not computing distance by default."""
+        pars_ret = self._get_info_i(element_i)
+        loc_i = self._prepare_input(element_i, kr)
+        neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
+                                                 self._ndim, **pars_ret)
+        neighs_info = self.retriever[kr].map2indices(neighs_info[0])
+        return neighs_info
+
+    def _retrieve_neighs_distance(self, element_i, kr=0):
+        """Retrieve neighs computing distance by default."""
+        pars_ret = self._get_info_i(element_i)
+        loc_i = self._prepare_input(element_i, kr)
+        neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
+                                                 self._ndim, **pars_ret)
+        neighs_info[0] = self.retriever[kr].map2indices(neighs_info[0])
+        ## Correct for another relative spatial measure (Save time indexing)
+        if self.relative_pos is not None:
+            neighs_info = self._apply_relative_pos(neighs_info[0], element_i,
+                                                   neighs_info[1])
+        return neighs_info
+
+    ########################### Auxiliar functions ############################
+#    ### TODO: TOMOVE (virtual data)
+#    def get_loc_i(self, element_i, kr):
+#        """Specific class function to get locations from input. Overwrite the
+#        generic function.
+#        """
+#        if type(element_i) == int:
+#            element_i = self.retriever[kr].map2locs(element_i)
+#        return element_i
 
     def _define_retriever(self, locs, pars_ret=None):
         "Define a kdtree for retrieving neighbours."
@@ -224,54 +339,11 @@ class WindowsRetriever(SpaceRetriever):
             shape_ = [int(limits[i][1]-limits[i][0]) for i in range(ndim)]
             shape_ = tuple(shape_)
 
-        ## Create function for mapping
-        shapes = np.array(list(np.cumprod(shape_[1:][::-1])[::-1]) + [1])
-
-        def map2indices(x):
-#            assert(len(x) == ndim)
-            # Check if there is a correct coordinate
-#            if np.all(x >= np.array(shape_)):
-#                raise IndexError("Indices out of bounds.")
-            try:
-                idx = np.sum(x*shapes, 1).astype(int)
-            except:
-                idx = int(np.sum(x*shapes))
-            return idx
-
-        def map2locs(idx):
-            if idx < 0 or idx >= np.prod(shape_):
-                raise IndexError("Indices out of bounds.")
-            coord = np.zeros(len(shapes))
-            for j in range(len(shapes)):
-                coord[j] = idx/shapes[j]
-                idx = idx % shapes[j]
-            assert(idx == 0)
-            return coord
-
-        ## Create class
-        class WindRetriever:
-            """Windows Object retriever."""
-            def __init__(self, shape, map2indices, map2locs):
-                self.map2indices = map2indices
-                self.shape = shape
-                self.map2locs = map2locs
-
-            @property
-            def data(self):
-                n = np.prod(self.shape)
-                ndim = len(self.shape)
-                locs = np.zeros((n, ndim)).astype(int)
-                dims = [xrange(self.shape[i]) for i in range(ndim)]
-                for p in product(*dims):
-                    i = self.map2indices(np.array(p))
-                    locs[i] = np.array(p)
-                return locs
-
-            def __len__(self):
-                return np.prod(self.shape)
+        map2indices, map2locs, WindRetriever = create_window_utils(shape_)
 
         ## Store in a correct format
         self.retriever.append(WindRetriever(shape_, map2indices, map2locs))
         self._limits = limits
         self._shape = shape_
         self._ndim = len(limits)
+        self._virtual_data = True

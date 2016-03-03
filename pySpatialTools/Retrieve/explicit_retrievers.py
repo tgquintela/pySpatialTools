@@ -23,26 +23,34 @@ class NetworkRetriever(Retriever):
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
                  autoexclude=True, ifdistance=True, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
-                 output_map=None):
+                 output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element network retriever class method."
         # Reset globals
         self._initialization()
+        # Output information
+        self._format_output_information(autoexclude, ifdistance, relative_pos)
         ## Retrieve information
         self._define_retriever(main_mapper)
         ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f)
-        # Output information
-        self._format_output_information(autoexclude, ifdistance, relative_pos)
+        self._format_retriever_info(info_ret, info_f, constant_info)
+        ## Format retriever function
+        self._format_retriever_function()
         # Perturbations
         self._format_perturbation(perturbations)
         # IO mappers
         self._format_maps(input_map, output_map)
+        self._format_preparators(bool_input_idx)
+        self._retrieve_neighs_constant_nodistance =\
+            self._retrieve_neighs_general_spec
+        self._retrieve_neighs_constant_distance =\
+            self._retrieve_neighs_general_spec
 
     ############################## Main functions #############################
     ###########################################################################
-    def _retrieve_neighs_spec(self, elem_i, info_i={}, ifdistance=False, kr=0):
-        """Retrieve element neighbourhood information.
-        """
+    def _retrieve_neighs_general_spec(self, elem_i, info_i={},
+                                      ifdistance=False, kr=0):
+        """Retrieve element neighbourhood information. """
+        elem_i = self._prepare_input(elem_i, kr)
         info_i = self._format_info_i_reg(info_i, elem_i)
         neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
         neighs = neighs.ravel()
@@ -109,6 +117,7 @@ class LimDistanceEleNeigh(NetworkRetriever):
     """Region Neighbourhood based on the limit distance bound.
     """
     _default_ret_val = {}
+    preferable_input_idx = False
 
     def _retrieve_neighs_spec2(self, elem_i, lim_distance=None, maxif=True,
                                ifdistance=True, kr=0):
@@ -155,6 +164,7 @@ class SameEleNeigh(NetworkRetriever):
     in the retriever maps.
     """
     _default_ret_val = {}
+    preferable_input_idx = False
 
     def _retrieve_neighs_spec2(self, elem_i, kr=0):
         """Retrieve the elements which are defined by the parameters of the
@@ -183,6 +193,7 @@ class OrderEleNeigh(NetworkRetriever):
     direct neighbours in a network.
     """
     _default_ret_val = {}
+    preferable_input_idx = False
 
     def _retrieve_neighs_spec2(self, elem_i, order=0, exactorlimit=False,
                                kr=0):

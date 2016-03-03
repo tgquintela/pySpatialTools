@@ -33,42 +33,59 @@ class Retriever:
     """
     __name__ = 'pySpatialTools.Retriever'
 
-    def retrieve_neighs(self, i_loc, info_i={}, ifdistance=None, k=None,
-                        output=0):
+    def _retrieve_neighs_static(self, i_loc):
+        """Retrieve neighs and distances. This function acts as a wrapper to
+        more specific functions designed in the specific classes and methods.
+        This function is composed by mutable functions in order to take profit
+        of saving times excluding flags. It assumes staticneighs.
+        """
+        ## 1. Retrieve neighs
+        neighs, dists = self._retrieve_neighs_spec(i_loc)
+        ## 2. Format output
+        neighs_info = self._format_output(i_loc, neighs, dists)
+        return neighs_info
+
+    def _retrieve_neighs_dynamic(self, i_loc):
+        """Retrieve neighs and distances. This function acts as a wrapper to
+        more specific functions designed in the specific classes and methods.
+        This function is composed by mutable functions in order to take profit
+        of saving times excluding flags. It assumes different preset
+        perturbations to retrieve.
+        """
+        neighs_info = []
+        for k in range(self.k_perturb+1):
+            ## 1. Map perturb
+            _, k_r = self._map_perturb(k)
+            ## 2. Retrieve neighs
+            neighs, dists = self._retrieve_neighs_spec(i_loc, k_r=k_r)
+            nei_k = self._format_output(i_loc, neighs, dists, k_r=k_r)
+            neighs_info.append(nei_k)
+        return neighs_info
+
+    def _retrieve_neighs_general(self, i_loc, info_i={}, ifdistance=None,
+                                 k=None, output=0):
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
         """
         ## 0. Prepare variables
         info_i, ifdistance, ks =\
             self._format_inputs_retriever(i_loc, info_i, ifdistance, k, output)
-
         ## 1. Retrieve neighs
         if ks == 0 or self.staticneighs:
-            # Prepare coordinates information (depending on coord or index)
-            try:
-                i_mloc = self._input_map(self, i_loc)
-            except:
-                loc = np.array(self.retriever[0].data)[i_loc]
-                i_mloc = self._input_map(self, loc)
             # Get neighs info
             neighs, dists =\
-                self._retrieve_neighs_spec(i_mloc, info_i, ifdistance)
-            ## 2. Exclude auto if it is needed
+                self._retrieve_neighs_spec(i_loc, info_i, ifdistance)
+            ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
         else:
             neighs_info = []
             for k in range(len(ks)):
-                # Prepare coordinates information (depending on coord or index)
-                try:
-                    i_mloc = self._input_map(self, i_loc)
-                except:
-                    loc = np.array(self.retriever[k].data)[i_loc]
-                    i_mloc = self._input_map(self, loc)
                 # Map perturb
                 _, k_r = self._map_perturb(k)
                 # Retrieve
                 neighs, dists =\
-                    self._retrieve_neighs_spec(i_mloc, info_i, ifdistance, k_r)
+                    self._retrieve_neighs_spec(i_loc, info_i, ifdistance, k_r)
+                # Format output
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
         return neighs_info
@@ -84,7 +101,6 @@ class Retriever:
         ks = [k] if type(k) == int else k
         ks = 0 if ks is None else ks
         ## Check output (TODO)
-
         return info_i, ifdistance, ks
 
     ######################### Perturbation management #########################
@@ -105,7 +121,7 @@ class Retriever:
             self._add_perturbated_retrievers(perturbations)
 
     def _format_perturbation(self, perturbations):
-        "Format initial perturbations."
+        """Format initial perturbations."""
         if perturbations is None:
             def _map_perturb(x):
                 if x != 0:
@@ -166,10 +182,11 @@ class Retriever:
     ########################### Auxiliar functions ############################
     ###########################################################################
     def _initialization(self):
-        """Mutable globals reset."""
+        """Mutable class parameters reset."""
         ## Elements information
         self.data = None
         self._autodata = False
+        self._virtual_data = False
         ## Retriever information
         self.retriever = []
         self._info_ret = None
@@ -197,15 +214,29 @@ class Retriever:
     ###########################################################################
     def _format_output_information(self, autoexclude, ifdistance, relativepos):
         """Format functions to use in output creation."""
+        ## Autoexclude managing
         self._autoexclude = autoexclude
         if autoexclude:
             self._format_output = self._format_output_exclude
         else:
             self._format_output = self._format_output_noexclude
+        ## Ifdistance managing
         self._ifdistance = ifdistance
+        if ifdistance is None:
+            pass
+        else:
+            if ifdistance:
+                pass
+            else:
+                pass
+        ## Relative position managing
         self.relative_pos = relativepos
+        if relativepos is None:
+            self._apply_relative_pos = self._dummy_relative_pos
+        else:
+            self._apply_relative_pos = self._general_relative_pos
 
-    def _format_retriever_info(self, info_ret, info_f):
+    def _format_retriever_info(self, info_ret, info_f, constant_info):
         """Format properly the retriever information."""
         if type(info_ret).__name__ == 'function':
             self._info_f = info_ret
@@ -214,6 +245,51 @@ class Retriever:
             self._info_f = info_f
             aux_default = self._default_ret_val
             self._info_ret = aux_default if info_ret is None else info_ret
+        ## Constant retrieve?
+        if constant_info:
+            self._constant_ret = True
+            if info_f is None:
+                ## TODO: Another flag for the case of indexable get_info_i
+                self._get_info_i = self._dummy_get_info_i
+            else:
+                self._get_info_i = self._dummy_get_info_i_f
+        else:
+            self._get_info_i = self._general_get_info_i
+            self._constant_ret = False
+
+    def _format_retriever_function(self):
+        """Format function to retrieve. It defines the main retrieve functions.
+        """
+        ## Format Retrievers function
+        if self._constant_ret:
+            if self._ifdistance:
+                self._retrieve_neighs_spec =\
+                    self._retrieve_neighs_constant_distance
+            else:
+                self._retrieve_neighs_spec =\
+                    self._retrieve_neighs_constant_nodistance
+            if self.k_perturb == 0:
+                self.retrieve_neighs = self._retrieve_neighs_static
+            else:
+                self.retrieve_neighs = self._retrieve_neighs_dynamic
+        ## Format specific function
+        else:
+            self.retrieve_neighs = self._retrieve_neighs_general
+            self._retrieve_neighs_spec = self._retrieve_neighs_general_spec
+        ## Format retrieve locs and indices
+        self._format_get_loc_i()
+        self._format_get_indice_i()
+
+    def _format_preparators(self, bool_input_idx):
+        """Format the prepare inputs function in order to be used properly and
+        efficient avoiding extra useless computations.
+        """
+        if self.preferable_input_idx == bool_input_idx:
+            self._prepare_input = self._dummy_prepare_input
+        elif self.preferable_input_idx:
+            self._prepare_input = self._dummy_loc2idx_prepare_input
+        elif not self.preferable_input_idx:
+            self._prepare_input = self._dummy_idx2loc_prepare_input
 
     ################################# Auxiliar ################################
     ###########################################################################
@@ -255,7 +331,22 @@ class Retriever:
         to_exclude_points = np.where(logi)[0]
         return to_exclude_points
 
-    def _get_info_i(self, i_loc, info_i):
+    ############################# InfoRet managing ############################
+    ###########################################################################
+    ## Collapse to _get_info_i in _format_retriever_info
+    def _dummy_get_info_i(self, i_loc, info_i=None):
+        """Dummy get retrieve information."""
+        return self._info_ret
+
+    def _dummy_get_info_i_indexed(self, i_loc, info_i=None):
+        """Dummy indexable retrieve information."""
+        return self._info_ret[i_loc]
+
+    def _dummy_get_info_i_f(self, i_loc, info_i=None):
+        """Dummy get retrieve information using function."""
+        return self._info_f(i_loc, self._info_ret)
+
+    def _general_get_info_i(self, i_loc, info_i):
         """Get retrieving information for each element i_loc. Comunicate the
         input i with the data_input. It is a generic function independent on
         the type of the elements we want to retrieve.
@@ -275,7 +366,48 @@ class Retriever:
                     raise TypeError("self._info_f not defined properly.")
         return info_i
 
-    def _get_loc_i(self, i_loc, k=0, inorout=True):
+    ########################### GetLocation managing ##########################
+    ###########################################################################
+    ## Collapse to _prepare_input in _format_preparators
+    def _dummy_prepare_input(self, i_loc, kr=0):
+        """Dummy prepare input."""
+        i_mloc = self._input_map(self, i_loc)
+        return i_mloc
+
+    def _dummy_idx2loc_prepare_input(self, i_loc, kr=0):
+        """Dummy prepare input transforming indice to location."""
+        i_loc = self._input_map(self, i_loc)
+        loc_i = self.get_loc_i(i_loc, kr)
+        return loc_i
+
+    def _dummy_loc2idx_prepare_input(self, loc_i, kr=0):
+        """Dummy prepare input transforming location to indice."""
+        loc_i = self._input_map(self, loc_i)
+        i_loc = self.get_indice_i(loc_i, kr)
+        return i_loc
+
+    def _format_get_loc_i(self):
+        """Format the get indice function."""
+        if self._constant_ret:
+            try:
+                self._get_loc_from_idx_virtual(0, 0)
+                self.get_loc_i = self._get_loc_from_idx_virtual
+            except:
+                self.get_loc_i = self._get_loc_from_idx
+        else:
+            self.get_loc_i = self._get_loc_i_general
+
+    def _get_loc_from_idx_virtual(self, i_loc, kr=0):
+        """Get location from indice in virtual data retriever."""
+        loc = self.retriever[kr].get_location(i_loc)
+        return loc
+
+    def _get_loc_from_idx(self, i_loc, kr=0):
+        """Get location from indice in explicit data retriever."""
+        loc = np.array(self.retriever[kr].data[i_loc])
+        return loc
+
+    def _get_loc_i_general(self, i_loc, k=0, inorout=True):
         """Get element spatial information. Generic function."""
         ## 0. Needed variable computations
         ifdata = inorout and not self._autodata
@@ -311,16 +443,55 @@ class Retriever:
             loc_i = i_loc
         return loc_i
 
-    def _get_indice_i(self, loc_i, kr=0):
+    def _format_get_indice_i(self):
+        """Format the get indice function."""
+        if self._constant_ret:
+            try:
+                loc = self._get_loc_from_idx_virtual(0, 0)
+                self._get_indice_i_virtual(loc, 0)
+                self.get_indice_i = self._get_indice_i_virtual
+            except:
+                loc = self._get_loc_from_idx(0, 0)
+                try:
+                    self._get_indice_i_global(loc, 0)
+                    self.get_indice_i = self._get_indice_i_global
+                except:
+                    self._get_indice_i_elementwise(loc, 0)
+                    self.get_indice_i = self._get_indice_i_elementwise
+        else:
+            self.get_indice_i = self._get_indice_i_general
+
+    def _get_indice_i_general(self, loc_i, kr=0):
         """Obtain the indices from the elements, element-wise."""
         try:
-            indices = np.where(self.retriever[kr].data == loc_i)[0]
+            indice = self._get_indice_i_virtual(loc_i, kr)
         except:
-            indices = np.where([self.retriever[kr].data[i] == loc_i
-                                for i in range(len(self.retriever[kr].data))])
-        return indices
+            try:
+                indice = self._get_indice_i_global(loc_i, kr)
+            except:
+                indice = self._get_indice_i_elementwise(loc_i, kr)
+        return indice
 
-    def _apply_relative_pos(self, neighs_info, element_i, element_neighs):
+    def _get_indice_i_virtual(self, loc_i, kr=0):
+        """Get indice for virtual (not computed explicitely) data."""
+        indice = self.retriever[kr].get_indice(loc_i)
+        return indice
+
+    def _get_indice_i_global(self, loc_i, kr=0):
+        """Global search from elements."""
+        indice = np.where(self.retriever[kr].data == loc_i)[0]
+        return indice
+
+    def _get_indice_i_elementwise(self, loc_i, kr=0):
+        """Obtain the indices from the elements element-wise."""
+        indice = np.where([self.retriever[kr].data[i] == loc_i
+                           for i in range(len(self.retriever[kr].data))])
+        return indice
+
+    ########################### Relativepos managing ##########################
+    ###########################################################################
+    ## Collapse to _apply_relative_pos in _format_output_information
+    def _general_relative_pos(self, neighs_info, element_i, element_neighs):
         """Intraclass interface for manage the interaction with relative
         position function."""
         if self.relative_pos is not None:
@@ -334,6 +505,10 @@ class Retriever:
                 neighs_info = neighs_info[0], rel_pos
             else:
                 neighs_info = neighs_info, rel_pos
+        return neighs_info
+
+    def _dummy_relative_pos(self, neighs_info, element_i, element_neighs):
+        """Not relative pos available."""
         return neighs_info
 
     ###########################################################################

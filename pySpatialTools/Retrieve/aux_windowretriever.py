@@ -16,7 +16,59 @@ from itertools import product, combinations
 ## Split parallel
 
 
-def iteration(shape, max_bunch, l, center, excluded):
+########################### Main auxiliar functions ###########################
+###############################################################################
+def create_window_utils(shape_):
+    ## Create function for mapping
+    shapes = np.array(list(np.cumprod(shape_[1:][::-1])[::-1]) + [1])
+
+    def map2indices(x):
+#        assert(len(x) == ndim)
+#        # Check if there is a correct coordinate
+#        if np.all(x >= np.array(shape_)):
+#            raise IndexError("Indices out of bounds.")
+        try:
+            idx = np.sum(x*shapes, 1).astype(int)
+        except:
+            idx = int(np.sum(x*shapes))
+        return idx
+
+    def map2locs(idx):
+        if idx < 0 or idx >= np.prod(shape_):
+            raise IndexError("Indices out of bounds.")
+        coord = np.zeros(len(shapes))
+        for j in range(len(shapes)):
+            coord[j] = idx/shapes[j]
+            idx = idx % shapes[j]
+        assert(idx == 0)
+        return coord
+
+    ## Create class
+    class WindRetriever:
+        """Windows Object retriever."""
+        def __init__(self, shape, map2indices, map2locs):
+            self.map2indices = map2indices
+            self.shape = shape
+            self.map2locs = map2locs
+
+        @property
+        def data(self):
+            n = np.prod(self.shape)
+            ndim = len(self.shape)
+            locs = np.zeros((n, ndim)).astype(int)
+            dims = [xrange(self.shape[i]) for i in range(ndim)]
+            for p in product(*dims):
+                i = self.map2indices(np.array(p))
+                locs[i] = np.array(p)
+            return locs
+
+        def __len__(self):
+            return np.prod(self.shape)
+
+    return map2indices, map2locs, WindRetriever
+
+
+def windows_iteration(shape, max_bunch, l, center, excluded):
     """Main iteration over all the grid by number of neighs."""
     ## Splitting by special corner and border points
     shapes = np.array(list(np.cumprod(shape[1:][::-1])[::-1]) + [1])
@@ -258,6 +310,7 @@ def generate_grid_neighs_coord(coord, shape, ndim, l, center=0,
                                excluded=False):
     """Generation of neighbours from a point and the pars_ret."""
     ## Format and check inputs
+    coord = coord.ravel()
     c = center
     window_l = np.array(l) if '__len__' in dir(l) else np.array(ndim*[l])
     center = np.array(c) if '__len__' in dir(c) else np.array(ndim*[c])
