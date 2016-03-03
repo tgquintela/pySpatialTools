@@ -7,4 +7,5 @@ are done.
 - Classes to externalize the process of parallel computing preparations.
 """
 
-from matrix_splitting import distribute_tasks, reshape_limits
+from matrix_splitting import distribute_tasks, reshape_limits,\
+    generate_split_array, split_parallel
