@@ -50,6 +50,16 @@ def test():
     ret4 = OrderEleNeigh(mainmapper, pars4, input_map=input_map)
     ret5 = LimDistanceEleNeigh(mainmapper, pars5, input_map=input_map)
 
+    info_f = lambda x, y: 2
+    relative_pos = lambda x, y: y
+
+    ret6 = KRetriever(locs1, 3, ifdistance=True, constant_info=True,
+                      autoexclude=False, info_f=info_f, bool_input_idx=True,
+                      relative_pos=relative_pos)
+    ret7 = KRetriever(locs1, 3, ifdistance=True, constant_info=True,
+                      autoexclude=False, info_f=info_f, bool_input_idx=False,
+                      relative_pos=relative_pos)
+
     ## Retriever Manager
     gret = RetrieverManager([ret0, ret1, ret2, ret3, ret4, ret5])
 
@@ -63,6 +73,8 @@ def test():
         neighs_info = ret3.retrieve_neighs(i)
         neighs_info = ret4.retrieve_neighs(i)
         neighs_info = ret5.retrieve_neighs(i)
+        neighs_info = ret6.retrieve_neighs(i)
+        neighs_info = ret7.retrieve_neighs(locs1[i])
         neighs_info = gret.retrieve_neighs(i)
 
     ## Main functions

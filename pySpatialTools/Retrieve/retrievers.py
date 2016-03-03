@@ -40,7 +40,7 @@ class Retriever:
         of saving times excluding flags. It assumes staticneighs.
         """
         ## 1. Retrieve neighs
-        neighs, dists = self._retrieve_neighs_spec(i_loc)
+        neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
         neighs_info = self._format_output(i_loc, neighs, dists)
         return neighs_info
@@ -57,7 +57,7 @@ class Retriever:
             ## 1. Map perturb
             _, k_r = self._map_perturb(k)
             ## 2. Retrieve neighs
-            neighs, dists = self._retrieve_neighs_spec(i_loc, k_r=k_r)
+            neighs, dists = self._retrieve_neighs_spec(i_loc, {}, k_r=k_r)
             nei_k = self._format_output(i_loc, neighs, dists, k_r=k_r)
             neighs_info.append(nei_k)
         return neighs_info
@@ -248,9 +248,11 @@ class Retriever:
         ## Constant retrieve?
         if constant_info:
             self._constant_ret = True
-            if info_f is None:
-                ## TODO: Another flag for the case of indexable get_info_i
+            if info_f is None and info_ret is None:
                 self._get_info_i = self._dummy_get_info_i
+            elif info_f is None:
+                ## TODO: Another flag for the case of indexable get_info_i
+                self._get_info_i = self._dummy_get_info_i_stored
             else:
                 self._get_info_i = self._dummy_get_info_i_f
         else:
@@ -334,7 +336,10 @@ class Retriever:
     ############################# InfoRet managing ############################
     ###########################################################################
     ## Collapse to _get_info_i in _format_retriever_info
-    def _dummy_get_info_i(self, i_loc, info_i=None):
+    def _dummy_get_info_i(self, i_loc, info_i):
+        return info_i
+
+    def _dummy_get_info_i_stored(self, i_loc, info_i=None):
         """Dummy get retrieve information."""
         return self._info_ret
 

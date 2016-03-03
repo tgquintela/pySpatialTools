@@ -13,6 +13,7 @@ from retrievers import Retriever
 from aux_retriever import DummyRetriever
 from aux_windowretriever import generate_grid_neighs_coord,\
     create_window_utils, windows_iteration
+from pySpatialTools.utils.util_external.parallel_tools import split_parallel
 
 
 ###############################################################################
@@ -55,13 +56,13 @@ class SpaceRetriever(Retriever):
         if output_map is not None:
             self._output_map = output_map
 
-    def _format_output_exclude(self, i_locs, neighs, dists, output, k=0):
+    def _format_output_exclude(self, i_locs, neighs, dists, output=0, k=0):
         "Format output with excluding."
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
         return neighs, dists
 
-    def _format_output_noexclude(self, i_locs, neighs, dists, output, k=0):
+    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, k=0):
         "Format output without excluding the same i."
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         return neighs, dists
@@ -87,10 +88,20 @@ class KRetriever(SpaceRetriever):
     constant_neighs = True
     preferable_input_idx = False
 
-#    def __iter__(self, pars_ret=None, max_bunch=None):
-#        max_bunch = len(self) if max_bunch is None else max_bunch
-#        for i in xrange(max_bunch):
-#            yield inds, neighs_info
+    def __iter__(self, info_ret=None, max_bunch=None):
+        ## Prepare iteration
+        info_ret = self._default_ret_val if info_ret is None else info_ret
+        max_bunch = len(self) if max_bunch is None else max_bunch
+        self._format_preparators(False)
+        self._constant_ret = True
+        self._format_retriever_function()
+        ## Prepare indices
+        indices = split_parallel(np.arange(self._n0, max_bunch))
+        ## Iteration
+        for idxs in indices:
+            locs = self.data_input[idxs]
+            neighs = self.retrieve_neighs(locs, info_ret)
+            yield indices, neighs
 
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, kneighs, ifdistance=False,
@@ -109,7 +120,7 @@ class KRetriever(SpaceRetriever):
             res = self._apply_relative_pos(res, point_i, loc_neighs)
         return res
 
-    def _retrieve_neighs_constant_nodistance(self, point_i, kr=0):
+    def _retrieve_neighs_constant_nodistance(self, point_i, info_i={}, kr=0):
         """Retrieve neighs not computing distance by default.
 
         Parameters
@@ -123,7 +134,7 @@ class KRetriever(SpaceRetriever):
         res = res[0], [[] for i in range(len(res[0]))]
         return res
 
-    def _retrieve_neighs_constant_distance(self, point_i, kr=0):
+    def _retrieve_neighs_constant_distance(self, point_i, info_i={}, kr=0):
         """Retrieve neighs not computing distance by default.
 
         Parameters
@@ -257,8 +268,14 @@ class WindowsRetriever(SpaceRetriever):
     constant_neighs = True
     preferable_input_idx = False
 
-    def __iter__(self, pars_ret=None):
-        pars_ret = self._default_ret_val if pars_ret is None else pars_ret
+    def __iter__(self, info_ret=None, max_bunch=None):
+        ## Prepare iteration
+        info_ret = self._default_ret_val if info_ret is None else info_ret
+        max_bunch = len(self) if max_bunch is None else max_bunch
+        self._format_preparators(False)
+        self._constant_ret = True
+        self._format_retriever_function()
+        ## Iteration
         for inds, neighs, rel_pos in windows_iteration():
             yield inds, neighs, rel_pos
 

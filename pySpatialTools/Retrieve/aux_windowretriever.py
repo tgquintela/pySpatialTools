@@ -10,6 +10,7 @@ It helps in retrieving by groups of elements with the same number of neighs.
 
 import numpy as np
 from itertools import product, combinations
+from pySpatialTools.utils.util_external.parallel_tools import split_parallel
 
 ## TO SOLVE:
 ## Negative numbers
@@ -62,6 +63,12 @@ def create_window_utils(shape_):
                 locs[i] = np.array(p)
             return locs
 
+        def get_indices(self, loc):
+            return self.map2indices(loc)
+
+        def get_locations(self, idx):
+            return self.map2locs(idx)
+
         def __len__(self):
             return np.prod(self.shape)
 
@@ -96,8 +103,8 @@ def windows_iteration(shape, max_bunch, l, center, excluded):
 
     indices, relative_neighs, rel_pos =\
         get_indices_constant_regular(shape, coord2ind, l, center, excluded)
-#    indices_split = split_parallel(indices, max_bunch)
-    indices_split = [indices]
+    indices_split = split_parallel(indices, max_bunch)
+#    indices_split = [indices]
     for inds in indices_split:
         neighs = get_regular_neighsmatrix(inds, relative_neighs)
         yield inds, neighs, rel_pos
