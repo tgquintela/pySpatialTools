@@ -214,6 +214,20 @@ class SpatialDescriptorModel:
         desc = self.featurers.to_complete_measure(desc)
         return desc
 
+    def _compute_retdriven(self):
+        desc = self.featurers.initialization_output()
+        k_pert = self.featurers.k_perturb+1
+        ks = list(range(k_pert))
+        _, typeret, typefeats = self._get_methods(i)
+        self.retrievers.set_typeret(typeret)
+        for iss, neighs_info in self.retrievers:
+            characs_iss, vals_iss =\
+                self.featurers.compute_descriptors(iss, neighs_info,
+                                                   ks, typefeats)
+            desc = self.featurers.add2result(desc, characs_iss, vals_iss)
+        desc = self.featurers.to_complete_measure(desc)
+        return desc
+
     def _compute_descriptors(self, i):
         "Compute the descriptors assigned to element i."
         staticneighs, typeret, typefeats = self._get_methods(i)

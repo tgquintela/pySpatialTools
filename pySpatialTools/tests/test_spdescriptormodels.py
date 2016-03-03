@@ -113,7 +113,7 @@ def test():
     gret = RetrieverManager(windret)
     feats_ret = FeaturesManager(features, binsdesc)
     spdesc = SpatialDescriptorModel(gret, feats_ret)
-    net = spdesc.compute()
+#    net = spdesc.compute()
 
     pars_ret2 = {'l': np.array([8, 3]), 'center': np.array([0, 0]),
                  'excluded': True}
@@ -121,12 +121,13 @@ def test():
     windret2 = WindowsRetriever(locs, pars_ret2)
     gret2 = RetrieverManager(windret2)
     spdesc2 = SpatialDescriptorModel(gret2, feats_ret)
-    net2 = spdesc2.compute()
+#    net2 = spdesc2.compute()
     try:
         windret3 = WindowsRetriever((8, 9.), pars_ret2)
         raise
     except:
         pass
+
 
     ## Categorical array with different windows and dict
     cat_ts = np.random.randint(0, 20, 20)
@@ -143,6 +144,7 @@ def test():
     feats_ret = FeaturesManager(cat_ts, countdesc, out='dict')
     spdesc = SpatialDescriptorModel(gret, feats_ret)
     net = spdesc.compute()
+
 
     pars_ret, nbins = {'l': 6, 'center': -1, 'excluded': False}, 5
     windret = WindowsRetriever(cat_ts.shape, pars_ret)

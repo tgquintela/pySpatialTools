@@ -7,7 +7,6 @@ models from puntual features.
 
 """
 
-import numpy as np
 from aux_descriptormodels.add2result_functions import sum_addresult_function
 from aux_descriptormodels.featurenames_functions import array_featurenames
 from aux_descriptormodels.out_formatters import null_out_formatter
