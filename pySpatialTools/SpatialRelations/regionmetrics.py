@@ -21,20 +21,12 @@ class RegionDistances:
     """Object which stores the information of spatial relations between regions
     defined by a discretization of a discretized points.
     """
-    _distanceorweighs = True
-    _null_value = np.inf
-    _inv_null_value = 0.
-
-    relations = None
-    _data = None
-    _data_input = None
-    _store = 'matrix'  # sparse, network
-    _out = 'indices'  # indices, elements_id
-    _input = 'indices'  # indices, elements_id
 
     def __init__(self, relations=None, distanceorweighs=True, symmetric=True,
                  input_='indices', output='indices', _data=None, data_in=None,
                  input_type=None):
+        ## Initialization
+        self._initialization()
         ## Relations management
         self.relations = relations
         self._format_relations(relations, _data)
@@ -44,12 +36,25 @@ class RegionDistances:
         ## Type of values
         self._distanceorweighs = distanceorweighs
         if not distanceorweighs:
+            self._distanceorweighs = True
             self._null_value = 0.
             self._inv_null_value = np.inf
+        else:
+            self._distanceorweighs = False
+            self._null_value = np.inf
+            self._inv_null_value = 0.
         self._symmetric = symmetric
         ## IO parameters
         self._input = input_
         self._out = output
+
+    def _initialization(self):
+        self._store = 'matrix'  # sparse, network
+        self.relations = None
+        self._data = None
+        self._data_input = None
+        self._out = 'indices'  # indices, elements_id
+        self._input = 'indices'  # indices, elements_id
 
     ################################ Formatters ###############################
     ###########################################################################
@@ -72,8 +77,11 @@ class RegionDistances:
                         raise TypeError("Not correct shape of data.")
             else:
                 if _data is None:
-                    _data = np.arange(relations.shape[1])
-                    self._data = _data.reshape((relations.shape[1], 1))
+                    if type(relations) == np.ndarray:
+                        _data = np.arange(relations.shape[1])
+                        self._data = _data.reshape((relations.shape[1], 1))
+                    elif type(relations) == nx.Graph:
+                        self._data = relations.nodes()
                 else:
                     if type(_data) == list:
                         _data = np.array(_data)
@@ -354,6 +362,7 @@ class DummyRegDistance(RegionDistances):
     """Dummy abstract region distance."""
 
     def __init__(self, regs, input_type=None):
+        self._initialization()
         if type(regs) not in [np.ndarray, list]:
             raise TypeError("Incorrect ids of elements.")
         if type(regs) == list:

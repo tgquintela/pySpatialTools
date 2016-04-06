@@ -87,6 +87,8 @@ def test():
         compute_AvgDistanceRegions(locs, griddisc1, ret1)
     regdists = RegionDistances(relations=relations, _data=_data,
                                symmetric=symmetric)
+    regdists = RegionDistances(relations=relations, _data=None,
+                               symmetric=symmetric, distanceorweighs=False)
     relations, _data, symmetric, store =\
         compute_AvgDistanceRegions(locs, griddisc2, ret2)
     regdists = RegionDistances(relations=relations, _data=_data,
