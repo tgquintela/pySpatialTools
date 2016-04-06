@@ -9,15 +9,13 @@ the
 
 
 This function is a compulsary function in the descriptor model object in
-order to be passed to the feture retriever.
+order to be passed to the spatial descriptor model.
 
 ** Main properties:
    ---------------
 INPUTS:
 - aggdescriptors_idxs: the features associated directly to each aggregation.
     The could be expressed in list, np.ndarray or dict.
-- point_aggpos: relative position of the aggregations to the element
-    neighbourhood.
 
 OUTPUTS:
 - descriptors: in dict or array format depending on the descriptors convenience
@@ -33,15 +31,18 @@ def sum_addresult_function(x, x_i, vals_i):
 
 
 def append_addresult_function(x, x_i, vals_i):
-    """Append the result to the final result."""
-#    assert(type(x) == list)
+    """Append the result to the final result.
+    * x: [ks][iss_vals]{feats}
+    """
     for k in range(len(vals_i)):
-        x[k].append(x_i)
+        for i in range(len(vals_i[k])):
+            x[k][vals_i[k][i]].append(x_i[k][i])
     return x
 
 
 def replacelist_addresult_function(x, x_i, vals_i):
-    """Replace the element in a preinitialized list.
+    """Replace the element in a preinitialized list. For unknown vals_i.
+    * x: [ks][iss_vals][0]{feats} and [ks][iss_vals][1](vals_i)
 
     See also:
     ---------

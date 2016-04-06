@@ -19,7 +19,7 @@ from add2result_functions import sum_addresult_function,\
 
 ## Invocable completers
 from completers import null_completer, weighted_completer,\
-    sparse_dict_completer
+    sparse_dict_completer, sparse_dict_completer_unknown
 
 ## Invocable aggregation functions
 from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\
@@ -29,4 +29,5 @@ from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\
 from featurenames_functions import counter_featurenames, array_featurenames
 
 ## Invocable out_formatter functions
-from out_formatters import count_out_formatter, null_out_formatter
+from out_formatters import count_out_formatter_general, null_out_formatter,\
+    count_out_formatter_dict2array
