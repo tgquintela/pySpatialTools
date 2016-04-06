@@ -75,6 +75,11 @@ class RetrieverManager:
         """
         pass
 
+    def set_neighs_info(self, bool_input_idx):
+        """Setting the neighs info of the retrievers."""
+        for i in range(len(self)):
+            self.retrievers[i]._format_neighs_info(bool_input_idx)
+
     def _get_type_ret(self, typeret_i, i, k=0):
         k = 0 if k is None else k
         if typeret_i is None:

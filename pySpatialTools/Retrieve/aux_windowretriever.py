@@ -64,13 +64,27 @@ def create_window_utils(shape_):
             return locs
 
         def get_indices(self, loc):
-            return self.map2indices(loc)
+            return self.map2indices_iss(loc)
 
         def get_locations(self, idx):
-            return self.map2locs(idx)
+            return self.map2locs_iss(idx)
 
         def __len__(self):
             return np.prod(self.shape)
+
+        def map2indices_iss(self, xss):
+            idxs_iss = []
+            for i in range(len(xss)):
+                idxs_iss.append(self.map2indices(xss[i]))
+            return idxs_iss
+
+        def map2locs_iss(self, iss):
+            iss = [iss] if type(iss) == int else iss
+            locs_iss = []
+            for i in range(len(iss)):
+                locs_iss.append(self.map2locs(iss[i]))
+            locs_iss = np.array(locs_iss)
+            return locs_iss
 
     return map2indices, map2locs, WindRetriever
 
@@ -313,8 +327,21 @@ def get_relative_neighs_comb(ranges):
     return relative_pos
 
 
-def generate_grid_neighs_coord(coord, shape, ndim, l, center=0,
+def generate_grid_neighs_coord(coords, shape, ndim, l, center=0,
                                excluded=False):
+    """Generation of neighs for different coords."""
+    neighs_coords, rel_poss = [], []
+    for i in range(len(coords)):
+        neighs_coord, rel_pos =\
+            generate_grid_neighs_coord_i(coords[i], shape, ndim, l, center,
+                                         excluded)
+        neighs_coords.append(neighs_coord)
+        rel_poss.append(rel_pos)
+    return neighs_coords, rel_poss
+
+
+def generate_grid_neighs_coord_i(coord, shape, ndim, l, center=0,
+                                 excluded=False):
     """Generation of neighbours from a point and the pars_ret."""
     ## Format and check inputs
     coord = coord.ravel()
@@ -348,11 +375,11 @@ def generate_grid_neighs_coord(coord, shape, ndim, l, center=0,
     n_nei = np.prod([len(w) for w in windows])
 
     neighs_coord = np.zeros((n_nei, ndim)).astype(int)
-    rel_pos = np.zeros((n_nei, ndim))
+    rel_pos = np.zeros((n_nei, ndim)).astype(int)
     i = 0
     for p in product(*windows):
         neighs_coord[i] = np.array(p)
-        rel_pos = np.array(p) - ret_coord
+        rel_pos[i] = np.array(p) - ret_coord
 #        rel_pos[i] = np.array(p)
 #        neighs_coord[i] = ret_coord + rel_pos[i]
         i += 1

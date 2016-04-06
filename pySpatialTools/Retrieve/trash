@@ -2,6 +2,64 @@
 """
 """
 
+######## 2016-03-08 Retriever
+    def _exclude_auto(self, i_loc, neighs, dists, kr=0):
+        """Exclude auto elements if there exist in the neighs retrieved.
+        This is a generic function independent on the type of the element.
+        """
+        ## 0. Detect input i_loc and retrieve to_exclude_elements list
+        # If it is an indice
+        if type(i_loc) in [int, np.int32, np.int64]:
+            to_exclude_elements = [[i_loc]]
+        elif type(i_loc) == list:
+            to_exclude_elements = [list(i_loc[0])]
+        # If it is an element spatial information
+        else:
+            to_exclude_elements = self._build_excluded_elements(i_loc, kr)
+        ## 1. Excluding task
+#        ndim = len(np.array(neighs).shape)
+#        n_p = len(neighs) if ndim == 1 else np.array(neighs).shape[1]
+#        ## Prepare neighs and dists
+#        neighs = np.array(neighs)
+#        neighs = neighs.reshape((1, n_p)) if ndim == 1 else neighs
+#        neighs = [[neighs[iss_i][i] for i in range(n_p)]
+#                  for iss_i in range(len(neighs))]
+#        if dists is not None:
+#            dists = dists.reshape((1, n_p)) if ndim == 1 else dists
+#            dists = [[dists[nei][i] for i in range(n_p)]
+#                     for nei in range(len(dists))]
+
+        for iss_i in range(len(to_exclude_elements)):
+            n_iss_i = len(neighs[iss_i])
+            idxs_exclude = [i for i in xrange(n_iss_i)
+                            if neighs[iss_i][i] in to_exclude_elements[iss_i]]
+
+            neighs[iss_i] = [neighs[iss_i][i] for i in xrange(n_iss_i)
+                             if i not in idxs_exclude]
+            if dists is not None:
+                dists[iss_i] = [dists[iss_i][i] for i in xrange(n_iss_i)
+                                if i not in idxs_exclude]
+#        neighs, dists = np.array(neighs), dists
+        return neighs, dists
+
+    def _build_excluded_elements(self, i_loc, kr=0):
+        """Build the excluded points from i_loc if it is not an index."""
+        if type(i_loc) == np.ndarray:
+            sh = i_loc.shape
+            i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
+        try:
+            logi = np.all(self.retriever[kr].data == i_loc, axis=1).ravel()
+        except:
+            try:
+                logi = np.all(self.retriever[kr].data == i_loc)
+            except:
+                n = len(self.retriever[kr].data)
+                logi = np.array([self.retriever[kr].data[i] == i_loc
+                                 for i in xrange(n)])
+        assert len(logi) == len(self.retriever[kr].data)
+        to_exclude_points = [np.where(logi)[0]]
+        return to_exclude_points
+
 
 ######## 2016-03-01 Auxiliar windows retriever
 

@@ -8,7 +8,15 @@ mapped relations.
 
 Structure:
 ----------
-
+- Retrievers
+    - SpatialRetrievers
+        - KRetriever
+        - RadiusRetriever
+        - WindowRetriever
+    - NetworkRetrievers
+        - DirectMapping
+        - OrderRetriever
+        - MaxDistanceRetriever
 
 TODO:
 ----
@@ -22,10 +30,12 @@ TODO:
 import numpy as np
 import warnings
 from scipy.sparse import coo_matrix
-from aux_retriever import _check_retriever
+from aux_retriever import _check_retriever, _general_autoexclude,\
+    _array_autoexclude, _list_autoexclude
 from ..utils import NonePerturbation
 from ..utils import ret_filter_perturbations
-from ..utils.util_classes import SpatialElementsCollection, Locations
+from ..utils.util_classes import SpatialElementsCollection, Locations,\
+    Neighs_Info
 
 
 class Retriever:
@@ -33,6 +43,19 @@ class Retriever:
     """
     __name__ = 'pySpatialTools.Retriever'
 
+    ######################## Retrieve-driven retrieve #########################
+    def __iter__(self):
+        ## Prepare iteration
+        # Input indices
+        self._format_preparators(True)
+        self._format_retriever_function(True)
+        ## Iteration
+        for i in range(self._n0):
+            iss = self.get_indice_i(i)
+            neighs = self.retrieve_neighs(i)
+            yield iss, neighs
+
+    ##################### Retrieve candidates functions #######################
     def _retrieve_neighs_static(self, i_loc):
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
@@ -42,7 +65,13 @@ class Retriever:
         ## 1. Retrieve neighs
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
+        print neighs.shape, type(dists)
         neighs_info = self._format_output(i_loc, neighs, dists)
+        print neighs_info[0].shape, type(neighs_info[1])
+        ## 3. Format neighs_info
+        print i_loc, neighs_info
+        self.neighs_info.set(neighs_info, i_loc)
+        neighs_info = self.neighs_info
         return neighs_info
 
     def _retrieve_neighs_dynamic(self, i_loc):
@@ -53,13 +82,17 @@ class Retriever:
         perturbations to retrieve.
         """
         neighs_info = []
-        for k in range(self.k_perturb+1):
+        ks = list(range(self.k_perturb+1))
+        for k in ks:
             ## 1. Map perturb
             _, k_r = self._map_perturb(k)
             ## 2. Retrieve neighs
             neighs, dists = self._retrieve_neighs_spec(i_loc, {}, k_r=k_r)
             nei_k = self._format_output(i_loc, neighs, dists, k_r=k_r)
             neighs_info.append(nei_k)
+        ## 3. Format neighs_info
+        self.neighs_info.set((neighs_info, ks), i_loc)
+        neighs_info = self.neighs_info
         return neighs_info
 
     def _retrieve_neighs_general(self, i_loc, info_i={}, ifdistance=None,
@@ -75,6 +108,7 @@ class Retriever:
             # Get neighs info
             neighs, dists =\
                 self._retrieve_neighs_spec(i_loc, info_i, ifdistance)
+            print 'b'*25, neighs, dists
             ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
         else:
@@ -88,6 +122,10 @@ class Retriever:
                 # Format output
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
+        ## 3. Format neighs_info
+        print 'a'*100, neighs_info, type(neighs_info[0]), type(neighs_info[1])
+        self.neighs_info.set((neighs_info, ks), i_loc)
+        neighs_info = self.neighs_info
         return neighs_info
 
     def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):
@@ -198,6 +236,7 @@ class Retriever:
         self.staticneighs = True
         ## External objects to apply
         self.relative_pos = None
+        self._ndim_rel_pos = 1
         ## IO information
         self._autoexclude = False
         self._ifdistance = False
@@ -233,7 +272,9 @@ class Retriever:
         self.relative_pos = relativepos
         if relativepos is None:
             self._apply_relative_pos = self._dummy_relative_pos
+            self._apply_relative_pos_spec = self._apply_relative_pos_null
         else:
+            self._apply_relative_pos_spec = self._apply_relative_pos_complete
             self._apply_relative_pos = self._general_relative_pos
 
     def _format_retriever_info(self, info_ret, info_f, constant_info):
@@ -259,7 +300,7 @@ class Retriever:
             self._get_info_i = self._general_get_info_i
             self._constant_ret = False
 
-    def _format_retriever_function(self):
+    def _format_retriever_function(self, bool_input_idx):
         """Format function to retrieve. It defines the main retrieve functions.
         """
         ## Format Retrievers function
@@ -279,7 +320,7 @@ class Retriever:
             self.retrieve_neighs = self._retrieve_neighs_general
             self._retrieve_neighs_spec = self._retrieve_neighs_general_spec
         ## Format retrieve locs and indices
-        self._format_get_loc_i()
+        self._format_get_loc_i(bool_input_idx)
         self._format_get_indice_i()
 
     def _format_preparators(self, bool_input_idx):
@@ -293,45 +334,170 @@ class Retriever:
         elif not self.preferable_input_idx:
             self._prepare_input = self._dummy_idx2loc_prepare_input
 
+    def _preformat_neighs_info(self, format_level, type_neighs,
+                               type_sp_rel_pos):
+        """Over-writtable function."""
+        return format_level, type_neighs, type_sp_rel_pos
+
+    def _format_neighs_info(self, bool_input_idx, format_level=None,
+                            type_neighs=None, type_sp_rel_pos=None):
+        """Format neighs_info object in order to have better improvement and
+        robusticity in the program.
+        """
+        ## Preformatting neighs_info
+        format_level, type_neighs, type_sp_rel_pos =\
+            self._preformat_neighs_info(format_level, type_neighs,
+                                        type_sp_rel_pos)
+        ## Setting structure
+        if self.k_perturb == 0:
+            if self._constant_ret:
+                format_structure = 'tuple_only'
+            else:
+                format_structure = 'tuple_tuple'
+        else:
+            #format_structure = 'tuple_list_tuple_only'
+            format_structure = 'list_tuple_only'
+
+        ## Setting iss
+        if bool_input_idx:
+            format_set_iss = 'general'
+        else:
+            format_set_iss = 'null'
+
+        ## Neighs info setting
+        self.neighs_info = Neighs_Info(format_set_iss=format_set_iss,
+                                       format_structure=format_structure,
+                                       staticneighs=self.staticneighs,
+                                       ifdistance=self._ifdistance,
+                                       format_level=format_level,
+                                       type_neighs=type_neighs,
+                                       type_sp_rel_pos=type_sp_rel_pos)
+
+    def set_neighs_info(self, type_neighs, type_sp_rel_pos):
+        """Utility function in order to reset neighs_info types."""
+        self.neighs_info.set_types(type_neighs, type_sp_rel_pos)
+
+    def _format_exclude(self, bool_input_idx):
+        """Format the excluding auto elements."""
+        ## Inputs
+        if bool_input_idx is True:
+            self._build_excluded_elements =\
+                self._indices_build_excluded_elements
+        elif bool_input_idx is False:
+            self._build_excluded_elements = self._array_build_excluded_elements
+        else:
+            self._build_excluded_elements =\
+                self._general_build_excluded_elements
+        ## Excluding neighs_info
+        # Excluding or not
+        excluding = False if self.auto_excluded else True
+        excluding = excluding if self._autoexclude else False
+        if excluding:
+            self._exclude_auto = self._exclude_auto_general
+            if self.output_array is True:
+                self._exclude_elements = _array_autoexclude
+            elif self.output_array is False:
+                self._exclude_elements = _list_autoexclude
+            else:
+                self._exclude_elements = _general_autoexclude
+        else:
+            self._exclude_auto = self._null_exclude_auto
+
     ################################# Auxiliar ################################
     ###########################################################################
-    def _exclude_auto(self, i_loc, neighs, dists, kr=0):
+    def _exclude_auto_general(self, i_loc, neighs, dists, kr=0):
         """Exclude auto elements if there exist in the neighs retrieved.
         This is a generic function independent on the type of the element.
         """
         ## 0. Detect input i_loc and retrieve to_exclude_elements list
-        # If it is an indice
-        if type(i_loc) in [int, np.int32, np.int64]:
-            to_exclude_elements = [i_loc]
-        # If it is an element spatial information
-        else:
-            to_exclude_elements = self._build_excluded_elements(i_loc, kr)
+        to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
-        n_p = np.array(neighs).shape[0]
-        idxs_exclude = [i for i in xrange(n_p) if neighs[i]
-                        in to_exclude_elements]
-        neighs = [neighs[i] for i in xrange(n_p) if i not in idxs_exclude]
-        if dists is not None:
-            dists = [dists[i] for i in xrange(n_p) if i not in idxs_exclude]
+        neighs, dists =\
+            self._exclude_elements(to_exclude_elements, neighs, dists)
+        print 'point of shit debug', neighs, dists, self._exclude_elements
         return neighs, dists
 
-    def _build_excluded_elements(self, i_loc, kr=0):
-        """Build the excluded points from i_loc if it is not an index."""
-        if type(i_loc) == np.ndarray:
-            sh = i_loc.shape
-            i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
-        try:
-            logi = np.all(self.retriever[kr].data == i_loc, axis=1).ravel()
-        except:
+    def _null_exclude_auto(self, i_loc, neighs, dists, kr=0):
+        return neighs, dists
+
+    ############################# Exclude managing ############################
+    ###########################################################################
+    ## Collapse to _build_excluded_elements in _format_exclude
+    # Returns
+    # -------
+    # to_exclude_elements: list of list of ints
+    #     the indices of the exclude elements.
+    #
+    def _general_build_excluded_elements(self, i_loc, kr=0):
+        """Build the excluded points from i_loc if it is not an index.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        """
+        # If it is an indice
+        if type(i_loc) in [int, np.int32, np.int64, list]:
+            to_exclude_elements =\
+                self._indices_build_excluded_elements(i_loc, kr)
+        # If it is an element spatial information
+        else:
+            to_exclude_elements =\
+                self._array_build_excluded_elements(i_loc, kr)
+        return to_exclude_elements
+
+    def _indices_build_excluded_elements(self, i_loc, kr=0):
+        """
+        Parameters
+        ----------
+        i_loc: list of ints or int
+            the locations we want to retrieve their neighbourhood.
+        """
+        # If it is an indice
+        if type(i_loc) in [int, np.int32, np.int64]:
+            to_exclude_elements = self._int_build_excluded_elements(i_loc, kr)
+        elif type(i_loc) == list:
+            to_exclude_elements = self._list_build_excluded_elements(i_loc, kr)
+        return to_exclude_elements
+
+    def _array_build_excluded_elements(self, i_loc, kr=0):
+        """
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        """
+        ## 0. Preparing input
+        sh = i_loc.shape
+        i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
+        ## 1. Building indices to exclude
+        to_exclude_elements = []
+        for i in range(len(i_loc)):
+            # Getting indices from the pool of elements
             try:
-                logi = np.all(self.retriever[kr].data == i_loc)
+                logi = np.all(self.retriever[kr].data == i_loc[i], axis=1)
             except:
-                n = len(self.retriever[kr].data)
-                logi = np.array([self.retriever[kr].data[i] == i_loc
-                                 for i in xrange(n)])
-        assert len(logi) == len(self.retriever[kr].data)
-        to_exclude_points = np.where(logi)[0]
-        return to_exclude_points
+                try:
+                    logi = np.all(self.retriever[kr].data == i_loc[i])
+                except:
+                    n = len(self.retriever[kr].data)
+                    logi = np.array([self.retriever[kr].data[j] == i_loc[i]
+                                     for j in xrange(n)])
+            # Transforming into indices and adding to the collection
+            logi = np.where(logi.ravel())[0]
+            if len(logi) > 0:
+                to_exclude_elements.append(list(logi))
+            else:
+                to_exclude_elements.append([])
+        return to_exclude_elements
+
+    def _list_build_excluded_elements(self, i_loc, kr=0):
+        to_exclude_elements = [[i_loc[i]] for i in range(len(i_loc))]
+        return to_exclude_elements
+
+    def _int_build_excluded_elements(self, i_loc, kr=0):
+        to_exclude_elements = [[i_loc]]
+        return to_exclude_elements
 
     ############################# InfoRet managing ############################
     ###########################################################################
@@ -365,7 +531,7 @@ class Retriever:
             else:
                 if self._info_f is None:
                     return {}
-                if type(self._info_f).__name__ == 'name':
+                if type(self._info_f).__name__ == 'function':
                     info_i = self._info_f(i_loc, info_i)
                 else:
                     raise TypeError("self._info_f not defined properly.")
@@ -391,20 +557,19 @@ class Retriever:
         i_loc = self.get_indice_i(loc_i, kr)
         return i_loc
 
-    def _format_get_loc_i(self):
+    def _format_get_loc_i(self, bool_input_idx):
         """Format the get indice function."""
-        if self._constant_ret:
-            try:
-                self._get_loc_from_idx_virtual(0, 0)
-                self.get_loc_i = self._get_loc_from_idx_virtual
-            except:
-                self.get_loc_i = self._get_loc_from_idx
+        if self._virtual_data:
+            self.get_loc_i = self._get_loc_from_idx_virtual
         else:
-            self.get_loc_i = self._get_loc_i_general
+            if bool_input_idx:
+                self.get_loc_i = self._get_loc_from_idx
+            else:
+                self.get_loc_i = self._get_loc_i_general
 
     def _get_loc_from_idx_virtual(self, i_loc, kr=0):
         """Get location from indice in virtual data retriever."""
-        loc = self.retriever[kr].get_location(i_loc)
+        loc = self.retriever[kr].get_locations(i_loc)
         return loc
 
     def _get_loc_from_idx(self, i_loc, kr=0):
@@ -516,13 +681,32 @@ class Retriever:
         """Not relative pos available."""
         return neighs_info
 
+    def _apply_relative_pos_complete(self, res, point_i):
+        loc_neighs = []
+        for i in range(len(res[0])):
+            loc_neighs_i = self._get_loc_from_idx(res[0][i])
+            loc_neighs.append(loc_neighs_i)
+        res = self._apply_relative_pos(res, point_i, loc_neighs)
+        return res
+
+    def _apply_relative_pos_null(self, res, point_i):
+        return res
+
+    def _apply_preprocess_relative_pos_dim(self, res):
+        for i in range(len(res)):
+            res[i] = res[i].reshape((len(res[i]), 1))
+        return res
+
+    def _apply_preprocess_relative_pos_null(self, res):
+        return res
+
     ###########################################################################
     ########################### Auxiliary functions ###########################
     ###########################################################################
     def __getitem__(self, i):
         "Perform the map assignation of the neighbourhood."
-        neighs, dists = self.retrieve_neighs(i)
-        return neighs, dists
+        neighs_info = self.retrieve_neighs(i)
+        return neighs_info
 
     def __len__(self):
         return self._n0
@@ -571,32 +755,41 @@ class Retriever:
 
     def compute_neighnet(self):
         """Compute the relations neighbours and build a network or multiplex
-        with the defined retriever class"""
+        with the defined retriever class.
+
+        TODO
+        ----
+        * Check only 1dim rel_pos
+        * Extend to k != 0
+        """
         ## 0. Conditions to ensure
         if self._heterogenous_output:
             msg = "Dangerous action. Heterogenous output."
             msg += "Only will be considered the 0 output_map"
             warnings.warn(msg)
-        ## 00. Define global variables
-        neighs, dists = self[0]
-        try:
-            n_data = np.array(dists).shape[1]
-        except:
-            n_data = 1
+        ## 00. Define global variables (TODO: Definition a priori)
+#        n_data = self._ndim_rel_pos
+#        neighs, dists = self[0]
+#        try:
+#            n_data = np.array(dists).shape[1]
+#        except:
+#            n_data = 1
+        n_data = len(self.neighs_info.ks)
         sh = (self._n0, self._n1)
         ## 1. Computation
         iss, jss = [], []
         data = [[] for i in range(n_data)]
         for i in xrange(self._n0):
-            neighs, dists = self[i]
+            neighs_info = self[i]
+            neighs, ks, iss_nei, rel_pos = neighs_info.get_information(0)
             #dists = np.array(dists).reshape((len(dists), n_data))
-            n_i = len(neighs)
+            n_i = len(neighs[0])
             if n_i != 0:
-                iss_i, jss_i = [i]*n_i, list(neighs)
+                iss_i, jss_i = [i]*n_i, list(neighs[0])
                 iss.append(iss_i)
                 jss.append(jss_i)
                 for k in range(n_data):
-                    data[k] += dists
+                    data[k] += list(dists[0])
         ## 2. Format output
         iss, jss = np.hstack(iss), np.hstack(jss)
         data = [np.hstack(data[k]) for k in range(n_data)]
