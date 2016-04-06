@@ -163,25 +163,29 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
     store: str
         how we want to store the relations.
 
+    Assumptions
+    -----------
+    k=0, iss=0
+
     """
     symmetric = True
+    iss_i, ki = 0, 0
 
     regs = discretizor.discretize(locs)
     u_regs = np.unique(regs)
     n_regs = len(u_regs)
     _data = u_regs.reshape((len(u_regs), 1))
-
     dts, iss, jss = [], [], []
     for i in xrange(len(u_regs)):
         locs_i = locs[regs == u_regs[i]]
-        neighs_i, _ = regretriever.retrieve_neighs(u_regs[i])
-        for j in range(len(neighs_i)):
-            locs_j = locs[regs == neighs_i[j]]
-            dists_j = np.where(neighs_i[j] == u_regs)[0]
-            if len(locs_j):
-                dts.append(cdist(locs_i, locs_j).mean())
-                iss.append(i)
-                jss.append(dists_j[0])
+        neighs_info = regretriever.retrieve_neighs(u_regs[i])
+        neighs_i = neighs_info.get_neighs([0])
+        for j in range(len(neighs_i[iss_i][ki])):
+            locs_j = locs[regs == neighs_i[iss_i][ki][j]]
+            dists_j = cdist(locs_i, locs_j).mean()
+            dts.append(dists_j)
+            iss.append(u_regs[i])
+            jss.append(neighs_i[iss_i][ki][j])
     dts, iss, jss = np.hstack(dts), np.hstack(iss), np.hstack(jss)
     iss, jss = iss.astype(int), jss.astype(int)
     relations = coo_matrix((dts, (iss, jss)), shape=(n_regs, n_regs))

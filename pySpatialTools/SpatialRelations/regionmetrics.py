@@ -33,9 +33,28 @@ class RegionDistances:
     _input = 'indices'  # indices, elements_id
 
     def __init__(self, relations=None, distanceorweighs=True, symmetric=True,
-                 input_='indices', output='indices', _data=None, data_in=None):
+                 input_='indices', output='indices', _data=None, data_in=None,
+                 input_type=None):
         ## Relations management
         self.relations = relations
+        self._format_relations(relations, _data)
+        self._format_data_input(relations, data_in)
+        self._format_retrieve_interactors()
+        self._format_retrieve_filters(input_type)
+        ## Type of values
+        self._distanceorweighs = distanceorweighs
+        if not distanceorweighs:
+            self._null_value = 0.
+            self._inv_null_value = np.inf
+        self._symmetric = symmetric
+        ## IO parameters
+        self._input = input_
+        self._out = output
+
+    ################################ Formatters ###############################
+    ###########################################################################
+    def _format_relations(self, relations, _data):
+        """Format main stored object relations."""
         if relations is not None:
             # Store associated data
             if issparse(relations):
@@ -71,6 +90,9 @@ class RegionDistances:
                 self._store = 'network'
             elif issparse(relations):
                 self._store = 'sparse'
+
+    def _format_data_input(self, relations, data_in):
+        """Format data input."""
         if self._store != 'network':
             if data_in is None:
                 data_in = np.arange(relations.shape[0])
@@ -85,34 +107,59 @@ class RegionDistances:
                 elif len(data_in.shape) not in [1, 2]:
                     raise TypeError("Not correct shape of data input.")
 
-        ## Type of values
-        self._distanceorweighs = distanceorweighs
-        if not distanceorweighs:
-            self._null_value = 0.
-            self._inv_null_value = np.inf
-        self._symmetric = symmetric
-        ## IO parameters
-        self._input = input_
-        self._out = output
+    def _format_retrieve_interactors(self):
+        """Format main functions of retrieving."""
+        ## Format interactor functions with stored data
+        if self._store == 'matrix':
+            self.retrieve_neighs_spec = self._matrix_retrieve_neighs
+        elif self._store == 'network':
+            self.retrieve_neighs_spec = self._netx_retrieve_neighs
+        elif self._store == 'sparse':
+            self.retrieve_neighs_spec = self._sparse_retrieve_neighs
 
+    def _format_retrieve_filters(self, input_type):
+        """Format main functions of inputs."""
+        ## Format inputters
+        if input_type is None:
+            self.filter_reg = self._general_filter_reg
+        elif input_type == 'general':
+            self.filter_reg = self._general_filter_reg
+        elif input_type in ['int', 'integer']:
+            self.filter_reg = self._int_filter_reg
+        elif input_type == 'array':
+            self.filter_reg = self._array_general_filter_reg
+        elif input_type == 'array1':
+            self.filter_reg = self._array1_filter_reg
+        elif input_type == 'array2':
+            self.filter_reg = self._array2_filter_reg
+        elif input_type == 'list':
+            self.filter_reg = self._list_filter_reg
+        elif input_type == 'list_int':
+            self.filter_reg = self._list_int_filter_reg
+        elif input_type == 'list_array':
+            self.filter_reg = self._list_array_filter_reg
+
+    ################################## Getters ################################
+    ###########################################################################
     def __getitem__(self, i):
-        if type(i) == list:
-            neighs, dists = [], []
-            for j in i:
-                aux = self[j]
-                neighs.append(aux[0])
-                dists.append(aux[0])
-        if type(i) == int:
+        if type(i) in [list, np.ndarray]:
+            neighs, dists = self.retrieve_neighs(i)
+#            neighs, dists = [], []
+#            for j in i:
+#                aux = self[j]
+#                neighs.append(aux[0])
+#                dists.append(aux[0])
+#        if type(i) == np.ndarray:
+#            neighs, dists = self.retrieve_neighs(i)
+        elif type(i) == int:
             if self.shape[0] <= i or i < 0:
                 raise IndexError('Index i out of bounds.')
             neighs, dists = self.retrieve_neighs(i)
-        if type(i) == np.ndarray:
-            neighs, dists = self.retrieve_neighs(i)
-        if isinstance(i, slice):
+        elif isinstance(i, slice):
             start, stop, step = i.start, i.stop, i.step
             step = 1 if step is None else step
             neighs, dists = self[list(range(start, stop, step))]
-        if type(i) not in [int, list, slice, np.ndarray]:
+        else:
             raise TypeError("Not correct index")
         return neighs, dists
 
@@ -136,59 +183,143 @@ class RegionDistances:
         Errors when there is not in the data list.
         """
         ## 0. Format input
-        if type(reg) == list:
-            if len(reg) == 1:
-                reg = reg[0]
-                if reg not in self._data[:, 0]:
-                    neighs = np.array([])
-                    dists = np.array([])
-                    return neighs, dists
-            else:
-                print reg, len(reg)
-                raise TypeError("Not correct input.")
-        elif type(reg) == np.ndarray:
-            if len(reg.shape) == 1 and reg.shape[0] == 1:
-                reg = int(reg[0])
-            else:
-                reg = int(reg)
-            if type(reg) == int:
-                if reg not in self._data[:, 0]:
-                    neighs = np.array([])
-                    dists = np.array([])
-                    return neighs, dists
-            else:
-#                print(reg, reg.shape)
-                raise Exception("Not correct input.")
-        elif type(reg) == int:
-            reg = self._data[reg, 0]
+        reg = self.filter_reg(reg)
         ## 1. Perform the retrieve
-        if self.relations is not None:
-            if self._store == 'matrix':
-                logi = self.relations[self._data == reg, :] != self.null_value
-                logi = logi[:, 0]
-                if self._out == 'elements_id':
-                    neighs = self._data[logi, 0]
-                else:
-                    neighs = np.where(logi)[0]
-                dists = self.relations[self._data[:, 0] == reg, logi]
-            elif self._store == 'sparse':
-                i_reg = np.where(self._data[:, 0] == reg)[0][0]
-                idxs = self.relations.getrow(i_reg).nonzero()[1]
-                if self._symmetric:
-                    idxs2 = self.relations.getcol(i_reg).nonzero()[0]
-                    idxs = np.unique(np.hstack([idxs, idxs2]))
-                dists = [self.relations.getrow(i_reg).getcol(i).A[0, 0]
-                         for i in idxs]
-                if self._out == 'elements_id':
-                    neighs = self._data[idxs, 0]
-                else:
-                    neighs = idxs
-            elif self._store == 'network':
-                neighs = self.relations.neighbors(reg)
-                dists = [self.relations[reg][nei]['weight'] for nei in neighs]
+        neighs, dists = self.retrieve_neighs_spec(reg)
+        print dists, reg
+        assert(all([len(e.shape) == 2 for e in dists]))
+        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+        return neighs, dists
+
+    ######################## Input filtering candidates #######################
+    ###########################################################################
+    ## Specific for each possible input for retrieve
+    def _general_filter_reg(self, reg):
+        ## 0. Format input
+        if type(reg) == list:
+            reg = self._list_filter_reg(reg)
+        elif type(reg) == np.ndarray:
+            reg = self._array_general_filter_reg(reg)
+        elif type(reg) == int:
+            reg = self._int_filter_reg(reg)
+        return reg
+
+    def _int_filter_reg(self, reg):
+        reg = self._data[reg].ravel()
+        return reg
+
+    def _array2_filter_reg(self, reg):
+        return reg.astype(int).ravel()
+
+    def _array1_filter_reg(self, reg):
+        return reg.astype(int)
+
+    def _array_general_filter_reg(self, reg):
+        if len(reg.shape) == 1 and reg.shape[0] == 1:
+            reg = self._array1_filter_reg(reg)
         else:
-            neighs, dists = self.get_relations_spec(reg)
-        neighs, dists = np.array(neighs).ravel(), np.array(dists)
+            reg = self._array2_filter_reg(reg)
+        return reg
+
+    def _list_filter_reg(self, reg):
+        if all([type(r) in [int, np.int32, np.int64] for r in reg]):
+            reg = self._list_int_filter_reg(reg)
+        elif all([type(r) == np.ndarray for r in reg]):
+            reg = self._list_array_filter_reg(reg)
+        else:
+            raise TypeError("Incorrect input.")
+        return reg
+
+    def _list_array_filter_reg(self, reg):
+        new_reg = []
+        for i in range(len(reg)):
+            new_reg.append(self._array_general_filter_reg(reg[i]))
+        return new_reg
+
+    def _list_int_filter_reg(self, reg):
+        new_reg = []
+        for i in range(len(reg)):
+            new_reg.append(self._int_filter_reg(reg[i]))
+        return new_reg
+
+    ##################### Interactors relations candidates ####################
+    ###########################################################################
+    ## Specific for each possible stored type of data
+    ## Output neighs, dists: list of arrays [iss_i][neighs_i]
+    def _matrix_retrieve_neighs(self, regs):
+        neighs, dists = [], []
+        for reg in regs:
+            ## Check if it is in the data
+            if reg not in self._data[:, 0]:
+                neighs.append(np.array([]))
+                dists.append(np.array([[]]))
+                continue
+            logi = self.relations[self._data == reg, :] != self.null_value
+            logi = logi[:, 0]
+            if self._out == 'elements_id':
+                neighs_r = self._data[logi, 0]
+            else:
+                neighs_r = np.where(logi)[0]
+            dists_r = self.relations[self._data[:, 0] == reg, logi]
+            ## Storing final result
+            neighs.append(np.array(neighs_r))
+            dists.append(np.array([dists_r]).T)
+        print dists, regs, logi
+        assert(all([len(e.shape) == 2 for e in dists]))
+        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+        return neighs, dists
+
+    def _sparse_retrieve_neighs(self, regs):
+        neighs, dists = [], []
+        for reg in regs:
+            ## Check if it is in the data
+            if reg not in self._data[:, 0]:
+                neighs.append(np.array([]))
+                dists.append(np.array([[]]).T)
+                continue
+            i_reg = np.where(self._data[:, 0] == reg)[0][0]
+            idxs = self.relations.getrow(i_reg).nonzero()[1]
+            if self._symmetric:
+                idxs2 = self.relations.getcol(i_reg).nonzero()[0]
+                idxs = np.unique(np.hstack([idxs, idxs2]))
+            dists_r = [self.relations.getrow(i_reg).getcol(i).A[0, 0]
+                       for i in idxs]
+            if self._out == 'elements_id':
+                neighs_r = self._data[idxs, 0]
+            else:
+                neighs_r = idxs
+            ## Storing final result
+            neighs.append(np.array(neighs_r))
+            dists.append(np.array([dists_r]).T)
+        assert(all([len(e.shape) == 2 for e in dists]))
+        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+        return neighs, dists
+
+    def _netx_retrieve_neighs(self, regs):
+        neighs, dists = [], []
+        for reg in regs:
+            ## Check if it is in the data
+            if reg not in self._data[:, 0]:
+                neighs.append(np.array([]))
+                dists.append(np.array([[]]))
+                continue
+            neighs_r = self.relations.neighbors(reg)
+            dists_r = [self.relations[reg][nei]['weight'] for nei in neighs]
+            ## Storing final result
+            neighs.append(np.array(neighs_r))
+            dists.append(np.array([dists_r]).T)
+        print dists
+        assert(all([len(e.shape) == 2 for e in dists]))
+        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+        return neighs, dists
+
+    def _general_retrieve_neighs(self, reg):
+        if self._store == 'matrix':
+            neighs, dists = self._matrix_retrieve_neighs(reg)
+        elif self._store == 'sparse':
+            neighs, dists = self._sparse_retrieve_neighs(reg)
+        elif self._store == 'network':
+            neighs, dists = self._netx_retrieve_neighs(reg)
         return neighs, dists
 
     ############################# Transformation ##############################
@@ -222,7 +353,7 @@ class RegionDistances:
 class DummyRegDistance(RegionDistances):
     """Dummy abstract region distance."""
 
-    def __init__(self, regs):
+    def __init__(self, regs, input_type=None):
         if type(regs) not in [np.ndarray, list]:
             raise TypeError("Incorrect ids of elements.")
         if type(regs) == list:
@@ -232,25 +363,20 @@ class DummyRegDistance(RegionDistances):
         if len(regs.shape) == 1:
             regs = regs.reshape((len(regs), 1))
         self._data = regs
+        self._format_retrieve_filters(input_type)
 
     def __getitem__(self, i):
-        if type(i) == list:
-            neighs, dists = [], []
-            for j in i:
-                aux = self[j]
-                neighs.append(aux[0])
-                dists.append(aux[0])
-        if type(i) == int:
+        if type(i) in [list, np.ndarray]:
+            neighs, dists = self.retrieve_neighs(i)
+        elif type(i) == int:
             if self.shape[0] <= i or i < 0:
                 raise IndexError('Index i out of bounds.')
             neighs, dists = self.retrieve_neighs(i)
-        if type(i) == np.ndarray:
-            neighs, dists = self.retrieve_neighs(i)
-        if isinstance(i, slice):
+        elif isinstance(i, slice):
             start, stop, step = i.start, i.stop, i.step
             step = 1 if step is None else step
             neighs, dists = self[list(range(start, stop, step))]
-        if type(i) not in [int, list, slice, np.ndarray]:
+        else:
             raise TypeError("Not correct index")
         return neighs, dists
 
@@ -274,33 +400,8 @@ class DummyRegDistance(RegionDistances):
         Errors when there is not in the data list.
         """
         ## 0. Format input
-        if type(reg) == list:
-            if len(reg) == 1:
-                reg = reg[0]
-                if reg not in self._data[:, 0]:
-                    neighs = np.array([])
-                    dists = np.array([])
-                    return neighs, dists
-            else:
-                print reg, len(reg)
-                raise TypeError("Not correct input.")
-        elif type(reg) == np.ndarray:
-            if len(reg.shape) == 1 and reg.shape[0] == 1:
-                reg = int(reg[0])
-            else:
-                reg = int(reg)
-            if type(reg) == int:
-                if reg not in self._data[:, 0]:
-                    neighs = np.array([])
-                    dists = np.array([])
-                    return neighs, dists
-            else:
-                print reg, reg.shape
-                raise Exception("Not correct input.")
-        elif type(reg) == int:
-            reg = self._data[reg, 0]
+        reg = self.filter_reg(reg)
         ## 1. Perform the retrieve
-        neighs = [reg]
-        dists = [1.]
-        neighs, dists = np.array(neighs).ravel(), np.array(dists)
+        neighs = list(np.array(reg).reshape((len(reg), 1)))
+        dists = np.array([[1.]*len(neighs)]).T
         return neighs, dists
