@@ -17,7 +17,8 @@ from ..descriptormodel import DescriptorModel
 ## Specific functions
 from ..aux_descriptormodels import\
     characterizer_1sh_counter, sum_reducer, counter_featurenames,\
-    aggregator_1sh_counter, sum_addresult_function, count_out_formatter
+    aggregator_1sh_counter, sum_addresult_function, null_out_formatter,\
+    count_out_formatter_general, count_out_formatter_dict2array
 
 
 class PjensenDescriptor(DescriptorModel):
@@ -31,9 +32,9 @@ class PjensenDescriptor(DescriptorModel):
     def __init__(self):
         "The inputs are the needed to compute model_dim."
         ## Initial function set
-        self._out_formatter = count_out_formatter
         self._f_default_names = counter_featurenames
         self._defult_add2result = sum_addresult_function
+        self._format_default_functions()
 
     ###########################################################################
     ####################### Compulsary main functions #########################
@@ -51,7 +52,12 @@ class PjensenDescriptor(DescriptorModel):
         information of the individual descriptor of point to its neighbourhood
         descriptor.
         """
-        descriptors = compute_loc_M_index(vals_i, desc_neigh, self.globals_)
+        print i, neighs_info, desc_i, desc_neigh, vals_i
+        descriptors = []
+        for iss_i in range(len(desc_neigh)):
+            descriptors.append(compute_loc_M_index(vals_i, desc_neigh[iss_i],
+                               self.globals_))
+        descriptors = np.array(descriptors)
         return descriptors
 
     def reducer(self, aggdescriptors_idxs, point_aggpos):
@@ -91,6 +97,18 @@ class PjensenDescriptor(DescriptorModel):
         n = len(features)
         self.globals_ =\
             counts, n_vals, global_constants_jensen(n_vals, n, counts)
+
+    def _format_default_functions(self):
+        """Format default mutable functions."""
+        self._out_formatter = count_out_formatter_general
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        """Set specific functions knowing a constant input and output desired.
+        """
+        if type_outfeatures == 'dict':
+            self._out_formatter = null_out_formatter
+        else:
+            self._out_formatter = count_out_formatter_dict2array
 
 
 ###############################################################################

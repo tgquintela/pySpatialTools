@@ -10,8 +10,8 @@ Counting values in a sparse way.
 from count_descriptor import Countdescriptor
 
 ## Specific functions
-from ..aux_descriptormodels import replacelist_addresult_function,\
-    count_out_formatter, sparse_dict_completer, counter_featurenames
+from ..aux_descriptormodels import append_addresult_function,\
+    count_out_formatter_general, sparse_dict_completer, counter_featurenames
 
 
 class SparseCounter(Countdescriptor):
@@ -25,9 +25,9 @@ class SparseCounter(Countdescriptor):
     def __init__(self):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
-        self._out_formatter = count_out_formatter
+        self._out_formatter = count_out_formatter_general
         self._f_default_names = counter_featurenames
-        self._defult_add2result = replacelist_addresult_function
+        self._defult_add2result = append_addresult_function
         ## Check descriptormodel
         self._checker_descriptormodel()
 

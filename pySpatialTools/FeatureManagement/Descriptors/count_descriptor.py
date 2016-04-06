@@ -14,7 +14,8 @@ from ..descriptormodel import DescriptorModel
 from ..aux_descriptormodels import\
     characterizer_1sh_counter, sum_reducer, null_completer,\
     aggregator_1sh_counter, sum_addresult_function, counter_featurenames,\
-    count_out_formatter
+    count_out_formatter_general, null_out_formatter,\
+    count_out_formatter_dict2array
 
 
 class Countdescriptor(DescriptorModel):
@@ -28,7 +29,6 @@ class Countdescriptor(DescriptorModel):
     def __init__(self):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
-        self._out_formatter = count_out_formatter
         self._f_default_names = counter_featurenames
         self._defult_add2result = sum_addresult_function
         ## Check descriptormodel
@@ -71,6 +71,17 @@ class Countdescriptor(DescriptorModel):
     ###########################################################################
     ########################## Auxiliary functions ############################
     ###########################################################################
+    def _format_default_functions(self):
+        """Format default mutable functions."""
+        self._out_formatter = count_out_formatter_general
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        """Set specific functions knowing a constant input and output desired.
+        """
+        if type_outfeatures == 'dict':
+            self._out_formatter = null_out_formatter
+        else:
+            self._out_formatter = count_out_formatter_dict2array
 
     ###########################################################################
     ######################### Compulsary formatters ###########################
