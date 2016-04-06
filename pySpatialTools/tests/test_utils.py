@@ -430,6 +430,8 @@ def test():
         neighs_info._get_neighs_general()
         neighs_info._general_get_rel_pos()
         neighs_info.reset_functions()
+        if p[6] == 'slice':
+            neighs_info._get_neighs_general()
 
         k += 1
 #        print '-'*20, k
@@ -438,10 +440,16 @@ def test():
     neighs_info = Neighs_Info()
     neighs_info.shape
     try:
+        neighs_info._default_get_neighs()
+        raise Exception("It has to halt here.")
+    except:
+        pass
+    try:
         neighs_info._default_get_information()
         raise Exception("It has to halt here.")
     except:
         pass
+
     neighs_info._format_set_iss('int')
     neighs_info._format_set_iss('list')
     neighs_info = Neighs_Info()
@@ -452,6 +460,12 @@ def test():
     neighs_info.reset()
     neighs_info.set_information(10, 10)
     neighs_info.set([[0, 4]])
+    try:
+        neighs_info._integer_get_k(20)
+        raise Exception("It has to halt here.")
+    except:
+        pass
+    neighs_info._get_neighs_list_static()
     #* list of lists of integers {neighs for some iss}
     neighs_info.reset()
     neighs_info.set([[0, 4], [0, 3]])
@@ -460,9 +474,14 @@ def test():
     neighs_info.set([[[0, 4], [0, 3]]])
     neighs_info.staticneighs = False
     neighs_info._general_set_iss(True)
-    neighs_info.staticneighs = False
+    neighs_info._array_only_set_rel_pos(np.array([[2], [3]]))
+    neighs_info._set_rel_pos_general_array(np.array([[2], [3]]))
+    neighs_info._set_rel_pos_general_array(np.array([[[[2], [3]]]]))
+    neighs_info.staticneighs = True
     neighs_info._general_set_iss(True)
     neighs_info._list_list_only_set_rel_pos(np.array([[[5]]]))
+    neighs_info._set_rel_pos_general_list([[[[2], [3]]]])
+    neighs_info._general_set_rel_pos(None)
     try:
         neighs_info._general_set_rel_pos(True)
         raise Exception("It has to halt here.")

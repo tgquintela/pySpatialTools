@@ -1160,8 +1160,8 @@ class Neighs_Info:
                 neighs = self._get_neighs_list_static(k_is)
             else:
                 neighs = self._get_neighs_list_dynamic(k_is)
-        else:
-            self._default_get_neighs()
+#        else:
+#            self._default_get_neighs()
         return neighs
 
     def _get_neighs_slice(self, k_is=[0]):
