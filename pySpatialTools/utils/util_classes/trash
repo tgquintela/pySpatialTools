@@ -1,0 +1,460 @@
+
+### Neighs info 2016-03-22
+
+    def _set_neighs_list_list(self, key):
+        """
+        * [neighs_info{array-like form}, ...] [iss][neighs]
+        """
+        aux = np.array([key])
+        if np.any(aux):
+            self._constant_neighs = True
+            self.idxs = aux
+            self.iss = list(range(len(self.idxs[0])))
+            self._setted = True
+        else:
+            self._setted = False
+
+    ############# ZERO LEVEL ##
+
+    ############# FIRST LEVEL ##
+    def _set_structure_list_tuple1(self, key):
+        """
+        * [neighs_info{tuple form}, ...] neighs_info[0][iss][neighs]
+        """
+        self.ks = list(range(len(key)))
+        self.idxs = [e[0] for e in key]
+        self.set_sp_rel_pos([e[1] for e in key])
+        self.iss = list(range(len(self.idxs[0])))
+        self._setted = True
+
+    def _set_structure_tuple_only_slice(self, key):
+        """
+        * (neighs{slice}, sp_relative_pos)
+        """
+        self._set_neighs_slice(key[0])
+        if len(key) == 2:
+            self.set_sp_rel_pos(key[1])
+
+    def _set_structure_tuple_only_list(self, key):
+        """
+        * (neighs{list}, sp_relative_pos)
+        """
+        self._set_neighs_list(key[0])
+        if len(key) == 2:
+            self.set_sp_rel_pos(key[1])
+
+    def _set_structure_tuple_only_array(self, key):
+        """
+        * (neighs{array}, sp_relative_pos)
+        """
+        self._set_neighs_array(key[0])
+        if len(key) == 2:
+            self.set_sp_rel_pos(key[1])
+
+    def _set_structure_tuple_number(self, key):
+        """
+        * (indice, ks)
+        """
+        self._set_neighs_number(key[0])
+        ks = key[1] if type(key[1]) == list else [key[1]]
+        self.ks = list(np.array(ks))
+
+    def _set_structure_tuple_slice(self, key):
+        """Post-setting. It is needed the features information.
+        * (neighs{slice}, ks)
+        """
+        self.ks = list(np.array(key[1]))
+        self.idxs = self._set_neighs_slice(key[0])
+        self._setted = False
+
+    def _set_structure_tuple_tuple_number(self, key):
+        """
+        * ((indice, dists), ks)
+        """
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        self.ks = list(np.array(ks))
+        self._set_neighs_number(key[0][0])
+        if len(key[0]) == 2:
+            self.set_sp_rel_pos(key[0][1])
+
+    def _set_structure_tuple_tuple_list_only(self, key):
+        """
+        * ((neighs, dists), ks)
+        """
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        self.ks = list(np.array(ks))
+        self._set_neighs_list_only(key[0][0])
+        if len(key[0]) == 2:
+            self.set_sp_rel_pos(key[0][1])
+
+    def _set_structure_tuple_tuple_array(self, key):
+        """
+        * ((neighs, dists), ks)  -> neighs (iss, ks, neighs) or (ks, neighs)
+        """
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        self.ks = list(np.array(ks))
+        self._set_neighs_array(key[0][0])
+        if len(key[0]) == 2:
+            self.set_sp_rel_pos(key[0][1])
+
+    def _set_structure_tuple_tuple_slice(self, key):
+        """
+        * ((neighs, dists), ks)  -> neighs {slice}
+        """
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        self.ks = list(np.array(ks))
+        self._set_neighs_slice(key[0][0])
+        if len(key[0]) == 2:
+            self.set_sp_rel_pos(key[0][1])
+
+    ############# SECOND LEVEL ##
+    def _set_neighs_list(self, key):
+        """
+        * indices{list form}
+        """
+        if not '__len__' in dir(key[0]):
+            self._set_neighs_list_only(key)
+        else:
+            if not '__len__' in dir(key[0][0]):
+                self._set_neighs_list_list(key)
+            else:
+                self._set_neighs_list_list_list(key)
+
+    def _set_structure_list(self, key):
+        """
+        * indices{list form}
+        * [neighs_info_k, ...]
+        """
+        if type(key[0]) in [int, float, np.int32, np.int64, np.float]:
+            self._set_neighs_list_only(key)
+        elif type(key[0]) in [list, np.ndarray]:
+            self._set_neighs_list(key)
+        elif type(key[0]) == tuple:
+            self._set_list_tuple(key)
+
+    def _set_structure_list_tuple(self, key):
+        """
+        * [neighs_info{tuple form}, ...]
+        """
+        if len(key[0]) == 1:
+            self._set_neighs_list_tuple1(key)
+        elif len(key[0]) == 2:
+            self._set_list_tuple2(key)
+
+    def _set_structure_list_tuple2(self, key):
+        """
+        * [neighs_info{tuple form}, ...]
+        """
+        self._set_neighs_list_tuple1(key)
+        self._general_set_rel_pos([e[1] for e in key])
+
+    def _set_structure_tuple_only(self, key):
+        """
+        * (neighs, sp_relative_pos)
+        """
+        if type(key[0]) == slice:
+            self._set_tuple_only_slice(key)
+        elif type(key[0]) == list:
+            self._set_tuple_only_list(key)
+        elif type(key[0]) == np.ndarray:
+            self._set_tuple_only_array(key)
+
+    def _set_structure_tuple_tuple(self, key):
+        """
+        * ((neighs,), ks)
+        * ((neighs, dists), ks)
+        """
+        if type(key[0][0]) == int:
+            self._set_tuple_tuple_int(key)
+        elif type(key[0][0]) == list:
+            self._set_tuple_tuple_list_only(key)
+        elif type(key[0][0]) == np.ndarray:
+            self._set_tuple_tuple_array(key)
+        elif type(key[0][0]) == slice:
+            self._set_tuple_tuple_slice(key)
+
+    def _set_structure_tuple_others(self, key):
+        """
+        * (neighs{np.ndarray}, ks)
+        * (neighs{list}, ks)
+        * (neighs{np.ndarray}, sp_relative_pos)
+        * (neighs{list}, sp_relative_pos)
+        """
+        ## 0. Setting neighs
+        if type(key[0]) == list:
+            self._set_neighs_list_only(key[0])
+        elif type(key[0]) == np.ndarray:
+            self._set_neighs_array(key[0])
+        ## 1. Inferring and setting second input
+        if type(key[1]) == int:
+            self.ks = list(np.array([key[1]]))
+        else:
+            # Know if key[1] is sp_relative_pos or ks
+            msg = "Ambiguous input in `set` function of pst.Neighs_Info."
+            warnings.warn(msg, SyntaxWarning)
+            bool_k = self.shape[2] == len(key[1])
+            # Equal length of idxs
+            bool_d = self.shape[1] == len(key[1])
+            if bool_d and bool_k:
+                msg = "Too ambiguous... Dangerous casting to integers is done"
+                msg += " in pst.Neighs_Info."
+                warnings.warn(msg, SyntaxWarning)
+                self.ks = [int(j) for j in key[1]]
+            elif bool_d and not bool_k:
+                self.set_sp_rel_pos([key[1]]*len(self.iss))
+            elif not bool_d and bool_k:
+                self.ks = list(np.array(key[1]))
+            elif not bool_d and not bool_k:
+                raise SyntaxError("Incorrect input in pst.Neighs_Info.")
+
+    ############# THIRD LEVEL ##
+    def _set_structure_tuple(self, key):
+        """Set tuple.
+        * (neighs_info, ks)
+        """
+        assert len(key) == 2
+        if type(key[0]) == tuple:
+            self._set_tuple_tuple(key)
+        elif type(key[0]) == int:
+            self._set_tuple_int(key)
+        elif type(key[0]) == slice:
+            self._set_tuple_slice(key)
+        else:
+            self._set_tuple_others(key)
+
+
+#    def _format_setters(self, format_set_info=None, format_set_iss=None):
+#        """Function to program this class according to the expected input
+#        neighs_info if it is a constant way to set it.
+#        """
+#        type_ = None
+#
+#        ## Format setting information
+#        if format_set_info is None:
+#            self._set_info = self._set_general
+#            self.set = self._general_set
+#        elif format_set_info == 'general':
+#            self._set_info = self._set_general
+#        elif format_set_info == 'number':
+#            self._set_info = self._set_neighs_number
+#            type_ = 'array'
+#        elif format_set_info == 'list':
+#            self._set_info = self._set_list
+#        elif format_set_info == 'list_only':
+#            self._set_info = self._set_list_only
+#            type_ = 'array'
+#        elif format_set_info == 'list_list':
+#            self._set_info = self._set_neighs_list_list
+#            type_ = 'list'
+#        elif format_set_info == 'list_tuple':
+#            self._set_info = self._set_list_tuple
+#        elif format_set_info == 'list_tuple1':
+#            self._set_info = self._set_neighs_list_tuple1
+#        elif format_set_info == 'list_tuple2':
+#            self._set_info = self._set_list_tuple2
+#        elif format_set_info == 'array':
+#            self._set_info = self._set_neighs_array
+#            type_ = 'array'
+#        elif format_set_info == 'slice':
+#            self._set_info = self._set_neighs_slice
+#            type_ = 'slice'
+#        elif format_set_info == 'tuple':
+#            self._set_info = self._set_tuple
+#        elif format_set_info == 'tuple_int':
+#            self._set_info = self._set_tuple_int
+#            type_ = 'array'
+#        elif format_set_info == 'tuple_slice':
+#            self._set_info = self._set_tuple_slice
+#            type_ = 'slice'
+#        elif format_set_info == 'tuple_tuple':
+#            self._set_info = self._set_tuple_tuple
+#        elif format_set_info == 'tuple_only':
+#            self._set_info = self._set_tuple_only
+#        elif format_set_info == 'tuple_tuple_int':
+#            self._set_info = self._set_tuple_tuple_int
+#            type_ = 'array'
+#        elif format_set_info == 'tuple_tuple_slice':
+#            self._set_info = self._set_tuple_tuple_slice
+#            type_ = 'slice'
+#        elif format_set_info == 'tuple_tuple_array':
+#            self._set_info = self._set_tuple_tuple_array
+#            type_ = 'array'
+#        elif format_set_info == 'tuple_tuple_list_only':
+#            self._set_info = self._set_tuple_tuple_list_only
+#            type_ = 'array'
+#        elif format_set_info == 'tuple_others':
+#            self._set_info = self._set_tuple_others
+#
+#        ## Definition of get_neighs
+#        if type_ == 'slice':
+#            self.get_neighs = self._get_neighs_slice
+#            self.ks = list(range(self._kret+1))
+#            self.set = self._preset
+#        elif type_ == 'array':
+#            self.set = self._preset
+#            if self.staticneighs is None:
+#                self.get_neighs = self._general_get_neighs_array
+#            elif self.staticneighs:
+#                self.get_neighs = self._get_neighs_array_static
+#            else:
+#                self.get_neighs = self._get_neighs_array_dynamic
+#        elif type_ == 'list':
+#            self.set = self._preset
+#            if self.staticneighs is None:
+#                self.get_neighs = self._general_get_neighs_list
+#            elif self.staticneighs:
+#                self.get_neighs = self._get_neighs_list_static
+#            else:
+#                self.get_neighs = self._get_neighs_list_dynamic
+#        else:
+#            self.set = self._general_set
+#            self.get_neighs = self._get_neighs_general
+#
+#        ## Format iss
+#        if format_set_iss is None:
+#            self._set_iss = self._general_set_iss
+#        elif format_set_iss == 'general':
+#            self._set_iss = self._general_set_iss
+#        elif format_set_iss == 'null':
+#            self._set_iss = self._null_set_iss
+#        elif format_set_iss == 'int':
+#            self._set_iss = self._int_set_iss
+#        elif format_set_iss == 'list':
+#            self._set_iss = self._list_set_iss
+#
+#    def _format_sp_rel_pos(self, format_set_rel_pos):
+#        ## Format sp_rel_pos
+#        if self.staticneighs is None or not self.ifdistance:
+#            self.get_sp_rel_pos = self._general_get_rel_pos
+#            self.set_sp_rel_pos = self._general_set_rel_pos
+#        elif self.staticneighs is True:
+#            if self._constant_neighs is True:
+#                self.get_sp_rel_pos = self._static_rel_pos_array
+#            else:
+#                self.get_sp_rel_pos = self._static_rel_pos_list
+#        else:
+#            if self._constant_neighs is True:
+#                self.get_sp_rel_pos = self._dynamic_rel_pos_array
+#            else:
+#                self.get_sp_rel_pos = self._dynamic_rel_pos_list
+#
+#        if format_set_rel_pos is None:
+#            self.get_sp_rel_pos = self._general_get_rel_pos
+#            self.set_sp_rel_pos = self._general_set_rel_pos
+#        elif format_set_rel_pos == 'general':
+#            self.get_sp_rel_pos = self._general_get_rel_pos
+#            self.set_sp_rel_pos = self._general_set_rel_pos
+#        elif format_set_rel_pos == 'null':
+#            self.set_sp_rel_pos = self._null_set_rel_pos
+#            self.get_sp_rel_pos = self._null_get_rel_pos
+#        elif format_set_rel_pos == 'number':
+#            self.set_sp_rel_pos = self._number_set_rel_pos
+#            self.get_sp_rel_pos = self._constant_rel_pos
+#        else:
+#            # Getters
+#            if self.staticneighs is True:
+#                self.get_sp_rel_pos = self._static_rel_pos
+#            else:
+#                self.get_sp_rel_pos = self._dynamic_rel_pos
+#            # Setters
+#            if format_set_rel_pos == 'list_only':
+#                self.set_sp_rel_pos = self._list_only_set_rel_pos
+#            elif format_set_rel_pos == 'list_list_only':
+#                self.set_sp_rel_pos = self._list_list_only_set_rel_pos
+#            elif format_set_rel_pos == 'list_list':
+#                self.set_sp_rel_pos = self._list_list_set_rel_pos
+#        # Always regardless of the input format
+#        if self.staticneighs is None or not self.ifdistance:
+#            self.get_sp_rel_pos = self._general_get_rel_pos
+#            self.set_sp_rel_pos = self._general_set_rel_pos
+
+#    def _set_neighs_list_list_cte(self, key):
+#        """
+#        * indices {list of list form [iss][neighs]}
+#        """
+#        self.idxs = np.array([np.array([key]).T])
+#
+#        self.iss = list(range(len(self.idxs[0])))
+#        self._setted = True
+
+    def _set_rel_pos_general_array(self, sp_relative_pos):
+        """
+        * indices{np.ndarray form} shape: (neighs, dim)
+        * indices{np.ndarray form} shape: (iss, neighs, dim)
+        * indices{np.ndarray form} shape: (ks, iss, neighs, dim)
+        """
+        sh = sp_relative_pos.shape
+        ## If only array of neighs
+        if len(sh) == 1:
+            sp_relative_pos = sp_relative_pos.reshape((1, 1, 1, sh[0]))
+        elif len(sh) == 2:
+            sp_relative_pos = sp_relative_pos.reshape((1, 1, sh[0], sh[1]))
+        elif len(sh) == 3:
+            sp_relative_pos = sp_relative_pos.reshape((1, sh[0], sh[1], sh[2]))
+        self.sp_relative_pos = sp_relative_pos
+
+
+    def _set_rel_pos_general_list(self, rel_pos):
+        """
+        * None
+        * list of arrays len(iss) -> unique rel_pos for ks
+        * list of lists of arrays -> complete
+        """
+#        print '-'*200, rel_pos
+#        array_types = [list, np.ndarray]
+        if type(rel_pos) == list:
+#            print 'h'*200, rel_pos, type(rel_pos)
+#            print len(rel_pos) == 0 or '__getitem__' not in dir(rel_pos[0])
+            if len(rel_pos) == 0:
+                self._list_only_set_rel_pos(rel_pos)
+            elif type(rel_pos[0]) not in [list, np.ndarray]:
+                print rel_pos, type(rel_pos[0])
+                self._list_only_set_rel_pos(rel_pos)
+            else:
+#                print '__getitem__' not in dir(rel_pos[0][0])
+#                print type(rel_pos[0][0])
+                if len(rel_pos[0]) == 0:
+                    self._list_list_only_set_rel_pos(rel_pos)
+                elif type(rel_pos[0][0]) in [list, np.ndarray]:
+                    self._list_list_only_set_rel_pos(rel_pos)
+                else:
+                    self._list_list_set_rel_pos(rel_pos)
+
+#            if len(rel_pos) == 0 or '__getitem__' not in dir(rel_pos[0]):
+#                self._list_only_set_rel_pos(rel_pos)
+#            else:
+#                logi = len(rel_pos[0]) == 0
+#                print type(rel_pos[0])
+#                print logi, '__getitem__' not in dir(rel_pos[0][0])
+#                if logi or '__getitem__' not in dir(rel_pos[0][0]):
+#                    self._list_list_only_set_rel_pos(rel_pos)
+#                else:
+#                    self._list_list_set_rel_pos(rel_pos)
+#            print self.sp_relative_pos, rel_pos
+            if self.ks is not None:
+                assert(len(self.sp_relative_pos) == len(self.ks))
+        elif type(rel_pos) in [float, int, np.float, np.int32, np.int64]:
+            self._number_set_rel_pos(rel_pos)
+        elif type(rel_pos) == np.ndarray:
+            self._array_set_rel_pos(rel_pos)
+        else:
+            print rel_pos
+            raise TypeError("Incorrect relative position.")
+
+#    def _level1_set_rel_pos(self, rel_pos):
+#        """Level 1 setting."""
+#        if type(rel_pos) == np.ndarray:
+#            self._array_only_set_rel_pos(rel_pos)
+#        else:
+#            self._list_only_set_rel_pos(rel_pos)
+#
+#    def _level2_set_rel_pos(self, rel_pos):
+#        """Level 2 setting."""
+#        if type(rel_pos) == np.ndarray:
+#            self._array_array_set_rel_pos(rel_pos)
+#        else:
+#            self._list_list_only_set_rel_pos(rel_pos)
+#
+#    def _level3_set_rel_pos(self, rel_pos):
+#        """Level 3 setting."""
+#        self.sp_relative_pos = rel_pos

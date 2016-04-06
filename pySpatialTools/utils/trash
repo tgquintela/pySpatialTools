@@ -1,4 +1,60 @@
 
+
+
+#### Map vals i 2016-03-04
+
+#    def _set_rel_pos(self, key_rel_pos):
+#        """
+#        * None
+#        * np.array len(neighs) -> unique rel_pos for iss and ks
+#        * list of arrays len(iss) -> unique rel_pos for ks
+#        * list of lists of arrays -> complete
+#        """
+#        print '-'*200
+#        print key_rel_pos
+#        if key_rel_pos is None:
+#            specialkey = 1
+#        elif type(key_rel_pos) == np.ndarray:
+#            specialkey = 2
+#        elif type(key_rel_pos) == list:
+#            if len(key_rel_pos) == 0:
+#                specialkey = 3
+#            elif type(key_rel_pos[0]) == list:
+#                if len(key_rel_pos[0]) == 0:
+#                    specialkey = 4
+#                elif type(key_rel_pos[0][0]) == list:
+#                    specialkey = 5
+#                else:
+#                    specialkey = 0
+#            elif type(key_rel_pos) == np.ndarray:
+#                specialkey = 10
+#            else:
+#                specialkey = 0
+#        else:
+#            specialkey = 0
+#        assert(specialkey != 0)
+#
+#        if key_rel_pos is None:
+#            aux = [[[key_rel_pos]]*len(self.ks)]*len(self.iss)
+#            self.sp_relative_pos = aux
+#        elif type(key_rel_pos):
+#            pass
+#        elif not any(key_rel_pos):
+#            self.sp_relative_pos = None
+#        elif '__getitem__' not in dir(key_rel_pos):
+#            aux = [[[key_rel_pos]]*len(self.ks)]*len(self.iss)
+#            self.sp_relative_pos = aux
+#        elif '__getitem__' not in dir(key_rel_pos[0]):
+#            aux = [[key_rel_pos]*len(self.ks)]*len(self.iss)
+#            self.sp_relative_pos = aux
+#        elif '__getitem__' not in dir(key_rel_pos[0][0]):
+#            aux = [key_rel_pos]*len(self.ks)
+#            self.sp_relative_pos = aux
+#        else:
+#            self.sp_relative_pos = key_rel_pos
+
+
+
 #### Map vals i 2016-02-25
 
 #        if maps_vals_i is None:
