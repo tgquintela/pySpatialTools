@@ -74,6 +74,7 @@ class SpatialDescriptorModel:
             self.retrievers = RetrieverManager(retrievers)
         else:
             self.retrievers = retrievers
+        self.retrievers.set_neighs_info(True)
 
     def _format_perturbations(self, perturbations):
         """Format perturbations. TODO"""
@@ -207,10 +208,13 @@ class SpatialDescriptorModel:
         """Function used to compute the total measure.
         """
         desc = self.featurers.initialization_output()
+        print 'x'*20, desc
         for i in self.iter_indices(self):
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
+            print 'y'*25, desc_i, vals_i
             desc = self.featurers.add2result(desc, desc_i, vals_i)
+        print desc
         desc = self.featurers.to_complete_measure(desc)
         return desc
 
@@ -243,10 +247,12 @@ class SpatialDescriptorModel:
     def _compute_descriptors_seq0(self, i, typeret, typefeats):
         "Computation descriptors for non-aggregated data."
         ## Model1
+        staticneighs, _, _ = self._get_methods(i)
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
         neighs_info =\
             self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=ks)
+        assert(staticneighs == neighs_info.staticneighs)
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
         return characs, vals_i
@@ -258,6 +264,8 @@ class SpatialDescriptorModel:
         for k in range(k_pert):
             neighs_info =\
                 self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=k)
+            assert(len(neighs_info.ks) == 1)
+            assert(neighs_info.ks[0] == k)
             characs_k, vals_i_k =\
                 self.featurers.compute_descriptors(i, neighs_info,
                                                    k, typefeats)

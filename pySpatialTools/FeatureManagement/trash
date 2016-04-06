@@ -1,4 +1,405 @@
 
+######## add2result 2016-04-06
+
+def replacelist_addresult_function(x, x_i, vals_i):
+    """Replace the element in a preinitialized list.
+    * x: [ks][iss_vals]{feats}
+
+    See also:
+    ---------
+    sparse_dict_completer
+
+    """
+    ## Adding to result
+    for k in range(len(vals_i)):
+        x[k][0].append(x_i[k])
+        x[k][1].append(vals_i[k])
+    return x
+
+
+######## Completters 2016-04-06
+
+def sparse_dict_completer(measure, global_info=None):
+    """Sparse completer transform the dictionaries into a sparse matrices.
+
+    See also:
+    ---------
+    replacelist_addresult_function
+
+    """
+    ## Completing measure
+    for k in range(len(measure)):
+        data, iss, jss = [], [], []
+        vals_res = np.array(measure[k][1])
+        if len(np.unique(vals_res)) == len(vals_res):
+            for i in range(len(vals_res)):
+                jss += measure[k][0][i].keys()
+                data += measure[k][0][i].values()
+                iss += len(measure[k][0][i])*[vals_res[i]]
+        else:
+            for v in np.unique(vals_res):
+                idxs = np.where(v == vals_res)[0]
+                dicti = {}
+                print idxs
+                print measure
+                for i in idxs:
+                    keys = measure[k][0][i].keys()
+                    values = measure[k][0][i].values()
+                    for j in xrange(len(keys)):
+                        try:
+                            dicti[keys[j]] += values[j]
+                        except:
+                            dicti[keys[j]] = values[j]
+                    jss += dicti.keys()
+                    iss += len(dicti.keys())*[v]
+                    data += dicti.values()
+
+        ## Building the matrix and storing it in measure
+        shape = (int(np.max(iss))+1, int(np.max(jss))+1)
+        data, iss, jss = np.array(data), np.array(iss), np.array(jss)
+        measure[k] = coo_matrix((data, (iss, jss)), shape=shape)
+
+    return measure
+
+
+
+
+######## Out formatters 2016-03-31
+def count_out_formatter_dict2array(feats, out_features, _out, _nullvalue):
+    """Function which contains the out formatting. Has to deal with aggregated
+    and point data."""
+    feats_o = np.ones((len(feats), len(feats[0]), len(out_features)))
+    feats_o = feats_o*_nullvalue
+    for k in range(len(feats)):
+        for i in range(len(feats[k])):
+            feats_o[k, [i], :] =\
+                count_out_formatter_dict2array_ind(feats[k][i], out_features,
+                                                   _out, _nullvalue)
+    return feats_o
+
+
+def count_out_formatter_dict2array_ind(feats, out_features, _out, _nullvalue):
+    feats_o = np.ones(len(out_features))*_nullvalue
+    for e in feats:
+        feats_o[list(out_features).index(str(e))] = feats[e]
+    if len(feats_o.shape) == 1:
+        feats_o = feats_o.reshape((1, feats_o.shape[0]))
+    return feats_o
+
+
+
+######### Characterizers
+def characterizer_1sh_counter(pointfeats, point_pos):
+    """Characterizer which counts the different types of elements in the
+    neighbourhood of the element studied.
+    """
+    pointfeats_i = np.array(pointfeats[i]).astype(int).ravel()
+    sh = pointfeats.shape
+    descriptors = [[[]]*sh[2]]*sh[0]
+    for p in product(xrange(sh[0]), xrange(sh[2])):
+        descriptors[p[0]][p[1]] = dict(Counter(pointfeats_i[p[0], :, p[1]]))
+    descriptors = descriptors
+    return descriptors
+
+    def _get_characs_k_general(self, k, idxs, d):
+        """Genral interaction."""
+        if type(idxs) == list:
+            feats_k = self._get_characs_k_list(k, idxs, d)
+        elif type(idxs) == np.ndarray:
+            feats_k = self._get_characs_k_array(k, idxs, d)
+        return feats_k
+
+######### Feature Objects 2016-03-30
+
+    def __getitem__(self, key):
+        """Possible ways to get items in pst.Features classes:
+        * (i, k)
+        * (neighs, k)
+        * (neighs_info, k)
+            where neighs_info is a tuple which could contain (neighs, dists) or
+            (neighs,)
+        """
+        ## 0. Format inputs
+        if type(key) == tuple:
+            neighs_info = Neighs_Info()
+            neighs_info.set_information(self.k_perturb, len(self.features))
+            neighs_info.set(key)
+            i, d, k, _ = neighs_info.get_information()
+#            if type(key[0]) == tuple:
+#                neighs_info = Neighs_Info()
+#                neighs_info.set_information(self.k_perturb, len(self.features))
+#                neighs_info.set(key)
+#                i, d, k, _ = neighs_info.get_information()
+#            else:
+#                i, k = key
+#                d = [[[None]]*self.k_perturb+1]*len(i)
+        elif type(key) == int:
+            kn = self.k_perturb+1
+            i, k, d = np.array([[[key]*kn]]), range(kn), [[None]]*kn
+        elif type(key) == slice:
+            neighs_info = Neighs_Info()
+            neighs_info.set_information(self.k_perturb, len(self.features))
+            neighs_info.set(key)
+            i, d, k, _ = neighs_info.get_information()
+        else:
+            i, d, k, _ = key.get_information()
+        ## 1. Check indices into the bounds (WARNING)
+        if type(i) == int:
+            if i < 0 or i >= len(self.features):
+                raise IndexError("Index out of bounds.")
+            i = [i]
+        elif type(i) in [np.ndarray, list]:
+            if np.min(i) < 0 or np.max(i) >= len(self.features):
+                raise IndexError("Indices out of bounds.")
+        ## 2. Format k
+        if k is None:
+            k = list(range(self.k_perturb+1))
+        else:
+            if type(k) == int:
+                k = [k]
+            elif type(k) in [np.ndarray, list]:
+                k = list(k)
+                if np.min(k) < 0 or np.max(k) >= (self.k_perturb+1):
+                    msg = "Index of k perturbation is out of bounds."
+                    raise IndexError(msg)
+        if type(k) != list:
+            raise TypeError("Incorrect type of k perturbation index.")
+        # Retrive features
+        print i, k, d, type(i), type(k)
+        feats = self._retrieve_feats(i, k, d)
+        return feats
+
+######### Feature Objects 2016-03-09
+
+#    def _retrieve_feats_array_1level(self, idxs, c_k, d):
+#        """Retrieve and prepare output of the features.
+#
+#        Parameters
+#        ----------
+#        idxs: 3d np.ndarray
+#            Indices we want to get features.
+#        c_k: list
+#            the different ks we want to get features.
+#        d: list of list of lists or None
+#            the information of relative position we are going to use in the
+#            characterizer.
+#
+#        """
+#        feats = []
+#        for k in c_k:
+#            ## Interaction with the features stored
+#            feats_k = self._get_feats_k_array(k, idxs)
+#            ## Computing characterizers
+#            feats_k = self._characterizer(feats_k, d[k])
+#            ## Formatting result
+#            feats_k = self._format_out(feats_k)
+#            ## Adding to global result
+#            feats.append(feats_k)
+#        return feats
+
+
+######### Feature Objects 2016-03-07
+
+    def _features_null_saver(self, idxs, k_p, k_i):
+        """"""
+        if type(idxs) == slice:
+            idxs = list(range(idxs.start, idxs.stop, idxs.step))
+
+        new_indices = self._perturbators[k_p].apply2indice(idxs, k_i)
+        idxs_notnull = [i for i in range(len(new_indices))
+                        if not new_indices[i] >= len(self.features)]
+        new_idxs = [idxs[i] for i in idxs_notnull]
+        feats = self._nullvalue*np.ones((len(idxs), self.features.shape[1]))
+        return idxs_notnull, new_idxs, feats
+
+
+    def _retrieve_feats(self, idxs, c_k, d):
+        """Retrieve and prepare output of the features."""
+        ### idxs as matrix with iss and k shape (TODO)
+        #############
+        feats = []
+        for k in c_k:
+            k_p, k_i = self._map_perturb(k)
+            if k_p == 0:
+                feats_k = self.features[idxs]
+            else:
+                idxs_notnull, new_idxs, feats_k =\
+                    self._features_null_saver(idxs, k_p, k_i)
+                feats_k[idxs_notnull] =\
+                    self._perturbators[k_p].apply2features_ind(self.features,
+                                                               new_idxs, k_i)
+            feats_k = self._characterizer(feats_k, d)
+            feats_k = self._format_out(feats_k)
+            feats.append(feats_k)
+        if np.all([type(fea) == np.ndarray for fea in feats]):
+            if feats:
+                feats = np.concatenate(feats, axis=0)
+        return feats
+
+    ## TOMOVE
+#    def _get_possible_indices(self, idxs=None):
+#        if idxs is None:
+#            idxs = slice(0, len(self.features), 1)
+#        if isinstance(idxs, slice):
+#            start = 0 if idxs.start is None else idxs.start
+#            stop = len(self.features) if idxs.stop is None else idxs.stop
+#            stop = len(self.features) if idxs.stop > 10**16 else idxs.stop
+#            step = 1 if idxs.step is None else idxs.step
+#            idxs = slice(start, stop, step)
+#        return idxs
+
+#    def _get_possible_indices(self, idxs=None):
+#        if idxs is None:
+#            idxs = slice(0, len(self.features), 1)
+#        if isinstance(idxs, slice):
+#            start = 0 if idxs.start is None else idxs.start
+#            stop = len(self.features) if idxs.stop is None else idxs.stop
+#            stop = len(self.features) if idxs.stop > 10*16 else idxs.stop
+#            step = 1 if idxs.step is None else idxs.step
+#            idxs = slice(start, stop, step)
+#        return idxs
+
+
+    def __getitem__(self, key):
+        """Possible ways to get items in pst.Features classes:
+        * (i, k)
+        * (neighs, k)
+        * (neighs_info, k)
+            where neighs_info is a tuple which could contain (neighs, dists) or
+            (neighs,)
+        """
+        print key
+        ## 0. Format inputs
+        if type(key) == int:
+            i, k, d = [key], range(self.k_perturb+1), None
+        if type(key) == list:
+            i, k, d = key, range(self.k_perturb+1), None
+        if type(key) == slice:
+            i, k, d = key, range(self.k_perturb+1), None
+        if type(key) == tuple:
+            assert len(key) == 2
+            if type(key[0]) == tuple:
+                if len(key[0]) == 2:
+                    i, k, d = key[0][0], key[1], key[0][1]
+                else:
+                    i, k, d = key[0][0], key[1], None
+            else:
+                if type(key[0]) == int:
+                    i = [key[0]]
+                    k = key[1]
+                else:
+                    i = [key[0]] if type(key[0]) == int else key[0]
+                    i = list(i) if type(i) == np.ndarray else i
+                    assert type(i) in [list, slice]
+                    if type(i) == list:
+                        n_len_i = len(i)
+                    else:
+                        i = self._get_possible_indices(i)
+                        n_len_i = len(range(i.start, i.stop, i.step))
+                    msg = "Ambiguous input in __getitem__ of pst.Features."
+                    warnings.warn(msg, SyntaxWarning)
+                    if type(key[1]) in [slice, int]:
+                        d = None
+                        k = [key[1]] if type(key[1]) == int else key[1]
+                    else:
+                        # Assumption of list or np.ndarray
+                        types = [type(j) == int for j in key[1]]
+                        if len(key[1]) == n_len_i:
+                            d = None
+                            if np.all(types):
+                                k = list(key[1])
+                            else:
+                                k = range(self.k_perturb+1)
+                                d = [float(j) for j in key[1]]
+                        else:
+                            msg = "Too ambiguous..."
+                            msg += " Dangerous casting to integers is done."
+                            warnings.warn(msg, SyntaxWarning)
+                            k = [int(j) for j in key[1]]
+                            d = None
+        # If the input is with neighs_info
+        if type(i) == tuple:
+            i, d = i
+        else:
+            d = None
+        # Slice input
+        if isinstance(i, slice):
+            i = self._get_possible_indices(i)
+        if isinstance(k, slice):
+            start = 0 if k.start is None else k.start
+            stop = self.k_perturb+1 if k.stop is None else k.stop
+            step = 1 if k.step is None else k.step
+            k = range(start, stop, step)
+        ## 1. Check indices into the bounds (WARNING)
+        if type(i) == int:
+            if i < 0 or i >= len(self.features):
+                raise IndexError("Index out of bounds.")
+            i = [i]
+        elif type(i) in [np.ndarray, list]:
+            if np.min(i) < 0 or np.max(i) >= len(self.features):
+                raise IndexError("Indices out of bounds.")
+        elif type(i) == slice:
+            i = self._get_possible_indices(i)
+            if i.start < 0 or i.stop > len(self.features):
+                raise IndexError("Indices out of bounds.")
+        ## 2. Format k
+        if k is None:
+            k = list(range(self.k_perturb+1))
+        else:
+            if type(k) == int:
+                k = [k]
+            elif type(k) in [np.ndarray, list]:
+                k = list(k)
+                if np.min(k) < 0 or np.max(k) >= (self.k_perturb+1):
+                    msg = "Index of k perturbation is out of bounds."
+                    raise IndexError(msg)
+        if type(k) != list:
+            raise TypeError("Incorrect type of k perturbation index.")
+        # Retrive features
+        print i, k, d
+        feats = self._retrieve_feats(i, k, d)
+        return feats
+
+
+
+
+
+######### Features retriever 2016-03-07
+#    def _get_input_features(self, i, k, typefeats=(0, 0)):
+#        """Get 'input' features. Get the features of the elements of which we
+#        want to study their neighbourhood.
+#        """
+#        ## Retrieve features
+#        if type(i) == tuple:
+#            i_input, k_input = self._maps_input[typefeats[0]](i[0], k)
+#            i_input = i_input, i[1]
+#        else:
+#            i_input, k_input = self._maps_input[typefeats[0]](i, k)
+#        feats_i = self.features[typefeats[1]][i_input, k_input]
+#        ## Outformat
+#        feats_i = self._maps_output(self, feats_i)
+#        return feats_i
+
+#    def _get_output_features(self, idxs, k, typefeats=(0, 0)):
+#        """Get 'output' features. Get the features of the elements in the
+#        neighbourhood of the elements we want to study."""
+#        ## Retrieve features
+#        if type(idxs) == tuple:
+#            idxs_input, k_input = self._maps_input[typefeats[0]](idxs[0], k)
+#            idxs_input = idxs_input, idxs[1]
+#        else:
+#            idxs_input, k_input = self._maps_input[typefeats[0]](idxs, k)
+#        if np.any(idxs_input[0]):
+#            feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
+#        else:
+#            feats_idxs = self._join_descriptors([self.initialization_desc()
+#                                                 for j in range(len(k_input))])
+##            null_value = self.features[typefeats[1]]._nullvalue
+##            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
+#        ## Outformat
+#        feats_idxs = self._maps_output(self, feats_idxs)
+#        return feats_idxs
+
 ########## SpDesc 2016-02-27
 #    def _compute_nets(self):
 #        """Function used to compute the total measure.

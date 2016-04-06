@@ -24,9 +24,10 @@ TODO
 
 import numpy as np
 ## Check initialization of map vals i
-from ..utils.util_classes import create_mapper_vals_i
+from ..utils.util_classes import create_mapper_vals_i, Neighs_Info
 from aux_descriptormodels import append_addresult_function,\
-    replacelist_addresult_function
+    replacelist_addresult_function, sparse_dict_completer,\
+    sparse_dict_completer_unknown
 from aux_featuremanagement import create_aggfeatures, compute_featuresnames
 from features_objects import ImplicitFeatures, ExplicitFeatures
 
@@ -174,10 +175,10 @@ class FeaturesManager:
         "Formatter of maps."
         ## 1. Format input maps
         if maps_input is None:
-            self._maps_input = [lambda i, k=0: (i, k)]
+            self._maps_input = [lambda i_info, k=0: i_info]
         else:
             if type(maps_input).__name__ == 'function':
-                self._maps_input = [lambda i, k=0: maps_input(i, k)]
+                self._maps_input = [lambda i_info, k=0: maps_input(i_info, k)]
             else:
                 self._maps_input = [maps_input]
         ## 2. Format output maps (TODO)
@@ -193,7 +194,7 @@ class FeaturesManager:
     def _format_result_building(self, descriptormodel):
         """Format how to build and aggregate results."""
         "TODO: Dict-array."
-        "TODO: null_value"
+        "TODO: null_value."
         ## Size of the possible results.
         n_vals_i = self._maps_vals_i.n_out
         n_feats = self.nfeats
@@ -214,24 +215,42 @@ class FeaturesManager:
             ## Adding result
             self.add2result = descriptormodel._defult_add2result
             self._join_descriptors = lambda x: np.concatenate(x)
-        else:
+            self.to_complete_measure =\
+                lambda X: descriptormodel.to_complete_measure(X)
+        elif n_vals_i is not None and self._out == 'dict':
+            ## Init global result
+            self.initialization_output =\
+                lambda: [[[] for i in range(n_vals_i)]
+                         for k in range(self.k_perturb+1)]
+            ## Adding result
+            self.add2result = append_addresult_function
             self._join_descriptors = lambda x: x
-            flag = 'sparse_dict_completer' in \
-                str(descriptormodel.to_complete_measure) or \
-                'replacelist_addresult_function' in \
-                str(descriptormodel._defult_add2result)
-            if not flag:
-                ## Init global result
-                self.initialization_output =\
-                    lambda: [[] for k in range(self.k_perturb+1)]
-                ## Adding result
-                self.add2result = append_addresult_function
-            else:
-                ## Init global result
-                self.initialization_output =\
-                    lambda: [[[], []] for k in range(self.k_perturb+1)]
-                ## Adding result
-                self.add2result = replacelist_addresult_function
+            self.to_complete_measure = sparse_dict_completer
+        else:
+            ## Init global result
+            self.initialization_output =\
+                lambda: [[[], []] for k in range(self.k_perturb+1)]
+            ## Adding result
+            self.add2result = replacelist_addresult_function
+            self._join_descriptors = lambda x: x
+            self.to_complete_measure = sparse_dict_completer_unknown
+
+#            flag = 'sparse_dict_completer' in \
+#                str(descriptormodel.to_complete_measure) or \
+#                'replacelist_addresult_function' in \
+#                str(descriptormodel._defult_add2result)
+#            if not flag:
+#                ## Init global result
+#                self.initialization_output =\
+#                    lambda: [[] for k in range(self.k_perturb+1)]
+#                ## Adding result
+#                self.add2result = append_addresult_function
+#            else:
+#                ## Init global result
+#                self.initialization_output =\
+#                    lambda: [[[], []] for k in range(self.k_perturb+1)]
+#                ## Adding result
+#                self.add2result = replacelist_addresult_function
 
         self.to_complete_measure =\
             lambda X: descriptormodel.to_complete_measure(X)
@@ -254,13 +273,18 @@ class FeaturesManager:
         ## 0. Prepare list of k
         ks = list(range(self.k_perturb+1)) if k is None else k
         ks = [ks] if type(ks) == int else ks
+        i_input = [i] if type(i) == int else i
+        sh = neighs_info.shape
+        assert(len(i_input) == sh[0] and len(ks) == sh[2])
         ## 1. Prepare selectors
         t_feat_in, t_feat_out = self._get_typefeats(feat_selectors)
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
-        desc_i = self._get_input_features(i, ks, t_feat_in)
+        desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
+        print i, ks, i_input, neighs_info, neighs_info.ks, neighs_info.idxs
         ## 3. Map vals_i
         vals_i = self._get_vals_i(i, ks)
+        print '+'*10, vals_i, desc_neigh, desc_i
 
         ## 4. Complete descriptors
         descriptors =\
@@ -275,45 +299,49 @@ class FeaturesManager:
         """Get 'input' features. Get the features of the elements of which we
         want to study their neighbourhood.
         """
-        ## Retrieve features
-        if type(i) == tuple:
-            i_input, k_input = self._maps_input[typefeats[0]](i[0], k)
-            i_input = i_input, i[1]
+        ## iss as an object
+        if type(i).__name__ != 'instance':
+            i_input = Neighs_Info(format_structure='tuple_tuple',
+                                  staticneighs=True)
+            i_input.set(((i,), k))
         else:
-            i_input, k_input = self._maps_input[typefeats[0]](i, k)
-        feats_i = self.features[typefeats[1]][i_input, k_input]
+            i_input = i
+        ## Input mapping
+        i_input = self._maps_input[typefeats[0]](i_input)
+        ## Retrieve features
+        feats_i = self.features[typefeats[1]][i_input, k]
         ## Outformat
         feats_i = self._maps_output(self, feats_i)
         return feats_i
 
-    def _get_output_features(self, idxs, k, typefeats=(0, 0)):
+    def _get_output_features(self, neighs_info, k, typefeats=(0, 0)):
         """Get 'output' features. Get the features of the elements in the
         neighbourhood of the elements we want to study."""
-        ## Retrieve features
-        if type(idxs) == tuple:
-            idxs_input, k_input = self._maps_input[typefeats[0]](idxs[0], k)
-            idxs_input = idxs_input, idxs[1]
-        else:
-            idxs_input, k_input = self._maps_input[typefeats[0]](idxs, k)
-        if np.any(idxs_input[0]):
-            feats_idxs = self.features[typefeats[1]][idxs_input, k_input]
-        else:
-            feats_idxs = self._join_descriptors([self.initialization_desc()
-                                                 for j in range(len(k_input))])
-#            null_value = self.features[typefeats[1]]._nullvalue
-#            feats_idxs = np.ones((len(k_input), self.shape[1])) * null_value
+        ## Neighs info as an object
+        if not type(neighs_info).__name__ == 'instance':
+            neighs_info = Neighs_Info(neighs_info, k)
+        ## Input mapping
+        neighs_info = self._maps_input[typefeats[0]](neighs_info)
+        ## Features retrieve
+        feats_neighs = self.features[typefeats[1]][neighs_info, k]
         ## Outformat
-        feats_idxs = self._maps_output(self, feats_idxs)
-        return feats_idxs
+        feats_neighs = self._maps_output(self, feats_neighs)
+        return feats_neighs
 
     def _get_vals_i(self, i, ks):
         """Get indice to store the final result."""
+        #### TODO: extend
         ## 0. Prepare variable needed
         vals_i = []
         ## 1. Loop over possible ks and compute vals_i
         for k in ks:
             vals_i.append(self._maps_vals_i.apply(self, i, k))
-        vals_i = np.array(vals_i).ravel()
+        ## WARNING: TOTEST
+        vals_i = np.array(vals_i)
+        print vals_i
+        assert(len(vals_i.shape) == 2)
+        assert(len(vals_i) == len(ks))
+        assert(len(np.array([i]).ravel()) == vals_i.shape[1])
         return vals_i
 
     def _get_typefeats(self, typefeats):

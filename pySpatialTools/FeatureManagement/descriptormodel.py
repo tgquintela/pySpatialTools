@@ -14,6 +14,7 @@ from aux_descriptormodels.out_formatters import null_out_formatter
 from pySpatialTools.FeatureManagement.Interpolation_utils import\
     create_weighted_function
 
+import numpy as np
 
 class DescriptorModel:
     """Abstract class for desctiptor models. Contain the common functions
@@ -23,11 +24,15 @@ class DescriptorModel:
     def complete_desc_i(self, i, neighs_info, desc_i, desc_neighs, vals_i):
         """Dummy completion for general abstract class."""
         desc = []
+        print desc_neighs, len(desc_neighs), len(vals_i), vals_i
+        if type(desc_neighs) == np.ndarray:
+            print desc_neighs.shape, vals_i, i
+            assert(len(desc_neighs.shape) == 3)
+        elif type(desc_neighs) == list:
+            assert(type(desc_neighs[0][0]) == dict)
         for k in xrange(len(vals_i)):
             desc.append(self.relative_descriptors(i, neighs_info, desc_i[k],
                                                   desc_neighs[k], vals_i[k]))
-
-#        descriptors = np.vstack(desc)
         return desc
 
     def relative_descriptors(self, i, neighs_info, desc_i, desc_neigh, vals_i):
@@ -51,6 +56,10 @@ class DescriptorModel:
         """Set the global stats info in order to get information to normalize
         the measure.
         """
+        pass
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        """Dummy set for setting specific inputs and outputs."""
         pass
 
     ###########################################################################

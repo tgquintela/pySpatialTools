@@ -31,12 +31,18 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     sh = features.shape
     agg = np.ones((len(u_regs), sh[1], sh[2])) * _nullvalue
     for i in xrange(len(u_regs)):
+        ## We get neighs_info with only 1-k and 1-iss
         neighs_info = regmetric.retrieve_neighs(u_regs[i])
-        if list(neighs_info[0]) != []:
-            for k in range(sh[2]):
-                agg[i, :, k] = agg_f(features[neighs_info, k], neighs_info[1])
-        else:
-            agg[i, :, :] = np.ones((sh[1], sh[2])) * _nullvalue
+        for k in neighs_info.ks:
+            neighs, dists, _, _ = neighs_info.get_information(k)
+            neighs, dists = neighs[0], dists[0]
+            agg[i, :, k] = agg_f(features[(neighs, dists), k], dists)
+
+#        if any(neighs):
+#            for k in range(sh[2]):
+#                agg[i, :, k] = agg_f(features[(neighs, dists), k], dists)
+#        else:
+#            agg[i, :, :] = np.ones((sh[1], sh[2])) * _nullvalue
 
     ## 2. Prepare output
     agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
