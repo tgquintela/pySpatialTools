@@ -360,7 +360,18 @@ def test():
     for p in product(*pos):
         ## Forbidden combinations:
         if p[4] == 'list_tuple_only' and p[5] != 2:
-            continue
+            try:
+                neighs_info = Neighs_Info(constant_neighs=p[0],
+                                          ifdistance=p[1],
+                                          format_get_info=p[2],
+                                          format_get_k_info=p[3],
+                                          format_structure=p[4],
+                                          format_level=p[5],
+                                          type_neighs=p[6],
+                                          type_sp_rel_pos=p[7])
+                raise Exception("It has to halt here.")
+            except:
+                continue
         if p[4] == 'list_tuple_only' and p[0]:
             continue
         ## TESTING:
@@ -414,12 +425,23 @@ def test():
         neighs_info.set(neighs_nfo)
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
+        neighs_info.any()
+        neighs_info.shape
+        neighs_info._get_neighs_general()
+        neighs_info._general_get_rel_pos()
+        neighs_info.reset_functions()
 
         k += 1
 #        print '-'*20, k
 
     #* integer {neighs}
     neighs_info = Neighs_Info()
+    neighs_info.shape
+    try:
+        neighs_info._default_get_information()
+        raise Exception("It has to halt here.")
+    except:
+        pass
     neighs_info.set_information(10, 10)
     neighs_info.set(5)
     neighs_info.set(([0], [5.]))
@@ -469,3 +491,5 @@ def test():
     neighs_info = Neighs_Info()
     neighs_info.set((([0], [0]), 0))
     assert(not neighs_info.empty())
+    for a, b, c, d in neighs_info:
+        pass

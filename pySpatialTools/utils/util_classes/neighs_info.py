@@ -76,8 +76,8 @@ class Neighs_Info:
     def __iter__(self):
         """Get information sequentially."""
         for i in range(len(self.ks)):
-            yield self.get_neighs([i]), self.get_sp_rel_pos([i]), [self.ks[i]],
-            self.iss
+            yield self.get_neighs([i]), self.get_sp_rel_pos([i]), [self.ks[i]],\
+                self.iss
 
     def empty(self):
         return not self.any()
