@@ -455,9 +455,16 @@ def test():
     #* list of lists of lists of integers {neighs for some iss and ks}
     neighs_info.reset()
     neighs_info.set([[[0, 4], [0, 3]]])
+    try:
+        neighs_info._general_set_rel_pos(True)
+        raise Exception("It has to halt here.")
+    except:
+        pass
     #* numpy array 1d, 2d, 3d {neighs}
     neighs_info.reset()
     neighs_info.set(np.array([[[0, 4], [0, 3]]]))
+    neighs_info.staticneighs = False
+    neighs_info._set_rel_pos_dim(5)
     neighs_info.reset()
     neighs_info.set(np.array([[0, 4], [0, 3]]))
     neighs_info.reset()
@@ -468,6 +475,16 @@ def test():
     neighs_info.reset()
     neighs_info.set([[]])
     assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info._general_set_iss(0)
+    neighs_info._general_set_iss([0])
+    neighs_info._general_set_iss(np.array([0]))
+    neighs_info.staticneighs = True
+    neighs_info._general_set_iss(np.array([0]))
+    neighs_info._set_rel_pos_general_list(np.array([0]))
+    neighs_info._set_rel_pos_general_list(np.array([[0]]))
+    neighs_info._set_rel_pos_general_list(np.array([[]]))
 
     neighs_info.reset()
     neighs_info.set(([[]], [[]]))
