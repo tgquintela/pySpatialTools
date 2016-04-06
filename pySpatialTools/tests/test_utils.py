@@ -361,6 +361,7 @@ def test():
         ## Forbidden combinations:
         if p[4] == 'list_tuple_only' and p[5] != 2:
             try:
+                boolean = False
                 neighs_info = Neighs_Info(constant_neighs=p[0],
                                           ifdistance=p[1],
                                           format_get_info=p[2],
@@ -369,9 +370,12 @@ def test():
                                           format_level=p[5],
                                           type_neighs=p[6],
                                           type_sp_rel_pos=p[7])
-                raise Exception("It has to halt here.")
+                boolean = True
             except:
-                continue
+                if boolean:
+                    raise Exception("It has to halt here.")
+            continue
+
         if p[4] == 'list_tuple_only' and p[0]:
             continue
         ## TESTING:
@@ -440,15 +444,19 @@ def test():
     neighs_info = Neighs_Info()
     neighs_info.shape
     try:
+        boolean = False
         neighs_info._default_get_neighs()
-        raise Exception("It has to halt here.")
+        boolean = True
     except:
-        pass
+        if boolean:
+            raise Exception("It has to halt here.")
     try:
+        boolean = False
         neighs_info._default_get_information()
-        raise Exception("It has to halt here.")
+        boolean = True
     except:
-        pass
+        if boolean:
+            raise Exception("It has to halt here.")
 
     neighs_info._format_set_iss('int')
     neighs_info._format_set_iss('list')
@@ -461,10 +469,13 @@ def test():
     neighs_info.set_information(10, 10)
     neighs_info.set([[0, 4]])
     try:
-        neighs_info._integer_get_k(20)
-        raise Exception("It has to halt here.")
+        boolean = False
+        neighs_info._kret = 10
+        neighs_info._integer_get_k(100)
+        boolean = True
     except:
-        pass
+        if boolean:
+            raise Exception("It has to halt here.")
     neighs_info._get_neighs_list_static()
     #* list of lists of integers {neighs for some iss}
     neighs_info.reset()
@@ -473,21 +484,37 @@ def test():
     neighs_info.reset()
     neighs_info.set([[[0, 4], [0, 3]]])
     neighs_info.staticneighs = False
-    neighs_info._general_set_iss(True)
     neighs_info._array_only_set_rel_pos(np.array([[2], [3]]))
+    neighs_info._general_set_iss(True)
     neighs_info._set_rel_pos_general_array(np.array([[2], [3]]))
     neighs_info._set_rel_pos_general_array(np.array([[[[2], [3]]]]))
+    neighs_info._list_list_only_set_rel_pos(np.array([[[5]]]))
     neighs_info.staticneighs = True
     neighs_info._general_set_iss(True)
-    neighs_info._list_list_only_set_rel_pos(np.array([[[5]]]))
     neighs_info._set_rel_pos_general_list([[[[2], [3]]]])
     neighs_info._general_set_rel_pos(None)
+
     try:
+        boolean = False
         neighs_info._general_set_rel_pos(True)
-        raise Exception("It has to halt here.")
+        boolean = True
     except:
-        pass
+        if boolean:
+            raise Exception("It has to halt here.")
     #* numpy array 1d, 2d, 3d {neighs}
+    neighs_info = Neighs_Info()
+    neighs_info._set_neighs_general_array(np.array(5))
+    neighs_info._set_neighs_slice(None)
+    neighs_info.reset()
+
+    try:
+        boolean = False
+        neighs_info._general_set_neighs(True)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
     neighs_info.reset()
     neighs_info.set(np.array([[[0, 4], [0, 3]]]))
     neighs_info.staticneighs = False

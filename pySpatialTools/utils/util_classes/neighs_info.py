@@ -57,7 +57,7 @@ class Neighs_Info:
     type_ = "pySpatialTools.Neighs_Info"
 
     def __init__(self, constant_neighs=False, kret=1, format_structure=None,
-                 format_get_info=None, format_get_k_info=None,
+                 n=0, format_get_info=None, format_get_k_info=None,
                  format_set_iss=None, staticneighs=None, ifdistance=None,
                  type_neighs=None, type_sp_rel_pos=None, format_level=None):
         ## Initialize class
@@ -65,6 +65,7 @@ class Neighs_Info:
         ## Extra info
         self._constant_neighs = constant_neighs
         self._kret = kret
+        self._n = n
         self.staticneighs = staticneighs
         self.ifdistance = ifdistance
         self.level = format_level
