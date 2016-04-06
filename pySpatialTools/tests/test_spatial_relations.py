@@ -30,19 +30,39 @@ def test():
     ## Compute Contiguity
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
+    mainmapper1 = RegionDistances(relations=relations, _data=None,
+                                  symmetric=symmetric)
     mainmapper1 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc2, store='sparse')
     mainmapper2 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
-#    relations, _data, symmetric, store =\
-#        compute_ContiguityRegionDistances(griddisc3, store='sparse')
-#    mainmapper3 = RegionDistances(relations=relations, _data=_data,
-#                                  symmetric=symmetric)
+    relations, _data, symmetric, store =\
+        compute_ContiguityRegionDistances(griddisc3, store='matrix')
+    mainmapper3 = RegionDistances(relations=relations, _data=None,
+                                  symmetric=symmetric)
+
+    pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
+                      'list', 'list_int', 'list_array']
+    for pos_input in pos_input_type:
+        mainmapper3 = RegionDistances(relations=relations, _data=None,
+                                      symmetric=symmetric,
+                                      input_type=pos_input)
+    data_in = list(np.arange(len(relations)))
+    mainmapper3 = RegionDistances(relations=relations, _data=None,
+                                  symmetric=symmetric, data_in=data_in)
+    data_in = np.arange(len(relations)).reshape((len(relations), 1))
+    mainmapper3 = RegionDistances(relations=relations, _data=None,
+                                  symmetric=symmetric, data_in=data_in)
+
     regs = np.unique(np.random.randint(0, 1000, 200))
     dummymapper = DummyRegDistance(regs)
 
+#    input_='indices', output='indices', _data=None,
+#    data_in=None,
+#    input_type=None)
+    
     ## Test functions
     mainmapper1[0]
     mainmapper1[[0, 1]]
