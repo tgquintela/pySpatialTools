@@ -442,6 +442,9 @@ def test():
         raise Exception("It has to halt here.")
     except:
         pass
+    neighs_info._format_set_iss('int')
+    neighs_info._format_set_iss('list')
+    neighs_info = Neighs_Info()
     neighs_info.set_information(10, 10)
     neighs_info.set(5)
     neighs_info.set(([0], [5.]))
@@ -455,6 +458,11 @@ def test():
     #* list of lists of lists of integers {neighs for some iss and ks}
     neighs_info.reset()
     neighs_info.set([[[0, 4], [0, 3]]])
+    neighs_info.staticneighs = False
+    neighs_info._general_set_iss(True)
+    neighs_info.staticneighs = False
+    neighs_info._general_set_iss(True)
+    neighs_info._list_list_only_set_rel_pos(np.array([[[5]]]))
     try:
         neighs_info._general_set_rel_pos(True)
         raise Exception("It has to halt here.")
