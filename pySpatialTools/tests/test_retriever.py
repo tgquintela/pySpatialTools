@@ -10,7 +10,7 @@ import numpy as np
 
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
-    DummyRetriever, GeneralRetriever
+    DummyRetriever, GeneralRetriever, WindowsRetriever
 from pySpatialTools.Retrieve.aux_retriever import _check_retriever
 
 
@@ -35,6 +35,7 @@ def test():
     input_map = lambda s, x: disc0.discretize(x)
     pars4 = {'order': 4}
     pars5 = {'lim_distance': 2}
+    pars8 = {'l': 8, 'center': 0, 'excluded': False}
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
 
     _input_map = lambda s, i: i
@@ -42,23 +43,26 @@ def test():
     ## Implicit
     ret0 = KRetriever(locs, 3, ifdistance=True, input_map=_input_map,
                       output_map=_output_map)
-    ret1 = CircRetriever(locs, 3, ifdistance=True)
-    ret2 = KRetriever(locs1, 3, ifdistance=True)
+    ret1 = CircRetriever(locs, 3, ifdistance=True, bool_input_idx=True)
+    ret2 = KRetriever(locs1, 3, ifdistance=True, bool_input_idx=True)
 
     ## Explicit
-    ret3 = SameEleNeigh(mainmapper, input_map=input_map)
-    ret4 = OrderEleNeigh(mainmapper, pars4, input_map=input_map)
-    ret5 = LimDistanceEleNeigh(mainmapper, pars5, input_map=input_map)
+    ret3 = SameEleNeigh(mainmapper, input_map=input_map,
+                        bool_input_idx=True)
+    ret4 = OrderEleNeigh(mainmapper, pars4, input_map=input_map,
+                         bool_input_idx=True)
+    ret5 = LimDistanceEleNeigh(mainmapper, pars5, input_map=input_map,
+                               bool_input_idx=True)
 
     info_f = lambda x, y: 2
     relative_pos = lambda x, y: y
-
     ret6 = KRetriever(locs1, 3, ifdistance=True, constant_info=True,
                       autoexclude=False, info_f=info_f, bool_input_idx=True,
                       relative_pos=relative_pos)
     ret7 = KRetriever(locs1, 3, ifdistance=True, constant_info=True,
                       autoexclude=False, info_f=info_f, bool_input_idx=False,
                       relative_pos=relative_pos)
+    ret8 = WindowsRetriever((100,), pars_ret=pars8)
 
     ## Retriever Manager
     gret = RetrieverManager([ret0, ret1, ret2, ret3, ret4, ret5])
@@ -67,6 +71,7 @@ def test():
         ## Reduce time of computing
         if np.random.random() < 0.8:
             continue
+        print 'xz'*80, i
         neighs_info = ret0.retrieve_neighs(i)
         neighs_info = ret1.retrieve_neighs(i)
         neighs_info = ret2.retrieve_neighs(i)
@@ -76,6 +81,21 @@ def test():
         neighs_info = ret6.retrieve_neighs(i)
         neighs_info = ret7.retrieve_neighs(locs1[i])
         neighs_info = gret.retrieve_neighs(i)
+        neighs_info = ret8.retrieve_neighs(i)
+
+    ## Retrieve-driven testing
+    for idx, neighs in ret1:
+            pass
+    for idx, neighs in ret3:
+            pass
+    for idx, neighs in ret4:
+            pass
+    for idx, neighs in ret5:
+            pass
+    ret6.set_iter(2, 1000)
+    for idx, neighs in ret6:
+        pass
+#        print idx, neighs
 
     ## Main functions
     ret1.data_input
@@ -88,8 +108,10 @@ def test():
     ret2.shape
     ret2[0]
 
-    net = ret1.compute_neighnet()
-    net = ret2.compute_neighnet()
+    ##
+    ### TODO: __iter__
+#    net = ret1.compute_neighnet()
+#    net = ret2.compute_neighnet()
 
     ## Other external functions
     aux = np.random.randint(0, 100, 1000)
@@ -122,21 +144,24 @@ def test():
     ## General Retriever
     class PruebaRetriever(GeneralRetriever):
         preferable_input_idx = True
+        auto_excluded = True
 
         def __init__(self, autoexclude=True, ifdistance=False):
             self._initialization()
             self._format_output_information(autoexclude, ifdistance, None)
+            self._format_exclude(True)
             self._format_retriever_info(None, None, None)
             ## Format retriever function
-            self._format_retriever_function()
+            self._format_retriever_function(True)
             self._format_preparators(True)
+            self._format_neighs_info(True, 2, 'list', 'list')
 
         def _define_retriever(self):
             pass
 
         def _retrieve_neighs_general_spec(self, point_i, p, ifdistance=False,
                                           kr=0):
-            return [0], None
+            return [[0]], None
     pruebaret = PruebaRetriever(True)
     pruebaret.retrieve_neighs(0)
     pruebaret.retrieve_neighs(1)

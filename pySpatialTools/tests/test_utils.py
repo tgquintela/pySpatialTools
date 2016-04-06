@@ -16,11 +16,12 @@ threaten tens of millions of jobs.
 """
 
 import numpy as np
+from itertools import product
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
     Map_Vals_i
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
-    Membership
+    Membership, Neighs_Info
 
 
 def test():
@@ -292,3 +293,179 @@ def test():
     map_vals_i = Map_Vals_i((1000, 20))
     map_vals_i = Map_Vals_i(map_vals_i)
     map_vals_i = Map_Vals_i(memb1)
+
+    ###########################################################################
+    ### Neighs_Info
+
+#    pos_format_set_info = [None, 'integer', 'list', 'list_only', 'list_list',
+#                           'list_tuple', 'list_tuple1', 'list_tuple2',
+#                           'array', 'slice', 'tuple', 'tuple_int',
+#                           'tuple_slice', 'tuple_tuple', 'tuple_others']
+    pos_ifdistance = [True, False, None]
+    pos_constant_neighs = [True, False, None]
+    pos_format_get_k_info = [None, "general", "list", "integer"]
+    pos_format_get_info = [None, "general"]
+    pos_type_neighs = [None, 'general', 'array', 'list', 'slice']
+    pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
+    pos_format_level = [0, 1, 2, 3]
+    pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
+                            'list_tuple_only', ]
+
+    pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
+           pos_format_get_k_info, pos_format_structure, pos_format_level,
+           pos_type_neighs, pos_type_sp_rel_pos]
+
+    ## Possible inputs
+    creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, lvl))
+    creator2_lvl = lambda sh: tuple(list(sh) + [np.random.randint(5)])
+
+    extend_list = lambda lista, n: [lista for i in range(n)]
+    extend_array = lambda array, n: np.array([array for i in range(n)])
+
+    neighs0 = lambda: np.random.randint(100)
+    sp_rel_pos0 = lambda: np.random.random()
+
+    def create_neighs(sh, type_):
+        neighs = neighs0()
+        for i in range(len(sh)):
+            if type_ == 'array':
+                neighs = extend_array(neighs, sh[len(sh)-i-1])
+            else:
+                neighs = extend_list(neighs, sh[len(sh)-i-1])
+#        if type(neighs) == int:
+#            if type_ == 'array':
+#                neighs = np.array([neighs])
+#            else:
+#                neighs = [neighs]
+        return neighs
+
+    def create_sp_rel_pos(sh, type_):
+        sp_rel_pos = np.array([sp_rel_pos0()
+                               for i in range(np.random.randint(1, 4))])
+        for i in range(len(sh)):
+            if type_ == 'array':
+                sp_rel_pos = extend_array(sp_rel_pos, sh[len(sh)-i-1])
+            else:
+                sp_rel_pos = extend_list(sp_rel_pos, sh[len(sh)-i-1])
+        if len(sh) == 0:
+            if type_ == 'list':
+                sp_rel_pos = list(sp_rel_pos)
+        return sp_rel_pos
+
+#    neighs_int = lambda: np.random.randint(100)
+#    neighs_list = lambda x: list([neighs_int() for i in range(x)])
+#    neighs_array = lambda x: np.array([neighs_int() for i in range(x)])
+    neighs_slice = lambda top: slice(0, top)
+    k = 0
+    for p in product(*pos):
+        ## Forbidden combinations:
+        if p[4] == 'list_tuple_only' and p[5] != 2:
+            continue
+        if p[4] == 'list_tuple_only' and p[0]:
+            continue
+        ## TESTING:
+        if p[3] == 'integer':
+            continue
+#        print p
+        ## Instantiation
+        neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
+                                  format_get_info=p[2], format_get_k_info=p[3],
+                                  format_structure=p[4], format_level=p[5],
+                                  type_neighs=p[6], type_sp_rel_pos=p[7])
+        neighs_info.set_information(10, 100)
+        ## Presetting
+        lvl = np.random.random(4) if p[5] is None else p[5]
+        sh = creator_lvl(lvl)
+        k_len = sh[0] if len(sh) == 3 else np.random.randint(1, 9)
+        iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(100)
+        nei_len = sh[-1] if len(sh) > 0 else np.random.randint(100)
+        sh_static = sh
+        if p[0] is True:
+            basic_sh = [] if len(sh) == 0 else [1]
+            sh_static = tuple(basic_sh+[sh[i] for i in range(1, len(sh))])
+        # Neighs creation
+        if p[6] == 'slice':
+            neighs = neighs_slice(nei_len)
+            continue
+        else:
+            # Use type_neighs and level
+            neighs = create_neighs(sh_static, p[6])
+        # Sp_rel_pos
+        sp_rel_pos = create_sp_rel_pos(sh_static, p[7])
+        if p[7] == 'list':
+#            print type(sp_rel_pos), p, sh
+            assert(type(sp_rel_pos) == list)
+
+        # Create structure
+        if p[4] == 'raw':
+            neighs_nfo = neighs
+        elif p[4] == 'tuple':
+            neighs_nfo = (neighs, np.arange(k_len))
+        elif p[4] == 'tuple_only':
+            neighs_nfo = (neighs, sp_rel_pos)
+        elif p[4] == 'tuple_tuple':
+            neighs_nfo = ((neighs, sp_rel_pos), np.arange(k_len))
+        elif p[4] == 'list_tuple_only':
+            neighs_nfo = [(neighs, sp_rel_pos) for i in range(k_len)]
+        else:
+            neighs_nfo = neighs
+
+#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+        neighs_info.set(neighs_nfo)
+        ks = [0] if neighs_info.ks is None else neighs_info.ks
+        neighs_info.get_information(ks)
+
+        k += 1
+#        print '-'*20, k
+
+    #* integer {neighs}
+    neighs_info = Neighs_Info()
+    neighs_info.set_information(10, 10)
+    neighs_info.set(5)
+    neighs_info.set(([0], [5.]))
+    #* list of integers {neighs}
+    neighs_info.reset()
+    neighs_info.set_information(10, 10)
+    neighs_info.set([[0, 4]])
+    #* list of lists of integers {neighs for some iss}
+    neighs_info.reset()
+    neighs_info.set([[0, 4], [0, 3]])
+    #* list of lists of lists of integers {neighs for some iss and ks}
+    neighs_info.reset()
+    neighs_info.set([[[0, 4], [0, 3]]])
+    #* numpy array 1d, 2d, 3d {neighs}
+    neighs_info.reset()
+    neighs_info.set(np.array([[[0, 4], [0, 3]]]))
+    neighs_info.reset()
+    neighs_info.set(np.array([[0, 4], [0, 3]]))
+    neighs_info.reset()
+    neighs_info.set(np.array([0, 4]))
+    #* tuple of neighs
+
+    # Empty cases
+    neighs_info.reset()
+    neighs_info.set([[]])
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info.set(([[]], [[]]))
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info.set(([[]], [[]]), [0])
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info.set(([np.array([])], [np.array([])]), [0])
+    assert(neighs_info.empty())
+
+    neighs_info = Neighs_Info(format_structure='tuple_tuple',
+                              type_neighs='list', type_sp_rel_pos='list',
+                              format_level=2)
+    neighs_info.set((([np.array([])], [np.array([[]])]), [0]))
+    neighs, _, _, _ = neighs_info.get_information(0)
+
+    ## Empty assert
+    neighs_info = Neighs_Info()
+    neighs_info.set((([0], [0]), 0))
+    assert(not neighs_info.empty())

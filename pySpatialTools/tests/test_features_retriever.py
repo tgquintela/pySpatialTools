@@ -22,8 +22,8 @@ def test():
     rei = 10
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))
-    features0 = np.random.random((n/5, m))
-    features1 = np.random.random((n/3, m))
+    features0 = np.random.random((n, m))
+    features1 = np.random.random((n, m))
     features2 = np.vstack([np.random.randint(0, 10, n) for i in range(m)]).T
     reindices0 = np.arange(n)
     reindices = np.vstack([reindices0]+[np.random.permutation(n)
@@ -48,42 +48,42 @@ def test():
 
     ## Other functions
     # Indexing
-    Feat[0]
+#    Feat[0]
     Feat0[0]
     Feat1[0]
     Feat2[0]
 
-    Feat[(0, 0)]
+#    Feat[(0, 0)]
     Feat0[(0, 0)]
     Feat1[(0, 0)]
     Feat2[(0, 0)]
-    Feat[([0], [0])]
+#    Feat[([0], [0])]
     Feat0[([0], [0])]
     Feat1[([0], [0])]
     Feat2[([0], [0])]
-    Feat[([0], [0.])]
+#    Feat[([0], [0.])]
     Feat0[([0], [0.])]
     Feat1[([0], [0.])]
     Feat2[([0], [0.])]
 
-    Feat[0:3]
-    Feat[:]
+#    Feat[0:3]
+#    Feat[:]
     Feat0[:]
     Feat1[:]
     Feat2[:]
 
-    Feat[((0, 0), 0)]
+#    Feat[((0, 0), 0)]
     Feat0[((0, 0), 0)]
     Feat1[((0, 0), 0)]
     Feat2[((0, 0), 0)]
 
-    Feat[(([0], [0]), [0])]
+#    Feat[(([0], [0]), [0])]
     Feat0[(([0], [0]), [0])]
     Feat1[(([0], [0]), [0])]
     Feat2[(([0], [0]), [0])]
 
     # shape
-    Feat.shape
+#    Feat.shape
     Feat0.shape
     Feat1.shape
     Feat2.shape
@@ -92,3 +92,8 @@ def test():
     featret.shape
     featret.nfeats
     len(featret)
+
+    ## Empty call
+    Feat0[(([], []), [0])]
+    Feat1[(([], []), [0])]
+    Feat2[(([], []), [0])]

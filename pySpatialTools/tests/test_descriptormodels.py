@@ -43,7 +43,8 @@ from pySpatialTools.FeatureManagement.aux_descriptormodels import\
     null_completer, weighted_completer, sparse_dict_completer,\
     aggregator_1sh_counter, aggregator_summer, aggregator_average,\
     counter_featurenames, array_featurenames,\
-    count_out_formatter, null_out_formatter
+    count_out_formatter_general, null_out_formatter,\
+    count_out_formatter_dict2array
 
 
 def test():
@@ -99,7 +100,7 @@ def test():
     contfeats, point_pos = np.random.random(5), np.random.random(5)
     catfeats = np.random.randint(0, 10, 5)
     aggdescriptors_idxs = np.random.random((10, 5))
-    x, x_i, vals_i = np.zeros((1, 1, 1)), np.zeros((1, 1)), [0]
+    x, x_i, vals_i = np.zeros((1, 1, 1)), np.zeros((1, 1)), [[0]]
     # Characterizers
     characterizer_1sh_counter(catfeats, point_pos)
     characterizer_summer(contfeats, point_pos)
@@ -112,14 +113,14 @@ def test():
 
     # Add2result
     sum_addresult_function(x, x_i, vals_i)
-    append_addresult_function([[]], x_i, vals_i)
+    append_addresult_function([[[]]], x_i, vals_i)
     replacelist_addresult_function([[[], []]], x_i, vals_i)
     # Completers
     null_completer(np.array([1]))
     weighted_completer(np.array([1]), np.array([1]))
     weighted_completer(np.array([1]), None)
-    sparse_dict_completer([[[{0: 2}], [0]]])
-    sparse_dict_completer([[[{0: 2}], [1]]])
+    sparse_dict_completer([[[{0: 2}]]])
+    sparse_dict_completer([[[{0: 2}, {1: 3}]]])
     # Aggregators
     aggregator_1sh_counter(catfeats, point_pos)
     aggregator_summer(catfeats, point_pos)
@@ -138,9 +139,9 @@ def test():
     except:
         pass
     # Out formatter
-    count_out_formatter(catfeats, catfeats, 'dict', 0)
+    count_out_formatter_general(catfeats, catfeats, 'dict', 0)
     try:
-        count_out_formatter(catfeats, catfeats[:3], 'dict', 0)
+        count_out_formatter_general(catfeats, catfeats[:3], 'dict', 0)
         raise Exception
     except:
         pass

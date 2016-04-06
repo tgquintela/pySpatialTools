@@ -63,7 +63,7 @@ def test():
         test_perturbation.test()
         test_descriptormodels.test()
         test_spdescriptormodels.test()
-        test_interpolation.test()
+#        test_interpolation.test()
     ## Closing tests
     time_own_computer = str(np.round(time.time()-t0, 2))
     print(message_own_computer % time_own_computer)
