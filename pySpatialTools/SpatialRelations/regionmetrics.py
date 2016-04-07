@@ -262,7 +262,9 @@ class RegionDistances:
                 neighs.append(np.array([]))
                 dists.append(np.array([[]]))
                 continue
-            logi = self.relations[self._data == reg, :] != self.null_value
+            print self.relations, self.relations.shape
+            logi = (self._data == reg).ravel()
+            logi = self.relations[logi] != self._null_value
             logi = logi[:, 0]
             if self._out == 'elements_id':
                 neighs_r = self._data[logi, 0]

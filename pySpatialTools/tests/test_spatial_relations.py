@@ -38,22 +38,44 @@ def test():
         compute_ContiguityRegionDistances(griddisc2, store='sparse')
     mainmapper2 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
+
+    #### Combinations
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc3, store='matrix')
     mainmapper3 = RegionDistances(relations=relations, _data=None,
                                   symmetric=symmetric)
+    mainmapper3[0]
+    mainmapper3[mainmapper3.data[0]]
+    mainmapper3.retrieve_neighs(0)
+    mainmapper3.retrieve_neighs(mainmapper3.data[0])
+    mainmapper3.data
+    mainmapper3.data_input
+    mainmapper3.data_output
+    mainmapper3.shape
 
     pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
                       'list', 'list_int', 'list_array']
-    for pos_input in pos_input_type:
+    pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
+                  [0], [0], [np.array([0])]]
+
+    for i in range(len(pos_input_type)):
         mainmapper3 = RegionDistances(relations=relations, _data=None,
                                       symmetric=symmetric,
-                                      input_type=pos_input)
+                                      input_type=pos_input_type[i])
+        mainmapper3[pos_inputs[i]]
+#        mainmapper3[mainmapper3.data[0]]
+#        mainmapper3.retrieve_neighs(0)
+#        mainmapper3.retrieve_neighs(mainmapper3.data[0])
+        mainmapper3.data
+        mainmapper3.data_input
+        mainmapper3.data_output
+        mainmapper3.shape
+
     data_in = list(np.arange(len(relations)))
-    mainmapper3 = RegionDistances(relations=relations, _data=None,
+    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
     data_in = np.arange(len(relations)).reshape((len(relations), 1))
-    mainmapper3 = RegionDistances(relations=relations, _data=None,
+    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
 
     regs = np.unique(np.random.randint(0, 1000, 200))
@@ -62,7 +84,7 @@ def test():
 #    input_='indices', output='indices', _data=None,
 #    data_in=None,
 #    input_type=None)
-    
+
     ## Test functions
     mainmapper1[0]
     mainmapper1[[0, 1]]
