@@ -81,6 +81,14 @@ def test():
     mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
 
+    relations, _data, symmetric, store =\
+        compute_ContiguityRegionDistances(griddisc3, store='network')
+    data_in = np.arange(len(relations)).reshape((len(relations), 1))
+    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+                                  symmetric=symmetric, data_in=data_in)
+    mainmapper3._netx_retrieve_neighs([0])
+    mainmapper3._netx_retrieve_neighs([-1])
+
     regs = np.unique(np.random.randint(0, 1000, 200))
     dummymapper = DummyRegDistance(regs)
 

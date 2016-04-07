@@ -260,7 +260,7 @@ class RegionDistances:
             ## Check if it is in the data
             if reg not in self._data[:, 0]:
                 neighs.append(np.array([]))
-                dists.append(np.array([[]]))
+                dists.append(np.array([[]]).T)
                 continue
             print self.relations, self.relations.shape
             logi = (self._data == reg).ravel()
@@ -311,7 +311,7 @@ class RegionDistances:
             ## Check if it is in the data
             if reg not in self._data[:, 0]:
                 neighs.append(np.array([]))
-                dists.append(np.array([[]]))
+                dists.append(np.array([[]]).T)
                 continue
             neighs_r = self.relations.neighbors(reg)
             dists_r = [self.relations[reg][nei]['weight'] for nei in neighs]
