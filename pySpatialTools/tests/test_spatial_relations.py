@@ -32,12 +32,15 @@ def test():
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     mainmapper1 = RegionDistances(relations=relations, _data=None,
                                   symmetric=symmetric)
+    mainmapper1._general_retrieve_neighs([0])
     mainmapper1 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
+    mainmapper1._general_retrieve_neighs([0])
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc2, store='sparse')
     mainmapper2 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
+    mainmapper2._general_retrieve_neighs([0])
 
     #### Combinations
     relations, _data, symmetric, store =\
