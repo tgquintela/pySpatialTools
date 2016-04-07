@@ -1,4 +1,150 @@
 
+###### 2016-04-07 FeatureObjects
+
+#    def _get_characs_k_array(self, k, idxs, d):
+#        """Getting characs with array idxs."""
+#        ## Interaction with the features stored
+#        feats_k = self._get_feats_k_array(k, idxs)
+#        ## Computing characterizers
+#        feats_k = self._characterizer(feats_k, d[k])
+#        ## Formatting result
+#        feats_k = self._format_out(feats_k)
+#        return feats_k
+#
+#    def _get_characs_k_list(self, k, idxs, d):
+#        """Interaction with features and computing characs."""
+#        n_idxs = len(idxs)
+#        k_p, k_i = self._map_perturb(k)
+#        feats_k = []
+#        ## Not perturbed k
+#        if k_p == 0:
+#            for i in range(n_idxs):
+#                feats_ki = self._virtual_data_array_dict(idxs[i], k)
+#                feats_ki = self._characterizer(feats_ki, d[k][i])
+#                feats_ki = self._format_out(feats_ki)
+#            feats_k.append(feats_ki)
+#        ## Virtual perturbed data
+#        else:
+#            for i in range(n_idxs):
+#                feats_ki = self._virtual_data_array_dict(idxs[i], k, k_i, k_p)
+#                feats_ki = self._characterizer(feats_ki, d[k][i])
+#                feats_ki = self._format_out(feats_ki)
+#            feats_k.append(feats_ki)
+#        return feats_k
+#    def _retrieve_feats_array(self, idxs, c_k, d):
+#        """Retrieve and prepare output of the features.
+#
+#        Parameters
+#        ----------
+#        idxs: list of list of lists, or 3d np.ndarray
+#            Indices we want to get features.
+#        c_k: list
+#            the different ks we want to get features.
+#        d: list of list of lists or None
+#            the information of relative position we are going to use in the
+#            characterizer.
+#
+#        TODO
+#        ----
+#        Use of self.indices
+#
+#        """
+#        ## 0. Variable needed
+#        c_k = [c_k] if type(c_k) == int else c_k
+#        sh = self.shape[1]
+#        ## 2. Compute the whole feats
+#        feats = []
+#
+#
+#
+#
+#        nfeats = self.features.shape[1]
+#        sh = idxs.shape
+#        feats = []
+#        for k in c_k:
+#            ## Applying k map for perturbations
+#            k_p, k_i = self._map_perturb(k)
+#            ## Not perturbed k
+#            if k_p == 0:
+#                feats_k = self.features[idxs[:, :, k], :, c_k]
+#
+#
+#
+#        for i in xrange(len(idxs)):
+#            new_idxs = list(np.where(self.indices == idxs[i])[0])
+#            if new_idxs != []:
+#                feats.append(self.features[new_idxs][:, :, c_k])
+#            else:
+#                feats.append(np.ones((1, sh, len(c_k))) * self._nullvalue)
+#                if self.possible_regions is not None:
+#                    if new_idxs[0] not in self.possible_regions:
+#                        raise Exception("Incorrect region selected.")
+#
+#        feats = np.concatenate(feats, axis=0)
+#        feats = self._characterizer(feats, d)
+#        feats = self._format_out(feats)
+#        return feats
+
+    ################################ Candidates ###############################
+#    def _real_data_array_array(self, idxs, k, k_i=0, k_p=0):
+#        ## TODO: WARNING: Test
+#        feats_k = self.features[idxs[:, :, k]]
+#        return feats_k
+
+#    def _virtual_data_array_array(self, idxs, k, k_i, k_p):
+#        """Virtual data array."""
+#        nfeats = self.features.shape[1]
+#        sh = idxs.shape
+#        idxs_k = idxs[:, :, k].ravel()
+#        new_idxs = self._perturbators[k_p].apply2indice(idxs_k, k_i)
+#        yes_idxs = np.logical_and(new_idxs >= 0,
+#                                  new_idxs < len(self.features))
+#        feats_k = np.ones((len(new_idxs), nfeats))*self._nullvalue
+#        feats_k[yes_idxs] = self._perturbators[k_p].\
+#            apply2features_ind(self.features[:, :, k_i], new_idxs, k_i)
+#        #### WARNING: with this reshape
+#        feats_k = feats_k.reshape((sh[0], sh[1], feats_k.shape[1]))
+#        return feats_k
+
+#    def _real_data_array_list(self, idxs, k, k_i=0, k_p=0):
+#        feats_ki = self.features[idxs[k]]
+#        return feats_ki
+
+#    def _virtual_data_array_dict(self, idxs, k, k_i, k_p):
+#        new_idxs = self._perturbators[k_p].apply2indice(idxs[k], k_i)
+#        yes_idxs = [j for j in range(len(new_idxs))
+#                    if new_idxs[j] < len(self.features)]
+#        feats_ki = np.ones((len(new_idxs), self.features.shape[1]))
+#        feats_ki = feats_ki*self._nullvalue
+#        feats_ki[yes_idxs] = self._perturbators[k_p].\
+#            apply2features_ind(self.features, new_idxs, k_i)
+#        return feats_ki
+
+#    def _virtual_data_dict_array(self, idxs, k, k_i, k_p):
+#        raise NotImplementedError("Not adapted to non-array element features.")
+#
+#    def _virtual_data_dict_dict(self, idxs, k, k_i, k_p):
+#        raise NotImplementedError("Not adapted to non-array element features.")
+#
+#    def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
+#        raise NotImplementedError("Not adapted to non-array element features.")
+#
+#    def _real_data_dict_dict(self, idxs, k, k_i=0, k_p=0):
+#        raise NotImplementedError("Not adapted to non-array element features.")
+
+#    def _get_feats_k_array(self, k, idxs):
+#        """Interaction with the stored features."""
+#        ## Applying k map for perturbations
+#        k_p, k_i = self._map_perturb(k)
+#        ## Not perturbed k
+#        if k_p == 0:
+#            feats_k = self._real_data_array(idxs, k)
+#        ## Virtual perturbed data
+#        else:
+#            feats_k = self._virtual_data_array(idxs, k, k_i, k_p)
+#        return feats_k
+
+
 ######## add2result 2016-04-06
 
 def replacelist_addresult_function(x, x_i, vals_i):

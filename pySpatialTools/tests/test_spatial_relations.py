@@ -154,3 +154,7 @@ def test():
 
     ## Compute CenterLocs
     ## Compute PointsNeighsIntersection
+
+
+    ## Aux_regionmetrics
+    #sparse_from_listaregneighs(lista, u_regs, symmetric)

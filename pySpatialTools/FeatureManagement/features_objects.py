@@ -25,8 +25,29 @@ class Features:
     """Features object."""
     __name__ = 'pySpatialTools.FeaturesObject'
 
+    def _global_initialization(self):
+        ## Main attributes
+        self.features = None
+        self.variables = None
+        self.out_features = None
+        self._setdescriptor = False
+        ## Other attributes
+        self._nullvalue = 0
+        ## Perturbation
+        self._perturbators = [NonePerturbation()]
+        self._map_perturb = lambda x: (0, 0)
+        self._dim_perturb = [1]
+        ## Function to homogenize output respect aggfeatures
+        # Reduction of dimensionality (dummy getting first neigh feats)
+        self._characterizer = lambda x, d: np.array([e[0] for e in x])
+        self._format_out_k = lambda x, y1, y2, y3: x
+        self._out = 'ndarray'
+
     def __len__(self):
-        return len(self.features)
+        if type(self.features) == list and self.typefeat == 'explicit':
+            return len(self.features[0])
+        else:
+            return len(self.features)
 
     def __getitem__(self, key):
         """Possible ways to get items in pst.Features classes:
@@ -57,7 +78,7 @@ class Features:
             i, k, d = np.array([[key]]*kn), range(kn), [[None]]*kn
         elif type(key) == slice:
             neighs_info = Neighs_Info()
-            neighs_info.set_information(self.k_perturb, len(self.features))
+            neighs_info.set_information(self.k_perturb, self.shape[0])
             neighs_info.set(key)
             i, d, k, _ = neighs_info.get_information()
         else:
@@ -97,10 +118,6 @@ class Features:
         print ' '*50, i, k, d, type(i), type(k)
         feats = self._retrieve_feats(i, k, d)
         return feats
-
-    @property
-    def shape(self):
-        return (len(self.features), len(self.variables), self.k_perturb+1)
 
     def _retrieve_feats(self, idxs, c_k, d):
         """Retrieve and prepare output of the features.
@@ -212,7 +229,7 @@ class Features:
         print type(self.features), type(idxs), idxs
         if type(self.features) == list:
             if type(idxs) == list:
-                feats_k = self._real_data_dict_dict(idxs, k, k_i, k_p)
+                feats_k = self._real_data_dict_list(idxs, k, k_i, k_p)
             elif type(idxs) == np.ndarray:
                 feats_k = self._real_data_dict_array(idxs, k, k_i, k_p)
         elif type(self.features) == np.ndarray:
@@ -237,6 +254,29 @@ class Features:
                 feats_k = self._virtual_data_array_array(idxs, k, k_i, k_p)
         return feats_k
 
+    ############################## Main interaction ###########################
+    ###########################################################################
+    def _get_characs_k(self, k, idxs, d):
+        """Getting characs with array idxs."""
+        ## Interaction with the features stored
+        print 'characs_inputs', k, idxs, d
+        feats_k = self._get_feats_k(k, idxs)
+        ## Computing characterizers
+        print 'characterizer_inputs', feats_k, d[k], self._out
+        feats_k = self._characterizer(feats_k, d[k])
+        ## Formatting result
+        print feats_k, self._characterizer
+        feats_k = self._format_out(feats_k)
+
+        #### Testing #######################
+        print feats_k
+        if type(feats_k) == list:
+            pass
+        else:
+            assert(len(feats_k.shape) == 2)
+        ####################################
+        return feats_k
+
 
 class ImplicitFeatures(Features):
     """Element features.
@@ -245,22 +285,6 @@ class ImplicitFeatures(Features):
     typefeat = 'implicit'
 
     def _initialization(self):
-        ## Main attributes
-        self.features = None
-        self.variables = None
-        self.out_features = None
-        self._setdescriptor = False
-        ## Other attributes
-        self._nullvalue = 0
-        ## Perturbation
-        self._perturbators = [NonePerturbation()]
-        self._map_perturb = lambda x: (0, 0)
-        self._dim_perturb = [1]
-        ## Function to homogenize output respect aggfeatures
-        # Reduction of dimensionality (dummy getting first neigh feats)
-        self._characterizer = lambda x, d: np.array([e[0] for e in x])
-        self._format_out_k = lambda x, y1, y2, y3: x
-        self._out = 'ndarray'
         ## Default mutable functions
         self._get_characs_k = self._get_characs_k
         self._get_real_data = self._real_data_general
@@ -268,6 +292,7 @@ class ImplicitFeatures(Features):
 
     def __init__(self, features, perturbations=None, names=[], out_features=[],
                  characterizer=None, out_formatter=None):
+        self._global_initialization()
         self._initialization()
         self._format_features(features, out_features)
         self._format_characterizer(characterizer, out_formatter)
@@ -278,6 +303,10 @@ class ImplicitFeatures(Features):
     def k_perturb(self):
         if self._dim_perturb:
             return np.sum(self._dim_perturb)-1
+
+    @property
+    def shape(self):
+        return (len(self.features), len(self.variables), self.k_perturb+1)
 
     ############################### Interaction ###############################
     ###########################################################################
@@ -355,26 +384,8 @@ class ImplicitFeatures(Features):
     def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
         raise NotImplementedError("Not adapted to non-array element features.")
 
-    def _real_data_dict_dict(self, idxs, k, k_i=0, k_p=0):
+    def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
         raise NotImplementedError("Not adapted to non-array element features.")
-
-    def _get_characs_k(self, k, idxs, d):
-        """Getting characs with array idxs."""
-        ## Interaction with the features stored
-        print 'characs_inputs', k, idxs, d
-        feats_k = self._get_feats_k(k, idxs)
-        ## Computing characterizers
-        print 'characterizer_inputs', feats_k, d[k], self._out
-        feats_k = self._characterizer(feats_k, d[k])
-        ## Formatting result
-        print feats_k, self._characterizer
-        feats_k = self._format_out(feats_k)
-        print feats_k
-        if type(feats_k) == list:
-            pass
-        else:
-            assert(len(feats_k.shape) == 2)
-        return feats_k
 
     def _get_feats_k(self, k, idxs):
         """Interaction with the stored features."""
@@ -476,175 +487,74 @@ class ExplicitFeatures(Features):
     typefeat = 'explicit'
 
     def _initialization(self):
-        ## Main attributes
-        self.features = None
-        self.variables = None
-        self.out_features = None
-        self._setdescriptor = False
-        ## Other attributes
-        self._nullvalue = 0
-        ## Perturbation
-        self._perturbators = [NonePerturbation()]
-        self._map_perturb = lambda x: (0, 0)
-        self._dim_perturb = [1]
-        ## Function to homogenize output respect aggfeatures
-        # Reduction of dimension
-        self._characterizer = lambda x, d: np.array([e[0] for e in x])
-        self._format_out_k = lambda x, y1, y2, y3: x
-        self._out = 'ndarray'
         self.possible_regions = None
         self.indices = []
-        self._out = 'ndarray'
+        ## Default mutable functions
+        self._get_real_data = self._real_data_general
 
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
                  characterizer=None, out_formatter=None):
+        self._global_initialization()
         self._initialization()
         self._format_aggfeatures(aggfeatures, names, indices)
         self._nullvalue = self._nullvalue if nullvalue is None else nullvalue
         self._format_characterizer(characterizer, out_formatter)
 
-#    def _retrieve_feats_array(self, idxs, c_k, d):
-#        """Retrieve and prepare output of the features.
-#
-#        Parameters
-#        ----------
-#        idxs: list of list of lists, or 3d np.ndarray
-#            Indices we want to get features.
-#        c_k: list
-#            the different ks we want to get features.
-#        d: list of list of lists or None
-#            the information of relative position we are going to use in the
-#            characterizer.
-#
-#        TODO
-#        ----
-#        Use of self.indices
-#
-#        """
-#        ## 0. Variable needed
-#        c_k = [c_k] if type(c_k) == int else c_k
-#        sh = self.shape[1]
-#        ## 2. Compute the whole feats
-#        feats = []
-#
-#
-#
-#
-#        nfeats = self.features.shape[1]
-#        sh = idxs.shape
-#        feats = []
-#        for k in c_k:
-#            ## Applying k map for perturbations
-#            k_p, k_i = self._map_perturb(k)
-#            ## Not perturbed k
-#            if k_p == 0:
-#                feats_k = self.features[idxs[:, :, k], :, c_k]
-#
-#
-#
-#        for i in xrange(len(idxs)):
-#            new_idxs = list(np.where(self.indices == idxs[i])[0])
-#            if new_idxs != []:
-#                feats.append(self.features[new_idxs][:, :, c_k])
-#            else:
-#                feats.append(np.ones((1, sh, len(c_k))) * self._nullvalue)
-#                if self.possible_regions is not None:
-#                    if new_idxs[0] not in self.possible_regions:
-#                        raise Exception("Incorrect region selected.")
-#
-#        feats = np.concatenate(feats, axis=0)
-#        feats = self._characterizer(feats, d)
-#        feats = self._format_out(feats)
-#        return feats
+    @property
+    def shape(self):
+        if type(self.features) == list:
+            return len(self.features[0]), len(self.variables), self.k_perturb+1
+        else:
+            return (len(self.features), len(self.variables), self.k_perturb+1)
 
+    ############################### Interaction ###############################
+    ###########################################################################
     ################################ Candidates ###############################
-#    def _real_data_array_array(self, idxs, k, k_i=0, k_p=0):
-#        ## TODO: WARNING: Test
-#        feats_k = self.features[idxs[:, :, k]]
-#        return feats_k
-
-#    def _virtual_data_array_array(self, idxs, k, k_i, k_p):
-#        """Virtual data array."""
-#        nfeats = self.features.shape[1]
-#        sh = idxs.shape
-#        idxs_k = idxs[:, :, k].ravel()
-#        new_idxs = self._perturbators[k_p].apply2indice(idxs_k, k_i)
-#        yes_idxs = np.logical_and(new_idxs >= 0,
-#                                  new_idxs < len(self.features))
-#        feats_k = np.ones((len(new_idxs), nfeats))*self._nullvalue
-#        feats_k[yes_idxs] = self._perturbators[k_p].\
-#            apply2features_ind(self.features[:, :, k_i], new_idxs, k_i)
-#        #### WARNING: with this reshape
-#        feats_k = feats_k.reshape((sh[0], sh[1], feats_k.shape[1]))
-#        return feats_k
-
-#    def _real_data_array_list(self, idxs, k, k_i=0, k_p=0):
-#        feats_ki = self.features[idxs[k]]
-#        return feats_ki
-
-#    def _virtual_data_array_dict(self, idxs, k, k_i, k_p):
-#        new_idxs = self._perturbators[k_p].apply2indice(idxs[k], k_i)
-#        yes_idxs = [j for j in range(len(new_idxs))
-#                    if new_idxs[j] < len(self.features)]
-#        feats_ki = np.ones((len(new_idxs), self.features.shape[1]))
-#        feats_ki = feats_ki*self._nullvalue
-#        feats_ki[yes_idxs] = self._perturbators[k_p].\
-#            apply2features_ind(self.features, new_idxs, k_i)
-#        return feats_ki
-
-#    def _virtual_data_dict_array(self, idxs, k, k_i, k_p):
-#        raise NotImplementedError("Not adapted to non-array element features.")
-#
-#    def _virtual_data_dict_dict(self, idxs, k, k_i, k_p):
-#        raise NotImplementedError("Not adapted to non-array element features.")
-#
-#    def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
-#        raise NotImplementedError("Not adapted to non-array element features.")
-#
-#    def _real_data_dict_dict(self, idxs, k, k_i=0, k_p=0):
-#        raise NotImplementedError("Not adapted to non-array element features.")
-
-#    def _get_feats_k_array(self, k, idxs):
-#        """Interaction with the stored features."""
-#        ## Applying k map for perturbations
-#        k_p, k_i = self._map_perturb(k)
-#        ## Not perturbed k
-#        if k_p == 0:
-#            feats_k = self._real_data_array(idxs, k)
-#        ## Virtual perturbed data
-#        else:
-#            feats_k = self._virtual_data_array(idxs, k, k_i, k_p)
-#        return feats_k
-
-    def _get_characs_k_array(self, k, idxs, d):
-        """Getting characs with array idxs."""
-        ## Interaction with the features stored
-        feats_k = self._get_feats_k_array(k, idxs)
-        ## Computing characterizers
-        feats_k = self._characterizer(feats_k, d[k])
-        ## Formatting result
-        feats_k = self._format_out(feats_k)
+    def _real_data_array_array(self, idxs, k, k_i=0, k_p=0):
+        """Real data array.
+        * idxs: (ks, iss_i, nei)
+        * feats_k: (iss_i, nei, features)
+        """
+        print idxs, k, self.features.shape
+        feats_k = self.features[:, :, k][idxs[k]]
+        assert(len(feats_k.shape) == 3)
         return feats_k
 
-    def _get_characs_k_list(self, k, idxs, d):
-        """Interaction with features and computing characs."""
-        n_idxs = len(idxs)
-        k_p, k_i = self._map_perturb(k)
+    def _real_data_array_list(self, idxs, k, k_i=0, k_p=0):
+        """
+        * idxs: [ks][iss_i][nei]
+        * feats_k: [iss_i](nei, features)
+        """
         feats_k = []
+        for i in range(len(idxs[k])):
+            feats_k.append(self.features[:, :, k][idxs[k][i]])
+            assert(len(self.features[idxs[k][i]].shape) == 2)
+        return feats_k
+
+    def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
+        """
+        * idxs: (ks, iss_i, nei)
+        * feats_k: [iss_i][nei]{features}
+        """
+        feats_k = []
+        for i in range(len(idxs[k])):
+            feats_k.append(self.features[k][idxs[k, i]])
+        return feats_k
+
+    def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
+        """
+        * idxs: [ks][iss_i][nei]
+        * feats_k: [iss_i][nei]{features}
+        """
+        feats_k = []
+        for i in range(len(idxs[k])):
+            feats_k.append(self.features[k][idxs[k][i]])
+        return feats_k
+
+    def _get_feats_k(self, k, idxs):
+        """Interaction with the stored features."""
         ## Not perturbed k
-        if k_p == 0:
-            for i in range(n_idxs):
-                feats_ki = self._virtual_data_array_dict(idxs[i], k)
-                feats_ki = self._characterizer(feats_ki, d[k][i])
-                feats_ki = self._format_out(feats_ki)
-            feats_k.append(feats_ki)
-        ## Virtual perturbed data
-        else:
-            for i in range(n_idxs):
-                feats_ki = self._virtual_data_array_dict(idxs[i], k, k_i, k_p)
-                feats_ki = self._characterizer(feats_ki, d[k][i])
-                feats_ki = self._format_out(feats_ki)
-            feats_k.append(feats_ki)
+        feats_k = self._get_real_data(idxs, k)
         return feats_k
 
     ###########################################################################
@@ -656,29 +566,38 @@ class ExplicitFeatures(Features):
     ###########################################################################
     def _format_aggfeatures(self, aggfeatures, names, indices):
         """Formatter for aggfeatures."""
-        if len(aggfeatures.shape) == 1:
-            self._k_reindices = 1
-            aggfeatures = aggfeatures.reshape((len(aggfeatures), 1, 1))
+        if type(aggfeatures) == list:
+            self._k_reindices = len(aggfeatures)
             self.features = aggfeatures
-        elif len(aggfeatures.shape) == 2:
-            self._k_reindices = 1
-            aggfeatures = aggfeatures.reshape((len(aggfeatures),
-                                              aggfeatures.shape[1], 1))
-        elif len(aggfeatures.shape) == 3:
-            self._k_reindices = aggfeatures.shape[2]
-            self.features = aggfeatures
-        elif len(aggfeatures.shape) > 3:
-            raise IndexError("Aggfeatures with more than 3 dimensions.")
+            self.k_perturb = self._k_reindices-1
+        elif type(aggfeatures) == np.ndarray:
+            self.k_perturb = aggfeatures.shape[2]-1
+            if len(aggfeatures.shape) == 1:
+                self._k_reindices = 1
+                aggfeatures = aggfeatures.reshape((len(aggfeatures), 1, 1))
+                self.features = aggfeatures
+            elif len(aggfeatures.shape) == 2:
+                self._k_reindices = 1
+                aggfeatures = aggfeatures.reshape((len(aggfeatures),
+                                                  aggfeatures.shape[1], 1))
+            elif len(aggfeatures.shape) == 3:
+                self._k_reindices = aggfeatures.shape[2]
+                self.features = aggfeatures
+            elif len(aggfeatures.shape) > 3:
+                raise IndexError("Aggfeatures with more than 3 dimensions.")
         self._format_variables(names)
         self.indices = indices
-        self.k_perturb = aggfeatures.shape[2]-1
 
     def _format_variables(self, names):
-        nfeats = self.features.shape[1]
-        self.variables = names if names else list(range(nfeats))
-        self.out_features = self.variables
-        if len(self.variables) != self.features.shape[1]:
-            raise IndexError("Incorrect length of variables list.")
+        if type(self.features) == np.ndarray:
+            nfeats = self.features.shape[1]
+            self.variables = names if names else list(range(nfeats))
+            self.out_features = self.variables
+            if len(self.variables) != self.features.shape[1]:
+                raise IndexError("Incorrect length of variables list.")
+        else:
+            self.variables = names
+            self.out_features = self.variables
 
     ######################### Perturbation management #########################
     ###########################################################################

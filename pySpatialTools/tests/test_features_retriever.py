@@ -13,6 +13,7 @@ from pySpatialTools.FeatureManagement.features_objects import Features,\
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 import numpy as np
 from pySpatialTools.utils.perturbations import PermutationPerturbation
+from ..utils.util_classes import Neighs_Info
 
 
 def test():
@@ -48,39 +49,50 @@ def test():
 
     ## Other functions
     # Indexing
-#    Feat[0]
+    Feat[0]
     Feat0[0]
     Feat1[0]
     Feat2[0]
 
-#    Feat[(0, 0)]
+    Feat[(0, 0)]
     Feat0[(0, 0)]
     Feat1[(0, 0)]
     Feat2[(0, 0)]
-#    Feat[([0], [0])]
+    Feat[([0], [0])]
     Feat0[([0], [0])]
     Feat1[([0], [0])]
     Feat2[([0], [0])]
-#    Feat[([0], [0.])]
+    Feat[([0], [0.])]
     Feat0[([0], [0.])]
     Feat1[([0], [0.])]
     Feat2[([0], [0.])]
 
-#    Feat[0:3]
-#    Feat[:]
+    Feat[0:3]
+    Feat[:]
     Feat0[:]
     Feat1[:]
     Feat2[:]
 
-#    Feat[((0, 0), 0)]
+    Feat[((0, 0), 0)]
     Feat0[((0, 0), 0)]
     Feat1[((0, 0), 0)]
     Feat2[((0, 0), 0)]
 
-#    Feat[(([0], [0]), [0])]
+    Feat[(([0], [0]), [0])]
     Feat0[(([0], [0]), [0])]
     Feat1[(([0], [0]), [0])]
     Feat2[(([0], [0]), [0])]
+
+    Feat0[[0, 4, 5]]
+    Feat1[[0, 4, 5]]
+    Feat2[[0, 4, 5]]
+
+    nei = Neighs_Info()
+    nei.set((([0], [0]), [0]))
+    Feat[nei]
+    Feat0[nei]
+    Feat1[nei]
+    Feat2[nei]
 
     # shape
 #    Feat.shape
@@ -97,3 +109,15 @@ def test():
     Feat0[(([], []), [0])]
     Feat1[(([], []), [0])]
     Feat2[(([], []), [0])]
+
+    ##
+    ## List features
+    listfeatures = []
+    for k in range(5):
+        listfeatures_k = []
+        for i in range(100):
+            aux = np.unique(np.random.randint(0, 100, np.random.randint(5)))
+            d = dict(zip(aux, np.random.random(len(aux))))
+            listfeatures_k.append(d)
+        listfeatures.append(listfeatures_k)
+    Feat = ExplicitFeatures(listfeatures)
