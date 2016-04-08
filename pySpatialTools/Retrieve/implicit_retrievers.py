@@ -137,7 +137,7 @@ class KRetriever(SpaceRetriever):
         point_i: int
             the indice of the point_i.
         """
-        kneighs = self._get_info_i(point_i)
+        kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), False)
         res = np.array(res), None
@@ -154,7 +154,7 @@ class KRetriever(SpaceRetriever):
         if type(point_i) == np.ndarray:
             print point_i.shape, 'locs_shape'
 
-        kneighs = self._get_info_i(point_i)
+        kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), True)
         res = res[1], self._apply_preprocess_relative_pos(list(res[0]))
@@ -235,7 +235,7 @@ class CircRetriever(SpaceRetriever):
         res = self._apply_relative_pos_spec(res, point_i)
         return res
 
-    def _retrieve_neighs_constant_nodistance(self, point_i, kr=0):
+    def _retrieve_neighs_constant_nodistance(self, point_i, info_i={}, kr=0):
         """Retrieve neighs not computing distance by default.
 
         Parameters
@@ -243,13 +243,13 @@ class CircRetriever(SpaceRetriever):
         point_i: int
             the indice of the point_i.
         """
-        radius = self._get_info_i(point_i)
+        radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, radius, False)
         res = list(res), None
         return res
 
-    def _retrieve_neighs_constant_distance(self, point_i, kr=0):
+    def _retrieve_neighs_constant_distance(self, point_i, info_i={}, kr=0):
         """Retrieve neighs computing distance by default.
 
         Parameters
@@ -257,7 +257,7 @@ class CircRetriever(SpaceRetriever):
         point_i: int
             the indice of the point_i.
         """
-        radius = self._get_info_i(point_i)
+        radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, radius, True)
         res = list(res[0]), self._apply_preprocess_relative_pos(list(res[1]))
@@ -332,18 +332,18 @@ class WindowsRetriever(SpaceRetriever):
         self._info_ret = info_ret
         self._max_bunch = max_bunch
 
-    def __iter__(self):
-        ## Prepare iteration
-        bool_input_idx = True
-        self._format_preparators(bool_input_idx)
-        self._constant_ret = True
-        self._format_retriever_function(bool_input_idx)
-        ## Prepare indices
-        indices = split_parallel(np.arange(self._n0), self._max_bunch)
-        ## Iteration
-        for idxs in indices:
-            neighs = self.retrieve_neighs(idxs)
-            yield indices, neighs
+#    def __iter__(self):
+#        ## Prepare iteration
+#        bool_input_idx = True
+#        self._format_preparators(bool_input_idx)
+#        self._constant_ret = True
+#        self._format_retriever_function(bool_input_idx)
+#        ## Prepare indices
+#        indices = split_parallel(np.arange(self._n0), self._max_bunch)
+#        ## Iteration
+#        for idxs in indices:
+#            neighs = self.retrieve_neighs(idxs)
+#            yield indices, neighs
 
     def __iter__(self):
         ## Prepare iteration
@@ -379,7 +379,7 @@ class WindowsRetriever(SpaceRetriever):
             neighs_info = neighs, None
         return neighs_info
 
-    def _retrieve_neighs_nodistance(self, element_i, pars_ret, kr=0):
+    def _retrieve_neighs_constant_nodistance(self, element_i, pars_ret, kr=0):
         """Retrieve neighs not computing distance by default."""
         pars_ret = self._get_info_i(element_i, pars_ret)
         loc_i = self._prepare_input(element_i, kr)
@@ -389,14 +389,15 @@ class WindowsRetriever(SpaceRetriever):
         neighs_info = self.retriever[kr].map2indices_iss(neighs_info[0])
         return neighs_info
 
-    def _retrieve_neighs_distance(self, element_i, pars_ret, kr=0):
+    def _retrieve_neighs_constant_distance(self, element_i, pars_ret, kr=0):
         """Retrieve neighs computing distance by default."""
         pars_ret = self._get_info_i(element_i, pars_ret)
         loc_i = self._prepare_input(element_i, kr)
         assert(len(loc_i.shape) == 2)
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
                                                  self._ndim, **pars_ret)
-        neighs_info[0] = self.retriever[kr].map2indices_iss(neighs_info[0])
+        aux_neigh = self.retriever[kr].map2indices_iss(neighs_info[0])
+        neighs_info = aux_neigh, neighs_info[1]
         ## Correct for another relative spatial measure (Save time indexing)
         if self.relative_pos is not None:
             neighs_info = self._apply_relative_pos(neighs_info[0], element_i,

@@ -83,6 +83,13 @@ def test():
         neighs_info = gret.retrieve_neighs(i)
         neighs_info = ret8.retrieve_neighs(i)
 
+    neighs_info = ret1._retrieve_neighs_constant_nodistance(4)
+    neighs_info = ret1._retrieve_neighs_constant_distance(4)
+    neighs_info = ret2._retrieve_neighs_constant_nodistance(4)
+    neighs_info = ret8._retrieve_neighs_constant_nodistance(8, pars8)
+    neighs_info = ret8._retrieve_neighs_constant_distance(8, pars8)
+
+
     ## Retrieve-driven testing
     for idx, neighs in ret1:
             pass
@@ -95,6 +102,10 @@ def test():
     ret6.set_iter(2, 1000)
     for idx, neighs in ret6:
         pass
+
+    ret8.set_iter()
+#    for idx, neighs in ret8:
+#        pass
 #        print idx, neighs
 
     ## Main functions

@@ -500,6 +500,8 @@ class ExplicitFeatures(Features):
         self.indices = []
         ## Default mutable functions
         self._get_real_data = self._real_data_general
+        self._get_real_data = self._real_data_general
+        self._get_virtual_data = self._virtual_data_general
 
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
                  characterizer=None, out_formatter=None):
