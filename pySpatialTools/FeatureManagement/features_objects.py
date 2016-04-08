@@ -203,25 +203,25 @@ class Features:
             except:
                 raise TypeError("Incorrect characterizer.")
 
-    def _format_feat_interactors(self, typeidxs):
-        """Programming this class in order to fit properly to the inputs and
-        the function is going to carry out."""
-        if type(self.features) == list:
-            msg = "Not adapted to non-array element features."
-            raise NotImplementedError(msg)
-        elif type(self.features) == np.ndarray:
-            if typeidxs is None:
-                self._get_characs_k = self._get_characs_k
-                self._get_real_data = self._real_data_general
-                self._get_virtual_data = self._virtual_data_general
-            elif typeidxs == np.ndarray:
-                self._get_characs_k = self._get_characs_k
-                self._get_real_data = self._real_data_array_array
-                self._get_virtual_data = self._virtual_data_array_array
-            elif typeidxs == list:
-                self._get_characs_k = self._get_characs_k
-                self._get_real_data = self._real_data_array_list
-                self._get_virtual_data = self._virtual_data_array_list
+#    def _format_feat_interactors(self, typeidxs):
+#        """Programming this class in order to fit properly to the inputs and
+#        the function is going to carry out."""
+#        if type(self.features) == list:
+#            msg = "Not adapted to non-array element features."
+#            raise NotImplementedError(msg)
+#        elif type(self.features) == np.ndarray:
+#            if typeidxs is None:
+#                self._get_characs_k = self._get_characs_k
+#                self._get_real_data = self._real_data_general
+#                self._get_virtual_data = self._virtual_data_general
+#            elif typeidxs == np.ndarray:
+#                self._get_characs_k = self._get_characs_k
+#                self._get_real_data = self._real_data_array_array
+#                self._get_virtual_data = self._virtual_data_array_array
+#            elif typeidxs == list:
+#                self._get_characs_k = self._get_characs_k
+#                self._get_real_data = self._real_data_array_list
+#                self._get_virtual_data = self._virtual_data_array_list
 
     ############################ General interaction ##########################
     ###########################################################################
