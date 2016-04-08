@@ -142,7 +142,7 @@ class Features:
             if type(feats_k) == list:
                 assert(type(feats_k[0]) == dict)
             else:
-                print feats_k.shape, idxs.shape, idxs
+                print feats_k.shape, idxs
                 assert(len(feats_k.shape) == 2)
             ########################
 
@@ -154,14 +154,14 @@ class Features:
 #        if np.all([type(fea) == np.ndarray for fea in feats]):
 #            if feats:
 #                feats = np.array(feats)
-        ## Testing #############
-        assert(len(feats) == len(c_k))
-        if type(feats) == list:
-            pass
-        else:
-            print feats.shape, idxs.shape, idxs
-            assert(len(feats.shape) == 3)
-        ########################
+#        ## Testing #############
+#        assert(len(feats) == len(c_k))
+#        if type(feats) == list:
+#            pass
+#        else:
+#            print feats.shape, idxs.shape, idxs
+#            assert(len(feats.shape) == 3)
+#        ########################
         return feats
 
     ################################# Setters #################################
@@ -269,7 +269,7 @@ class Features:
         feats_k = self._format_out(feats_k)
 
         #### Testing #######################
-        print feats_k
+        print feats_k, type(feats_k)
         if type(feats_k) == list:
             pass
         else:
@@ -487,6 +487,7 @@ class ExplicitFeatures(Features):
     typefeat = 'explicit'
 
     def _initialization(self):
+#        self._characterizer = lambda x, d: x
         self.possible_regions = None
         self.indices = []
         ## Default mutable functions
@@ -528,7 +529,10 @@ class ExplicitFeatures(Features):
         feats_k = []
         for i in range(len(idxs[k])):
             feats_k.append(self.features[:, :, k][idxs[k][i]])
-            assert(len(self.features[idxs[k][i]].shape) == 2)
+#            feats_ki = []
+#            for nei in range(len(idxs[k][i])):
+#                feats_k.append(self.features[:, :, k][idxs[k][i]])
+#            feats_k.append(feats_ki)
         return feats_k
 
     def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
@@ -538,7 +542,10 @@ class ExplicitFeatures(Features):
         """
         feats_k = []
         for i in range(len(idxs[k])):
-            feats_k.append(self.features[k][idxs[k, i]])
+            feats_ki = []
+            for nei in range(len(idxs[k][i])):
+                feats_ki.append(self.features[k][idxs[k, i, nei]])
+            feats_k.append(feats_ki)
         return feats_k
 
     def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
@@ -548,7 +555,10 @@ class ExplicitFeatures(Features):
         """
         feats_k = []
         for i in range(len(idxs[k])):
-            feats_k.append(self.features[k][idxs[k][i]])
+            feats_ki = []
+            for nei in range(len(idxs[k][i])):
+                feats_ki.append(self.features[k][idxs[k][i][nei]])
+            feats_k.append(feats_ki)
         return feats_k
 
     def _get_feats_k(self, k, idxs):
@@ -570,6 +580,8 @@ class ExplicitFeatures(Features):
             self._k_reindices = len(aggfeatures)
             self.features = aggfeatures
             self.k_perturb = self._k_reindices-1
+            # Default listdict characterizer
+            self._characterizer = lambda x, d: [e[0] for e in x]
         elif type(aggfeatures) == np.ndarray:
             self.k_perturb = aggfeatures.shape[2]-1
             if len(aggfeatures.shape) == 1:

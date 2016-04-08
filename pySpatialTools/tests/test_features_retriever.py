@@ -94,6 +94,12 @@ def test():
     Feat1[nei]
     Feat2[nei]
 
+    nei = Neighs_Info()
+    nei.set([[[0, 4], [0, 3]]])
+    Feat[nei]
+    Feat0[nei]
+    Feat1[nei]
+    Feat2[nei]
     # shape
 #    Feat.shape
     Feat0.shape
@@ -110,6 +116,10 @@ def test():
     Feat1[(([], []), [0])]
     Feat2[(([], []), [0])]
 
+    Feat0.set_descriptormodel(avgdesc)
+    Feat1.set_descriptormodel(avgdesc)
+    Feat2.set_descriptormodel(avgdesc)
+
     ##
     ## List features
     listfeatures = []
@@ -121,3 +131,19 @@ def test():
             listfeatures_k.append(d)
         listfeatures.append(listfeatures_k)
     Feat = ExplicitFeatures(listfeatures)
+    len(Feat)
+    nei = Neighs_Info()
+    nei.set((([0], [0]), [0]))
+    Feat[nei]
+    nei = Neighs_Info()
+    nei.set([[[0, 4], [0, 3]]])
+    Feat[nei]
+
+#    Feat.set_descriptormodel(avgdesc)
+
+#    nei = Neighs_Info()
+#    nei.set((([0], [0]), [0]))
+#    Feat[nei]
+#    nei = Neighs_Info()
+#    nei.set([[[0, 4], [0, 3]]])
+#    Feat[nei]
