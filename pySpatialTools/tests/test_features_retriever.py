@@ -100,6 +100,11 @@ def test():
     Feat0[nei]
     Feat1[nei]
     Feat2[nei]
+
+    nei = Neighs_Info(staticneighs=True)
+    nei.set([[0, 4], [0, 3]])
+    Feat1[nei, 1]
+
     # shape
 #    Feat.shape
     Feat0.shape

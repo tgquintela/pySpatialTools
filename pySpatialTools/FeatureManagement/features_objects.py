@@ -138,7 +138,8 @@ class Features:
             feats_k = self._get_characs_k(k, idxs, d)
 
             ## Testing #############
-            assert(len(feats_k) == len(idxs[k]))
+#            print feats_k
+#            assert(len(feats_k) == len(idxs[k]))
             if type(feats_k) == list:
                 assert(type(feats_k[0]) == dict)
             else:
@@ -261,9 +262,11 @@ class Features:
         ## Interaction with the features stored
         print 'characs_inputs', k, idxs, d
         feats_k = self._get_feats_k(k, idxs)
+        d_k = self._get_relpos_k(k, d)
         ## Computing characterizers
-        print 'characterizer_inputs', feats_k, d[k], self._out
-        feats_k = self._characterizer(feats_k, d[k])
+        print d
+        print 'characterizer_inputs', feats_k, d_k, self._out
+        feats_k = self._characterizer(feats_k, d_k)
         ## Formatting result
         print feats_k, self._characterizer
         feats_k = self._format_out(feats_k)
@@ -276,6 +279,10 @@ class Features:
             assert(len(feats_k.shape) == 2)
         ####################################
         return feats_k
+
+    def _get_relpos_k(self, k, d):
+        k_p, k_i = self._map_perturb(k)
+        return d[k_i]
 
 
 class ImplicitFeatures(Features):
@@ -360,9 +367,10 @@ class ImplicitFeatures(Features):
         * feats_k: [iss_i](nei, features)
         """
         feats_k = []
-        for i in range(len(idxs[k])):
+        print idxs, k, k_i, k_p
+        for i in range(len(idxs[k_i])):
             # Perturbation indices
-            new_idxs = self._perturbators[k_p].apply2indice(idxs[k][i], k_i)
+            new_idxs = self._perturbators[k_p].apply2indice(idxs[k_i][i], k_i)
             # Indices in bounds
             yes_idxs = [j for j in range(len(new_idxs))
                         if new_idxs[j] < len(self.features)]
@@ -373,7 +381,7 @@ class ImplicitFeatures(Features):
                 apply2features_ind(self.features, new_idxs, k_i)
             assert(len(feats_ki.shape) == 2)
             feats_k.append(feats_ki)
-        return feats_ki
+        return feats_k
 
     def _virtual_data_dict_array(self, idxs, k, k_i, k_p):
         raise NotImplementedError("Not adapted to non-array element features.")
