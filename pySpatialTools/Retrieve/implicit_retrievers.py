@@ -352,6 +352,7 @@ class WindowsRetriever(SpaceRetriever):
         self._constant_ret = True
         self._format_retriever_function(bool_input_idx)
         ## Iteration
+        shape, max_bunch, l, center, excluded
         for inds, neighs, rel_pos in windows_iteration():
             ### KS 
             ### Set neighs_info !!!    

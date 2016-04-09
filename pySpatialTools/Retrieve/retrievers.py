@@ -87,8 +87,8 @@ class Retriever:
             ## 1. Map perturb
             _, k_r = self._map_perturb(k)
             ## 2. Retrieve neighs
-            neighs, dists = self._retrieve_neighs_spec(i_loc, {}, k_r=k_r)
-            nei_k = self._format_output(i_loc, neighs, dists, k_r=k_r)
+            neighs, dists = self._retrieve_neighs_spec(i_loc, {}, kr=k_r)
+            nei_k = self._format_output(i_loc, neighs, dists, kr=k_r)
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
         self.neighs_info.set((neighs_info, ks), i_loc)
@@ -132,7 +132,9 @@ class Retriever:
         """Format inputs retriever check and format the inputs for retrieving.
         """
         # Prepare information retrieve
+        print 'input', info_i
         info_i = self._get_info_i(i_loc, info_i)
+        print 'output', info_i
         #i_loc = self._get_loc_i(i_loc)
         ifdistance = self._ifdistance if ifdistance is None else ifdistance
         # Prepare perturbation index

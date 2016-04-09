@@ -7,6 +7,7 @@ test for retrievers precoded and framework of retrievers.
 """
 
 import numpy as np
+from itertools import product
 
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
@@ -40,6 +41,125 @@ def test():
 
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
+    pos_ifdistance = [True, False]
+    pos_inmap = [None, _input_map]
+    pos_constantinfo = [True, False, None]
+    pos_boolinidx = [True, False, None]
+
+    ## KRetriever
+    pos_inforet = [2, 5, 10]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+                         output_map=p[3], constant_info=p[4],
+                         bool_input_idx=p[5])
+        if p[5] is False:
+            i = locs[0]
+        else:
+            i = 0
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+
+    ## CircRetriever
+    pos_inforet = [2., 5., 10.]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+                         output_map=p[3], constant_info=p[4],
+                         bool_input_idx=p[5])
+        if p[5] is False:
+            i = locs[0]
+        else:
+            i = 0
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+
+#    ## SameEleRetriever
+#    pos_inforet = [None]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                           input_map=p[2], output_map=p[3], constant_info=p[4],
+#                           bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = locs[0]
+#        else:
+#            i = 0
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            #neighs_info = ret[i]
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#
+#    ## OrderEleRetriever
+#    pos_inforet = [pars4]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                            input_map=p[2], output_map=p[3],
+#                            constant_info=p[4], bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = locs[0]
+#        else:
+#            i = 0
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            #neighs_info = ret[i]
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#
+#    ## LimDistanceRetriever
+#    pos_inforet = [pars5]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                                  input_map=p[2], output_map=p[3],
+#                                  constant_info=p[4], bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = locs[0]
+#        else:
+#            i = 0
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            #neighs_info = ret[i]
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+
+
+
+
+#info_ret=None, autolocs=None, pars_ret=None,
+#                 autoexclude=True, ifdistance=False, info_f=None,
+#                 perturbations=None, relative_pos=None, input_map=None,
+#                 output_map=None, constant_info=False, bool_input_idx=None,
+#                 format_level=None, type_neighs=None, type_sp_rel_pos=None
+
     ## Implicit
     ret0 = KRetriever(locs, 3, ifdistance=True, input_map=_input_map,
                       output_map=_output_map)
@@ -82,6 +202,9 @@ def test():
         neighs_info = ret7.retrieve_neighs(locs1[i])
         neighs_info = gret.retrieve_neighs(i)
         neighs_info = ret8.retrieve_neighs(i)
+
+#    ret0._prepare_input = lambda x, kr:
+#    neighs_info = ret0._retrieve_neighs_dynamic(0)
 
     neighs_info = ret1._retrieve_neighs_constant_nodistance(4)
     neighs_info = ret1._retrieve_neighs_constant_distance(4)
