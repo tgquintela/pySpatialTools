@@ -173,6 +173,7 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
 
     regs = discretizor.discretize(locs)
     u_regs = np.unique(regs)
+    u_regs = u_regs.reshape((len(u_regs), 1))
     n_regs = len(u_regs)
     _data = u_regs.reshape((len(u_regs), 1))
     dts, iss, jss = [], [], []
@@ -184,8 +185,8 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
             locs_j = locs[regs == neighs_i[iss_i][ki][j]]
             dists_j = cdist(locs_i, locs_j).mean()
             dts.append(dists_j)
-            iss.append(u_regs[i])
-            jss.append(neighs_i[iss_i][ki][j])
+            iss.append(i)
+            jss.append(list(u_regs.ravel()).index(int(neighs_i[iss_i][ki][j])))
     dts, iss, jss = np.hstack(dts), np.hstack(iss), np.hstack(jss)
     iss, jss = iss.astype(int), jss.astype(int)
     relations = coo_matrix((dts, (iss, jss)), shape=(n_regs, n_regs))
@@ -197,7 +198,7 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
     elif store == 'network':
         relations = coo_matrix(relations)
         relations = nx.from_scipy_sparse_matrix(relations)
-        mapping = dict(zip(relations.nodes(), u_regs))
+        mapping = dict(zip(relations.nodes(), u_regs.ravel()))
         relations = nx.relabel_nodes(relations, mapping)
 
     return relations, _data, symmetric, store
