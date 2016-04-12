@@ -36,7 +36,7 @@ def generate_randint_relations(density, shape, p0=0., maxvalue=1):
         if len(data_out) != shape[1]:
             if np.random.random() > p0:
                 data_out.append(i)
-        if len(data_in) != shape[0] and len(data_out) != shape[1]:
+        if len(data_in) == shape[0] and len(data_out) == shape[1]:
             break
         i += 1
     sp_relations = RegionDistances(sparse, _data=data_out, data_in=data_in)
