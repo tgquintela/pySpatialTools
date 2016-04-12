@@ -23,6 +23,7 @@ from pySpatialTools.utils.artificial_data import \
     random_transformed_space_points, generate_random_relations_cutoffs
 from pySpatialTools.Discretization import SetDiscretization
 from pySpatialTools.Retrieve.aux_windowretriever import windows_iteration
+from pySpatialTools.utils.perturbations import PermutationPerturbation
 
 
 def test():
@@ -221,7 +222,6 @@ def test():
     neighs_info = ret8._retrieve_neighs_constant_nodistance(8, pars8)
     neighs_info = ret8._retrieve_neighs_constant_distance(8, pars8)
 
-
     ## Retrieve-driven testing
     for idx, neighs in ret1:
             pass
@@ -250,6 +250,10 @@ def test():
     ret2.data_output
     ret2.shape
     ret2[0]
+
+    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
+    perturbation = PermutationPerturbation(reindices.T)
+    ret0.add_perturbations(perturbation)
 
     ##
     ### TODO: __iter__
