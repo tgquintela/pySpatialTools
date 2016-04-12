@@ -3,6 +3,9 @@
 Implicit retrievers
 -------------------
 Implicit defined retrievers grouped in this module.
+The relation of the elements input and their neighbors are not explicitely
+computed. This relation is defined by the retriever itself and the parameters
+used to define the neighborhood.
 
 """
 
@@ -10,7 +13,7 @@ import numpy as np
 #from itertools import product
 from sklearn.neighbors import KDTree
 from retrievers import Retriever
-from aux_retriever import DummyRetriever
+#from aux_retriever import DummyRetriever
 from aux_windowretriever import generate_grid_neighs_coord,\
     create_window_utils, windows_iteration
 from pySpatialTools.utils.util_external.parallel_tools import split_parallel
@@ -35,6 +38,8 @@ class SpaceRetriever(Retriever):
         self._initialization()
         # Location information
         self._format_locs(locs, autolocs)
+        # Perturbations
+        self._format_perturbation(perturbations)
         # Output information
         self._format_output_information(autoexclude, ifdistance, relative_pos)
         self._format_exclude(bool_input_idx, self.constant_neighs)
@@ -43,9 +48,8 @@ class SpaceRetriever(Retriever):
         ## Info_ret mangement
         self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
-        self._format_retriever_function(bool_input_idx)
-        # Perturbations
-        self._format_perturbation(perturbations)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
         # IO mappers
         self._format_maps(input_map, output_map)
         self._format_preparators(bool_input_idx)
@@ -104,7 +108,8 @@ class KRetriever(SpaceRetriever):
         ## Format functions
         self._format_exclude(bool_input_idx, constant_neighs)
         self._format_preparators(bool_input_idx)
-        self._format_retriever_function(bool_input_idx)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
         ## Prepare indices
         indices = split_parallel(np.arange(self._n0), self._max_bunch)
         ## Iteration
@@ -179,7 +184,7 @@ class KRetriever(SpaceRetriever):
 #        return check
 
     def _define_retriever(self, locs, pars_ret=None):
-        "Define a kdtree for retrieving neighbours."
+        """Define a kdtree for retrieving neighbours."""
         if pars_ret is not None:
             leafsize = int(pars_ret)
         else:
@@ -353,7 +358,8 @@ class WindowsRetriever(SpaceRetriever):
         bool_input_idx = True
         self._format_preparators(bool_input_idx)
         self._constant_ret = True
-        self._format_retriever_function(bool_input_idx)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
         ## Iteration
         shape, max_bunch, l, center, excluded
         for inds, neighs, rel_pos in windows_iteration():
@@ -435,7 +441,7 @@ class WindowsRetriever(SpaceRetriever):
 #        return element_i
 
     def _define_retriever(self, locs, pars_ret=None):
-        "Define a kdtree for retrieving neighbours."
+        """Define a kdtree for retrieving neighbours."""
         # If it has to be excluded it will be excluded initially
         self._autoexclude = False
         self._format_output = self._format_output_noexclude

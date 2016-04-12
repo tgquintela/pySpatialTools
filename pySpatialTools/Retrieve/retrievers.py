@@ -4,19 +4,23 @@ Retrievers
 ----------
 The objects to retrieve neighbours in flat (non-splitted) space or precomputed
 mapped relations.
+The retrievers can be defined in different topologic spaces.
+This class acts as a wrapper to the core definition of this retrievers.
 
 
 Structure:
 ----------
 - Retrievers
-    - SpatialRetrievers
-        - KRetriever
-        - RadiusRetriever
-        - WindowRetriever
-    - NetworkRetrievers
-        - DirectMapping
-        - OrderRetriever
-        - MaxDistanceRetriever
+    - Implicit Retrievers
+        - SpatialRetrievers
+            - KRetriever
+            - RadiusRetriever
+            - WindowRetriever
+    - Explicit Retrievers
+        - NetworkRetrievers
+            - DirectMapping
+            - OrderRetriever
+            - MaxDistanceRetriever
 
 TODO:
 ----
@@ -47,8 +51,10 @@ class Retriever:
     def __iter__(self):
         ## Prepare iteration
         # Input indices
-        self._format_preparators(True)
-        self._format_retriever_function(True)
+        bool_input_idx = True
+        self._format_preparators(bool_input_idx)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
         ## Iteration
         for i in range(self._n0):
             iss = self.get_indice_i(i)
@@ -327,7 +333,7 @@ class Retriever:
             self._get_info_i = self._general_get_info_i
             self._constant_ret = False
 
-    def _format_retriever_function(self, bool_input_idx):
+    def _format_retriever_function(self):
         """Format function to retrieve. It defines the main retrieve functions.
         """
         ## Format Retrievers function
@@ -346,6 +352,8 @@ class Retriever:
         else:
             self.retrieve_neighs = self._retrieve_neighs_general
             self._retrieve_neighs_spec = self._retrieve_neighs_general_spec
+
+    def _format_getters(self, bool_input_idx):
         ## Format retrieve locs and indices
         self._format_get_loc_i(bool_input_idx)
         self._format_get_indice_i(bool_input_idx)

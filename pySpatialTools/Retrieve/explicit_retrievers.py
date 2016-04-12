@@ -28,6 +28,8 @@ class NetworkRetriever(Retriever):
         "Creation a element network retriever class method."
         # Reset globals
         self._initialization()
+        # Perturbations
+        self._format_perturbation(perturbations)
         ## Retrieve information
         self._define_retriever(main_mapper)
         # Output information
@@ -36,9 +38,8 @@ class NetworkRetriever(Retriever):
         ## Info_ret mangement
         self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
-        self._format_retriever_function(bool_input_idx)
-        # Perturbations
-        self._format_perturbation(perturbations)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
         # IO mappers
         self._format_maps(input_map, output_map)
         self._format_preparators(bool_input_idx)

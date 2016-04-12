@@ -303,7 +303,8 @@ def test():
             self._format_exclude(bool_input_idx, self.constant_neighs)
             self._format_retriever_info(info_ret, info_f, constant_info)
             ## Format retriever function
-            self._format_retriever_function(bool_input_idx)
+            self._format_retriever_function()
+            self._format_getters(bool_input_idx)
             self._format_preparators(bool_input_idx)
             self._format_neighs_info(bool_input_idx, 2, 'list', 'list')
 
