@@ -77,8 +77,8 @@ class Neighs_Info:
     def __iter__(self):
         """Get information sequentially."""
         for i in range(len(self.ks)):
-            yield self.get_neighs([i]), self.get_sp_rel_pos([i]), [self.ks[i]],\
-                self.iss
+            yield self.get_neighs([i]), self.get_sp_rel_pos([i]),\
+                [self.ks[i]], self.iss
 
     def empty(self):
         return not self.any()
@@ -146,7 +146,7 @@ class Neighs_Info:
             self.staticneighs = None
         elif self.level <= 2:
             self.staticneighs = True
-            self._constant_neighs = True
+#            self._constant_neighs = True
         if self.level == 3:
             self.staticneighs = False
 
@@ -258,131 +258,6 @@ class Neighs_Info:
                 raise Exception("Not correct inputs.")
             else:
                 self.level = 3
-
-    ###########################################################################
-    ################################ CHECKERS #################################
-    ###########################################################################
-    ### Only activate that in a testing process
-    def assert_goodness(self):
-        """Assert standarts of storing."""
-        #print 'assert_stored', self.idxs, self.sp_relative_pos, self.iss
-        #print self.ks, self.staticneighs, self._constant_neighs
-        if self._setted:
-            self.assert_stored_iss()
-            self.assert_stored_ks()
-        ## Check idxs
-        self.assert_stored_idxs()
-        ## Check sp_relative_pos
-        self.assert_stored_sp_rel_pos()
-
-    def assert_stored_sp_rel_pos(self):
-        """Definition of the standart store for sp_relative_pos."""
-        ## Temporal
-        #print self.sp_relative_pos
-        if self.sp_relative_pos is not None:
-            if self.staticneighs:
-                #print np.array(self.sp_relative_pos).shape, self.sp_relative_pos
-                assert(len(np.array(self.sp_relative_pos).shape) == 3)
-            else:
-                assert(len(np.array(self.sp_relative_pos).shape) == 4)
-        #################
-        array_types = [list, np.ndarray]
-        if self.sp_relative_pos is not None:
-            if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
-                pass
-            else:
-                assert(type(self.sp_relative_pos) in [list, np.ndarray])
-                if self.ks is None:
-                    assert(self.staticneighs)
-                    assert(len(self.sp_relative_pos) == len(self.iss))
-                if self.staticneighs:
-                    assert(len(self.sp_relative_pos) == len(self.iss))
-                else:
-                    assert(len(self.sp_relative_pos) == len(self.ks))
-                if type(self.sp_relative_pos[0]) in array_types:
-                    if len(self.sp_relative_pos[0]) > 0:
-                        assert(type(self.sp_relative_pos[0][0]) in array_types)
-                else:
-                    pass
-
-    def assert_stored_iss(self):
-        """Definition of the standart store for iss."""
-        assert(type(self.iss) == list)
-        #print self.iss, self.idxs, self.ks, self.sp_relative_pos
-        assert(len(self.iss) > 0)
-
-    def assert_stored_ks(self):
-        """Definition of the standart store for ks."""
-        assert(self.ks is None or type(self.ks) in [list, np.ndarray])
-        if self.ks is not None:
-            assert(type(self.ks[0]) in [int, np.int32, np.int64])
-
-    def assert_stored_idxs(self):
-        """Definition of the standart store for sp_relative_pos."""
-#        print self.idxs, type(self.idxs)
-        if type(self.idxs) == list:
-#            print self.idxs, 'assertion'
-            assert(type(self.idxs[0]) in [list, np.ndarray])
-            if not self.staticneighs:
-#                print self.idxs, self.ks, self.iss
-                assert(type(self.idxs[0][0]) in [list, np.ndarray])
-            else:
-#                print self.staticneighs, self.set_neighs, self.idxs
-                assert(type(self.idxs[0][0]) in [int, np.int32, np.int64])
-        elif type(self.idxs) == np.ndarray:
-#            print self.idxs.shape
-            if self.staticneighs:
-                assert(len(self.idxs.shape) == 2)
-            else:
-                assert(len(self.idxs.shape) == 3)
-#            if self.ks is not None and not self.staticneighs:
-##                print self.idxs.shape, len(self.ks), len(self.iss)
-#                assert(len(self.idxs) == len(self.ks))
-#            else:
-#                print self.idxs, self.staticneighs, self.ks
-#                assert(len(self.idxs.shape) == 2)
-#            print self.idxs, self.iss
-            if self.staticneighs:
-                assert(len(self.idxs) == len(self.iss))
-            else:
-                assert(len(self.idxs[0]) == len(self.iss))
-        elif type(self.idxs) == slice:
-            pass
-        else:
-            print type(self.idxs), self.idxs
-            raise Exception("Not proper type in self.idxs.")
-
-    def check_output_standards(self, neighs, sp_relative_pos, ks, iss):
-        """Check output standarts."""
-        self.check_output_neighs(neighs, ks)
-        self.check_output_rel_pos(sp_relative_pos, ks)
-        assert(len(iss) == len(self.iss))
-
-    def check_output_neighs(self, neighs, ks):
-        """Check standart outputs of neighs."""
-#        print neighs, ks, self.idxs, self.iss
-        if type(neighs) == list:
-            assert(len(neighs) == len(ks))
-            #assert(type(neighs[0]) == list)
-            #print neighs, self.iss, self._constant_neighs, self.staticneighs
-            assert(len(neighs[0]) == len(self.iss))
-        elif type(neighs) == np.ndarray:
-            print neighs, self.staticneighs
-            assert(len(neighs.shape) == 3)
-            assert(len(neighs) == len(ks))
-            #print len(self.iss)
-            #print neighs.shape
-            assert(neighs.shape[1] == len(self.iss))
-        else:
-            print neighs
-            raise Exception("Not correct neighs output.")
-
-    def check_output_rel_pos(self, sp_relative_pos, ks):
-        #print sp_relative_pos, self.sp_relative_pos
-        assert(type(sp_relative_pos) in [np.ndarray, list])
-        #print self.sp_relative_pos, self.staticneighs, sp_relative_pos, np.array(sp_relative_pos).shape
-        assert(len(sp_relative_pos) == len(ks))
-        assert(len(sp_relative_pos[0]) == len(self.iss))
 
     ###########################################################################
     ################################# FORMATS #################################
@@ -1198,3 +1073,141 @@ class Neighs_Info:
     def _default_get_neighs(self, k_i=0):
         """Default get neighs (when it is not set)"""
         raise Exception("Information not set in pst.Neighs_Info.")
+
+    ###########################################################################
+    ################################ CHECKERS #################################
+    ###########################################################################
+    ### Only activate that in a testing process
+    def assert_goodness(self):
+        """Assert standarts of storing."""
+        #print 'assert_stored', self.idxs, self.sp_relative_pos, self.iss
+        #print self.ks, self.staticneighs, self._constant_neighs
+        if self._setted:
+            self.assert_stored_iss()
+            self.assert_stored_ks()
+        ## Check idxs
+        self.assert_stored_idxs()
+        ## Check sp_relative_pos
+        self.assert_stored_sp_rel_pos()
+
+    def assert_stored_sp_rel_pos(self):
+        """Definition of the standart store for sp_relative_pos."""
+        ## Temporal
+        #print self.sp_relative_pos
+        if self.sp_relative_pos is not None:
+            if self._constant_neighs:
+                if self.staticneighs:
+                    #print np.array(self.sp_relative_pos).shape
+                    #print self.sp_relative_pos
+                    assert(len(np.array(self.sp_relative_pos).shape) == 3)
+                else:
+                    assert(len(np.array(self.sp_relative_pos).shape) == 4)
+        #################
+        array_types = [list, np.ndarray]
+        if self.sp_relative_pos is not None:
+            if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
+                pass
+            else:
+                assert(type(self.sp_relative_pos) in [list, np.ndarray])
+                if self.ks is None:
+                    assert(self.staticneighs)
+                    assert(len(self.sp_relative_pos) == len(self.iss))
+                if self.staticneighs:
+                    print self.sp_relative_pos
+                    assert(len(self.sp_relative_pos) == len(self.iss))
+                    ## Assert deep 3
+                    if len(self.iss):
+                        assert(type(self.sp_relative_pos[0]) in array_types)
+                else:
+                    assert(len(self.sp_relative_pos) == len(self.ks))
+                if type(self.sp_relative_pos[0]) in array_types:
+                    if len(self.sp_relative_pos[0]) > 0:
+                        assert(type(self.sp_relative_pos[0][0]) in array_types)
+                else:
+                    pass
+
+    def assert_stored_iss(self):
+        """Definition of the standart store for iss."""
+        assert(type(self.iss) == list)
+        #print self.iss, self.idxs, self.ks, self.sp_relative_pos
+        assert(len(self.iss) > 0)
+
+    def assert_stored_ks(self):
+        """Definition of the standart store for ks."""
+        assert(self.ks is None or type(self.ks) in [list, np.ndarray])
+        if self.ks is not None:
+            assert(type(self.ks[0]) in [int, np.int32, np.int64])
+
+    def assert_stored_idxs(self):
+        """Definition of the standart store for sp_relative_pos."""
+#        print self.idxs, type(self.idxs)
+        int_listtypes = [int, np.int32, np.int64]
+        if type(self.idxs) == list:
+#            print self.idxs, 'assertion'
+            assert(type(self.idxs[0]) in [list, np.ndarray])
+            if not self.staticneighs:
+#                print self.idxs, self.ks, self.iss
+                assert(type(self.idxs[0][0]) in [list, np.ndarray])
+            else:
+#                print self.staticneighs, self.set_neighs, self.idxs
+                if '__len__' in dir(self.idxs[0]):
+                    if len(self.idxs[0]):
+                        assert(type(self.idxs[0][0]) in int_listtypes)
+                    else:
+                        assert(not any(self.idxs[0]))
+        elif type(self.idxs) == np.ndarray:
+            print self.idxs.shape, self.idxs, self.set_neighs
+            print self._constant_neighs
+            if self.staticneighs:
+                assert(len(self.idxs.shape) == 2)
+            else:
+                assert(len(self.idxs.shape) == 3)
+#            if self.ks is not None and not self.staticneighs:
+##                print self.idxs.shape, len(self.ks), len(self.iss)
+#                assert(len(self.idxs) == len(self.ks))
+#            else:
+#                print self.idxs, self.staticneighs, self.ks
+#                assert(len(self.idxs.shape) == 2)
+#            print self.idxs, self.iss
+            if self.staticneighs:
+                assert(len(self.idxs) == len(self.iss))
+            else:
+                assert(len(self.idxs[0]) == len(self.iss))
+        elif type(self.idxs) == slice:
+            pass
+        else:
+            print type(self.idxs), self.idxs
+            raise Exception("Not proper type in self.idxs.")
+
+    def check_output_standards(self, neighs, sp_relative_pos, ks, iss):
+        """Check output standarts."""
+        self.check_output_neighs(neighs, ks)
+        self.check_output_rel_pos(sp_relative_pos, ks)
+        assert(len(iss) == len(self.iss))
+
+    def check_output_neighs(self, neighs, ks):
+        """Check standart outputs of neighs."""
+#        print neighs, ks, self.idxs, self.iss
+        if type(neighs) == list:
+            assert(len(neighs) == len(ks))
+            #assert(type(neighs[0]) == list)
+            #print neighs, self.iss, self._constant_neighs, self.staticneighs
+            assert(len(neighs[0]) == len(self.iss))
+        elif type(neighs) == np.ndarray:
+            print neighs, self.staticneighs
+            assert(len(neighs.shape) == 3)
+            assert(len(neighs) == len(ks))
+            #print len(self.iss)
+            #print neighs.shape
+            assert(neighs.shape[1] == len(self.iss))
+        else:
+            print neighs
+            raise Exception("Not correct neighs output.")
+
+    def check_output_rel_pos(self, sp_relative_pos, ks):
+        #print sp_relative_pos, self.sp_relative_pos
+        assert(type(sp_relative_pos) in [np.ndarray, list])
+        #print self.sp_relative_pos, self.staticneighs, sp_relative_pos
+        #print np.array(sp_relative_pos).shape
+        assert(len(sp_relative_pos) == len(ks))
+        assert(len(sp_relative_pos[0]) == len(self.iss))
