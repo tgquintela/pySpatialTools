@@ -25,6 +25,8 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     else:
         regs = discretization
     u_regs = np.unique(regs)
+    u_regs = np.array([u_regs[i] for i in range(len(u_regs))
+                       if u_regs[i] in regmetric.data_input])
     u_regs = u_regs.reshape((len(u_regs), 1))
 
     ## 1. Compute aggregation
@@ -47,7 +49,6 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     ## 2. Prepare output
     agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
     ## TODO: names=[], nullvalue=None
-
     return agg
 
 
