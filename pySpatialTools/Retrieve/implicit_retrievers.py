@@ -33,17 +33,17 @@ class SpaceRetriever(Retriever):
         "Creation a element space retriever class method."
         ## Reset globals
         self._initialization()
+        # Location information
+        self._format_locs(locs, autolocs)
         # Output information
         self._format_output_information(autoexclude, ifdistance, relative_pos)
-        self._format_exclude(bool_input_idx)
+        self._format_exclude(bool_input_idx, self.constant_neighs)
         ## Retrieve information
         self._define_retriever(locs, pars_ret)
         ## Info_ret mangement
         self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
         self._format_retriever_function(bool_input_idx)
-        # Location information
-        self._format_locs(locs, autolocs)
         # Perturbations
         self._format_perturbation(perturbations)
         # IO mappers
@@ -54,12 +54,6 @@ class SpaceRetriever(Retriever):
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
-    def _format_maps(self, input_map, output_map):
-        if input_map is not None:
-            self._input_map = input_map
-        if output_map is not None:
-            self._output_map = output_map
-
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, k=0):
         "Format output with excluding."
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
@@ -89,10 +83,12 @@ class SpaceRetriever(Retriever):
 class KRetriever(SpaceRetriever):
     "Class which contains a retriever of K neighbours."
     _default_ret_val = 1
+    ## Basic information of the core retriever
     constant_neighs = True
     preferable_input_idx = False
     auto_excluded = True
-    output_array = True
+    ## Interaction with the stored data
+    bool_listind = False
 
     ######################## Retrieve-driven retrieve #########################
     def set_iter(self, info_ret=None, max_bunch=None):
@@ -103,15 +99,17 @@ class KRetriever(SpaceRetriever):
 
     def __iter__(self):
         ## Prepare iteration
-        bool_input_idx = True
-        self._format_preparators(bool_input_idx)
+        bool_input_idx, constant_neighs = True, True
         self._constant_ret = True
+        ## Format functions
+        self._format_exclude(bool_input_idx, constant_neighs)
+        self._format_preparators(bool_input_idx)
         self._format_retriever_function(bool_input_idx)
         ## Prepare indices
         indices = split_parallel(np.arange(self._n0), self._max_bunch)
         ## Iteration
         for idxs in indices:
-            neighs = self.retrieve_neighs(idxs)
+            neighs = self.retrieve_neighs(list(idxs))
             yield indices, neighs
 
     ###################### Retrieve functions candidates ######################
@@ -151,11 +149,9 @@ class KRetriever(SpaceRetriever):
         point_i: int
             the indice of the point_i.
         """
-        if type(point_i) == np.ndarray:
-            print point_i.shape, 'locs_shape'
-
         kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
+        print self._prepare_input, self.get_loc_i, point_i
         res = self.retriever[kr].query(point_i, int(kneighs), True)
         res = res[1], self._apply_preprocess_relative_pos(list(res[0]))
         ## Correct for another relative spatial measure (Save time indexing)
@@ -199,15 +195,17 @@ class KRetriever(SpaceRetriever):
             self._apply_preprocess_relative_pos =\
                 self._apply_preprocess_relative_pos_null
 
-    def _get_loc_from_idx(self, i_loc, kr=0):
-        """Specific interaction with the data stored in retriever object."""
-        data_locs = []
-        i_loc = [i_loc] if type(i_loc) not in [list, np.ndarray] else i_loc
-        for i in i_loc:
-            print i_loc
-            data_locs.append(self.retriever[kr].data[i])
-        data_locs = np.array(data_locs)
-        return data_locs
+    def _get_loc_from_idx(self, i, kr=0):
+        """Not list indexable interaction with data."""
+        print i, kr
+        loc_i = np.array(self.retriever[kr].data[i])
+        return loc_i
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from locations."""
+        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
+        indices = list(indices)
+        return indices
 
 
 ################################ R disctance ##################################
@@ -215,10 +213,12 @@ class KRetriever(SpaceRetriever):
 class CircRetriever(SpaceRetriever):
     "Circular retriever."
     _default_ret_val = 0.1
+    ## Basic information of the core retriever
     constant_neighs = None
     preferable_input_idx = False
     auto_excluded = True
-    output_array = False
+    ## Interaction with the stored data
+    bool_listind = False
 
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, radius_i,
@@ -302,14 +302,16 @@ class CircRetriever(SpaceRetriever):
             self._apply_preprocess_relative_pos =\
                 self._apply_preprocess_relative_pos_null
 
-    def _get_loc_from_idx(self, i_loc, kr=0):
-        """Specific interaction with the data stored in retriever object."""
-        data_locs = []
-        i_loc = [i_loc] if type(i_loc) not in [list, np.ndarray] else i_loc
-        for i in i_loc:
-            data_locs.append(self.retriever[kr].data[i])
-        data_locs = np.array(data_locs)
-        return data_locs
+    def _get_loc_from_idx(self, i, kr=0):
+        """Not list indexable interaction with data."""
+        loc_i = np.array(self.retriever[kr].data[i])
+        return loc_i
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from locations."""
+        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
+        indices = list(indices)
+        return indices
 
 
 ############################## Windows Neighbours #############################
@@ -319,11 +321,12 @@ class WindowsRetriever(SpaceRetriever):
     n-dimensional grid data.
     """
     _default_ret_val = {'l': 1, 'center': 0, 'excluded': False}
+    ## Basic information of the core retriever
     constant_neighs = True
     preferable_input_idx = False
     auto_excluded = False
-    ## WARNING
-    output_array = None
+    ## Interaction with the stored data
+    bool_listind = True
 
     ######################## Retrieve-driven retrieve #########################
     def set_iter(self, info_ret=None, max_bunch=None):
@@ -404,6 +407,16 @@ class WindowsRetriever(SpaceRetriever):
             neighs_info = self._apply_relative_pos(neighs_info[0], element_i,
                                                    neighs_info[1])
         return neighs_info
+
+    def _get_loc_from_idx(self, i_locs, kr=0):
+        """Not list indexable interaction with data."""
+        locs_i = self.retriever[kr].get_locations(i_locs)
+        return locs_i
+
+    def _get_idx_from_loc(self, locs_i, kr=0):
+        """Get indices from locations."""
+        i_locs = self.retriever[kr].get_indices(locs_i)
+        return i_locs
 
     ########################### Auxiliar functions ############################
     def _preformat_neighs_info(self, format_level, type_neighs,

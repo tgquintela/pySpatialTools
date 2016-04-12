@@ -102,6 +102,7 @@ def _list_autoexclude(to_exclude_elements, neighs, dists):
     * neighs {list form} [iss][nei]
     * dists {listform} [iss][nei][dim]
     """
+    print to_exclude_elements, neighs, len(to_exclude_elements), len(neighs)
     for iss_i in range(len(to_exclude_elements)):
         n_iss_i = len(neighs[iss_i])
         idxs_exclude = [i for i in xrange(n_iss_i)

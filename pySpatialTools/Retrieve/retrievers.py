@@ -65,11 +65,11 @@ class Retriever:
         ## 1. Retrieve neighs
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
-        print neighs.shape, type(dists)
+#        print neighs.shape, type(dists)
         neighs_info = self._format_output(i_loc, neighs, dists)
-        print neighs_info[0].shape, type(neighs_info[1])
+#        print neighs_info[0].shape, type(neighs_info[1])
         ## 3. Format neighs_info
-        print i_loc, neighs_info
+        print 'setting:', i_loc, neighs_info
         self.neighs_info.set(neighs_info, i_loc)
         neighs_info = self.neighs_info
         return neighs_info
@@ -106,6 +106,7 @@ class Retriever:
         ## 1. Retrieve neighs
         if ks == 0 or self.staticneighs:
             # Get neighs info
+            print 'b0'*20, i_loc, info_i, ifdistance
             neighs, dists =\
                 self._retrieve_neighs_spec(i_loc, info_i, ifdistance)
             print 'b'*25, neighs, dists
@@ -225,7 +226,7 @@ class Retriever:
         """Mutable class parameters reset."""
         ## Elements information
         self.data = None
-        self._autodata = False
+        self._autodata = True
         self._virtual_data = False
         ## Retriever information
         self.retriever = []
@@ -242,7 +243,7 @@ class Retriever:
         ## IO information
         self._autoexclude = False
         self._ifdistance = False
-        self._autoret = False
+        self._autoret = True
         self._heterogenous_input = False
         self._heterogenous_output = False
         ## IO methods
@@ -253,6 +254,9 @@ class Retriever:
 
     ################################ Formatters ###############################
     ###########################################################################
+    ## Main formatters of the class. They adapt the class to the problem
+    ## in order to be efficient and do the proper work.
+    ###################### Output information formatting ######################
     def _format_output_information(self, autoexclude, ifdistance, relativepos):
         """Format functions to use in output creation."""
         ## Autoexclude managing
@@ -263,13 +267,6 @@ class Retriever:
             self._format_output = self._format_output_noexclude
         ## Ifdistance managing
         self._ifdistance = ifdistance
-        if ifdistance is None:
-            pass
-        else:
-            if ifdistance:
-                pass
-            else:
-                pass
         ## Relative position managing
         self.relative_pos = relativepos
         if relativepos is None:
@@ -279,6 +276,34 @@ class Retriever:
             self._apply_relative_pos_spec = self._apply_relative_pos_complete
             self._apply_relative_pos = self._general_relative_pos
 
+    def _format_exclude(self, bool_input_idx, constant_neighs):
+        """Format the excluding auto elements."""
+        ## Inputs
+        if bool_input_idx is True:
+            self._build_excluded_elements =\
+                self._indices_build_excluded_elements
+        elif bool_input_idx is False:
+            self._build_excluded_elements = self._array_build_excluded_elements
+        else:
+            self._build_excluded_elements =\
+                self._general_build_excluded_elements
+        ## Excluding neighs_info
+        # Excluding or not
+        excluding = False if self.auto_excluded else True
+        excluding = excluding if self._autoexclude else False
+        if excluding:
+            self._exclude_auto = self._exclude_auto_general
+            if constant_neighs is True:
+                self._exclude_elements = _array_autoexclude
+            elif constant_neighs is False:
+                self._exclude_elements = _list_autoexclude
+            else:
+                self._exclude_elements = _general_autoexclude
+        else:
+            self._exclude_auto = self._null_exclude_auto
+
+    ####################### Core interaction formatting #######################
+    ## Format information retrieve getters
     def _format_retriever_info(self, info_ret, info_f, constant_info):
         """Format properly the retriever information."""
         if type(info_ret).__name__ == 'function':
@@ -323,19 +348,11 @@ class Retriever:
             self._retrieve_neighs_spec = self._retrieve_neighs_general_spec
         ## Format retrieve locs and indices
         self._format_get_loc_i(bool_input_idx)
-        self._format_get_indice_i()
+        self._format_get_indice_i(bool_input_idx)
 
-    def _format_preparators(self, bool_input_idx):
-        """Format the prepare inputs function in order to be used properly and
-        efficient avoiding extra useless computations.
-        """
-        if self.preferable_input_idx == bool_input_idx:
-            self._prepare_input = self._dummy_prepare_input
-        elif self.preferable_input_idx:
-            self._prepare_input = self._dummy_loc2idx_prepare_input
-        elif not self.preferable_input_idx:
-            self._prepare_input = self._dummy_idx2loc_prepare_input
-
+    ######################### Neighs_Info formatting ##########################
+    ## Format the neighs information in order to optimize the parsing of the
+    ## information by formatting the class Neighs_Info
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
         """Over-writtable function."""
@@ -366,6 +383,7 @@ class Retriever:
         else:
             format_set_iss = 'null'
 
+        print 'poi'*20, type_neighs, type_sp_rel_pos
         ## Neighs info setting
         self.neighs_info = Neighs_Info(format_set_iss=format_set_iss,
                                        format_structure=format_structure,
@@ -379,39 +397,97 @@ class Retriever:
         """Utility function in order to reset neighs_info types."""
         self.neighs_info.set_types(type_neighs, type_sp_rel_pos)
 
-    def _format_exclude(self, bool_input_idx):
-        """Format the excluding auto elements."""
-        ## Inputs
-        if bool_input_idx is True:
-            self._build_excluded_elements =\
-                self._indices_build_excluded_elements
-        elif bool_input_idx is False:
-            self._build_excluded_elements = self._array_build_excluded_elements
-        else:
-            self._build_excluded_elements =\
-                self._general_build_excluded_elements
-        ## Excluding neighs_info
-        # Excluding or not
-        excluding = False if self.auto_excluded else True
-        excluding = excluding if self._autoexclude else False
-        if excluding:
-            self._exclude_auto = self._exclude_auto_general
-            if self.output_array is True:
-                self._exclude_elements = _array_autoexclude
-            elif self.output_array is False:
-                self._exclude_elements = _list_autoexclude
+    ######################### Input-output formatting #########################
+    ## Format the interactions with the data in order to get the indices or the
+    ## required spatial elements and to adapt the input information to retrieve
+    ## its neighbourhood.
+    def _format_maps(self, input_map, output_map):
+        if input_map is not None:
+            self._input_map = input_map
+        if output_map is not None:
+            if type(output_map).__name__ == 'function':
+                self.output_map = [output_map]
             else:
-                self._exclude_elements = _general_autoexclude
-        else:
-            self._exclude_auto = self._null_exclude_auto
+                assert(type(output_map) == list)
+                assert(all([type(m).__name__ == 'function'
+                            for m in output_map]))
+                self._output_map = output_map
 
-    ################################# Auxiliar ################################
+    def _format_preparators(self, bool_input_idx):
+        """Format the prepare inputs function in order to be used properly and
+        efficient avoiding extra useless computations.
+        """
+        if self.preferable_input_idx == bool_input_idx:
+            self._prepare_input = self._dummy_prepare_input
+        elif bool_input_idx is None:
+            self._prepare_input = self._general_prepare_input
+        elif self.preferable_input_idx:
+            self._prepare_input = self._dummy_loc2idx_prepare_input
+        elif not self.preferable_input_idx:
+            self._prepare_input = self._dummy_idx2loc_prepare_input
+
+    def _format_get_loc_i(self, bool_input_idx):
+        """Format the get locations function."""
+        ## General functions
+        if bool_input_idx is True:
+            self.get_loc_i = self._get_loc_i_general_from_indices
+        elif bool_input_idx is False:
+            self.get_loc_i = self._get_loc_i_general_from_locations
+        else:
+            self.get_loc_i = self._get_loc_i_general
+        ## Format direct interactors with the data
+        if self._autodata is True:
+            if self.bool_listind is True:
+                self._get_loc_from_idxs = self._get_loc_from_idxs_listind
+            else:
+                self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
+        else:
+            self._get_loc_from_idx = self._get_loc_from_idx_indata
+            if type(self.data) == list:
+                self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
+            else:
+                self._get_loc_from_idxs = self._get_loc_from_idxs_listind
+
+    def _format_get_indice_i(self, bool_input_idx):
+        """Format the get indice function."""
+        ## General functions
+        if bool_input_idx is True:
+            self.get_indice_i = self._get_indice_i_general_from_indices
+        elif bool_input_idx is False:
+            self.get_indice_i = self._get_indice_i_general_from_locations
+        else:
+            self.get_indice_i = self._get_indice_i_general
+        ## Format direct interactors with the data
+        if self._autodata is True:
+            if self.bool_listind is True:
+                self._get_idxs_from_locs = self._get_idxs_from_locs_listind
+            else:
+                self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
+        else:
+            self._get_idx_from_loc = self._get_idx_from_loc_indata
+            if type(self.data) == list:
+                self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
+            else:
+                self._get_idxs_from_locs = self._get_idxs_from_locs_listind
+
     ###########################################################################
+    ################################ Auxiliar #################################
+    ###########################################################################
+    ############################### Exclude auto ##############################
+    ## Collapse to _exclude_auto in _format_exclude
+    # Returns
+    # -------
+    # neighs: list of np.ndarray or np.ndarrray
+    #     the neighs for each iss in i_loc
+    # dists: list of list of np.ndarray or np.ndarray
+    #     the information or relative position in respect to each iss in i_loc
+    #
     def _exclude_auto_general(self, i_loc, neighs, dists, kr=0):
         """Exclude auto elements if there exist in the neighs retrieved.
         This is a generic function independent on the type of the element.
         """
         ## 0. Detect input i_loc and retrieve to_exclude_elements list
+        print '=0'*15, i_loc, neighs, type(i_loc), len(neighs), self._build_excluded_elements
         to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
         neighs, dists =\
@@ -423,7 +499,6 @@ class Retriever:
         return neighs, dists
 
     ############################# Exclude managing ############################
-    ###########################################################################
     ## Collapse to _build_excluded_elements in _format_exclude
     # Returns
     # -------
@@ -471,7 +546,8 @@ class Retriever:
         """
         ## 0. Preparing input
         sh = i_loc.shape
-        i_loc = i_loc if len(sh) == 2 else i_loc.reshape(1, sh[0])
+        print i_loc, sh
+        i_loc = i_loc if len(sh) == 2 else i_loc.reshape((1, sh[0]))
         ## 1. Building indices to exclude
         to_exclude_elements = []
         for i in range(len(i_loc)):
@@ -502,8 +578,12 @@ class Retriever:
         return to_exclude_elements
 
     ############################# InfoRet managing ############################
-    ###########################################################################
     ## Collapse to _get_info_i in _format_retriever_info
+    # Returns
+    # -------
+    # info_ret: optional
+    #     the information parameters to retrieve neighbourhood.
+    #
     def _dummy_get_info_i(self, i_loc, info_i):
         return info_i
 
@@ -540,129 +620,267 @@ class Retriever:
         return info_i
 
     ########################### GetLocation managing ##########################
-    ###########################################################################
     ## Collapse to _prepare_input in _format_preparators
+    # Returns
+    # -------
+    # spatial_info: list of ints or list of np.ndarray or np.ndarray
+    #     the spatial information of required to retrieve neighbourhood from
+    #     core retriver.
+    #
+    def _general_prepare_input(self, i_loc, kr=0):
+        """General prepare input."""
+        if self.preferable_input_idx:
+            i_mloc = self._get_indice_i_general(i_loc, kr)
+        else:
+            i_mloc = self._get_loc_i_general(i_loc, kr)
+        return i_mloc
+
     def _dummy_prepare_input(self, i_loc, kr=0):
         """Dummy prepare input."""
+        # Formatting to contain list of iss
+        if not '__len__' in dir(i_loc):
+            i_loc = [i_loc]
+        if not self.preferable_input_idx:
+            i_loc = np.array(i_loc)
         i_mloc = self._input_map(self, i_loc)
         return i_mloc
 
     def _dummy_idx2loc_prepare_input(self, i_loc, kr=0):
         """Dummy prepare input transforming indice to location."""
+        # Formatting to contain list of iss
+        if type(i_loc) not in [list, np.ndarray]:
+            i_loc = [i_loc]
         i_loc = self._input_map(self, i_loc)
         loc_i = self.get_loc_i(i_loc, kr)
         return loc_i
 
     def _dummy_loc2idx_prepare_input(self, loc_i, kr=0):
         """Dummy prepare input transforming location to indice."""
+        if len(loc_i.shape) == 1:
+            loc_i = loc_i.reshape((1, len(loc_i)))
+        print loc_i
         loc_i = self._input_map(self, loc_i)
+        print loc_i, self.get_indice_i
         i_loc = self.get_indice_i(loc_i, kr)
+        print i_loc
         return i_loc
 
-    def _format_get_loc_i(self, bool_input_idx):
-        """Format the get indice function."""
-        if self._virtual_data:
-            self.get_loc_i = self._get_loc_from_idx_virtual
-        else:
-            if bool_input_idx:
-                self.get_loc_i = self._get_loc_from_idx
+    ############################## Get locations ##############################
+    ## Collapse to get_loc_i in _format_get_loc_i
+    # Returns
+    # -------
+    # locations: list of np.ndarray or np.ndarray
+    #     the spatial information of storage from the indications input.
+    #
+    def _get_loc_from_idxs_notlistind(self, i_loc, kr=0):
+        """Specific interaction with the data stored in retriever object."""
+        data_locs = []
+        i_loc = [i_loc] if type(i_loc) not in [list, np.ndarray] else i_loc
+        for i in i_loc:
+            data_locs.append(self._get_loc_from_idx(i, kr))
+        data_locs = np.array(data_locs)
+        return data_locs
+
+    def _get_loc_from_idxs_listind(self, i_loc, kr=0):
+        """Specific interaction with the data stored in retriever object."""
+        locs_i = self._get_loc_from_idx(i_loc, kr)
+        return locs_i
+
+    def _get_loc_from_idx_indata(self, i_loc, kr=0):
+        """Get data from indata."""
+        i_loc = i_loc if type(i_loc) == list else [i_loc]
+        loc = [self.data_input[i] for i in i_loc]
+        return loc
+
+    def _get_loc_i_general_from_locations(self, i_loc, kr=0):
+        """Get element spatial information from spatial information.
+        Format properly the input spatial information."""
+        if type(i_loc) == list:
+            if len(i_loc) == 0:
+                return i_loc
+            if type(i_loc[0]) == np.ndarray:
+                loc_i = np.array(i_loc)
             else:
-                self.get_loc_i = self._get_loc_i_general
-
-    def _get_loc_from_idx_virtual(self, i_loc, kr=0):
-        """Get location from indice in virtual data retriever."""
-        loc = self.retriever[kr].get_locations(i_loc)
-        return loc
-
-    def _get_loc_from_idx(self, i_loc, kr=0):
-        """Get location from indice in explicit data retriever."""
-        loc = np.array(self.retriever[kr].data[i_loc])
-        return loc
-
-    def _get_loc_i_general(self, i_loc, k=0, inorout=True):
-        """Get element spatial information. Generic function."""
-        ## 0. Needed variable computations
-        ifdata = inorout and not self._autodata
-        sh = self.data_input.shape
-        if ifdata:
-            flag = isinstance(self.data, Locations)
+                loc_i = i_loc
+        elif type(i_loc) == np.ndarray:
+            loc_i = self._get_loc_dummy_array(i_loc)
         else:
-            flag = isinstance(self.retriever[k].data, Locations)
-        ## 1. Loc retriever
-        if type(i_loc) in [int, np.int32, np.int64]:
-            try:
-                if flag:
-                    if ifdata:
-                        i_loc = self.data_input[i_loc].location
-                        i_loc = np.array(i_loc).reshape((1, sh[1]))
-                    else:
-                        i_loc = self.data_input[i_loc].location
-                        i_loc = np.array(i_loc).reshape((1, sh[1]))
-                else:
-                    if ifdata:
-                        loc_i = np.array(self.data[i_loc]).reshape((1, sh[1]))
-                    else:
-                        loc_i = np.array(self.retriever[k].data[i_loc])
-                        loc_i = loc_i.reshape((1, sh[1]))
-            except:
-                if ifdata:
-                    loc_i = self.data_input[i_loc]
-        elif type(i_loc) in [list, np.ndarray]:
-            loc_i = np.array(i_loc).reshape((1, sh[1]))
-        elif isinstance(i_loc, Locations):
-            i_loc = np.array(i_loc.locations).reshape((1, sh[1]))
-        else:
-            loc_i = i_loc
+            loc_i = [i_loc]
         return loc_i
 
-    def _format_get_indice_i(self):
-        """Format the get indice function."""
-        if self._constant_ret:
-            try:
-                loc = self._get_loc_from_idx_virtual(0, 0)
-                self._get_indice_i_virtual(loc, 0)
-                self.get_indice_i = self._get_indice_i_virtual
-            except:
-                loc = self._get_loc_from_idx(0, 0)
-                try:
-                    self._get_indice_i_global(loc, 0)
-                    self.get_indice_i = self._get_indice_i_global
-                except:
-                    self._get_indice_i_elementwise(loc, 0)
-                    self.get_indice_i = self._get_indice_i_elementwise
+    def _get_loc_i_general_from_indices(self, i_loc, kr=0):
+        """Get element spatial information from spatial information.
+        Format properly the input spatial information."""
+        if type(i_loc) == list:
+            if len(i_loc) == 0:
+                return i_loc
+            loc_i = self._get_loc_from_idxs(i_loc, kr)
+        elif type(i_loc) in [int, np.int32, np.int64]:
+            loc_i = self._get_loc_from_idxs([i_loc], kr)
         else:
-            self.get_indice_i = self._get_indice_i_general
+            print i_loc, type(i_loc)
+            raise TypeError("Not correct indice.")
+        return loc_i
+
+    def _get_loc_i_general(self, i_loc, kr=0):
+        """Get element spatial information. Generic function."""
+        ## 0. Needed variable computations
+        int_types = [int, np.int32, np.int64]
+        ## 1. Loc retriever
+        # If indice
+        if type(i_loc) in int_types:
+            loc_i = self._get_loc_from_idx(i_loc, kr)
+        # If List
+        elif type(i_loc) == list:
+            # Empty list
+            if len(i_loc) == 0:
+                return i_loc
+            # if list of indices
+            if type(i_loc[0]) in int_types:
+                locs_i = []
+                for i in i_loc:
+                    loc_i = self._get_loc_from_idx(i, kr)
+                    locs_i.append(loc_i)
+                loc_i = np.array(locs_i)
+            # if list of objects data
+            else:
+                loc_i = i_loc
+        # if coordinates
+        elif type(i_loc) == np.ndarray:
+            loc_i = self._get_loc_dummy_array(i_loc, kr)
+        # if locations objects
+        elif isinstance(i_loc, Locations):
+            loc_i = self._get_loc_dummy_locations(i_loc, kr)
+        else:
+            loc_i = self._get_loc_dummy(i_loc)
+        return loc_i
+
+    def _get_loc_dummy_array(self, i_loc, kr=0):
+        """Get location from coordinates array."""
+        sh = self.data_input.shape  ## Global computation substitution
+        if len(np.array(i_loc).shape) == 1:
+            i_loc = np.array(i_loc).reshape((1, sh[1]))
+        loc_i = i_loc
+        return loc_i
+
+    def _get_loc_dummy_locations(self, i_loc, kr=0):
+        """"""
+        loc_i = np.array(i_loc.locations).reshape((1, sh[1]))
+        return loc_i
+
+    def _get_loc_dummy(self, i_loc, kr=0):
+        """Dummy get loc which return the exact input in array-like type."""
+        if type(i_loc) not in [np.ndarray, list]:
+            i_loc = [i_loc]
+        return i_loc
+
+    ############################### Get indices ###############################
+    ## Collapse to get_idxs_i in _format_get_indice_i
+    # Returns
+    # -------
+    # indices: list of ints
+    #     the indices of the associeted spatial information elements input.
+    #
+    def _get_idx_from_loc_indata(self, loc_i, kr=0):
+        """Get indices from stored data."""
+        print 'm'*20, loc_i, self.data_input
+        if type(self.data_input) == np.ndarray:
+            indices = []
+            for l in loc_i:
+                indices.append(np.where(self.data_input == l)[0])
+            indices = np.concatenate(indices)
+            if len(indices) != len(np.unique(indices)):
+                indices = np.unique(indices)
+            indices = list(indices)
+        elif type(self.data_input) == list:
+            indices = []
+            for l in loc_i:
+                for i in range(len(self.data_input)):
+                    if self.data_input[i] == l:
+                        indices.append(i)
+        return indices
+
+    def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
+        """Specific interaction with the data stored in retriever object."""
+        print '/'*20, loc_i
+        data_idxs = []
+        for i in range(len(loc_i)):
+            data_idxs.append(self._get_idx_from_loc(loc_i[i], kr))
+        if len(np.unique(data_idxs)) != len(data_idxs):
+            data_idxs = np.unique(data_idxs)
+        data_idxs = list(data_idxs)
+        return data_idxs
+
+    def _get_idxs_from_locs_listind(self, loc_i, kr=0):
+        """Specific interaction with the data stored in retriever object."""
+        i_locs = self._get_idx_from_loc(loc_i, kr)
+        return i_locs
+
+    def _get_indice_i_general_from_indices(self, i_loc, k=0, inorout=0):
+        """Get indices of spatial information from spatial information.
+        Format properly the input spatial information."""
+        if type(i_loc) == list:
+            loc_i = i_loc
+        elif type(i_loc) in [int, np.int32, np.int64]:
+            loc_i = [i_loc]
+        else:
+            raise TypeError("Not correct indice.")
+        return loc_i
+
+    def _get_indice_i_general_from_locations(self, loc_i, kr=0):
+        """Get indices of spatial information from spatial information.
+        Format properly the input spatial information."""
+        print '+'*20, loc_i, type(loc_i), self._get_idxs_from_locs
+        if type(loc_i) == list:
+            if len(loc_i) == 0:
+                return loc_i
+            if type(loc_i[0]) == np.ndarray:
+                loc_i = np.array(loc_i)
+            i_locs = self._get_idxs_from_locs(loc_i, kr)
+        elif type(loc_i) == np.ndarray:
+            i_locs = self._get_idxs_from_locs(loc_i, kr)
+        else:
+            loc_i = [loc_i]
+            i_locs = self._get_idxs_from_locs(loc_i, kr)
+        return i_locs
 
     def _get_indice_i_general(self, loc_i, kr=0):
-        """Obtain the indices from the elements, element-wise."""
-        try:
-            indice = self._get_indice_i_virtual(loc_i, kr)
-        except:
-            try:
-                indice = self._get_indice_i_global(loc_i, kr)
-            except:
-                indice = self._get_indice_i_elementwise(loc_i, kr)
-        return indice
+        """Get indice of spatial information. Generic function."""
+        ## 0. Needed variable computations
+        int_types = [int, np.int32, np.int64]
+        # If indice
+        if type(loc_i) in int_types:
+            i_loc = self._get_idx_dummy(loc_i, kr)
+        # If List
+        elif type(loc_i) == list:
+            # Empty list
+            if len(loc_i) == 0:
+                return loc_i
+            # if list of indices
+            if type(loc_i) in int_types:
+                i_loc = self._get_idx_dummy(loc_i, kr)
+            # if list of objects data
+            else:
+                i_loc = self._get_idxs_from_locs(loc_i, kr)
+        # Objects or coordinates
+        else:
+            i_loc = self._get_idxs_from_locs(loc_i, kr)
+        return i_loc
 
-    def _get_indice_i_virtual(self, loc_i, kr=0):
-        """Get indice for virtual (not computed explicitely) data."""
-        indice = self.retriever[kr].get_indice(loc_i)
-        return indice
-
-    def _get_indice_i_global(self, loc_i, kr=0):
-        """Global search from elements."""
-        indice = np.where(self.retriever[kr].data == loc_i)[0]
-        return indice
-
-    def _get_indice_i_elementwise(self, loc_i, kr=0):
-        """Obtain the indices from the elements element-wise."""
-        indice = np.where([self.retriever[kr].data[i] == loc_i
-                           for i in range(len(self.retriever[kr].data))])
-        return indice
+    def _get_idx_dummy(self, i_loc, kr=0):
+        """Dummy index to index."""
+        i_locs = i_loc if type(i_loc) == list else [i_loc]
+        return i_locs
 
     ########################### Relativepos managing ##########################
-    ###########################################################################
     ## Collapse to _apply_relative_pos in _format_output_information
+    # Returns
+    # -------
+    # neighs: list of np.ndarray or np.ndarrray
+    #     the neighs for each iss in i_loc
+    # dists: list of list of np.ndarray or np.ndarray
+    #     the information or relative position in respect to each iss in i_loc
+    #
     def _general_relative_pos(self, neighs_info, element_i, element_neighs):
         """Intraclass interface for manage the interaction with relative
         position function."""
@@ -686,7 +904,7 @@ class Retriever:
     def _apply_relative_pos_complete(self, res, point_i):
         loc_neighs = []
         for i in range(len(res[0])):
-            loc_neighs_i = self._get_loc_from_idx(res[0][i])
+            loc_neighs_i = self._get_loc_from_idxs(res[0][i])
             loc_neighs.append(loc_neighs_i)
         res = self._apply_relative_pos(res, point_i, loc_neighs)
         return res
@@ -779,6 +997,11 @@ class Retriever:
         n_data = len(self.neighs_info.ks)
         sh = (self._n0, self._n1)
         ## 1. Computation
+        # If explicit:
+        if self.type == 'explicit':
+            kr = 0
+            return self.retrievers[kr].relations
+        # else
         iss, jss = [], []
         data = [[] for i in range(n_data)]
         for i in xrange(self._n0):

@@ -28,11 +28,11 @@ class NetworkRetriever(Retriever):
         "Creation a element network retriever class method."
         # Reset globals
         self._initialization()
-        # Output information
-        self._format_output_information(autoexclude, ifdistance, relative_pos)
-        self._format_exclude(bool_input_idx)
         ## Retrieve information
         self._define_retriever(main_mapper)
+        # Output information
+        self._format_output_information(autoexclude, ifdistance, relative_pos)
+        self._format_exclude(bool_input_idx, self.constant_neighs)
         ## Info_ret mangement
         self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
@@ -57,31 +57,65 @@ class NetworkRetriever(Retriever):
                                       ifdistance=False, kr=0):
         """Retrieve element neighbourhood information. """
         elem_i = self._prepare_input(elem_i, kr)
+        print '.'*25, elem_i, self._prepare_input
         info_i = self._format_info_i_reg(info_i, elem_i)
         neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
-        dists = dists if ifdistance else None
+        if ifdistance:
+            neighs, dists =\
+                self._apply_relative_pos_spec((neighs, dists), elem_i)
+        else:
+            dists = None
+        return neighs, dists
+
+    def _retrieve_neighs_constant_nodistance(self, elem_i, info_i={}, kr=0):
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        elem_i: int
+            the indice of the elem_i.
+        """
+        info_i = self._get_info_i(elem_i, info_i)
+        elem_i = self._prepare_input(elem_i, kr)
+        neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
+        dists = None
+        return neighs, dists
+
+    def _retrieve_neighs_constant_distance(self, elem_i, info_i={}, kr=0):
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        elem_i: int
+            the indice of the elem_i.
+        """
+        info_i = self._get_info_i(elem_i, info_i)
+        elem_i = self._prepare_input(elem_i, kr)
+        neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
+        neighs, dists = self._apply_relative_pos_spec((neighs, dists), elem_i)
         return neighs, dists
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
-    def _format_maps(self, input_map, output_map):
-        if input_map is not None:
-            self._input_map = input_map
-        if output_map is not None:
-            self._output_map = output_map
-
     def _define_retriever(self, main_mapper, pars_ret={}):
         """Define the main mapper as a special retriever."""
         ## TODO: Ensure correct class
         self.retriever.append(main_mapper)
+        ## TODO: Compute constant neighs
         self.constant_neighs = False
+        if main_mapper._input == 'indices':
+            self.preferable_input_idx = True
+        elif main_mapper._input == 'elements_id':
+            self.preferable_input_idx = False
+        else:
+            self.preferable_input_idx = None
 
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
         check = True
         return check
 
-    def _format_output_exclude(self, i_locs, neighs, dists, output, k=0):
+    def _format_output_exclude(self, i_locs, neighs, dists, output=0, k=0):
         "Format output."
         print 'this is the point of debug', neighs, dists, i_locs
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
@@ -93,7 +127,7 @@ class NetworkRetriever(Retriever):
         print 'd'*20, neighs, dists, self.neighs_info.set_neighs, type(neighs), self._exclude_auto, self._output_map
         return neighs, dists
 
-    def _format_output_noexclude(self, i_locs, neighs, dists, output, k=0):
+    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, k=0):
         "Format output."
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
 #        neighs, dists = np.array(neighs), np.array(dists)
@@ -126,15 +160,28 @@ class NetworkRetriever(Retriever):
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
 
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from stored data."""
+        print '0'*25, self.retriever[kr].data_input
+        i_loc = np.where(self.retriever[kr].data_input == loc_i)[0]
+        return i_loc
+
+    @property
+    def data_input(self):
+        ## Assumption kr=0 is the leading data input.
+        return self.retriever[0].data_input
+
 
 class LimDistanceEleNeigh(NetworkRetriever):
     """Region Neighbourhood based on the limit distance bound.
     """
     _default_ret_val = {}
-    preferable_input_idx = False
-    constant_neighs = False
+    ## Basic information of the core retriever
+#    preferable_input_idx = True
+#    constant_neighs = False
     auto_excluded = False
-    output_array = False
+    ## Interaction with the stored data
+    bool_listind = False
 
     def _retrieve_neighs_spec2(self, elem_i, lim_distance=None, maxif=True,
                                ifdistance=True, kr=0):
@@ -182,10 +229,12 @@ class SameEleNeigh(NetworkRetriever):
     in the retriever maps.
     """
     _default_ret_val = {}
-    preferable_input_idx = False
-    constant_neighs = False
+    ## Basic information of the core retriever
+#    preferable_input_idx = True
+#    constant_neighs = False
     auto_excluded = False
-    output_array = False
+    ## Interaction with the stored data
+    bool_listind = False
 
     def _retrieve_neighs_spec2(self, elem_i, kr=0):
         """Retrieve the elements which are defined by the parameters of the
@@ -204,9 +253,10 @@ class SameEleNeigh(NetworkRetriever):
             the distances between elements.
 
         """
-        print 'k'*50, self.neighs_info.set_neighs
+        print 'k'*50, self.neighs_info.set_neighs, elem_i
         neighs, dists = self.retriever[kr][elem_i]
         print 'o'*50, neighs, type(neighs), dists
+        assert(len(neighs) == len(elem_i))
         assert(all([len(e.shape) == 2 for e in dists]))
         return neighs, dists
 
@@ -216,10 +266,12 @@ class OrderEleNeigh(NetworkRetriever):
     direct neighbours in a network.
     """
     _default_ret_val = {}
-    preferable_input_idx = False
-    constant_neighs = False
+    ## Basic information of the core retriever
+#    preferable_input_idx = True
+#    constant_neighs = False
     auto_excluded = False
-    output_array = False
+    ## Interaction with the stored data
+    bool_listind = False
 
     def _retrieve_neighs_spec2(self, elem_i, order=0, exactorlimit=False,
                                kr=0):
