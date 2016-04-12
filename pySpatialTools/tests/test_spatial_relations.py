@@ -32,22 +32,41 @@ def test():
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     mainmapper1 = RegionDistances(relations=relations, _data=None,
                                   symmetric=symmetric)
-    mainmapper1._general_retrieve_neighs([0])
+    neighs, dists = mainmapper1._general_retrieve_neighs([0])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 1)
+    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 2)
+
     mainmapper1 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
-    mainmapper1._general_retrieve_neighs([0])
+    neighs, dists = mainmapper1._general_retrieve_neighs([0])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 1)
+    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 2)
+
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc2, store='sparse')
     mainmapper2 = RegionDistances(relations=relations, _data=_data,
                                   symmetric=symmetric)
-    mainmapper2._general_retrieve_neighs([0])
+    neighs, dists = mainmapper2._general_retrieve_neighs([0])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 1)
+    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 2)
 
     #### Combinations
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc3, store='matrix')
     mainmapper3 = RegionDistances(relations=relations, _data=None,
                                   symmetric=symmetric)
-    mainmapper3[0]
+    neighs, dists = mainmapper3[0]
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 1)
     mainmapper3[mainmapper3.data[0]]
     mainmapper3.retrieve_neighs(0)
     mainmapper3.retrieve_neighs(mainmapper3.data[0])
@@ -131,7 +150,7 @@ def test():
 
     ## In retrievers
     ret0 = OrderEleNeigh(dummymapper, info_ret)
-    ret1 = OrderEleNeigh(mainmapper1, info_ret)
+    ret1 = OrderEleNeigh(mainmapper1, info_ret, bool_input_idx=False)
     ret2 = OrderEleNeigh(mainmapper2, info_ret)
 #    ret3 = OrderEleNeigh(mainmapper3, info_ret)
 

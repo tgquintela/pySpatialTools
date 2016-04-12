@@ -38,6 +38,7 @@ def test():
     pars5 = {'lim_distance': 2}
     pars8 = {'l': 8, 'center': 0, 'excluded': False}
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
+    mainmapper.set_inout(output='indices')
 
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
@@ -88,71 +89,79 @@ def test():
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
 
-#    ## SameEleRetriever
-#    pos_inforet = [None]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                           input_map=p[2], output_map=p[3], constant_info=p[4],
-#                           bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = locs[0]
-#        else:
-#            i = 0
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#
-#    ## OrderEleRetriever
-#    pos_inforet = [pars4]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                            input_map=p[2], output_map=p[3],
-#                            constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = locs[0]
-#        else:
-#            i = 0
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#
-#    ## LimDistanceRetriever
-#    pos_inforet = [pars5]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                                  input_map=p[2], output_map=p[3],
-#                                  constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = locs[0]
-#        else:
-#            i = 0
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
+    ## SameEleRetriever
+    pos_inforet = [None]
+    pos_outmap = [None, _output_map]
 
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                           input_map=p[2], output_map=p[3], constant_info=p[4],
+                           bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
 
+    ## OrderEleRetriever
+    pos_inforet = [pars4]
+    pos_outmap = [None, _output_map]
 
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                            input_map=p[2], output_map=p[3],
+                            constant_info=p[4], bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+            neighs_info = ret.retrieve_neighs(j)
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
+
+    ## LimDistanceRetriever
+    pos_inforet = [pars5]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                                  input_map=p[2], output_map=p[3],
+                                  constant_info=p[4], bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+            neighs_info = ret.retrieve_neighs(j)
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
 
 #info_ret=None, autolocs=None, pars_ret=None,
 #                 autoexclude=True, ifdistance=False, info_f=None,
@@ -279,16 +288,20 @@ def test():
     class PruebaRetriever(GeneralRetriever):
         preferable_input_idx = True
         auto_excluded = True
+        constant_neighs = True
+        bool_listind = True
 
         def __init__(self, autoexclude=True, ifdistance=False):
+            bool_input_idx = True
+            info_ret, info_f, constant_info = None, None, None
             self._initialization()
             self._format_output_information(autoexclude, ifdistance, None)
-            self._format_exclude(True)
-            self._format_retriever_info(None, None, None)
+            self._format_exclude(bool_input_idx, self.constant_neighs)
+            self._format_retriever_info(info_ret, info_f, constant_info)
             ## Format retriever function
-            self._format_retriever_function(True)
-            self._format_preparators(True)
-            self._format_neighs_info(True, 2, 'list', 'list')
+            self._format_retriever_function(bool_input_idx)
+            self._format_preparators(bool_input_idx)
+            self._format_neighs_info(bool_input_idx, 2, 'list', 'list')
 
         def _define_retriever(self):
             pass
