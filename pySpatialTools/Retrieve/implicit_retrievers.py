@@ -31,30 +31,31 @@ class SpaceRetriever(Retriever):
     def __init__(self, locs, info_ret=None, autolocs=None, pars_ret=None,
                  autoexclude=True, ifdistance=False, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
-                 output_map=None, constant_info=False, bool_input_idx=None,
-                 format_level=None, type_neighs=None, type_sp_rel_pos=None):
+                 output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element space retriever class method."
         ## Reset globals
         self._initialization()
+        # IO mappers
+        self._format_maps(input_map, output_map)
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
         # Location information
         self._format_locs(locs, autolocs)
+        ## Retrieve information
+        self._define_retriever(locs, pars_ret)
         # Perturbations
         self._format_perturbation(perturbations)
         # Output information
         self._format_output_information(autoexclude, ifdistance, relative_pos)
         self._format_exclude(bool_input_idx, self.constant_neighs)
-        ## Retrieve information
-        self._define_retriever(locs, pars_ret)
-        ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
         self._format_retriever_function()
         self._format_getters(bool_input_idx)
-        # IO mappers
-        self._format_maps(input_map, output_map)
+        # Preparation input and output
         self._format_preparators(bool_input_idx)
-        self._format_neighs_info(bool_input_idx, format_level, type_neighs,
-                                 type_sp_rel_pos)
+        self._format_neighs_info(bool_input_idx)
+        ## Define specific preprocessors
+        self._define_preprocess_relative_pos()
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
@@ -73,6 +74,16 @@ class SpaceRetriever(Retriever):
         self.data = None if autolocs is None else autolocs
         self._autodata = True if self.data is None else False
 
+    def _define_preprocess_relative_pos(self):
+        """A preprocess useful for ensuring proper format in relative_pos."""
+        ## Preprocess setting
+        if self._ifdistance:
+            self._apply_preprocess_relative_pos =\
+                self._apply_preprocess_relative_pos_dim
+        else:
+            self._apply_preprocess_relative_pos =\
+                self._apply_preprocess_relative_pos_null
+
 #    def _format_neigh_info(self, neighs_info):
 #        "TODO: Extension for other type of data as shapepy objects."
 #        pass
@@ -82,9 +93,57 @@ class SpaceRetriever(Retriever):
 #        return neighs, dists
 
 
+class KDTreeBasedRetriever(SpaceRetriever):
+    """Intermediate class to group some common functions in KDtree-based
+    retrievers."""
+
+    def _define_retriever(self, locs, pars_ret=None):
+        """Define a kdtree for retrieving neighbours."""
+        if pars_ret is not None:
+            leafsize = int(pars_ret)
+        else:
+            leafsize = locs.shape[0]
+            leafsize = locs.shape[0]/100 if leafsize > 1000 else leafsize
+        retriever = KDTree(locs, leaf_size=leafsize)
+        self.retriever.append(retriever)
+        self._heterogeneity_definition()
+
+    def _heterogeneity_definition(self):
+        ## Heterogeneous definition
+        if self.data is None and len(self.retriever) == 0:
+            if self.data is not None:
+                self._heterogenous_input = True
+            else:
+                logi = []
+                for i in range(len(self.retriever)):
+                    logi_i = np.array(self.retriever[i].data) ==\
+                        np.array(self.retriever[0].data)
+                    logi.append(np.all(logi_i))
+                self._heterogenous_input = not all(logi)
+        else:
+            logi = []
+            for i in range(len(self.retriever)):
+                logi_i = np.array(self.retriever[i].data) ==\
+                    np.array(self.retriever[0].data)
+                logi.append(np.all(logi_i))
+            self._heterogenous_output = not all(logi)
+
+    def _get_loc_from_idx(self, i, kr=0):
+        """Not list indexable interaction with data."""
+        print i, kr
+        loc_i = np.array(self.retriever[kr].data[i])
+        return loc_i
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from locations."""
+        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
+        indices = list(indices)
+        return indices
+
+
 ################################ K Neighbours #################################
 ###############################################################################
-class KRetriever(SpaceRetriever):
+class KRetriever(KDTreeBasedRetriever):
     "Class which contains a retriever of K neighbours."
     _default_ret_val = 1
     ## Basic information of the core retriever
@@ -116,6 +175,8 @@ class KRetriever(SpaceRetriever):
         for idxs in indices:
             neighs = self.retrieve_neighs(list(idxs))
             yield indices, neighs
+        ## Reset
+
 
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, kneighs, ifdistance=False,
@@ -183,39 +244,10 @@ class KRetriever(SpaceRetriever):
 #            check = False
 #        return check
 
-    def _define_retriever(self, locs, pars_ret=None):
-        """Define a kdtree for retrieving neighbours."""
-        if pars_ret is not None:
-            leafsize = int(pars_ret)
-        else:
-            leafsize = locs.shape[0]
-            leafsize = locs.shape[0]/100 if leafsize > 1000 else leafsize
-        retriever = KDTree(locs, leaf_size=leafsize)
-        self.retriever.append(retriever)
-        ## Preprocess setting
-        if self._ifdistance:
-            self._apply_preprocess_relative_pos =\
-                self._apply_preprocess_relative_pos_dim
-        else:
-            self._apply_preprocess_relative_pos =\
-                self._apply_preprocess_relative_pos_null
-
-    def _get_loc_from_idx(self, i, kr=0):
-        """Not list indexable interaction with data."""
-        print i, kr
-        loc_i = np.array(self.retriever[kr].data[i])
-        return loc_i
-
-    def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from locations."""
-        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
-        indices = list(indices)
-        return indices
-
 
 ################################ R disctance ##################################
 ###############################################################################
-class CircRetriever(SpaceRetriever):
+class CircRetriever(KDTreeBasedRetriever):
     "Circular retriever."
     _default_ret_val = 0.1
     ## Basic information of the core retriever
@@ -250,7 +282,7 @@ class CircRetriever(SpaceRetriever):
         """
         radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
-        res = self.retriever[kr].query(point_i, radius, False)
+        res = self.retriever[kr].query_radius(point_i, radius, False)
         res = list(res), None
         return res
 
@@ -264,7 +296,7 @@ class CircRetriever(SpaceRetriever):
         """
         radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
-        res = self.retriever[kr].query(point_i, radius, True)
+        res = self.retriever[kr].query_radius(point_i, radius, True)
         res = list(res[0]), self._apply_preprocess_relative_pos(list(res[1]))
         ## Correct for another relative spatial measure (Save time indexing)
         res = self._apply_relative_pos_spec(res, point_i)
@@ -290,34 +322,6 @@ class CircRetriever(SpaceRetriever):
 #            check = False
 #        return check
 
-    def _define_retriever(self, locs, pars_ret=None):
-        "Define a kdtree for retrieving neighbours."
-        if pars_ret is not None:
-            leafsize = int(pars_ret)
-        else:
-            leafsize = locs.shape[0]
-            leafsize = locs.shape[0]/100 if leafsize > 1000 else leafsize
-        retriever = KDTree(locs, leaf_size=leafsize)
-        self.retriever.append(retriever)
-        ## Preprocess setting
-        if self._ifdistance:
-            self._apply_preprocess_relative_pos =\
-                self._apply_preprocess_relative_pos_dim
-        else:
-            self._apply_preprocess_relative_pos =\
-                self._apply_preprocess_relative_pos_null
-
-    def _get_loc_from_idx(self, i, kr=0):
-        """Not list indexable interaction with data."""
-        loc_i = np.array(self.retriever[kr].data[i])
-        return loc_i
-
-    def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from locations."""
-        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
-        indices = list(indices)
-        return indices
-
 
 ############################## Windows Neighbours #############################
 ###############################################################################
@@ -334,25 +338,6 @@ class WindowsRetriever(SpaceRetriever):
     bool_listind = True
 
     ######################## Retrieve-driven retrieve #########################
-    def set_iter(self, info_ret=None, max_bunch=None):
-        info_ret = self._default_ret_val if info_ret is None else info_ret
-        max_bunch = len(self) if max_bunch is None else max_bunch
-        self._info_ret = info_ret
-        self._max_bunch = max_bunch
-
-#    def __iter__(self):
-#        ## Prepare iteration
-#        bool_input_idx = True
-#        self._format_preparators(bool_input_idx)
-#        self._constant_ret = True
-#        self._format_retriever_function(bool_input_idx)
-#        ## Prepare indices
-#        indices = split_parallel(np.arange(self._n0), self._max_bunch)
-#        ## Iteration
-#        for idxs in indices:
-#            neighs = self.retrieve_neighs(idxs)
-#            yield indices, neighs
-
     def __iter__(self):
         ## Prepare iteration
         bool_input_idx = True
@@ -431,15 +416,6 @@ class WindowsRetriever(SpaceRetriever):
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
 
-#    ### TODO: TOMOVE (virtual data)
-#    def get_loc_i(self, element_i, kr):
-#        """Specific class function to get locations from input. Overwrite the
-#        generic function.
-#        """
-#        if type(element_i) == int:
-#            element_i = self.retriever[kr].map2locs(element_i)
-#        return element_i
-
     def _define_retriever(self, locs, pars_ret=None):
         """Define a kdtree for retrieving neighbours."""
         # If it has to be excluded it will be excluded initially
@@ -472,3 +448,64 @@ class WindowsRetriever(SpaceRetriever):
         self._shape = shape_
         self._ndim = len(limits)
         self._virtual_data = True
+
+    def _heterogeneity_definition(self):
+        ## Heterogeneous definition (TODO)
+        self._heterogenous_input = False
+        self._heterogenous_output = False
+
+
+###############################################################################
+######################### Discretizors-Based Retrievers #######################
+###############################################################################
+class DiscretizationRetriever(Retriever):
+    """Retriever of elements considering its spacial information from a pool
+    of elements retrievable.
+    """
+    typeret = 'discretizor'
+
+    def __init__(self, discretizor, info_ret=None, autolocs=None,
+                 pars_ret=None, autoexclude=True, ifdistance=False,
+                 info_f=None, perturbations=None, relative_pos=None,
+                 input_map=None, output_map=None, constant_info=False, bool_input_idx=None,
+                 format_level=None, type_neighs=None, type_sp_rel_pos=None):
+        "Creation a element space retriever class method."
+        ## Reset globals
+        self._initialization()
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
+        # Location information
+        self._format_locs(locs, autolocs)
+        # Perturbations
+        self._format_perturbation(perturbations)
+        # Output information
+        self._format_output_information(autoexclude, ifdistance, relative_pos)
+        self._format_exclude(bool_input_idx, self.constant_neighs)
+        ## Retrieve information
+        self._define_retriever(locs, pars_ret)
+        ## Format retriever function
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
+        # IO mappers
+        self._format_maps(input_map, output_map)
+        self._format_preparators(bool_input_idx)
+        self._format_neighs_info(bool_input_idx, format_level, type_neighs,
+                                 type_sp_rel_pos)
+
+    ######################## Retrieve-driven retrieve #########################
+    def __iter__(self):
+        ## Prepare iteration
+        assert(self.data is not None)
+        bool_input_idx, constant_neighs = True, True
+        self._constant_ret = True
+        ## Format functions
+        self._format_exclude(bool_input_idx, constant_neighs)
+        self._format_preparators(bool_input_idx)
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
+        ## Prepare indices
+        indices = split_parallel(np.arange(self._n0), self._max_bunch)
+        ## Iteration
+        for idxs in indices:
+            neighs = self.retrieve_neighs(list(idxs))
+            yield indices, neighs

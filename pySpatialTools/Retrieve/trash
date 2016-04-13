@@ -2,6 +2,23 @@
 """
 """
 
+
+
+######## 2016-04-13 ImplicitRetriever, WindowsRetriever
+
+#    def __iter__(self):
+#        ## Prepare iteration
+#        bool_input_idx = True
+#        self._format_preparators(bool_input_idx)
+#        self._constant_ret = True
+#        self._format_retriever_function(bool_input_idx)
+#        ## Prepare indices
+#        indices = split_parallel(np.arange(self._n0), self._max_bunch)
+#        ## Iteration
+#        for idxs in indices:
+#            neighs = self.retrieve_neighs(idxs)
+#            yield indices, neighs
+
 ######## 2016-04-11 Retriever
     ###########################################################################
 #    def _get_loc_from_idx_locations(self, i_loc, kr=0):

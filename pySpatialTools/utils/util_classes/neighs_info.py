@@ -1104,6 +1104,7 @@ class Neighs_Info:
                     assert(len(np.array(self.sp_relative_pos).shape) == 4)
         #################
         array_types = [list, np.ndarray]
+        print self.sp_relative_pos, self.sp_relative_pos is None, type(self.sp_relative_pos), self.ifdistance
         if self.sp_relative_pos is not None:
             if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
                 pass

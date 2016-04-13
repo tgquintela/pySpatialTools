@@ -5,22 +5,25 @@ Retrievers
 The objects to retrieve neighbours in flat (non-splitted) space or precomputed
 mapped relations.
 The retrievers can be defined in different topologic spaces.
-This class acts as a wrapper to the core definition of this retrievers.
-
+This class acts as a wrapper to the core definition of this retrievers. In
+this class are coded all the structure and administrative stuff in order to
+manage and optimize the retrieve of neighbourhood.
 
 Structure:
 ----------
+* Retrievers
 - Retrievers
-    - Implicit Retrievers
-        - SpatialRetrievers
+    * Implicit Retrievers
+    - SpatialRetrievers
+        - KDTreeBasedRetrievers
             - KRetriever
             - RadiusRetriever
-            - WindowRetriever
-    - Explicit Retrievers
-        - NetworkRetrievers
-            - DirectMapping
-            - OrderRetriever
-            - MaxDistanceRetriever
+        - WindowRetriever
+    * Explicit Retrievers
+    - NetworkRetrievers
+        - DirectMapping
+        - OrderRetriever
+        - MaxDistanceRetriever
 
 TODO:
 ----
@@ -28,6 +31,8 @@ TODO:
 - Exclude better implementation
 - Multiple regions
 - Multiple points to get neighs
+- SpatialElementsCollection support
+- Remove Locations support
 
 """
 
@@ -38,8 +43,7 @@ from aux_retriever import _check_retriever, _general_autoexclude,\
     _array_autoexclude, _list_autoexclude
 from ..utils import NonePerturbation
 from ..utils import ret_filter_perturbations
-from ..utils.util_classes import SpatialElementsCollection, Locations,\
-    Neighs_Info
+from ..utils.util_classes import SpatialElementsCollection, Neighs_Info
 
 
 class Retriever:
@@ -48,13 +52,17 @@ class Retriever:
     __name__ = 'pySpatialTools.Retriever'
 
     ######################## Retrieve-driven retrieve #########################
+    def set_iter(self, info_ret=None, max_bunch=None):
+        info_ret = self._default_ret_val if info_ret is None else info_ret
+        max_bunch = len(self) if max_bunch is None else max_bunch
+        self._info_ret = info_ret
+        self._max_bunch = max_bunch
+
     def __iter__(self):
         ## Prepare iteration
+        bool_input_idx, constant_info = True, True
+        self._format_general_information(bool_input_idx, constant_info)
         # Input indices
-        bool_input_idx = True
-        self._format_preparators(bool_input_idx)
-        self._format_retriever_function()
-        self._format_getters(bool_input_idx)
         ## Iteration
         for i in range(self._n0):
             iss = self.get_indice_i(i)
@@ -71,11 +79,10 @@ class Retriever:
         ## 1. Retrieve neighs
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
-#        print neighs.shape, type(dists)
+        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists)
-#        print neighs_info[0].shape, type(neighs_info[1])
         ## 3. Format neighs_info
-        print 'setting:', i_loc, neighs_info
+        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance
         self.neighs_info.set(neighs_info, i_loc)
         neighs_info = self.neighs_info
         return neighs_info
@@ -166,6 +173,9 @@ class Retriever:
             self._perturbators.append(perturbations)
             self._create_map_perturbation()
             self._add_perturbated_retrievers(perturbations)
+        ## Reformat retriever functions
+        self._format_retriever_function()
+        self._format_neighs_info(self.bool_input_idx)
 
     def _format_perturbation(self, perturbations):
         """Format initial perturbations."""
@@ -247,6 +257,7 @@ class Retriever:
         self.relative_pos = None
         self._ndim_rel_pos = 1
         ## IO information
+        self.bool_input_idx = None
         self._autoexclude = False
         self._ifdistance = False
         self._autoret = True
@@ -257,6 +268,25 @@ class Retriever:
         self._output_map = [lambda s, i, x: x]
         ## Check
         _check_retriever(self)
+
+    def _format_general_information(self, bool_input_idx, constant_info):
+        """Assumption parameters:
+        - self._info_ret
+        - self.k_perturb
+        """
+        print '9'*15, self._ifdistance
+        ## Retrieve information getters and functions
+        self._format_retriever_info(self._info_ret, self._info_f,
+                                    constant_info)
+        self._format_retriever_function()
+        ## Getters data
+        self._format_getters(bool_input_idx)
+        ## Format output functions
+        self._format_exclude(bool_input_idx, self.constant_neighs)
+        # Preparation input and output
+        self._format_preparators(bool_input_idx)
+        self._format_neighs_info(bool_input_idx)
+        print '9+'*15, self._ifdistance
 
     ################################ Formatters ###############################
     ###########################################################################

@@ -23,39 +23,32 @@ class NetworkRetriever(Retriever):
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
                  autoexclude=True, ifdistance=True, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
-                 output_map=None, constant_info=False, bool_input_idx=None,
-                 format_level=None, type_neighs=None, type_sp_rel_pos=None):
+                 output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element network retriever class method."
         # Reset globals
         self._initialization()
+        # IO mappers
+        self._format_maps(input_map, output_map)
         # Perturbations
         self._format_perturbation(perturbations)
         ## Retrieve information
         self._define_retriever(main_mapper)
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
         # Output information
         self._format_output_information(autoexclude, ifdistance, relative_pos)
         self._format_exclude(bool_input_idx, self.constant_neighs)
-        ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f, constant_info)
         ## Format retriever function
         self._format_retriever_function()
         self._format_getters(bool_input_idx)
-        # IO mappers
-        self._format_maps(input_map, output_map)
+        # Preparation input and output
         self._format_preparators(bool_input_idx)
-        self._retrieve_neighs_constant_nodistance =\
-            self._retrieve_neighs_general_spec
-        self._retrieve_neighs_constant_distance =\
-            self._retrieve_neighs_general_spec
-        format_level, type_neighs, type_sp_rel_pos =\
-            self._preformat_neighs_info()
-        self._format_neighs_info(bool_input_idx, format_level, type_neighs,
-                                 type_sp_rel_pos)
+        self._format_neighs_info(bool_input_idx)
 
     ############################## Main functions #############################
     ###########################################################################
     def _retrieve_neighs_general_spec(self, elem_i, info_i={},
-                                      ifdistance=False, kr=0):
+                                      ifdistance=True, kr=0):
         """Retrieve element neighbourhood information. """
         elem_i = self._prepare_input(elem_i, kr)
         print '.'*25, elem_i, self._prepare_input
