@@ -41,6 +41,10 @@ def test():
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
     mainmapper.set_inout(output='indices')
 
+    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
+    perturbation = PermutationPerturbation(reindices.T)
+#    ret0.add_perturbations(perturbation)
+
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
     pos_ifdistance = [True, False]
@@ -51,13 +55,14 @@ def test():
     ## KRetriever
     pos_inforet = [2, 5, 10]
     pos_outmap = [None, _output_map]
+    pos_perturbations = [None, perturbation]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
+           pos_constantinfo, pos_boolinidx, pos_perturbations]
     for p in product(*pos):
         ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
                          output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5])
+                         bool_input_idx=p[5], perturbations=p[6])
         if p[5] is False:
             i = locs[0]
         else:
@@ -68,6 +73,9 @@ def test():
             #neighs_info = ret[i]
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+
+        ## Testing other functions and parameters
+        ret.k_perturb
 
     ## CircRetriever
     pos_inforet = [2., 5., 10.]

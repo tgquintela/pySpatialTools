@@ -69,6 +69,9 @@ class Neighs_Info:
         self.staticneighs = staticneighs
         self.ifdistance = ifdistance
         self.level = format_level
+        self.format_set_info = format_structure, type_neighs, type_sp_rel_pos,\
+            format_set_iss
+        self.format_get_info = format_get_info, format_get_k_info
         ## Formatters
         self._format_setters(format_structure, type_neighs,
                              type_sp_rel_pos, format_set_iss)
@@ -140,8 +143,23 @@ class Neighs_Info:
             type_sp_rel_pos = None
         self.set_types(type_neighs, type_sp_rel_pos)
 
+    def reset_structure(self, format_structure):
+        _, aux1, aux2, aux3 = self.format_set_info
+        self.format_set_info = format_structure, aux1, aux2, aux3
+        self.reset_format()
+
+    def reset_level(self, format_level):
+        self.format_level = format_level
+        self.reset_format()
+
+    def reset_format(self):
+        ## Formatters
+        self._format_setters(*self.format_set_info)
+        self._format_getters(*self.format_get_info)
+
     def set_types(self, type_neighs=None, type_sp_rel_pos=None):
         ## 1. Set set_sp_rel_pos
+        self.type_neighs, self.type_sp_rel_pos = type_neighs, type_sp_rel_pos
         if self.level is None:
             self.staticneighs = None
         elif self.level <= 2:
@@ -252,7 +270,16 @@ class Neighs_Info:
         elif format_structure == 'tuple_tuple':
             self._set_info = self._set_tuple_tuple_structure
         elif format_structure == 'list_tuple_only':
+            assert(self.level == 2)
             self._set_info = self._set_list_tuple_only_structure
+            self.staticneighs = False
+            if self.level != 2:
+                raise Exception("Not correct inputs.")
+            else:
+                self.level = 3
+        elif format_structure == 'list_tuple':
+            assert(self.level == 2)
+            self._set_info = self._set_list_tuple_structure
             self.staticneighs = False
             if self.level != 2:
                 raise Exception("Not correct inputs.")
@@ -402,8 +429,14 @@ class Neighs_Info:
     ###########################################################################
     def _general_set(self, neighs_info, iss=None):
         """General set."""
+        print 'set neighs_info:'+'.'*20
+        print neighs_info
+        print self.staticneighs
         self._preset(neighs_info, iss)
         ## Post-set functions
+        print self.staticneighs, type(self.idxs), self.idxs
+        if type(self.idxs) == np.ndarray:
+            print '='*10, self.idxs.shape
         if type(self.idxs) == slice:
             self.get_neighs = self._get_neighs_slice
 #            self.ks = list(range(self._kret+1))
@@ -429,8 +462,11 @@ class Neighs_Info:
 #        print '=p'*20, self.staticneighs, neighs_info
         self._set_init()
         self._set_iss(iss)
+        print self.staticneighs, self.set_neighs, self._set_info
         self._set_info(neighs_info)
+        print self.staticneighs, self.set_neighs
         self._postformat()
+        print self.staticneighs, self.set_neighs
 
     def _set_init(self):
         """Reset variables to default."""
@@ -535,7 +571,7 @@ class Neighs_Info:
         """
         if len(key) == 2:
             ks = [key[1]] if type(key[1]) == int else key[1]
-            self.ks = list(np.array(ks))
+            self.ks = list(np.array([ks]).ravel())
         self._set_tuple_only_structure(key[0])
 
     def _set_tuple_list_tuple_only(self, key):
@@ -589,6 +625,13 @@ class Neighs_Info:
         ## Change to list and whatever it was
         self.set_neighs([e[0] for e in key])
         self.set_sp_rel_pos([e[1] for e in key])
+
+    def _set_list_tuple_structure(self, key):
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        print ks, key[0], type(key[1])
+        assert(len(key[0]) == len(ks))
+        self._set_list_tuple_only_structure(key[0])
+        self.ks = ks
 
     ############################### Set Neighs ################################
     ###########################################################################
@@ -660,7 +703,7 @@ class Neighs_Info:
         """
         * indices{np.ndarray form} shape: (ks, iss, neighs)
         """
-        self.idxs = key
+        self.idxs = np.array(key)
         if len(self.idxs[0]) > 0:
             self.iss = list(range(len(self.idxs[0])))
         self._setted = True
@@ -767,6 +810,7 @@ class Neighs_Info:
         * list of arrays len(iss) -> unique rel_pos for ks
         * list of lists of arrays -> complete
         """
+        print '/'*100, self.level
         if self.level is not None:
             if self.level == 0:
                 self._set_rel_pos_dim(rel_pos)
@@ -1094,6 +1138,7 @@ class Neighs_Info:
         """Definition of the standart store for sp_relative_pos."""
         ## Temporal
         #print self.sp_relative_pos
+        print self.sp_relative_pos, np.array(self.sp_relative_pos).shape, self.set_sp_rel_pos
         if self.sp_relative_pos is not None:
             if self._constant_neighs:
                 if self.staticneighs:
@@ -1122,6 +1167,8 @@ class Neighs_Info:
                 else:
                     assert(len(self.sp_relative_pos) == len(self.ks))
                 if type(self.sp_relative_pos[0]) in array_types:
+                    if not self.staticneighs:
+                        assert(len(self.sp_relative_pos[0]) == len(self.iss))
                     if len(self.sp_relative_pos[0]) > 0:
                         assert(type(self.sp_relative_pos[0][0]) in array_types)
                 else:
@@ -1144,7 +1191,7 @@ class Neighs_Info:
 #        print self.idxs, type(self.idxs)
         int_listtypes = [int, np.int32, np.int64]
         if type(self.idxs) == list:
-#            print self.idxs, 'assertion'
+            print self.idxs, 'assertion', self.set_structure, self.set_neighs, self.format_set_info
             assert(type(self.idxs[0]) in [list, np.ndarray])
             if not self.staticneighs:
 #                print self.idxs, self.ks, self.iss
@@ -1210,5 +1257,8 @@ class Neighs_Info:
         assert(type(sp_relative_pos) in [np.ndarray, list])
         #print self.sp_relative_pos, self.staticneighs, sp_relative_pos
         #print np.array(sp_relative_pos).shape
+        print np.array(sp_relative_pos).shape, ks, self.iss, np.array(self.sp_relative_pos).shape, np.array(self.idxs).shape
+        print self.set_neighs, self.set_structure, self.set_sp_rel_pos
+        print self.staticneighs
         assert(len(sp_relative_pos) == len(ks))
         assert(len(sp_relative_pos[0]) == len(self.iss))

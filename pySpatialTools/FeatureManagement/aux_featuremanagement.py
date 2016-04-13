@@ -30,15 +30,24 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     u_regs = u_regs.reshape((len(u_regs), 1))
 
     ## 1. Compute aggregation
+    # Prepare container of neighs information
+    nei_nfo = regmetric.export_neighs_info()
+    nei_nfo.reset_structure('tuple_tuple')
+    nei_nfo.reset_level(2)
+    # Prepare features
     sh = features.shape
     agg = np.ones((len(u_regs), sh[1], sh[2])) * _nullvalue
     for i in xrange(len(u_regs)):
         ## We get neighs_info with only 1-k and 1-iss
         neighs_info = regmetric.retrieve_neighs(u_regs[i])
         for k in neighs_info.ks:
+            # Get neighs information
             neighs, dists, _, _ = neighs_info.get_information(k)
             neighs, dists = neighs[0], dists[0]
-            agg[i, :, k] = agg_f(features[(neighs, dists), k], dists)
+            # Format neighs information
+            nei_nfo.set(((neighs, dists), k))
+            # Compute aggregation
+            agg[i, :, k] = agg_f(features[nei_nfo], dists)
 
 #        if any(neighs):
 #            for k in range(sh[2]):
