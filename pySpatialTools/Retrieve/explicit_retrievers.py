@@ -109,10 +109,10 @@ class NetworkRetriever(Retriever):
         check = True
         return check
 
-    def _format_output_exclude(self, i_locs, neighs, dists, output=0, k=0):
+    def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output."
         print 'this is the point of debug', neighs, dists, i_locs
-        neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
 #        neighs, dists = np.array(neighs), np.array(dists)
 #        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
 #        dists = dists.reshape((len(dists), n_dim))
@@ -121,9 +121,9 @@ class NetworkRetriever(Retriever):
         print 'd'*20, neighs, dists, self.neighs_info.set_neighs, type(neighs), self._exclude_auto, self._output_map
         return neighs, dists
 
-    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, k=0):
+    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output."
-        neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
 #        neighs, dists = np.array(neighs), np.array(dists)
 #        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
 #        dists = dists.reshape((len(dists), n_dim))

@@ -38,6 +38,7 @@ TODO:
 
 import numpy as np
 import warnings
+from copy import copy
 from scipy.sparse import coo_matrix
 from aux_retriever import _check_retriever, _general_autoexclude,\
     _array_autoexclude, _list_autoexclude
@@ -104,6 +105,7 @@ class Retriever:
             nei_k = self._format_output(i_loc, neighs, dists, kr=k_r)
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
+        print neighs_info, '1'*50, self.neighs_info.format_set_info
         self.neighs_info.set((neighs_info, ks), i_loc)
         neighs_info = self.neighs_info
         return neighs_info
@@ -137,7 +139,7 @@ class Retriever:
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
         ## 3. Format neighs_info
-        print 'a'*100, neighs_info, type(neighs_info[0]), type(neighs_info[1])
+        print 'a'*100, neighs_info, type(neighs_info[0]), type(neighs_info[1]), self.staticneighs or ks == 0
         self.neighs_info.set((neighs_info, ks), i_loc)
         neighs_info = self.neighs_info
         return neighs_info
@@ -162,17 +164,12 @@ class Retriever:
     def add_perturbations(self, perturbations):
         """Add perturbations."""
         perturbations = ret_filter_perturbations(perturbations)
-        if type(perturbations) == list:
-            for p in perturbations:
-                self._dim_perturb.append(p.k_perturb)
-                self._perturbators.append(p)
-                self._create_map_perturbation()
-                self._add_perturbated_retrievers(p)
-        else:
-            self._dim_perturb.append(perturbations.k_perturb)
-            self._perturbators.append(perturbations)
+        assert(type(perturbations) == list)
+        for p in perturbations:
+            self._dim_perturb.append(p.k_perturb)
+            self._perturbators.append(p)
             self._create_map_perturbation()
-            self._add_perturbated_retrievers(perturbations)
+            self._add_perturbated_retrievers(p)
         ## Reformat retriever functions
         self._format_retriever_function()
         self._format_neighs_info(self.bool_input_idx)
@@ -374,7 +371,7 @@ class Retriever:
             else:
                 self._retrieve_neighs_spec =\
                     self._retrieve_neighs_constant_nodistance
-            if self.k_perturb == 0:
+            if self.k_perturb == 0 or self.staticneighs:
                 self.retrieve_neighs = self._retrieve_neighs_static
             else:
                 self.retrieve_neighs = self._retrieve_neighs_dynamic
@@ -406,14 +403,14 @@ class Retriever:
             self._preformat_neighs_info(format_level, type_neighs,
                                         type_sp_rel_pos)
         ## Setting structure
-        if self.k_perturb == 0:
+        if self.k_perturb == 0 or self.staticneighs:
             if self._constant_ret:
                 format_structure = 'tuple_only'
             else:
                 format_structure = 'tuple_tuple'
         else:
             #format_structure = 'tuple_list_tuple_only'
-            format_structure = 'list_tuple_only'
+            format_structure = 'list_tuple'
 
         ## Setting iss
         if bool_input_idx:
@@ -969,6 +966,9 @@ class Retriever:
     def __len__(self):
         return self._n0
 
+    def export_neighs_info(self):
+        return copy(self.neighs_info)
+
     @property
     def _n0(self):
         if self._heterogenous_input:
@@ -1019,6 +1019,9 @@ class Retriever:
         ----
         * Check only 1dim rel_pos
         * Extend to k != 0
+        * Accept a mapper if not heterogenous output
+
+        Definition of heterogenous: len(output_map) == 1, same output for each retriever
         """
         ## 0. Conditions to ensure
         if self._heterogenous_output:
@@ -1032,12 +1035,13 @@ class Retriever:
 #            n_data = np.array(dists).shape[1]
 #        except:
 #            n_data = 1
+        ks = self.neighs_info.ks
         n_data = len(self.neighs_info.ks)
         sh = (self._n0, self._n1)
         ## 1. Computation
         # If explicit:
         if self.type == 'explicit':
-            kr = 0
+            kr = 0 if mapper is None else mapper
             return self.retrievers[kr].relations
         # else
         iss, jss = [], []

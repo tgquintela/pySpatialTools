@@ -59,13 +59,13 @@ class SpaceRetriever(Retriever):
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
-    def _format_output_exclude(self, i_locs, neighs, dists, output=0, k=0):
+    def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output with excluding."
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
-        neighs, dists = self._exclude_auto(i_locs, neighs, dists, k)
+        neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
         return neighs, dists
 
-    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, k=0):
+    def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output without excluding the same i."
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         return neighs, dists
