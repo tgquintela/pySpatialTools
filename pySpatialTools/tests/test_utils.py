@@ -310,10 +310,11 @@ def test():
     pos_format_level = [0, 1, 2, 3]
     pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
                             'list_tuple_only', ]
+    pos_staticneighs = [None, True, False]
 
     pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
            pos_format_get_k_info, pos_format_structure, pos_format_level,
-           pos_type_neighs, pos_type_sp_rel_pos]
+           pos_type_neighs, pos_type_sp_rel_pos, pos_staticneighs]
 
     ## Possible inputs
     creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, lvl))
@@ -369,7 +370,8 @@ def test():
                                           format_structure=p[4],
                                           format_level=p[5],
                                           type_neighs=p[6],
-                                          type_sp_rel_pos=p[7])
+                                          type_sp_rel_pos=p[7],
+                                          staticneighs=p[8])
                 boolean = True
             except:
                 if boolean:
@@ -386,18 +388,23 @@ def test():
         neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
                                   format_get_info=p[2], format_get_k_info=p[3],
                                   format_structure=p[4], format_level=p[5],
-                                  type_neighs=p[6], type_sp_rel_pos=p[7])
+                                  type_neighs=p[6], type_sp_rel_pos=p[7],
+                                  staticneighs=p[8])
         neighs_info.set_information(10, 100)
         ## Presetting
         lvl = np.random.random(4) if p[5] is None else p[5]
         sh = creator_lvl(lvl)
         k_len = sh[0] if len(sh) == 3 else np.random.randint(1, 9)
-        iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(100)
+        iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(1, 100)
         nei_len = sh[-1] if len(sh) > 0 else np.random.randint(100)
         sh_static = sh
-        if p[0] is True:
-            basic_sh = [] if len(sh) == 0 else [1]
-            sh_static = tuple(basic_sh+[sh[i] for i in range(1, len(sh))])
+        if len(sh_static) == 3:
+            sh_static = list(sh_static)
+            sh_static[0] = k_len
+            sh_static = tuple(sh_static)
+#        if p[0] is True:
+#            basic_sh = [] if len(sh) == 0 else [1]
+#            sh_static = tuple(basic_sh+[sh[i] for i in range(1, len(sh))])
         # Neighs creation
         if p[6] == 'slice':
             neighs = neighs_slice(nei_len)
@@ -426,7 +433,7 @@ def test():
             neighs_nfo = neighs
 
 #        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
-        neighs_info.set(neighs_nfo)
+        neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
         neighs_info.any()

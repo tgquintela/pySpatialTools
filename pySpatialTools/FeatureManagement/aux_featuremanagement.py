@@ -43,8 +43,16 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
         for k in neighs_info.ks:
             # Get neighs information
             neighs, dists, _, _ = neighs_info.get_information(k)
+            print neighs_info.get_neighs, neighs_info.get_sp_rel_pos
+            print nei_nfo.get_neighs, nei_nfo.get_sp_rel_pos
+            print nei_nfo.set_neighs, nei_nfo.set_sp_rel_pos
             neighs, dists = neighs[0], dists[0]
             # Format neighs information
+            print neighs, dists, k
+            print np.any(neighs)
+            print np.any(dists)
+            if empty_neighs(neighs):
+                continue
             nei_nfo.set(((neighs, dists), k))
             # Compute aggregation
             agg[i, :, k] = agg_f(features[nei_nfo], dists)
@@ -59,6 +67,15 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
     ## TODO: names=[], nullvalue=None
     return agg
+
+
+def empty_neighs(neighs):
+    logi = False
+    try:
+        logi = not bool(np.prod(np.array(neighs).shape))
+    except:
+        pass
+    return logi
 
 
 def compute_featuresnames(descriptormodel, featureobject):

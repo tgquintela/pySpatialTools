@@ -181,6 +181,7 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
         locs_i = locs[regs == u_regs[i]]
         neighs_info = regretriever.retrieve_neighs(u_regs[i])
         neighs_i = neighs_info.get_neighs([0])
+        print list(u_regs.ravel()), neighs_i
         for j in range(len(neighs_i[iss_i][ki])):
             locs_j = locs[regs == neighs_i[iss_i][ki][j]]
             dists_j = cdist(locs_i, locs_j).mean()

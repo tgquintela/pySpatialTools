@@ -85,6 +85,7 @@ class Retriever:
         ## 3. Format neighs_info
         print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance
         self.neighs_info.set(neighs_info, i_loc)
+        assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
 
@@ -107,6 +108,8 @@ class Retriever:
         ## 3. Format neighs_info
         print neighs_info, '1'*50, self.neighs_info.format_set_info
         self.neighs_info.set((neighs_info, ks), i_loc)
+        print self.staticneighs, self.neighs_info.staticneighs
+        assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
 
@@ -127,6 +130,7 @@ class Retriever:
             print 'b'*25, neighs, dists
             ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
+            neighs_info = [neighs_info]
         else:
             neighs_info = []
             for k in range(len(ks)):
@@ -139,8 +143,9 @@ class Retriever:
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
         ## 3. Format neighs_info
-        print 'a'*100, neighs_info, type(neighs_info[0]), type(neighs_info[1]), self.staticneighs or ks == 0
+        print 'a'*100, neighs_info, type(neighs_info[0]), self.staticneighs or ks == 0
         self.neighs_info.set((neighs_info, ks), i_loc)
+        assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
 
@@ -222,6 +227,9 @@ class Retriever:
         function self._define_retriever."""
         if perturbation._categorytype == 'location':
             self.staticneighs = False
+            print ','*50, self.staticneighs, self.neighs_info.staticneighs
+            self._format_neighs_info(self.bool_input_idx)
+            print ';'*50, self.staticneighs, self.neighs_info.staticneighs
             for k in range(perturbation.k_perturb):
                 locs_p = perturbation.apply2locs(self.retriever[0].data, k=k)
                 self._define_retriever(locs_p[:, :, 0])
@@ -260,6 +268,8 @@ class Retriever:
         self._autoret = True
         self._heterogenous_input = False
         self._heterogenous_output = False
+        ## Neighs info
+        self.neighs_info = Neighs_Info(staticneighs=True)
         ## IO methods
         self._input_map = lambda s, i: i
         self._output_map = [lambda s, i, x: x]
@@ -284,6 +294,10 @@ class Retriever:
         self._format_preparators(bool_input_idx)
         self._format_neighs_info(bool_input_idx)
         print '9+'*15, self._ifdistance
+
+    def assert_correctness(self):
+        """Assert the class is formatted properly."""
+        assert(self.staticneighs == self.neighs_info.staticneighs)
 
     ################################ Formatters ###############################
     ###########################################################################
@@ -403,13 +417,17 @@ class Retriever:
             self._preformat_neighs_info(format_level, type_neighs,
                                         type_sp_rel_pos)
         ## Setting structure
-        if self.k_perturb == 0 or self.staticneighs:
-            if self._constant_ret:
-                format_structure = 'tuple_only'
+        if self._constant_ret:
+            ## If constant and static
+            if self.k_perturb == 0 or self.staticneighs:
+                    format_structure = 'tuple_only'
+#                    format_structure = 'tuple_tuple'
+            ## If constant and dynamic
             else:
-                format_structure = 'tuple_tuple'
+                #format_structure = 'tuple_list_tuple_only'
+                format_structure = 'list_tuple'
+        ## If not constant
         else:
-            #format_structure = 'tuple_list_tuple_only'
             format_structure = 'list_tuple'
 
         ## Setting iss
@@ -418,7 +436,7 @@ class Retriever:
         else:
             format_set_iss = 'null'
 
-        print 'poi'*20, type_neighs, type_sp_rel_pos
+        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs, self.neighs_info.staticneighs
         ## Neighs info setting
         self.neighs_info = Neighs_Info(format_set_iss=format_set_iss,
                                        format_structure=format_structure,

@@ -149,9 +149,10 @@ def test():
     dummymapper.shape
 
     ## In retrievers
-    ret0 = OrderEleNeigh(dummymapper, info_ret)
-    ret1 = OrderEleNeigh(mainmapper1, info_ret, bool_input_idx=False)
-    ret2 = OrderEleNeigh(mainmapper2, info_ret)
+    ret0 = OrderEleNeigh(dummymapper, info_ret, constant_info=True)
+    ret1 = OrderEleNeigh(mainmapper1, info_ret, bool_input_idx=False,
+                         constant_info=True)
+    ret2 = OrderEleNeigh(mainmapper2, info_ret, constant_info=True)
 #    ret3 = OrderEleNeigh(mainmapper3, info_ret)
 
     ## Compute Avg distance

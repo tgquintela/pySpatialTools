@@ -23,7 +23,9 @@ from pySpatialTools.utils.artificial_data import \
     random_transformed_space_points, generate_random_relations_cutoffs
 from pySpatialTools.Discretization import SetDiscretization
 from pySpatialTools.Retrieve.aux_windowretriever import windows_iteration
-from pySpatialTools.utils.perturbations import PermutationPerturbation
+from pySpatialTools.utils.perturbations import PermutationPerturbation,\
+    NonePerturbation, JitterLocations, PermutationIndPerturbation,\
+    ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 
 
 def test():
@@ -41,9 +43,17 @@ def test():
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
     mainmapper.set_inout(output='indices')
 
-    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
-    perturbation = PermutationPerturbation(reindices.T)
-#    ret0.add_perturbations(perturbation)
+    ## Perturbations
+    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
+    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+    ## Create perturbations
+    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
+    perturbation1 = PermutationPerturbation(reind.T)
+    perturbation2 = NonePerturbation(k_perturb2)
+    perturbation3 = JitterLocations(0.2, k_perturb3)
+    perturbation4 = [perturbation1, perturbation2, perturbation3]
+    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
+                         perturbation4]
 
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
@@ -55,7 +65,6 @@ def test():
     ## KRetriever
     pos_inforet = [2, 5, 10]
     pos_outmap = [None, _output_map]
-    pos_perturbations = [None, perturbation]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
            pos_constantinfo, pos_boolinidx, pos_perturbations]
@@ -67,7 +76,7 @@ def test():
             i = locs[0]
         else:
             i = 0
-        print i, p
+        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             #neighs_info = ret[i]

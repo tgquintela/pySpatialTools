@@ -44,6 +44,8 @@ class NetworkRetriever(Retriever):
         # Preparation input and output
         self._format_preparators(bool_input_idx)
         self._format_neighs_info(bool_input_idx)
+        ## Assert properly formatted
+        self.assert_correctness()
 
     ############################## Main functions #############################
     ###########################################################################

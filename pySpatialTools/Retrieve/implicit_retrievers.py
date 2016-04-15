@@ -56,6 +56,8 @@ class SpaceRetriever(Retriever):
         self._format_neighs_info(bool_input_idx)
         ## Define specific preprocessors
         self._define_preprocess_relative_pos()
+        ## Assert properly formatted
+        self.assert_correctness()
 
     ############################ Auxiliar functions ###########################
     ###########################################################################
