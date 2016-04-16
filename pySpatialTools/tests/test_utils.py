@@ -303,8 +303,8 @@ def test():
 #                           'tuple_slice', 'tuple_tuple', 'tuple_others']
     pos_ifdistance = [True, False, None]
     pos_constant_neighs = [True, False, None]
-    pos_format_get_k_info = [None, "general", "list", "integer"]
-    pos_format_get_info = [None, "general"]
+    pos_format_get_k_info = [None, "general", "default", "list", "integer"]
+    pos_format_get_info = [None, "default", "general"]
     pos_type_neighs = [None, 'general', 'array', 'list', 'slice']
     pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
     pos_format_level = [None, 0, 1, 2, 3]
@@ -359,8 +359,11 @@ def test():
     neighs_slice = lambda top: slice(0, top)
     k = 0
     for p in product(*pos):
-        ## Forbidden combinations:
-        if p[4] == 'list_tuple_only' and p[5] != 2:
+        ## Defintiion of forbidden combinations
+        bool_error = p[4] == 'list_tuple_only' and p[5] != 2
+        bool_error = bool_error or p[2] == "default" or p[3] == "default"
+        ## Testing raising errors of forbidden combinations:
+        if bool_error:
             try:
                 boolean = False
                 neighs_info = Neighs_Info(constant_neighs=p[0],
@@ -435,7 +438,7 @@ def test():
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
 
-        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)

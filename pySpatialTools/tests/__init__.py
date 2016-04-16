@@ -10,6 +10,8 @@ prediction out-of-sample.
 import time
 import numpy as np
 import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("error")
 
 ###############################################################################
 ############################## Testing function ###############################
@@ -53,6 +55,7 @@ def test():
     ## Performing tests
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        #warnings.simplefilter("error")
         test_pythonUtils.test()
         test_utils.test()
         test_preprocess.test()

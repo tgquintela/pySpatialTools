@@ -103,8 +103,6 @@ class Neighs_Info:
             sh = np.array(self.idxs).shape
             if len(sh) >= 2:
                 boolean = np.all(sh)
-            else:
-                pass
         return boolean
 
     def reset(self):
