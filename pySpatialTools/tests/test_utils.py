@@ -310,7 +310,7 @@ def test():
     pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
     pos_format_level = [None, 0, 1, 2, 3]
     pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
-                            'list_tuple_only', ]
+                            'list_tuple_only', 'tuple_list_tuple']
     pos_staticneighs = [None, True, False]
 
     pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
@@ -360,12 +360,13 @@ def test():
 #    neighs_array = lambda x: np.array([neighs_int() for i in range(x)])
     neighs_slice = lambda top: slice(0, top)
     ###############################
+    level_dependent = ['list_tuple_only', 'tuple_list_tuple']
 
     ### Testing possible combinations
     k = 0
     for p in product(*pos):
         ## Defintiion of forbidden combinations
-        bool_error = p[4] == 'list_tuple_only' and p[5] != 2
+        bool_error = p[4] in level_dependent and p[5] != 2
         bool_error = bool_error or p[2] == "default" or p[3] == "default"
         ## Testing raising errors of forbidden combinations:
         if bool_error:
@@ -392,6 +393,7 @@ def test():
         if p[3] == 'integer':
             continue
 #        print p
+
         ## Instantiation
         neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
                                   format_get_info=p[2], format_get_k_info=p[3],
@@ -399,6 +401,7 @@ def test():
                                   type_neighs=p[6], type_sp_rel_pos=p[7],
                                   staticneighs=p[8])
         neighs_info.set_information(10, 100)
+
         ## Presetting
         lvl = np.random.random(4) if p[5] is None else p[5]
         sh = creator_lvl(lvl)
@@ -425,8 +428,7 @@ def test():
 #            print type(sp_rel_pos), p, sh
             assert(type(sp_rel_pos) == list)
 
-        #### Create structure p[4], p[6], p[7] None
-
+        ## Create structure p[4], p[6], p[7] None
         # Create structure
         if p[4] == 'raw':
             neighs_nfo = neighs
@@ -438,10 +440,14 @@ def test():
             neighs_nfo = ((neighs, sp_rel_pos), np.arange(k_len))
         elif p[4] == 'list_tuple_only':
             neighs_nfo = [(neighs, sp_rel_pos) for i in range(k_len)]
+        elif p[4] == 'tuple_list_tuple':
+            neighs_nfo = ([(neighs, sp_rel_pos) for i in range(k_len)],
+                          range(k_len))
         else:
             neighs_nfo = neighs
 
-        tupletypes = ['tuple', 'tuple_only', 'tuple_tuple', 'list_tuple_only']
+        tupletypes = ['tuple', 'tuple_only', 'tuple_tuple', 'list_tuple_only',
+                      'tuple_list_tuple']
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
 
@@ -459,7 +465,7 @@ def test():
         if p[6] == 'slice':
             neighs_info._get_neighs_general()
         # Reset structure
-        if p[4] not in ['list_tuple_only']:
+        if p[4] not in ['list_tuple_only', 'tuple_list_tuple']:
             # Rewrite level problems avoiding
             neighs_info.reset_level(p[5])
             neighs_info.reset_structure(p[4])

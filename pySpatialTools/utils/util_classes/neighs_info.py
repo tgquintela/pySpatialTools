@@ -58,8 +58,11 @@ warnings.filterwarnings("always")
 
 
 pos_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
-                 'list_tuple_only', ]
+                 'list_tuple_only', 'tuple_list_tuple']
 pos_levels = [None, 0, 1, 2, 3]
+pos_format_set_iss = [None, "general", "null", "int", "list"]
+pos_types_neighs = [None, "general", "list", "array", "slice"]
+pos_types_rel_pos = [None, "general", "list", "array"]
 
 
 class Neighs_Info:
@@ -183,9 +186,7 @@ class Neighs_Info:
             self.get_sp_rel_pos = self._general_get_rel_pos
             if self.level < 2:
                 self.get_sp_rel_pos = self._static_get_rel_pos
-            if type_sp_rel_pos is None:
-                self.set_sp_rel_pos = self._general_set_rel_pos
-            elif type_sp_rel_pos == 'general':
+            if type_sp_rel_pos is None or type_sp_rel_pos == 'general':
                 self.set_sp_rel_pos = self._general_set_rel_pos
             elif type_sp_rel_pos == 'array':
                 if self.level is None:
@@ -211,9 +212,7 @@ class Neighs_Info:
                     self.set_sp_rel_pos = self._array_array_array_set_rel_pos
 
         ## 2. Set set_neighs
-        if type_neighs is None:
-            self.set_neighs = self._general_set_neighs
-        elif type_neighs == 'general':
+        if type_neighs is None or type_neighs == 'general':
             self.set_neighs = self._general_set_neighs
         elif type_neighs == 'array':
             # Format get neighs
@@ -277,16 +276,16 @@ class Neighs_Info:
         elif format_structure == 'tuple_tuple':
             self._set_info = self._set_tuple_tuple_structure
         elif format_structure == 'list_tuple_only':
-            assert(self.level == 2)
+#            assert(self.level == 2)
             self._set_info = self._set_list_tuple_only_structure
             self.staticneighs_set = False
             if self.level != 2:
                 raise Exception("Not correct inputs.")
             else:
                 self.level = 3
-        elif format_structure == 'list_tuple':
-            assert(self.level == 2)
-            self._set_info = self._set_list_tuple_structure
+        elif format_structure == 'tuple_list_tuple':
+#            assert(self.level == 2)
+            self._set_info = self._set_tuple_list_tuple_structure
             self.staticneighs_set = False
             if self.level != 2:
                 raise Exception("Not correct inputs.")
@@ -343,9 +342,7 @@ class Neighs_Info:
 
     def _format_set_iss(self, format_set_iss=None):
         ## Format iss
-        if format_set_iss is None:
-            self._set_iss = self._general_set_iss
-        elif format_set_iss == 'general':
+        if format_set_iss is None or format_set_iss == 'general':
             self._set_iss = self._general_set_iss
         elif format_set_iss == 'null':
             self._set_iss = self._null_set_iss
@@ -654,9 +651,9 @@ class Neighs_Info:
         self.set_neighs([e[0] for e in key])
         self.set_sp_rel_pos([e[1] for e in key])
 
-    def _set_list_tuple_structure(self, key):
+    def _set_tuple_list_tuple_structure(self, key):
         ks = [key[1]] if type(key[1]) == int else key[1]
-        print ks, key[0], type(key[1]), key
+#        print ks, key[0], type(key[1]), key
         assert(len(key[0]) == len(ks))
         self._set_list_tuple_only_structure(key[0])
         self.ks = ks
