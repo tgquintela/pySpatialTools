@@ -295,8 +295,9 @@ def test():
     map_vals_i = Map_Vals_i(memb1)
 
     ###########################################################################
-    ### Neighs_Info
+    ############################### Neighs_Info ###############################
 
+    ### Creation of possible combinations
 #    pos_format_set_info = [None, 'integer', 'list', 'list_only', 'list_list',
 #                           'list_tuple', 'list_tuple1', 'list_tuple2',
 #                           'array', 'slice', 'tuple', 'tuple_int',
@@ -315,8 +316,9 @@ def test():
     pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
            pos_format_get_k_info, pos_format_structure, pos_format_level,
            pos_type_neighs, pos_type_sp_rel_pos, pos_staticneighs]
+    ###############################
 
-    ## Possible inputs
+    ### Creation of possible inputs
     creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, lvl))
     creator2_lvl = lambda sh: tuple(list(sh) + [np.random.randint(5)])
 
@@ -357,6 +359,9 @@ def test():
 #    neighs_list = lambda x: list([neighs_int() for i in range(x)])
 #    neighs_array = lambda x: np.array([neighs_int() for i in range(x)])
     neighs_slice = lambda top: slice(0, top)
+    ###############################
+
+    ### Testing possible combinations
     k = 0
     for p in product(*pos):
         ## Defintiion of forbidden combinations

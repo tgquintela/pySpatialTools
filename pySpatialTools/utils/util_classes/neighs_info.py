@@ -377,15 +377,17 @@ class Neighs_Info:
 
     def _cte_postformat(self):
         """To array because of constant neighs."""
-        if type(self.idxs) == list:
-            self.idxs = np.array(self.idxs)
+#        if type(self.idxs) == list:
+#            self.idxs = np.array(self.idxs)
         if self.sp_relative_pos is not None:
-            self.sp_relative_pos = np.array(self.sp_relative_pos)
+            if type(self.sp_relative_pos) == list:
+                self.sp_relative_pos = np.array(self.sp_relative_pos)
 
     def _assert_iss_postformat(self):
         if type(self.idxs) in [list, np.ndarray]:
 #            print self.idxs, self.iss, self.set_neighs
             if self.staticneighs:
+                ### Checker ### To ensure correct format. Probably redundant
                 if len(self.idxs) != len(self.iss):
                     assert(len(self.idxs[0]) == len(self.iss))
                     self.idxs = self.idxs[0]
