@@ -57,6 +57,11 @@ import warnings
 warnings.filterwarnings("always")
 
 
+pos_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
+                 'list_tuple_only', ]
+pos_levels = [None, 0, 1, 2, 3]
+
+
 class Neighs_Info:
     """Class to store, move and manage the neighbourhood information retrieved.
     """
@@ -152,11 +157,13 @@ class Neighs_Info:
         self.set_types(type_neighs, type_sp_rel_pos)
 
     def reset_structure(self, format_structure):
+        assert(format_structure in pos_structure)
         _, aux1, aux2, aux3 = self.format_set_info
         self.format_set_info = format_structure, aux1, aux2, aux3
         self.reset_format()
 
     def reset_level(self, format_level):
+        assert(format_level in pos_levels)
         self.level = format_level
         self.reset_format()
 

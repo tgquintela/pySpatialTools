@@ -449,6 +449,7 @@ def test():
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
+        # Important general functions
         neighs_info.any()
         neighs_info.empty()
         neighs_info.shape
@@ -457,6 +458,11 @@ def test():
         neighs_info.reset_functions()
         if p[6] == 'slice':
             neighs_info._get_neighs_general()
+        # Reset structure
+        if p[4] not in ['list_tuple_only']:
+            # Rewrite level problems avoiding
+            neighs_info.reset_level(p[5])
+            neighs_info.reset_structure(p[4])
 
         k += 1
 #        print '-'*20, k
