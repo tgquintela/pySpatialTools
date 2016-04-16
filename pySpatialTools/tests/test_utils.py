@@ -307,7 +307,7 @@ def test():
     pos_format_get_info = [None, "general"]
     pos_type_neighs = [None, 'general', 'array', 'list', 'slice']
     pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
-    pos_format_level = [0, 1, 2, 3]
+    pos_format_level = [None, 0, 1, 2, 3]
     pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
                             'list_tuple_only', ]
     pos_staticneighs = [None, True, False]
@@ -435,7 +435,7 @@ def test():
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
 
-#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)

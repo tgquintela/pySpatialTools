@@ -100,9 +100,10 @@ class Neighs_Info:
         if type(self.idxs) == np.ndarray:
             boolean = all(self.idxs.shape)
         elif type(self.idxs) == list:
-            try:
-                boolean = np.all(np.array(self.idxs).shape)
-            except:
+            sh = np.array(self.idxs).shape
+            if len(sh) >= 2:
+                boolean = np.all(sh)
+            else:
                 pass
         return boolean
 
@@ -750,6 +751,8 @@ class Neighs_Info:
         * indices{np.ndarray form} shape: (iss, neighs)
         * indices{np.ndarray form} shape: (ks, iss, neighs)
         """
+        inttypes = [int, np.int32, np.int64]
+        key = np.array([key]) if type(key) in inttypes else key
         sh = key.shape
         ## If only array of neighs
         if len(sh) == 0:
