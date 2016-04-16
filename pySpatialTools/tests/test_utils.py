@@ -425,6 +425,8 @@ def test():
 #            print type(sp_rel_pos), p, sh
             assert(type(sp_rel_pos) == list)
 
+        #### Create structure p[4], p[6], p[7] None
+
         # Create structure
         if p[4] == 'raw':
             neighs_nfo = neighs

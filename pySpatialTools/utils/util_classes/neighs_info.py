@@ -1217,7 +1217,10 @@ class Neighs_Info:
         array_types = [list, np.ndarray]
         #print self.sp_relative_pos, self.sp_relative_pos is None, type(self.sp_relative_pos), self.ifdistance
         if self.sp_relative_pos is not None:
+            assert(type(self.sp_relative_pos) in [list, np.ndarray])
             if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
+                ### Probably redundant
+                # it is needed or possible this situation?
                 pass
             else:
                 assert(type(self.sp_relative_pos) in [list, np.ndarray])
@@ -1291,6 +1294,7 @@ class Neighs_Info:
         elif type(self.idxs) == slice:
             pass
         else:
+            ### Probably redundant
             print type(self.idxs), self.idxs
             raise Exception("Not proper type in self.idxs.")
 
@@ -1316,6 +1320,7 @@ class Neighs_Info:
 #            print neighs.shape
             assert(neighs.shape[1] == len(self.iss))
         else:
+            ### Probably redundant
             print neighs
             raise Exception("Not correct neighs output.")
 
