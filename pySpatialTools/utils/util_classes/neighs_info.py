@@ -385,7 +385,7 @@ class Neighs_Info:
 
     def _assert_iss_postformat(self):
         if type(self.idxs) in [list, np.ndarray]:
-            print self.idxs, self.iss, self.set_neighs
+#            print self.idxs, self.iss, self.set_neighs
             if self.staticneighs:
                 if len(self.idxs) != len(self.iss):
                     assert(len(self.idxs[0]) == len(self.iss))
@@ -1122,7 +1122,7 @@ class Neighs_Info:
         neighs = self.get_neighs(idx_ks)
         sp_relative_pos = self.get_sp_rel_pos(idx_ks)
         self.check_output_standards(neighs, sp_relative_pos, ks, iss)
-        print '3'*50, neighs, sp_relative_pos, ks, iss
+#        print '3'*50, neighs, sp_relative_pos, ks, iss
         return neighs, sp_relative_pos, ks, iss
 
     def _default_get_information(self, k=None):
@@ -1267,7 +1267,7 @@ class Neighs_Info:
                     else:
                         assert(not any(self.idxs[0]))
         elif type(self.idxs) == np.ndarray:
-            print self.idxs.shape, self.idxs, self.set_neighs, self._idxs_postformat
+#            print self.idxs.shape, self.idxs, self.set_neighs, self._idxs_postformat
 #            print self._constant_neighs
             if self.staticneighs:
                 assert(len(self.idxs.shape) == 2)

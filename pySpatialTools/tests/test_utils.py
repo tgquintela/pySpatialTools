@@ -435,7 +435,7 @@ def test():
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
 
-        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
