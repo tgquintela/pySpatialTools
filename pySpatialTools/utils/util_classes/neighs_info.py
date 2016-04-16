@@ -324,7 +324,7 @@ class Neighs_Info:
             self._main_postformat = self._null_postformat
         self._iss_postformat = self._assert_iss_postformat
         self._ks_postformat = self._assert_ks_postformat
-        if self._constant_neighs:
+        if self._constant_neighs and type_neighs != 'slice':
             self._idxs_postformat = self._idxs_postformat_array
         else:
             self._idxs_postformat = self._idxs_postformat_null
@@ -689,7 +689,7 @@ class Neighs_Info:
         """
         self._constant_neighs = True
         if key is None:
-            self.key = slice(0, self._n, 1)
+            self.idxs = slice(0, self._n, 1)
         elif isinstance(key, slice):
             start = 0 if key.start is None else key.start
             stop = self._n if key.stop is None else key.stop
@@ -1267,7 +1267,7 @@ class Neighs_Info:
                     else:
                         assert(not any(self.idxs[0]))
         elif type(self.idxs) == np.ndarray:
-#            print self.idxs.shape, self.idxs, self.set_neighs
+            print self.idxs.shape, self.idxs, self.set_neighs, self._idxs_postformat
 #            print self._constant_neighs
             if self.staticneighs:
                 assert(len(self.idxs.shape) == 2)

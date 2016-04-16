@@ -408,7 +408,6 @@ def test():
         # Neighs creation
         if p[6] == 'slice':
             neighs = neighs_slice(nei_len)
-            continue
         else:
             # Use type_neighs and level
             neighs = create_neighs(sh_static, p[6])
@@ -432,11 +431,16 @@ def test():
         else:
             neighs_nfo = neighs
 
-#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+        tupletypes = ['tuple', 'tuple_only', 'tuple_tuple', 'list_tuple_only']
+        if p[6] == 'slice' and p[4] in tupletypes:
+            continue
+
+        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
         neighs_info.any()
+        neighs_info.empty()
         neighs_info.shape
         neighs_info._get_neighs_general()
         neighs_info._general_get_rel_pos()
