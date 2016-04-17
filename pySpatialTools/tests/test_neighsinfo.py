@@ -396,3 +396,18 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        neighs_info.check_output_standards(None, sp_relative_pos, ks, iss)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        neighs_info.idxs = None
+        neighs_info.assert_goodness()
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
