@@ -365,6 +365,8 @@ def test():
     ### Testing possible combinations
     k = 0
     for p in product(*pos):
+        ## General instantiation. It has to be able to eat any input
+        neighs_info_general = Neighs_Info()
         ## Defintiion of forbidden combinations
         bool_error = p[4] in level_dependent and p[5] != 2
         bool_error = bool_error or p[2] == "default" or p[3] == "default"
@@ -451,10 +453,17 @@ def test():
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
 
-#        print 'neighs_info', k, neighs_nfo, p[4], p[0], p[1], p
+#        print 'neighs_info', k, neighs_nfo, type(neighs_nfo), p
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
+        ## Special cases
+        # Slice type
+        if p[6] == 'slice' and p[4] == 'raw':
+            neighs_info.set(5, range(iss_len))
+            neighs_info.set((2, 6), range(iss_len))
+            neighs_info.set(None, range(iss_len))
+
         # Important general functions
         neighs_info.any()
         neighs_info.empty()
@@ -469,6 +478,7 @@ def test():
             # Rewrite level problems avoiding
             neighs_info.reset_level(p[5])
             neighs_info.reset_structure(p[4])
+        neighs_info_general.set(neighs_nfo, range(iss_len))
 
         k += 1
 #        print '-'*20, k
@@ -493,6 +503,7 @@ def test():
 
     neighs_info._format_set_iss('int')
     neighs_info._format_set_iss('list')
+    neighs_info._format_set_iss('null')
     neighs_info = Neighs_Info()
     neighs_info.set_information(10, 10)
     neighs_info.set(5)
