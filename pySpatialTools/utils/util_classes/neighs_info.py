@@ -4,8 +4,8 @@ neighs information
 ------------------
 Auxiliar class in order to manage the information of the neighbourhood
 returned by the retrievers.
-Due to the difficulty of the structure it is convenient to put altogether
-in a single class and manage better in a centralized way all the different
+Due to the complexity of the structure it is convenient to put altogether
+in a single class and manage in a centralized way all the different
 interactions with neighs_info in the whole package.
 
 
@@ -49,6 +49,10 @@ staticneighs_set: all the same information but it is setted as if there was
 constant_neighs: all the iss have the same number of neighs for all ks.
 level: the format level expected. First one is only neighs, second one has
     different iss and the third one different ks.
+_kret: maximum number of perturbations of the system. It could be useful for
+    open systems expressed in a staticneighs way to find errors or delimitate
+    ouptut.
+n: maximum number of id of elements retrieved.
 
 """
 
@@ -756,8 +760,8 @@ class Neighs_Info:
         self.ks = range(len(self.idxs)) if self.ks is None else self.ks
         if self.staticneighs:
             self.idxs = np.array(key[0])
-            if len(self.idxs) != len(self.iss):
-                self.iss = list(range(len(self.idxs)))
+#             if len(self.idxs) != len(self.iss):
+#                self.iss = list(range(len(self.idxs)))
         else:
             if len(self.idxs[0]) != len(self.iss):
                 self.iss = list(range(len(self.idxs[0])))

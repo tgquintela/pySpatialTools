@@ -2,7 +2,14 @@
 """
 Mapper vals i
 -------------
-Module which contains mapper for vals i
+Module which contains mapper for vals i. This Mapper is important because is
+the one which indicates from the indice number of the element to retrieve its
+neighbourhood, how we have to store the given information into the final
+result.
+It is the main information when we are doing coarse-graining of information.
+
+The main coding purpose of this module and this class is to standarize such
+important information and process.
 
 """
 
@@ -12,7 +19,7 @@ import warnings
 
 
 class Map_Vals_i:
-    "Class which maps the result to reference output value."
+    """Class which maps the result to reference output value."""
 
     def _initialization(self):
         self.mapper = None
