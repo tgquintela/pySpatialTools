@@ -1107,7 +1107,7 @@ class Neighs_Info:
     def _integer_get_k(self, k):
         """Integer get k."""
         if type(k) == list:
-            return k
+            return [self._integer_get_k(e)[0] for e in k]
         if k >= 0 or k <= self._kret:
             ks = [k]
         else:
@@ -1221,20 +1221,15 @@ class Neighs_Info:
 
     def assert_stored_sp_rel_pos(self):
         """Definition of the standart store for sp_relative_pos."""
-        ## Temporal
-        #print self.sp_relative_pos
-        #print self.sp_relative_pos, np.array(self.sp_relative_pos).shape, self.set_sp_rel_pos
-        if self.sp_relative_pos is not None:
-            if self._constant_neighs:
-                if self.staticneighs:
-                    #print np.array(self.sp_relative_pos).shape
-                    #print self.sp_relative_pos
-                    assert(len(np.array(self.sp_relative_pos).shape) == 3)
-                else:
-                    assert(len(np.array(self.sp_relative_pos).shape) == 4)
-        #################
+#        ## Temporal
+#        if self.sp_relative_pos is not None:
+#            if self._constant_neighs:
+#                if self.staticneighs:
+#                    assert(len(np.array(self.sp_relative_pos).shape) == 3)
+#                else:
+#                    assert(len(np.array(self.sp_relative_pos).shape) == 4)
+#        #################
         array_types = [list, np.ndarray]
-        #print self.sp_relative_pos, self.sp_relative_pos is None, type(self.sp_relative_pos), self.ifdistance
         if self.sp_relative_pos is not None:
             assert(type(self.sp_relative_pos) in [list, np.ndarray])
             if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
@@ -1256,9 +1251,6 @@ class Neighs_Info:
                     assert(len(self.sp_relative_pos) == len(self.ks))
                 if type(self.sp_relative_pos[0]) in array_types:
                     if not self.staticneighs:
-#                        print self.idxs
-#                        print self.sp_relative_pos, self.set_sp_rel_pos
-#                        print self.sp_relative_pos[0], self.iss
                         assert(len(self.sp_relative_pos[0]) == len(self.iss))
                     if len(self.sp_relative_pos[0]) > 0:
                         assert(type(self.sp_relative_pos[0][0]) in array_types)
@@ -1315,7 +1307,7 @@ class Neighs_Info:
         elif type(self.idxs) == slice:
             pass
         else:
-            ### Probably redundant
+            ### Probably redundant (Only testing purposes)
             print type(self.idxs), self.idxs
             raise Exception("Not proper type in self.idxs.")
 
@@ -1341,7 +1333,7 @@ class Neighs_Info:
 #            print neighs.shape
             assert(neighs.shape[1] == len(self.iss))
         else:
-            ### Probably redundant
+            ### Probably redundant (Only testing purposes)
             print neighs
             raise Exception("Not correct neighs output.")
 

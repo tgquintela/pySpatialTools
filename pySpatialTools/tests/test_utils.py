@@ -584,6 +584,19 @@ def test():
     neighs_info._set_rel_pos_general_list(np.array([[0]]))
     neighs_info._set_rel_pos_general_list(np.array([[]]))
 
+    ## Get k
+    neighs_info._integer_get_k([4])
+    neighs_info._integer_get_k(5)
+    neighs_info._default_get_k()
+    try:
+        boolean = False
+        neighs_info._integer_get_k(100000)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    neighs_info._general_get_k()
+
     neighs_info.reset()
     neighs_info.set(([[]], [[]]))
     assert(neighs_info.empty())
