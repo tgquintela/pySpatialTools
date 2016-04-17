@@ -582,6 +582,7 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+    neighs_info._set_structure_list([np.array(range(10))])
     neighs_info.staticneighs = True
     neighs_info._set_rel_pos_general_list(np.array([0]))
     neighs_info._set_rel_pos_general_list(np.array([[0]]))

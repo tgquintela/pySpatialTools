@@ -596,12 +596,12 @@ class Neighs_Info:
             self.ks = list(np.array([ks]).ravel())
         self._set_tuple_only_structure(key[0])
 
-    def _set_tuple_list_tuple_only(self, key):
-        """
-        * (neighs_info{list of typle only}, ks)
-        """
-        self.ks = list(np.array(key[1]))
-        self._set_list_tuple_only_structure(key[0])
+#    def _set_tuple_list_tuple_only(self, key):
+#        """
+#        * (neighs_info{list of typle only}, ks)
+#        """
+#        self.ks = list(np.array(key[1]))
+#        self._set_list_tuple_only_structure(key[0])
 
     def _set_structure_list(self, key):
         """General list structure.
@@ -649,8 +649,10 @@ class Neighs_Info:
         self.set_sp_rel_pos([e[1] for e in key])
 
     def _set_tuple_list_tuple_structure(self, key):
+        """
+        * (neighs_info{list of typle only}, ks)
+        """
         self.ks = [key[1]] if type(key[1]) == int else key[1]
-#        print ks, key[0], type(key[1]), key
         assert(len(key[0]) == len(self.ks))
         self._set_list_tuple_only_structure(key[0])
 
