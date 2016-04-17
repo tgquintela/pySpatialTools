@@ -22,7 +22,7 @@ def random_transformed_space_points(n_points, n_dim, funct):
     if funct is None:
         return random_space_points(n_points, n_dim)
     if type(funct) != list:
-        funct = funct
+        funct = [funct]
     locs = np.random.random((n_points, n_dim))
     locs = np.vstack([f(locs) for f in funct]).T
     return locs

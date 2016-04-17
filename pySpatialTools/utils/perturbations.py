@@ -4,6 +4,9 @@ Perturbations
 -------------
 Module oriented to perform a perturbation of the system in order to carry out
 with testing of models.
+The main function of this module is grouping functions which are able to
+change the system to other statistically probable options in order to explore
+the sample space.
 
 
 TODO
@@ -11,6 +14,9 @@ TODO
 -Aggregation perturbation:
 --- Discretization perturbed.
 --- Fluctuation of features between borders.
+- Fluctuation of borders
+--- Fluctuation of edge points
+--- Fluctuation over sampling points
 
 """
 

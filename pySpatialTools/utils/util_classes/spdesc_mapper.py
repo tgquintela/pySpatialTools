@@ -2,9 +2,12 @@
 """
 spatial descriptors mapper
 --------------------------
-Module which contains auxiliar functions and classes to compute spatial
-descriptors related with the mapper selector used in the process of spatial
-descriptors computation.
+Module which contains auxiliar functions and classes to use different spatial
+descriptors and models for the same data.
+This mappers are used to select for each element the most alike method to use
+using pre-stablished criteria described in this object.
+It is essential to compute complex descriptors from different scale spatial
+data.
 
 """
 
@@ -67,6 +70,13 @@ class Sp_DescriptorMapper:
                                   mapretout(i), mapfeatinput(i),
                                   mapfeatoutput(i))
 
+    def __getitem__(self, keys):
+        if type(keys) == int:
+            istatic, iret, irout, ifeat, ifout = self._mapper(keys)
+        else:
+            raise TypeError("Not correct input for spatial descriptor mapper.")
+        return istatic, iret, irout, ifeat, ifout
+
     def set_from_array(self, array_mapper):
         "Set mapper from array."
         if array_mapper.shape[1] != 5:
@@ -80,13 +90,6 @@ class Sp_DescriptorMapper:
             self._mapper = function_mapper
         except:
             raise TypeError("Incorrect function mapper.")
-
-    def __getitem__(self, keys):
-        if type(keys) == int:
-            istatic, iret, irout, ifeat, ifout = self._mapper(keys)
-        else:
-            raise TypeError("Not correct input for spatial descriptor mapper.")
-        return istatic, iret, irout, ifeat, ifout
 
     def checker(self, constraints):
         "TODO: checker functions if this mapper selector fits the constraints."

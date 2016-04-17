@@ -16,7 +16,11 @@ threaten tens of millions of jobs.
 """
 
 import numpy as np
-from pySpatialTools.utils.artificial_data import randint_sparse_matrix
+from pySpatialTools.utils.artificial_data import randint_sparse_matrix,\
+    generate_randint_relations, generate_random_relations_cutoffs,\
+    random_transformed_space_points, random_space_points, create_random_image
+from pySpatialTools.utils.artificial_data.artificial_data import\
+    random_membership
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
     Map_Vals_i
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
@@ -307,3 +311,32 @@ def test():
     except:
         if boolean:
             raise Exception("The test has to halt here.")
+
+    ###########################################################################
+    ############################## Spdesc_mapper ##############################
+    ###########################################################################
+
+    ###########################################################################
+    ############################# Artificial data #############################
+    ###########################################################################
+    ## Random relations
+    n, density, shape = 100, 0.1, (10, 10)
+    randint_sparse_matrix(density, shape, maxvalue=10)
+    generate_randint_relations(density, shape, p0=0., maxvalue=1)
+    generate_random_relations_cutoffs(n, 0.5, 0.9, True, 'network')
+    generate_random_relations_cutoffs(n, 0.5, 0.9, False, 'network')
+    generate_random_relations_cutoffs(n, 0.5, 0.9, True, 'sparse')
+
+    n_elements, n_collections = 100, 10
+    random_membership(n_elements, n_collections, multiple=True)
+    random_membership(n_elements, n_collections, multiple=False)
+
+    ## Random points
+    n_points, n_dim, funct = 100, 2, np.cos
+    random_transformed_space_points(n_points, n_dim, funct)
+    random_transformed_space_points(n_points, n_dim, None)
+    random_space_points(n_points, n_dim)
+
+    ## Artificial grid data
+    create_random_image(shape, n_modes=1)
+    create_random_image(shape, n_modes=3)
