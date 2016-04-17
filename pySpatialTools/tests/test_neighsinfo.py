@@ -358,3 +358,41 @@ def test():
     assert(not neighs_info.empty())
     for a, b, c, d in neighs_info:
         pass
+
+    ## Check proper outputs
+    # Neighs information
+    neighs_info = Neighs_Info()
+    sh = creator_lvl(3)
+    neighs = np.random.randint(0, 20, np.prod(sh)).reshape(sh)
+    sp_relative_pos = np.random.random((tuple(list(sh)+[3])))
+    ks = range(sh[0])
+    iss = range(sh[1])
+
+    neighs_info.set((neighs, sp_relative_pos), iss)
+    neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
+
+    # Check wrong cases
+    try:
+        boolean = False
+        sh1 = list(sh)
+        sh1[0] = sh[0]+1
+        sh1 = tuple(sh1)
+        neighs = np.random.randint(0, 20, np.prod(sh1)).reshape(sh1)
+        sp_relative_pos = np.random.random((tuple(list(sh1)+[3])))
+        neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        sh1 = list(sh)
+        sh1[1] = sh[1]+1
+        sh1 = tuple(sh1)
+        neighs = np.random.randint(0, 20, np.prod(sh1)).reshape(sh1)
+        sp_relative_pos = np.random.random((tuple(list(sh1)+[3])))
+        neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
