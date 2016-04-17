@@ -1121,13 +1121,10 @@ class Neighs_Info:
 
     def _get_k_indices(self, ks):
         """List of indices of ks."""
-        if self.ks is None:
-            idx_ks = range(len(ks))
+        if self.staticneighs:
+            idx_ks = ks
         else:
-            if self.staticneighs:
-                idx_ks = ks
-            else:
-                idx_ks = [self.ks.index(e) for e in ks]
+            idx_ks = [self.ks.index(e) for e in ks]
         return idx_ks
 
     ############################ Getters information ##########################
@@ -1238,9 +1235,10 @@ class Neighs_Info:
                 pass
             else:
                 assert(type(self.sp_relative_pos) in [list, np.ndarray])
-                if self.ks is None:
-                    assert(self.staticneighs)
-                    assert(len(self.sp_relative_pos) == len(self.iss))
+                assert(self.ks is not None)
+#                if self.ks is None:
+#                    assert(self.staticneighs)
+#                    assert(len(self.sp_relative_pos) == len(self.iss))
                 if self.staticneighs:
                     #print self.sp_relative_pos, self.iss
                     assert(len(self.sp_relative_pos) == len(self.iss))
@@ -1254,8 +1252,6 @@ class Neighs_Info:
                         assert(len(self.sp_relative_pos[0]) == len(self.iss))
                     if len(self.sp_relative_pos[0]) > 0:
                         assert(type(self.sp_relative_pos[0][0]) in array_types)
-                else:
-                    pass
 
     def assert_stored_iss(self):
         """Definition of the standart store for iss."""
