@@ -607,7 +607,10 @@ class Neighs_Info:
         """General list structure.
         * [neighs_info{tuple form}]
         """
-        if type(key[0]) == tuple:
+        if len(key) == 0:
+            self.set_neighs = self._set_neighs_general_list
+            self.set_neighs(key)
+        elif type(key[0]) == tuple:
             self._set_info = self._set_list_tuple_only_structure
             self._set_info(key)
         elif type(key[0]) == list:
@@ -770,11 +773,12 @@ class Neighs_Info:
         sh = key.shape
         ## If only array of neighs
         if len(sh) == 0:
-            self._setted = False
-            if self.staticneighs:
-                self.idxs = np.array([[]])
-            else:
-                self.idxs = np.array([[[]]])
+            self._set_neighs_number(key)
+#            self._setted = False
+#            if self.staticneighs:
+#                self.idxs = np.array([[]])
+#            else:
+#                self.idxs = np.array([[[]]])
         elif len(sh) == 1:
             self._set_neighs_array_lvl1(key)
         ## If only iss and neighs

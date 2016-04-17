@@ -349,12 +349,27 @@ def test():
     assert(neighs_info.empty())
 
     neighs_info.reset()
+    neighs_info.set(([[], []]))
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info.set([])
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
+    neighs_info.set(([]))
+    assert(neighs_info.empty())
+
+    neighs_info.reset()
     neighs_info.set(([[]], [[]]), [0])
     assert(neighs_info.empty())
 
     neighs_info.reset()
     neighs_info.set(([np.array([])], [np.array([])]), [0])
     assert(neighs_info.empty())
+
+    neighs_info = Neighs_Info(staticneighs=True)
+    neighs_info._set_neighs_general_array(np.array(5))
 
     neighs_info = Neighs_Info(format_structure='tuple_tuple',
                               type_neighs='list', type_sp_rel_pos='list',
