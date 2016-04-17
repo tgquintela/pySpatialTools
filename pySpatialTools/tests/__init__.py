@@ -18,6 +18,7 @@ with warnings.catch_warnings():
 ###############################################################################
 import test_pythonUtils
 import test_utils
+import test_neighsinfo
 import test_preprocess
 import test_spatial_discretizer
 import test_retriever
@@ -58,6 +59,7 @@ def test():
         #warnings.simplefilter("error")
         test_pythonUtils.test()
         test_utils.test()
+        test_neighsinfo.test()
         test_preprocess.test()
 #        test_spatial_discretizer.test()
 #        test_spatial_relations.test()
