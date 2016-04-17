@@ -445,23 +445,30 @@ class Neighs_Info:
     ###########################################################################
     def _general_set(self, neighs_info, iss=None):
         """General set."""
-#        print 'set neighs_info:'+'.'*20
-#        print neighs_info
-#        print self.staticneighs
+        ## Set function
         self._preset(neighs_info, iss)
         ## Post-set functions
-#        print self.staticneighs, type(self.idxs), self.idxs
+        self._postset()
+        self.assert_goodness()
+
+    def _preset(self, neighs_info, iss=None):
+        """Set the class."""
+        self._reset_stored()
+        self._set_iss(iss)
+        self._set_info(neighs_info)
+        self._postformat()
+
+    def _postset(self):
+        """Postsetting class."""
         if type(self.idxs) == np.ndarray:
             pass
-#            print '='*10, self.idxs.shape
         if type(self.idxs) == slice:
             self.get_neighs = self._get_neighs_slice
-#            self.ks = list(range(self._kret+1))
         elif type(self.idxs) == np.ndarray:
-            if len(self.idxs.shape) == 3 and self.ks is None:
-                self.ks = list(range(len(self.idxs)))
-            else:
-                self.staticneighs_set = True
+#            if len(self.idxs.shape) == 3 and self.ks is None:
+#                self.ks = list(range(len(self.idxs)))
+#            else:
+#                self.staticneighs_set = True
             if self.staticneighs:
                 self.get_neighs = self._get_neighs_array_static
             else:
@@ -471,19 +478,6 @@ class Neighs_Info:
                 self.get_neighs = self._get_neighs_list_static
             else:
                 self.get_neighs = self._get_neighs_list_dynamic
-#            self.ks = list(range(self._kret+1))
-        self.assert_goodness()
-
-    def _preset(self, neighs_info, iss=None):
-        """Set the class."""
-#        print '=p'*20, self.staticneighs, neighs_info
-        self._reset_stored()
-        self._set_iss(iss)
-#        print self.staticneighs, self.set_neighs, self._set_info
-        self._set_info(neighs_info)
-#        print self.staticneighs, self.set_neighs
-        self._postformat()
-#        print self.staticneighs, self.set_neighs
 
     def _set_init(self):
         """Reset variables to default."""
