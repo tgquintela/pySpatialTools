@@ -292,6 +292,8 @@ def test():
     neighs_info.reset()
     neighs_info.set([[]])
     assert(neighs_info.empty())
+    neighs_info = Neighs_Info(staticneighs=True)
+    neighs_info.set([[]])
 
     neighs_info.reset()
     try:
@@ -304,6 +306,7 @@ def test():
     neighs_info._set_structure_list([np.array(range(10))])
     neighs_info.staticneighs = True
     # Testing setting rel_pos strange cases
+    neighs_info._general_set_rel_pos(5)
     neighs_info._set_rel_pos_general_list(np.array([0]))
     neighs_info._set_rel_pos_general_list(np.array([[0]]))
     neighs_info._set_rel_pos_general_list(np.array([]))
@@ -421,6 +424,7 @@ def test():
     try:
         boolean = False
         neighs_info.idxs = [[]]
+        neighs_info.staticneighs = True
         neighs_info.assert_goodness()
         boolean = True
     except:
