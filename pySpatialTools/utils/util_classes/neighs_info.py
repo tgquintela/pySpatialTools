@@ -1110,7 +1110,7 @@ class Neighs_Info:
         """Integer get k."""
         if type(k) == list:
             return [self._integer_get_k(e)[0] for e in k]
-        if k >= 0 or k <= self._kret:
+        if k >= 0 and k <= self._kret:
             ks = [k]
         else:
             raise TypeError("k index out of bounds.")
@@ -1229,28 +1229,27 @@ class Neighs_Info:
         array_types = [list, np.ndarray]
         if self.sp_relative_pos is not None:
             assert(type(self.sp_relative_pos) in [list, np.ndarray])
-            if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
-                ### Probably redundant
-                # it is needed or possible this situation?
-                pass
+#            if type(self.sp_relative_pos) in [float, int, np.int32, np.int64]:
+#                ### Probably redundant
+#                # it is needed or possible this situation?
+#                pass
+            assert(type(self.sp_relative_pos) in [list, np.ndarray])
+            assert(self.ks is not None)
+#            if self.ks is None:
+#                assert(self.staticneighs)
+#                assert(len(self.sp_relative_pos) == len(self.iss))
+            if self.staticneighs:
+                assert(len(self.sp_relative_pos) == len(self.iss))
+                ## Assert deep 3
+                if len(self.iss):
+                    assert(type(self.sp_relative_pos[0]) in array_types)
             else:
-                assert(type(self.sp_relative_pos) in [list, np.ndarray])
-                assert(self.ks is not None)
-#                if self.ks is None:
-#                    assert(self.staticneighs)
-#                    assert(len(self.sp_relative_pos) == len(self.iss))
-                if self.staticneighs:
-                    assert(len(self.sp_relative_pos) == len(self.iss))
-                    ## Assert deep 3
-                    if len(self.iss):
-                        assert(type(self.sp_relative_pos[0]) in array_types)
-                else:
-                    assert(len(self.sp_relative_pos) == len(self.ks))
-                if type(self.sp_relative_pos[0]) in array_types:
-                    if not self.staticneighs:
-                        assert(len(self.sp_relative_pos[0]) == len(self.iss))
-                    if len(self.sp_relative_pos[0]) > 0:
-                        assert(type(self.sp_relative_pos[0][0]) in array_types)
+                assert(len(self.sp_relative_pos) == len(self.ks))
+            if type(self.sp_relative_pos[0]) in array_types:
+                if not self.staticneighs:
+                    assert(len(self.sp_relative_pos[0]) == len(self.iss))
+                if len(self.sp_relative_pos[0]) > 0:
+                    assert(type(self.sp_relative_pos[0][0]) in array_types)
 
     def assert_stored_iss(self):
         """Definition of the standart store for iss."""

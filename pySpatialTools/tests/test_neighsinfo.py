@@ -121,7 +121,7 @@ def test():
                                   format_structure=p[4], format_level=p[5],
                                   type_neighs=p[6], type_sp_rel_pos=p[7],
                                   staticneighs=p[8])
-        neighs_info.set_information(10, 100)
+        neighs_info.set_information(100, 100)
 
         ## Presetting
         lvl = np.random.random(4) if p[5] is None else p[5]
@@ -234,7 +234,7 @@ def test():
     try:
         boolean = False
         neighs_info._kret = 10
-        neighs_info._integer_get_k(100)
+        neighs_info._integer_get_k(100000)
         boolean = True
     except:
         if boolean:
@@ -303,11 +303,18 @@ def test():
             raise Exception("It has to halt here.")
     neighs_info._set_structure_list([np.array(range(10))])
     neighs_info.staticneighs = True
+    # Testing setting rel_pos strange cases
     neighs_info._set_rel_pos_general_list(np.array([0]))
     neighs_info._set_rel_pos_general_list(np.array([[0]]))
+    neighs_info._set_rel_pos_general_list(np.array([]))
     neighs_info._set_rel_pos_general_list(np.array([[]]))
+    neighs_info._set_rel_pos_general_list(np.array([[[]]]))
+    neighs_info._set_rel_pos_number(5)
+    neighs_info.level = 0
+    neighs_info._set_rel_pos_general_list(np.array([0, 3]))
 
     ## Get k
+    neighs_info._kret = 10
     neighs_info._integer_get_k([4])
     neighs_info._integer_get_k(5)
     neighs_info._default_get_k()
@@ -406,6 +413,14 @@ def test():
     try:
         boolean = False
         neighs_info.idxs = None
+        neighs_info.assert_goodness()
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        neighs_info.idxs = [[]]
         neighs_info.assert_goodness()
         boolean = True
     except:
