@@ -141,7 +141,9 @@ def test():
     locs = Locations(locs4)
     locs.in_block_distance_d(np.random.random((1, 2)), 0.2)
 
-    ## Membership
+    ###########################################################################
+    ############################### Membership ################################
+    ###########################################################################
     n_in, n_out = 100, 20
     relations = [np.unique(np.random.randint(0, n_out,
                                              np.random.randint(n_out)))
@@ -277,6 +279,7 @@ def test():
     map_vals_i = create_mapper_vals_i(('correlation', 100, 20), feat_arr0)
     map_vals_i = create_mapper_vals_i('matrix')
     map_vals_i = create_mapper_vals_i('matrix', feat_arr0)
+    map_vals_i = create_mapper_vals_i('matrix', feat_arr0.reshape((100, 1)))
     map_vals_i = create_mapper_vals_i(('matrix', 20), list(feat_arr0))
     map_vals_i = create_mapper_vals_i(('matrix', 100, 20), len(feat_arr0))
     map_vals_i = create_mapper_vals_i('matrix', slice(0, 100, 1))
@@ -285,6 +288,7 @@ def test():
     map_vals_i.set_prefilter([0, 2])
     map_vals_i.set_sptype('correlation')
     map_vals_i[(None, [0], 0)]
+    map_vals_i.apply(None, [0], 0)
 
     map_vals_i = create_mapper_vals_i(map_vals_i)
     map_vals_i = create_mapper_vals_i(feat_arr0.reshape(100, 1))
@@ -294,3 +298,12 @@ def test():
     map_vals_i = Map_Vals_i((1000, 20))
     map_vals_i = Map_Vals_i(map_vals_i)
     map_vals_i = Map_Vals_i(memb1)
+
+    ## Stress testing
+    try:
+        boolean = False
+        map_vals_i = create_mapper_vals_i('correlation')
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
