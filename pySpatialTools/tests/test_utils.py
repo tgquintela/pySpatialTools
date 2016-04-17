@@ -596,13 +596,15 @@ def test():
         if boolean:
             raise Exception("It has to halt here.")
     neighs_info._general_get_k()
+    neighs_info._general_get_k(4)
+    neighs_info._general_get_k(range(2))
 
     ## Set iss
     neighs_info._general_set_iss(range(3))
     neighs_info._general_set_iss(5)
     neighs_info._int_set_iss(8)
     neighs_info._list_set_iss(range(3))
-    neighs_info._null_set_iss()
+    neighs_info._null_set_iss(5)
 
     neighs_info.reset()
     neighs_info.set(([[]], [[]]))
