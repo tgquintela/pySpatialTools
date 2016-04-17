@@ -575,11 +575,14 @@ def test():
     assert(neighs_info.empty())
 
     neighs_info.reset()
-    neighs_info._general_set_iss(0)
-    neighs_info._general_set_iss([0])
-    neighs_info._general_set_iss(np.array([0]))
+    try:
+        boolean = False
+        neighs_info._set_tuple_only_structure((range(2), None, 5))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
     neighs_info.staticneighs = True
-    neighs_info._general_set_iss(np.array([0]))
     neighs_info._set_rel_pos_general_list(np.array([0]))
     neighs_info._set_rel_pos_general_list(np.array([[0]]))
     neighs_info._set_rel_pos_general_list(np.array([[]]))
@@ -600,12 +603,17 @@ def test():
     neighs_info._general_get_k(range(2))
 
     ## Set iss
+    neighs_info._general_set_iss(np.array([0]))
+    neighs_info._general_set_iss(np.array([0]))
+    neighs_info._general_set_iss(0)
+    neighs_info._general_set_iss([0])
     neighs_info._general_set_iss(range(3))
     neighs_info._general_set_iss(5)
     neighs_info._int_set_iss(8)
     neighs_info._list_set_iss(range(3))
     neighs_info._null_set_iss(5)
 
+    ## Stress empty tests
     neighs_info.reset()
     neighs_info.set(([[]], [[]]))
     assert(neighs_info.empty())
