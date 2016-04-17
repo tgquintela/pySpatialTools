@@ -626,7 +626,7 @@ class Neighs_Info:
             self.set_neighs(key)
         elif type(key[0]) == np.ndarray:
             self.set_neighs = self._general_set_neighs
-            self.set.neighs(np.array(key))
+            self.set_neighs(np.array(key))
         elif type(key[0]) in [int, float, np.int32, np.int64]:
             self.level = 1
             self._set_info = self._set_raw_structure
