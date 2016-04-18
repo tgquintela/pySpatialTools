@@ -231,7 +231,10 @@ class RegionDistances:
         return reg
 
     def _general_filter_elements_reg(self, reg):
-        reg = self._array_general_filter_reg(reg)
+        if type(reg) in [int, np.int32, np.int64]:
+            reg = self._int_filter_reg(reg)
+        else:
+            reg = self._array_general_filter_reg(reg)
         return reg
 
     def _int_filter_reg(self, reg):

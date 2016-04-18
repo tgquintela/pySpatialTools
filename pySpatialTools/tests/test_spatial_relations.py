@@ -143,6 +143,14 @@ def test():
     possibles = [input_s, pos_input_type, input_s]
     for p in product(*possibles):
         mainmapper3.set_inout(p[0], p[1], p[2])
+        mainmapper3[0]
+    mainmapper3.set_inout(None, 'indices')
+    mainmapper3[0]
+    mainmapper3.set_inout(None, 'elements_id')
+    mainmapper3[mainmapper3.data[0]]
+    mainmapper3.set_inout(None, None)
+    mainmapper3[0]
+    mainmapper3[mainmapper3.data[0]]
 
     pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
                   [0], [0], [np.array([0])]]
@@ -169,7 +177,7 @@ def test():
 
     try:
         boolean = False
-        wrond_data = np.random.random((100, 3))
+        wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
@@ -178,7 +186,7 @@ def test():
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        wrond_data = np.random.random((100, 3))
+        wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                       symmetric=symmetric, data_in=wrond_data)
         boolean = True
@@ -188,7 +196,7 @@ def test():
     relations = np.random.random((20, 20))
     try:
         boolean = False
-        wrond_data = np.random.random((100, 3))
+        wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
@@ -212,6 +220,20 @@ def test():
 #    input_type=None)
 
     ## Test functions
+    try:
+        boolean = False
+        mainmapper1[0.8]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        mainmapper1[-1]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
     mainmapper1[0]
     mainmapper1[[0, 1]]
     mainmapper1[slice(0, 3)]
