@@ -129,7 +129,23 @@ def test():
             idxs = pos_inputs[pos_input_type.index(p[5])]
             print '0'*15, p[5], idxs, p
             mainmapper1[idxs]
+        # Functions
+        mainmapper1.set_inout(p[5], p[4], p[3])
 
+        ## Extreme cases
+        try:
+            boolean = False
+            regs = np.random.random((10, 10, 1))
+            mainmapper1 = RegionDistances(relations=regs,
+                                          distanceorweighs=p[1],
+                                          symmetric=p[2], output=p[3],
+                                          input_=p[4], input_type=p[5])
+            boolean = True
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
+
+    ## Other cases
     # Dummymap instantiation
     try:
         boolean = False
@@ -151,6 +167,21 @@ def test():
     dummymapper = DummyRegDistance(regs)
     dummymapper.transform(lambda x: x)
 
+    dummymapper[slice(0, 1)]
+    try:
+        boolean = False
+        dummymapper[None]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        dummymapper[-1]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
 #
 #    mainmapper1 = RegionDistances(relations=relations, _data=_data,
