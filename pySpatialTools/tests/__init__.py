@@ -17,6 +17,8 @@ with warnings.catch_warnings():
 ############################## Testing function ###############################
 ###############################################################################
 import test_pythonUtils
+import test_io
+import test_transformations
 import test_utils
 import test_neighsinfo
 import test_preprocess
@@ -58,6 +60,8 @@ def test():
         warnings.simplefilter("ignore")
         #warnings.simplefilter("error")
         test_pythonUtils.test()
+        test_io.test()
+        test_transformations.test()
         test_utils.test()
         test_neighsinfo.test()
         test_preprocess.test()
