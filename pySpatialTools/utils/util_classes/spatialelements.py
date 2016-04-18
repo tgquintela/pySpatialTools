@@ -62,7 +62,7 @@ class SpatialElementsCollection:
             else:
                 raise TypeError("Not correct input.")
         else:
-            new_tags = -2 * np.ones(self.elements_id.shape[0])
+            new_tags = -2 * np.ones(len(self.elements_id))
             for p in np.unique(self.elements_id):
                 if p in relabel_map.keys():
                     new_tags[self.elements_id == p] = relabel_map[p]
@@ -85,10 +85,10 @@ class SpatialElementsCollection:
         if tags is not None:
             if type(tags) in [np.ndarray, list]:
                 tags = np.array(tags)
-                if np.unique(tags).shape[0] != tags.shape[0]:
+                if len(np.unique(tags)) != len(tags):
                     raise Exception("Non-unique labels for elements.")
-                if tags.shape[0] != self.n_elements:
-                    raise Exception("Not correct shape for tags.")
+                if len(tags) != self.n_elements:
+                    raise Exception("Not correct length for tags.")
             else:
                 raise TypeError("Not correct labels type for elements.")
         return tags
@@ -102,7 +102,7 @@ class Locations:
     def __init__(self, locations, points_id=None):
         locations = self._to_locations(locations)
         self.n_dim = locations.shape[1]
-        self.n_points = locations.shape[0]
+        self.n_points = len(locations)
         self.locations = locations
         self.points_id = self._format_tags(points_id)
 
@@ -140,10 +140,10 @@ class Locations:
         if tags is not None:
             if type(tags) in [np.ndarray, list]:
                 tags = np.array(tags)
-                if np.unique(tags).shape[0] != tags.shape[0]:
+                if len(np.unique(tags)) != len(tags):
                     raise Exception("Non-unique labels for elements.")
-                if tags.shape[0] != self.n_points:
-                    raise Exception("Not correct shape for tags.")
+                if len(tags) != self.n_points:
+                    raise Exception("Not correct length for tags.")
             else:
                 raise TypeError("Not correct labels type for elements.")
         return tags
@@ -156,7 +156,7 @@ class Locations:
         "Transform a locations array into the proper shape."
         if type(locations) == np.ndarray:
             if len(locations.shape) == 1:
-                locations = locations.reshape((locations.shape[0], 1))
+                locations = locations.reshape((len(locations), 1))
         return locations
 
     def compute_distance(self, loc, kwargs={}):

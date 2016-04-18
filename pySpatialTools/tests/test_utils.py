@@ -47,24 +47,55 @@ def test():
     functs_elements = SpatialElementsCollection(functs)
     polys_elements = SpatialElementsCollection(regs, np.arange(len(regs)))
 
+    # Testing error instantiation
+    try:
+        flag_error = False
+        SpatialElementsCollection(0)
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+    try:
+        flag_error = False
+        SpatialElementsCollection(words, np.arange(len(words)+1))
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+    try:
+        flag_error = False
+        tags = range(len(words)) + [len(words)]
+        SpatialElementsCollection(words, tags)
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+
     # Class functions
     words_elements[0]
     try:
+        flag_error = False
         words_elements[len(words_elements)]
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
     try:
+        flag_error = False
         words_elements2[words[0]]
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
+
     words_elements.elements_id = None
     try:
+        flag_error = False
         words_elements[words[0]]
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
 
     words_elements[0]
 
@@ -77,9 +108,13 @@ def test():
     words_elements == words[0]
     relabel_map = np.arange(len(words))
     try:
+        flag_error = False
         words_elements.relabel_elements(range(len(words)))
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
+
     words_elements.relabel_elements(relabel_map)
     relabel_map = dict(zip(relabel_map, relabel_map))
     words_elements.relabel_elements(relabel_map)
@@ -94,12 +129,19 @@ def test():
         pass
     functs_elements == words[0]
 
+    # Polygon collections
+    polys_elements == polys_elements[0]
+
+    ############################ Locations Object #############################
+    ###########################################################################
     ## Locations
     locs1 = np.random.random((100, 5))
     locs2 = np.random.random((100, 1))
     locs3 = np.random.random(100)
     locs4 = np.random.random((100, 2))
     sptrans = lambda x, p: np.sin(x)
+
+    SpatialElementsCollection(locs1, np.arange(len(locs1)))
 
     try:
         locs = Locations(locs1, 5)
