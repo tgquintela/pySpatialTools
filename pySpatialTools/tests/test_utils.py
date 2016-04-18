@@ -211,7 +211,7 @@ def test():
     locs._check_coord(0)
     locs._check_coord(locs[0])
     locs._check_coord([0, 3])
-    locs._check_coord(np.random.randint(0, 2, len(locs.locations.shape)))
+    locs._check_coord(np.random.random(locs.locations.shape[1]))
     locs._check_coord([locs1[0], locs1[3]])
     locs._check_coord(None)
     locs.in_radio(locs[0], 0.2)
@@ -248,6 +248,7 @@ def test():
     memb1.to_sparse()
     memb1.reverse_mapping()
     memb1.getcollection(0)
+    memb1.getcollection(memb1.max_collection_id-1)
     memb1.collections_id
     memb1.n_collections
     memb1.n_elements
@@ -266,10 +267,13 @@ def test():
     memb1_dict.to_sparse()
     memb1_dict.reverse_mapping()
     memb1_dict.getcollection(0)
+    memb1.getcollection(memb1.max_collection_id-1)
     memb1_dict.collections_id
     memb1_dict.n_collections
     memb1_dict.n_elements
     memb1_dict.membership
+    memb1.shape
+    memb1.max_collection_id
 
     memb2 = Membership(np.random.randint(0, 20, 100))
     memb2.to_network()
@@ -277,6 +281,7 @@ def test():
     memb2.to_sparse()
     memb2.reverse_mapping()
     memb2.getcollection(0)
+    memb2.getcollection(memb2.max_collection_id-1)
     memb2.collections_id
     memb2.n_collections
     memb2.n_elements
@@ -286,6 +291,8 @@ def test():
     memb2 == 0
     for e in memb2:
         pass
+    memb2.shape
+    memb2.max_collection_id
 
     sparse = randint_sparse_matrix(0.2, (200, 100), 1)
     memb3 = Membership(sparse)
@@ -294,6 +301,7 @@ def test():
     memb3.to_sparse()
     memb3.reverse_mapping()
     memb3.getcollection(0)
+    memb3.getcollection(memb3.max_collection_id-1)
     memb3.collections_id
     memb3.n_collections
     memb3.n_elements
@@ -303,6 +311,8 @@ def test():
     memb3 == 0
     for e in memb3:
         pass
+    memb3.shape
+    memb3.max_collection_id
 
     relations = [[np.random.randint(10)] for i in range(50)]
     memb4 = Membership(relations)
@@ -311,6 +321,7 @@ def test():
     memb4.to_sparse()
     memb4.reverse_mapping()
     memb4.getcollection(0)
+    memb4.getcollection(memb4.max_collection_id-1)
     memb4.collections_id
     memb4.n_collections
     memb4.n_elements
@@ -320,6 +331,8 @@ def test():
     memb4 == 0
     for e in memb4:
         pass
+    memb4.shape
+    memb4.max_collection_id
 
     relations[0].append(0)
     memb5 = Membership(relations)
@@ -328,6 +341,7 @@ def test():
     memb5.to_sparse()
     memb5.reverse_mapping()
     memb5.getcollection(0)
+    memb5.getcollection(memb5.max_collection_id-1)
     memb5.collections_id
     memb5.n_collections
     memb5.n_elements
@@ -337,6 +351,8 @@ def test():
     memb5 == 0
     for e in memb5:
         pass
+    memb5.shape
+    memb5.max_collection_id
 
     relations[0].append(0)
     memb6 = Membership((sparse, np.arange(100)))
@@ -345,6 +361,7 @@ def test():
     memb6.to_sparse()
     memb6.reverse_mapping()
     memb6.getcollection(0)
+    memb6.getcollection(memb6.max_collection_id-1)
     memb6.collections_id
     memb6.n_collections
     memb6.n_elements
@@ -354,6 +371,8 @@ def test():
     memb6 == 0
     for e in memb6:
         pass
+    memb6.shape
+    memb6.max_collection_id
 
     ###########################################################################
     ############################### Mapper vals ###############################

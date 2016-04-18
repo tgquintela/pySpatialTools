@@ -192,8 +192,10 @@ class Locations:
             if type(check_loc) != np.ndarray:
                 checker_coord = False
             else:
-                d_sh = self.locations.shape
-                if len(check_loc.shape) == len(d_sh):
+                n_ch = len(check_loc.shape) == 1
+                sh = (1, len(check_loc))
+                check_loc = check_loc.reshape(sh) if n_ch == 1 else check_loc
+                if check_loc.shape[1] == self.locations.shape[1]:
                     checker_coord = True
                 else:
                     checker_coord = False
