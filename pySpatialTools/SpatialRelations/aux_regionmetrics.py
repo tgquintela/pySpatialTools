@@ -13,6 +13,7 @@ from ..FeatureManagement import SpatialDescriptorModel
 
 
 def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):
+    """"""
     discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
     retriever = retriever(locs, info_ret, ifdistance=True)
     loc_r = discretizor.discretize(locs)
@@ -26,6 +27,7 @@ def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):
 
 
 def create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i):
+    """"""
     discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
     if type(retriever) == str:
         regionslocs = discretizor.get_regionslocs()[elements_i, :]
@@ -100,7 +102,7 @@ def compute_selfdistances(retriever, element_labels, typeoutput='network',
     relations = sparse_from_listaregneighs(lista, element_labels, symmetric)
     if typeoutput == 'network':
         relations = nx.from_scipy_sparse_matrix(relations)
-    if typeoutput == 'matrix':
+    elif typeoutput == 'matrix':
         relations = relations.A
     return relations
 

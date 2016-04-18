@@ -52,14 +52,14 @@ def general_spatial_relations(Sp_els, f, simmetry=False):
     """
 
     # 0. Compute previous variables
-    n = Sp_els.shape[0]
+    n = len(Sp_els)
     if simmetry:
         pairs = combinations_with_replacement(xrange(n), 2)
     else:
         pairs = product(xrange(n), xrange(n))
 
     # 1. Compute the matrix of spatial relations
-    Rel = np.zeros(n, n)
+    Rel = np.zeros((n, n))
     for pair in pairs:
         rel = general_spatial_relation(Sp_els[pair[0]], Sp_els[pair[1]], f)
         Rel[pair[0], pair[1]], Rel[pair[1], pair[0]] = rel, rel

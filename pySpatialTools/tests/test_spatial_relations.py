@@ -9,16 +9,65 @@ test for spatial relations module. There are two computers methods untested.
 import numpy as np
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import OrderEleNeigh
+from pySpatialTools.utils.artificial_data import randint_sparse_matrix
 
-from pySpatialTools.SpatialRelations import RegionDistances, DummyRegDistance
+from pySpatialTools.SpatialRelations import RegionDistances, DummyRegDistance,\
+    format_out_relations
 from pySpatialTools.SpatialRelations.regiondistances_computers\
     import compute_AvgDistanceRegions, compute_CenterLocsRegionDistances,\
     compute_ContiguityRegionDistances, compute_PointsNeighsIntersection
+from pySpatialTools.SpatialRelations.util_spatial_relations import\
+    general_spatial_relation, general_spatial_relations
+from pySpatialTools.SpatialRelations.element_metrics import\
+    measure_difference, unidimensional_periodic
+from pySpatialTools.SpatialRelations.aux_regionmetrics import\
+    create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs,\
+    get_regions4distances, compute_selfdistances, filter_possible,\
+    sparse_from_listaregneighs
 
 
 def test():
     info_ret = {'order': 2}
     locs = np.random.random((1000, 2))
+
+    ### Testing utities
+    ## util_spatial_relations
+    f = lambda x, y: x + y
+    sp_elements = np.random.random(10)
+    general_spatial_relation(sp_elements[0], sp_elements[0], f)
+    general_spatial_relations(sp_elements, f, simmetry=False)
+    general_spatial_relations(sp_elements, f, simmetry=True)
+
+    ## format_out_relations
+    mainmapper1 = randint_sparse_matrix(0.8, (25, 25))
+    format_out_relations(mainmapper1, 'sparse')
+    format_out_relations(mainmapper1, 'network')
+    format_out_relations(mainmapper1, 'sp_relations')
+    format_out_relations(mainmapper1, 'list')
+
+    ## Element metrics
+    element_i, element_j = 54, 2
+    pars1 = {'periodic': 60}
+    pars2 = {}
+    unidimensional_periodic(element_i, element_j, pars=pars1)
+    unidimensional_periodic(element_i, element_j, pars=pars2)
+    unidimensional_periodic(element_j, element_i, pars=pars1)
+    unidimensional_periodic(element_j, element_i, pars=pars2)
+    measure_difference(element_i, element_j, pars=pars1)
+    measure_difference(element_i, element_j, pars=pars2)
+    measure_difference(element_j, element_i, pars=pars1)
+    measure_difference(element_j, element_i, pars=pars2)
+    ## Relative position
+
+    ## aux_regionmetrics
+#    create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i)
+#    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
+#    get_regions4distances(discretizor, elements=None, activated=None)
+#    compute_selfdistances(retriever, element_labels, typeoutput='network',
+#                          symmetric=True)
+#    filter_possible(only_possible, neighs, dists)
+#    sparse_from_listaregneighs(lista, u_regs, symmetric)
+
 
 #    mainmapper1 = generate_random_relations(25, store='sparse')
 #    mainmapper2 = generate_random_relations(100, store='sparse')

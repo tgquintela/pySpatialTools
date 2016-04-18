@@ -35,6 +35,6 @@ def format_out_relations(relations, out_):
         relations_o = RegionDistances(relations)
     elif out_ == 'list':
         relations_o = []
-        for i in relations.shape[0]:
-            relations_o.append(list(relations.get_row(i).nonzero()[0]))
+        for i in range(relations.shape[0]):
+            relations_o.append(list(relations.getrow(i).nonzero()[0]))
     return relations_o
