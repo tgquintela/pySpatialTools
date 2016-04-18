@@ -21,14 +21,19 @@ from pySpatialTools.SpatialRelations.util_spatial_relations import\
 from pySpatialTools.SpatialRelations.element_metrics import\
     measure_difference, unidimensional_periodic
 from pySpatialTools.SpatialRelations.aux_regionmetrics import\
-    create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs,\
-    get_regions4distances, compute_selfdistances, filter_possible,\
-    sparse_from_listaregneighs
+    get_regions4distances, filter_possible_neighs
 
 
 def test():
+    ### Parameters or externals
     info_ret = {'order': 2}
     locs = np.random.random((1000, 2))
+#    mainmapper1 = generate_random_relations(25, store='sparse')
+#    mainmapper2 = generate_random_relations(100, store='sparse')
+#    mainmapper3 = generate_random_relations(5000, store='sparse')
+    griddisc1 = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
+    griddisc2 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
+    griddisc3 = GridSpatialDisc((50, 100), xlim=(0, 1), ylim=(0, 1))
 
     ### Testing utities
     ## util_spatial_relations
@@ -43,7 +48,7 @@ def test():
     format_out_relations(mainmapper1, 'sparse')
     format_out_relations(mainmapper1, 'network')
     format_out_relations(mainmapper1, 'sp_relations')
-    format_out_relations(mainmapper1, 'list')
+    lista = format_out_relations(mainmapper1, 'list')
 
     ## Element metrics
     element_i, element_j = 54, 2
@@ -60,21 +65,27 @@ def test():
     ## Relative position
 
     ## aux_regionmetrics
+    # Get regions activated
+    elements = griddisc1.get_regions_id()
+    get_regions4distances(griddisc1, elements=None, activated=None)
+    get_regions4distances(griddisc1, elements, activated=elements)
+
+    # Filter possible neighs
+    only_possible = np.unique(np.random.randint(0, 100, 50))
+    neighs = [np.unique(np.random.randint(0, 100, 6)) for i in range(4)]
+    dists = [np.random.random(len(neighs[i])) for i in range(4)]
+    filter_possible_neighs(only_possible, neighs, dists)
+    filter_possible_neighs(only_possible, neighs, None)
+
+    # TODO: Sync with other classes as sp_desc_models
+#    sparse_from_listaregneighs(lista, u_regs, symmetric=True)
+#    sparse_from_listaregneighs(lista, u_regs, symmetric=False)
 #    create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i)
 #    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
-#    get_regions4distances(discretizor, elements=None, activated=None)
 #    compute_selfdistances(retriever, element_labels, typeoutput='network',
 #                          symmetric=True)
-#    filter_possible(only_possible, neighs, dists)
-#    sparse_from_listaregneighs(lista, u_regs, symmetric)
-
-
-#    mainmapper1 = generate_random_relations(25, store='sparse')
-#    mainmapper2 = generate_random_relations(100, store='sparse')
-#    mainmapper3 = generate_random_relations(5000, store='sparse')
-    griddisc1 = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
-    griddisc2 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
-    griddisc3 = GridSpatialDisc((50, 100), xlim=(0, 1), ylim=(0, 1))
+    # Region spatial relations
+    # For future (TODO)
 
     ## Compute Contiguity
     relations, _data, symmetric, store =\
