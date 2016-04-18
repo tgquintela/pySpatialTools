@@ -7,6 +7,7 @@ test for spatial relations module. There are two computers methods untested.
 """
 
 import numpy as np
+from itertools import product
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import OrderEleNeigh
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
@@ -87,6 +88,7 @@ def test():
     # Region spatial relations
     # For future (TODO)
 
+    ### RegionDistances Computers
     ## Compute Contiguity
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
@@ -135,11 +137,15 @@ def test():
     mainmapper3.data_output
     mainmapper3.shape
 
+    input_s = [None, 'indices', 'elements_id']
     pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
                       'list', 'list_int', 'list_array']
+    possibles = [input_s, pos_input_type, input_s]
+    for p in product(*possibles):
+        mainmapper3.set_inout(p[0], p[1], p[2])
+
     pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
                   [0], [0], [np.array([0])]]
-
     for i in range(len(pos_input_type)):
         mainmapper3 = RegionDistances(relations=relations, _data=None,
                                       symmetric=symmetric,
@@ -153,12 +159,42 @@ def test():
         mainmapper3.data_output
         mainmapper3.shape
 
+    ## Instantiation
     data_in = list(np.arange(len(relations)))
     mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
     data_in = np.arange(len(relations)).reshape((len(relations), 1))
     mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
+
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3))
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3))
+        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+                                      symmetric=symmetric, data_in=wrond_data)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    relations = np.random.random((20, 20))
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3))
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
     relations, _data, symmetric, store =\
         compute_ContiguityRegionDistances(griddisc3, store='network')
