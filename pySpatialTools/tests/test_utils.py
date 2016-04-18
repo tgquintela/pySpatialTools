@@ -148,6 +148,14 @@ def test():
     locs4 = np.random.random((100, 2))
     sptrans = lambda x, p: np.sin(x)
 
+    class Translocs:
+        def __init__(self):
+            pass
+
+        def apply_transformation(self, x, p={}):
+            return sptrans(x, p)
+    sptrans2 = Translocs()
+
     lspcol = SpatialElementsCollection(locs1, np.arange(len(locs1)))
     lspcol == lspcol[0]
 
@@ -199,9 +207,11 @@ def test():
     assert((locs == locs1[0])[0])
     locs.compute_distance(locs[1])
     locs.space_transformation(sptrans, {})
+    locs.space_transformation(sptrans2, {})
     locs._check_coord(0)
     locs._check_coord(locs[0])
     locs._check_coord([0, 3])
+    locs._check_coord(np.random.randint(0, 2, len(locs.locations.shape)))
     locs._check_coord([locs1[0], locs1[3]])
     locs._check_coord(None)
     locs.in_radio(locs[0], 0.2)
@@ -211,12 +221,14 @@ def test():
     assert((locs == locs2[0])[0])
     locs.compute_distance(locs[1])
     locs.space_transformation(sptrans, {})
+    locs.space_transformation(sptrans2, {})
     locs.in_manhattan_d(locs[0], 0.2)
 
     locs = Locations(locs3)
     assert((locs == locs3[0])[0])
     locs.compute_distance(locs[1])
     locs.space_transformation(sptrans, {})
+    locs.space_transformation(sptrans2, {})
 
     locs = Locations(locs4)
     locs.in_block_distance_d(np.random.random((1, 2)), 0.2)

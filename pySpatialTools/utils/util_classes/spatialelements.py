@@ -129,11 +129,8 @@ class Locations:
                 raise IndexError("Index out of bonds")
             loc_i = self.locations[i, :]
         else:
-            try:
-                idx = np.where(self.points_id == i)[0][0]
-                loc_i = self.locations[idx, :]
-            except:
-                raise IndexError("Index out of bonds")
+            idx = np.where(self.points_id == i)[0][0]
+            loc_i = self.locations[idx, :]
         return loc_i
 
     def _format_tags(self, tags):
@@ -240,5 +237,5 @@ class Locations:
         if type(method).__name__ == 'function':
             self.locations = method(self.locations, params)
         else:
-            self.locations = method.apply_transformation(self.location,
+            self.locations = method.apply_transformation(self.locations,
                                                          **params)
