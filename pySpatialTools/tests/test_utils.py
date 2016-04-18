@@ -64,8 +64,15 @@ def test():
             raise Exception("It has to halt here.")
     try:
         flag_error = False
-        tags = range(len(words)) + [len(words)]
+        tags = range(len(words)) + [len(words)-1]
         SpatialElementsCollection(words, tags)
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+    try:
+        flag_error = False
+        SpatialElementsCollection(words, 5)
         flag_error = True
     except:
         if flag_error:
@@ -141,7 +148,8 @@ def test():
     locs4 = np.random.random((100, 2))
     sptrans = lambda x, p: np.sin(x)
 
-    SpatialElementsCollection(locs1, np.arange(len(locs1)))
+    lspcol = SpatialElementsCollection(locs1, np.arange(len(locs1)))
+    lspcol == lspcol[0]
 
     try:
         locs = Locations(locs1, 5)
