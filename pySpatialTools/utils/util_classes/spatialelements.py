@@ -1,12 +1,9 @@
 
 """
-Locations
----------
-
-
-TODO
-----
-location parameter for each element
+Spatial Elements
+----------------
+It is the module which groups all the classes that could store spatial
+elements collections and procure functions to manage them properly.
 
 """
 

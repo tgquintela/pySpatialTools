@@ -18,7 +18,8 @@ threaten tens of millions of jobs.
 import numpy as np
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix,\
     generate_randint_relations, generate_random_relations_cutoffs,\
-    random_transformed_space_points, random_space_points, create_random_image
+    random_transformed_space_points, random_space_points, create_random_image,\
+    random_shapely_polygon, random_shapely_polygons
 from pySpatialTools.utils.artificial_data.artificial_data import\
     random_membership
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
@@ -28,10 +29,14 @@ from ..utils.util_classes import Locations, SpatialElementsCollection,\
 
 
 def test():
+    ###########################################################################
+    ############################ Spatial Elements #############################
+    ###########################################################################
     ## Parameters
     words = m.replace('\n', ' ').replace('.', ' ').strip().split(" ")
     ids = [hash(e) for e in words]
     functs = [lambda x: str(x)+words[i] for i in range(len(words))]
+    regs = random_shapely_polygons(10, bounding=(None, None), n_edges=0)
 
     ## Testing Elemets
     words_id = np.arange(len(words))
@@ -40,6 +45,7 @@ def test():
     words_elements = SpatialElementsCollection(words)
     ids_elements = SpatialElementsCollection(ids)
     functs_elements = SpatialElementsCollection(functs)
+    polys_elements = SpatialElementsCollection(regs, np.arange(len(regs)))
 
     # Class functions
     words_elements[0]
@@ -340,3 +346,10 @@ def test():
     ## Artificial grid data
     create_random_image(shape, n_modes=1)
     create_random_image(shape, n_modes=3)
+
+    ## Artificial regions
+    n_poly = 10
+    random_shapely_polygon(bounding=(None, None), n_edges=0)
+    random_shapely_polygon(bounding=((0., 1.), None), n_edges=0)
+    random_shapely_polygon(bounding=(None, None), n_edges=4)
+    random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0)
