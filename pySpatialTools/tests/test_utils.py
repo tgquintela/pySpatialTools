@@ -152,30 +152,48 @@ def test():
     lspcol == lspcol[0]
 
     try:
+        flag_error = False
         locs = Locations(locs1, 5)
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
     try:
+        flag_error = False
         locs = Locations(locs1, list(range(len(locs1)+1)))
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
     try:
+        flag_error = False
         tags = list(range(len(locs1)))
         tags[0] = 1
         locs = Locations(locs1, tags)
-        raise Exception
+        flag_error = True
     except:
-        pass
+        if flag_error:
+            raise Exception("It has to halt here.")
 
     locs = Locations(locs1)
     locsbis = Locations(locs1, list(range(len(locs1))))
-    try:
-        locsbis[-1]
-        raise Exception
-    except:
+    for l in locs:
         pass
+    try:
+        flag_error = False
+        locs[-1]
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+    try:
+        flag_error = False
+        locsbis[slice(0, 9)]
+        flag_error = True
+    except:
+        if flag_error:
+            raise Exception("It has to halt here.")
+
     locsbis[0]
     locs[0]
     assert((locs == locs1[0])[0])
@@ -185,7 +203,9 @@ def test():
     locs._check_coord(locs[0])
     locs._check_coord([0, 3])
     locs._check_coord([locs1[0], locs1[3]])
+    locs._check_coord(None)
     locs.in_radio(locs[0], 0.2)
+    locs.data
 
     locs = Locations(locs2)
     assert((locs == locs2[0])[0])
