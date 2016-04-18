@@ -87,7 +87,8 @@ class RegionDistances:
                         _data = np.arange(relations.shape[1])
                         self._data = _data.reshape((relations.shape[1], 1))
                     elif type(relations) == nx.Graph:
-                        self._data = relations.nodes()
+                        _data = np.array(relations.nodes())
+                        self._data = _data.reshape((len(_data), 1))
                 else:
                     if type(_data) == list:
                         _data = np.array(_data)
@@ -369,8 +370,10 @@ class RegionDistances:
                     neighs.append(np.array([]))
                 dists.append(np.array([[]]).T)
                 continue
+            reg = int(reg) if type(reg) == np.ndarray else reg
             neighs_r = self.relations.neighbors(reg)
-            dists_r = [self.relations[reg][nei]['weight'] for nei in neighs]
+            dists_r = [self.relations[reg][nei]['weight']
+                       for nei in neighs_r]
             ## Formatting properly neighs
             if self._out == 'indices':
                 neighs_aux = []
@@ -407,8 +410,8 @@ class RegionDistances:
     ############################# Transformation ##############################
     ###########################################################################
     def transform(self, f_trans, params={}):
-        ##TODO:
-        return f_trans(self.relations)
+        """Application of a transformation to the relations."""
+        return f_trans(self.relations, *params)
 
     ############################ Class properties #############################
     ###########################################################################

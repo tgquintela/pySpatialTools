@@ -100,190 +100,258 @@ def test():
     neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
     assert(len(neighs) == len(dists))
     assert(len(neighs) == 2)
-
-    mainmapper1 = RegionDistances(relations=relations, _data=_data,
-                                  symmetric=symmetric)
-    neighs, dists = mainmapper1._general_retrieve_neighs([0])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 1)
-    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 2)
-
-    relations, _data, symmetric, store =\
-        compute_ContiguityRegionDistances(griddisc2, store='sparse')
-    mainmapper2 = RegionDistances(relations=relations, _data=_data,
-                                  symmetric=symmetric)
-    neighs, dists = mainmapper2._general_retrieve_neighs([0])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 1)
-    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 2)
-
-    #### Combinations
-    relations, _data, symmetric, store =\
-        compute_ContiguityRegionDistances(griddisc3, store='matrix')
-    mainmapper3 = RegionDistances(relations=relations, _data=None,
-                                  symmetric=symmetric)
-    neighs, dists = mainmapper3[0]
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 1)
-    mainmapper3[mainmapper3.data[0]]
-    mainmapper3.retrieve_neighs(0)
-    mainmapper3.retrieve_neighs(mainmapper3.data[0])
-    mainmapper3.data
-    mainmapper3.data_input
-    mainmapper3.data_output
-    mainmapper3.shape
-
-    input_s = [None, 'indices', 'elements_id']
+    ###########################################################################
+    ### Massive combinatorial testing
+    # Possible parameters
+    pos_relations = [relations, relations.A,
+                     format_out_relations(relations, 'network')]
+    pos_distanceorweighs, pos_sym = [True, False], [True, False]
+    pos_inputstypes, pos_outputtypes = [[None, 'indices', 'elements_id']]*2
     pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
                       'list', 'list_int', 'list_array']
-    possibles = [input_s, pos_input_type, input_s]
-    for p in product(*possibles):
-        mainmapper3.set_inout(p[0], p[1], p[2])
-        mainmapper3[0]
-    mainmapper3.set_inout(None, 'indices')
-    mainmapper3[0]
-    mainmapper3.set_inout(None, 'elements_id')
-    mainmapper3[mainmapper3.data[0]]
-    mainmapper3.set_inout(None, None)
-    mainmapper3[0]
-    mainmapper3[mainmapper3.data[0]]
-    mainmapper3[np.array([mainmapper3.data[0]])]
-
     pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
                   [0], [0], [np.array([0])]]
-    for i in range(len(pos_input_type)):
-        mainmapper3 = RegionDistances(relations=relations, _data=None,
-                                      symmetric=symmetric,
-                                      input_type=pos_input_type[i])
-        mainmapper3[pos_inputs[i]]
-#        mainmapper3[mainmapper3.data[0]]
-#        mainmapper3.retrieve_neighs(0)
-#        mainmapper3.retrieve_neighs(mainmapper3.data[0])
-        mainmapper3.data
-        mainmapper3.data_input
-        mainmapper3.data_output
-        mainmapper3.shape
+    pos_data_in, pos_data = [[]]*2
+    possibles = [pos_relations, pos_distanceorweighs, pos_sym, pos_outputtypes,
+                 pos_inputstypes, pos_input_type]
+    # Combinations
+    for p in product(*possibles):
+        mainmapper1 = RegionDistances(relations=p[0], distanceorweighs=p[1],
+                                      symmetric=p[2], output=p[3], input_=p[4],
+                                      input_type=p[5])
+        # Define input
+        if p[5] is None:
+            if p[4] != 'indices':
+                mainmapper1[mainmapper1.data[0]]
+            if p[4] != 'elements_id':
+                mainmapper1[0]
+        else:
+            idxs = pos_inputs[pos_input_type.index(p[5])]
+            print '0'*15, p[5], idxs, p
+            mainmapper1[idxs]
 
-    ## Instantiation
-    data_in = list(np.arange(len(relations)))
-    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                  symmetric=symmetric, data_in=data_in)
-    data_in = np.arange(len(relations)).reshape((len(relations), 1))
-    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                  symmetric=symmetric, data_in=data_in)
-
+    # Dummymap instantiation
     try:
         boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
+        regs = np.random.random((10, 10, 1))
+        dummymapper = DummyRegDistance(regs)
         boolean = True
     except:
         if boolean:
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        mainmapper3._list_array_filter_reg([.9])
+        dummymapper = DummyRegDistance(None)
         boolean = True
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
-        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                      symmetric=symmetric, data_in=wrond_data)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    relations = np.random.random((20, 20))
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-
-    relations, _data, symmetric, store =\
-        compute_ContiguityRegionDistances(griddisc3, store='network')
-    data_in = np.arange(len(relations)).reshape((len(relations), 1))
-    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                  symmetric=symmetric, data_in=data_in)
-    mainmapper3._netx_retrieve_neighs([0])
-    mainmapper3._netx_retrieve_neighs([-1])
-
     regs = np.unique(np.random.randint(0, 1000, 200))
+    dummymapper = DummyRegDistance(list(regs))
     dummymapper = DummyRegDistance(regs)
+    dummymapper.transform(lambda x: x)
 
-#    input_='indices', output='indices', _data=None,
-#    data_in=None,
-#    input_type=None)
 
-    ## Test functions
-    try:
-        boolean = False
-        mainmapper1[0.8]
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        mainmapper1[-1]
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    mainmapper1[0]
-    mainmapper1[[0, 1]]
-    mainmapper1[slice(0, 3)]
-    mainmapper1[[mainmapper1.data[0], mainmapper1.data[1]]]
-    mainmapper1[mainmapper1.data[0]]
-    mainmapper1.retrieve_neighs(0)
-    mainmapper1.retrieve_neighs(mainmapper1.data[0])
-    mainmapper1.data
-    mainmapper1.data_input
-    mainmapper1.data_output
-    mainmapper1.shape
+#
+#    mainmapper1 = RegionDistances(relations=relations, _data=_data,
+#                                  symmetric=symmetric)
+#    neighs, dists = mainmapper1._general_retrieve_neighs([0])
+#    assert(len(neighs) == len(dists))
+#    assert(len(neighs) == 1)
+#    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+#    assert(len(neighs) == len(dists))
+#    assert(len(neighs) == 2)
+#
+#    relations, _data, symmetric, store =\
+#        compute_ContiguityRegionDistances(griddisc2, store='sparse')
+#    mainmapper2 = RegionDistances(relations=relations, _data=_data,
+#                                  symmetric=symmetric)
+#    neighs, dists = mainmapper2._general_retrieve_neighs([0])
+#    assert(len(neighs) == len(dists))
+#    assert(len(neighs) == 1)
+#    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+#    assert(len(neighs) == len(dists))
+#    assert(len(neighs) == 2)
+#
+#    #### Combinations
+#    relations, _data, symmetric, store =\
+#        compute_ContiguityRegionDistances(griddisc3, store='matrix')
+#    mainmapper3 = RegionDistances(relations=relations, _data=None,
+#                                  symmetric=symmetric)
+#    neighs, dists = mainmapper3[0]
+#    assert(len(neighs) == len(dists))
+#    assert(len(neighs) == 1)
+#    mainmapper3[mainmapper3.data[0]]
+#    mainmapper3.retrieve_neighs(0)
+#    mainmapper3.retrieve_neighs(mainmapper3.data[0])
+#    mainmapper3.data
+#    mainmapper3.data_input
+#    mainmapper3.data_output
+#    mainmapper3.shape
+#
+#    input_s = [None, 'indices', 'elements_id']
+#    pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
+#                      'list', 'list_int', 'list_array']
+#    possibles = [input_s, pos_input_type, input_s]
+#    for p in product(*possibles):
+#        mainmapper3.set_inout(p[0], p[1], p[2])
+#        mainmapper3[0]
+#    mainmapper3.set_inout(None, 'indices')
+#    mainmapper3[0]
+#    mainmapper3.set_inout(None, 'elements_id')
+#    mainmapper3[mainmapper3.data[0]]
+#    mainmapper3.set_inout(None, None)
+#    mainmapper3[0]
+#    mainmapper3[mainmapper3.data[0]]
+#    mainmapper3[np.array([mainmapper3.data[0]])]
+#
+#    pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
+#                  [0], [0], [np.array([0])]]
+#    for i in range(len(pos_input_type)):
+#        mainmapper3 = RegionDistances(relations=relations, _data=None,
+#                                      symmetric=symmetric,
+#                                      input_type=pos_input_type[i])
+#        mainmapper3[pos_inputs[i]]
+##        mainmapper3[mainmapper3.data[0]]
+##        mainmapper3.retrieve_neighs(0)
+##        mainmapper3.retrieve_neighs(mainmapper3.data[0])
+#        mainmapper3.data
+#        mainmapper3.data_input
+#        mainmapper3.data_output
+#        mainmapper3.shape
+#
+#    ## Instantiation
+#    data_in = list(np.arange(len(relations)))
+#    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+#                                  symmetric=symmetric, data_in=data_in)
+#    data_in = np.arange(len(relations)).reshape((len(relations), 1))
+#    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+#                                  symmetric=symmetric, data_in=data_in)
+#
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        mainmapper3._list_array_filter_reg([.9])
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
+#        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+#                                      symmetric=symmetric, data_in=wrond_data)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    relations = np.random.random((20, 20))
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#
+#    relations, _data, symmetric, store =\
+#        compute_ContiguityRegionDistances(griddisc3, store='network')
+#    data_in = np.arange(len(relations)).reshape((len(relations), 1))
+#    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+#                                  symmetric=symmetric, data_in=data_in)
+#    mainmapper3._netx_retrieve_neighs([0])
+#    mainmapper3._netx_retrieve_neighs([-1])
 
-    mainmapper2[0]
-    mainmapper2[mainmapper2.data[0]]
-    mainmapper2.retrieve_neighs(0)
-    mainmapper2.retrieve_neighs(mainmapper2.data[0])
-    mainmapper2.data
-    mainmapper2.data_input
-    mainmapper2.data_output
-    mainmapper2.shape
+#
+##    input_='indices', output='indices', _data=None,
+##    data_in=None,
+##    input_type=None)
+#
+#    ## Test functions
+#    try:
+#        boolean = False
+#        mainmapper1[0.8]
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        mainmapper1[-1]
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#
+#    mainmapper1[0]
+#    mainmapper1[[0, 1]]
+#    mainmapper1[slice(0, 3)]
+#    mainmapper1[[mainmapper1.data[0], mainmapper1.data[1]]]
+#    mainmapper1[mainmapper1.data[0]]
+#    mainmapper1.retrieve_neighs(0)
+#    mainmapper1.retrieve_neighs(mainmapper1.data[0])
+#    mainmapper1.data
+#    mainmapper1.data_input
+#    mainmapper1.data_output
+#    mainmapper1.shape
+#
+#    mainmapper2[0]
+#    mainmapper2[mainmapper2.data[0]]
+#    mainmapper2.retrieve_neighs(0)
+#    mainmapper2.retrieve_neighs(mainmapper2.data[0])
+#    mainmapper2.data
+#    mainmapper2.data_input
+#    mainmapper2.data_output
+#    mainmapper2.shape
+#
+#    dummymapper[0]
+#    try:
+#        boolean = False
+#        dummymapper[-1]
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        dummymapper[0.4]
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    dummymapper[[0, 1]]
+#    dummymapper[slice(0, 3)]
+#    dummymapper[dummymapper.data[0]]
+#    dummymapper.retrieve_neighs(0)
+#    dummymapper.retrieve_neighs(dummymapper.data[0])
+#    dummymapper.data
+#    dummymapper.data_input
+#    dummymapper.data_output
+#    dummymapper.shape
 
-    dummymapper[0]
-    dummymapper[[0, 1]]
-    dummymapper[slice(0, 3)]
-    dummymapper[dummymapper.data[0]]
-    dummymapper.retrieve_neighs(0)
-    dummymapper.retrieve_neighs(dummymapper.data[0])
-    dummymapper.data
-    dummymapper.data_input
-    dummymapper.data_output
-    dummymapper.shape
-
+    ## Needed regionmetrics
+    mainmapper2 = RegionDistances(relations=relations, _data=_data,
+                                  symmetric=symmetric)
     ## In retrievers
     ret0 = OrderEleNeigh(dummymapper, info_ret, constant_info=True)
     ret1 = OrderEleNeigh(mainmapper1, info_ret, bool_input_idx=False,
@@ -292,16 +360,16 @@ def test():
 #    ret3 = OrderEleNeigh(mainmapper3, info_ret)
 
     ## Compute Avg distance
-    relations, _data, symmetric, store =\
-        compute_AvgDistanceRegions(locs, griddisc1, ret1)
-    regdists = RegionDistances(relations=relations, _data=_data,
-                               symmetric=symmetric)
-    regdists = RegionDistances(relations=relations, _data=None,
-                               symmetric=symmetric, distanceorweighs=False)
-    relations, _data, symmetric, store =\
-        compute_AvgDistanceRegions(locs, griddisc2, ret2)
-    regdists = RegionDistances(relations=relations, _data=_data,
-                               symmetric=symmetric)
+#    relations, _data, symmetric, store =\
+#        compute_AvgDistanceRegions(locs, griddisc1, ret1)
+#    regdists = RegionDistances(relations=relations, _data=_data,
+#                               symmetric=symmetric)
+#    regdists = RegionDistances(relations=relations, _data=None,
+#                               symmetric=symmetric, distanceorweighs=False)
+#    relations, _data, symmetric, store =\
+#        compute_AvgDistanceRegions(locs, griddisc2, ret2)
+#    regdists = RegionDistances(relations=relations, _data=_data,
+#                               symmetric=symmetric)
 #    relations, _data, symmetric, store =\
 #        compute_AvgDistanceRegions(locs, griddisc3, ret3)
 #    regdists = RegionDistances(relations=relations, _data=_data,
