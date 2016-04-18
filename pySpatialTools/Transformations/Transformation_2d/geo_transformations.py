@@ -4,25 +4,39 @@ Geo transformations
 -------------------
 Module to transform geographical coordinates between magnitude transformations
 or geographical projections.
+
 """
 
 import numpy as np
 
 
-def general_projection(data, loc_vars, method='ellipsoidal', inverse=False,
+def general_projection(coordinates, method='ellipsoidal', inverse=False,
                        radians=False):
-    "General global projection in order to compute distances."
-    if loc_vars is None:
-        coordinates = data
-    else:
-        coordinates = data.loc[:, loc_vars].as_matrix()
+    """General global projection in order to compute distances.
 
+    Parameters
+    ----------
+    coordinates: numpy.ndarray, shape (n, 2)
+        the spatial coordinates of the points.
+    method: str, optional
+        the projection we want to use.
+    inverse: bool
+        if we want to project inversely.
+    randians: bool
+        if the coordinates are defined in radians.
+
+    Returns
+    -------
+    coordinates: numpy.ndarray, shape (n, 2)
+        the spatial coordinates of the points in the selected projection.
+
+    """
     # Compute to correct magnitude (radians)
     if not radians:
         coordinates = degrees2radians(coordinates)
     ## Projection
     if method == 'spheroidal':
-        coordinates = spheroidal_projection(coordinates, inverse)
+        coordinates = spheroidal_projection<(coordinates, inverse)
     elif method == 'ellipsoidal':
         coordinates = ellipsoidal_projection(coordinates, inverse)
     # Correction magnitudes if inverse
@@ -33,24 +47,28 @@ def general_projection(data, loc_vars, method='ellipsoidal', inverse=False,
 
 
 def radians2degrees(coordinates):
-    "Transformation from radians to degrees."
+    """Transformation from radians to degrees."""
     return 180./np.pi*coordinates
 
 
 def degrees2radians(coordinates):
-    "Transformation from degrees to radians."
+    """Transformation from degrees to radians."""
     return np.pi/180.*coordinates
 
 
 def spheroidal_projection(coordinates, inverse=False):
-    "Projection under the assumption of spheroidal surface."
-    coordinates[:, 0] = coordinates[:, 0]*np.cos(coordinates[:, 1])
-    coordinates[:, 1] = coordinates[:, 1]
+    """Projection under the assumption of spheroidal surface."""
+    if not inverse:
+        coordinates[:, 0] = coordinates[:, 0]*np.cos(coordinates[:, 1])
+        coordinates[:, 1] = coordinates[:, 1]
+    else:
+        coordinates[:, 0] = coordinates[:, 0]/np.cos(coordinates[:, 1])
+        coordinates[:, 1] = coordinates[:, 1]
     return coordinates
 
 
 def ellipsoidal_projection(coordinates, inverse=False):
-    "Projection under the assumption of ellipsoidal surface."
+    """Projection under the assumption of ellipsoidal surface."""
     ## Constants measured experimentally
     K11, K12, K13 = 111.13209, -0.56605, 0.00120
     K21, K22, K23 = 111.41513, -0.09455, 0.00012
