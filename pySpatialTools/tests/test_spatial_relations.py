@@ -133,17 +133,17 @@ def test():
         mainmapper1.set_inout(p[5], p[4], p[3])
 
         ## Extreme cases
-        try:
-            boolean = False
-            regs = np.random.random((10, 10, 1))
-            mainmapper1 = RegionDistances(relations=regs,
-                                          distanceorweighs=p[1],
-                                          symmetric=p[2], output=p[3],
-                                          input_=p[4], input_type=p[5])
-            boolean = True
-        except:
-            if boolean:
-                raise Exception("It has to halt here.")
+#        try:
+#            boolean = False
+#            regs = np.random.random((10, 10, 1))
+#            mainmapper1 = RegionDistances(relations=regs,
+#                                          distanceorweighs=p[1],
+#                                          symmetric=p[2], output=p[3],
+#                                          input_=p[4], input_type=p[5])
+#            boolean = True
+#        except:
+#            if boolean:
+#                raise Exception("It has to halt here.")
 
     ## Other cases
     # Dummymap instantiation
@@ -251,59 +251,60 @@ def test():
 #        mainmapper3.data_output
 #        mainmapper3.shape
 #
-#    ## Instantiation
-#    data_in = list(np.arange(len(relations)))
-#    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-#                                  symmetric=symmetric, data_in=data_in)
-#    data_in = np.arange(len(relations)).reshape((len(relations), 1))
-#    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-#                                  symmetric=symmetric, data_in=data_in)
-#
-#    try:
-#        boolean = False
-#        wrond_data = np.random.random((100, 3, 4))
-#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-#                                      symmetric=symmetric, data_in=data_in)
-#        boolean = True
-#    except:
-#        if boolean:
-#            raise Exception("It has to halt here.")
-#    try:
-#        boolean = False
-#        mainmapper3._list_array_filter_reg([.9])
-#        boolean = True
-#    except:
-#        if boolean:
-#            raise Exception("It has to halt here.")
-#    try:
-#        boolean = False
-#        wrond_data = np.random.random((100, 3, 4))
-#        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
-#        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
-#                                      symmetric=symmetric, data_in=data_in)
-#        boolean = True
-#    except:
-#        if boolean:
-#            raise Exception("It has to halt here.")
-#    try:
-#        boolean = False
-#        wrond_data = np.random.random((100, 3, 4))
-#        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-#                                      symmetric=symmetric, data_in=wrond_data)
-#        boolean = True
-#    except:
-#        if boolean:
-#            raise Exception("It has to halt here.")
-#    relations = np.random.random((20, 20))
-#    try:
-#        boolean = False
-#        wrond_data = np.random.random((100, 3, 4))
-#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-#                                      symmetric=symmetric, data_in=data_in)
-#        boolean = True
-#    except:
-#        if boolean:
-#            raise Exception("It has to halt here.")
+    ## Instantiation
+    relations = relations.A
+    data_in = list(np.arange(len(relations)))
+    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+                                  symmetric=symmetric, data_in=data_in)
+    data_in = np.arange(len(relations)).reshape((len(relations), 1))
+    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+                                  symmetric=symmetric, data_in=data_in)
+
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3, 4))
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        mainmapper3._list_array_filter_reg([.9])
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3, 4))
+        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
+        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3, 4))
+        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+                                      symmetric=symmetric, data_in=wrond_data)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    relations = np.random.random((20, 20))
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3, 4))
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 #
 #    relations, _data, symmetric, store =\
 #        compute_ContiguityRegionDistances(griddisc3, store='network')
