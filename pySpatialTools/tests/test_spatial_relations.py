@@ -151,6 +151,7 @@ def test():
     mainmapper3.set_inout(None, None)
     mainmapper3[0]
     mainmapper3[mainmapper3.data[0]]
+    mainmapper3[np.array([mainmapper3.data[0]])]
 
     pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
                   [0], [0], [np.array([0])]]
@@ -179,6 +180,23 @@ def test():
         boolean = False
         wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      symmetric=symmetric, data_in=data_in)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        mainmapper3._list_array_filter_reg([.9])
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        wrond_data = np.random.random((100, 3, 4))
+        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
+        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
     except:
