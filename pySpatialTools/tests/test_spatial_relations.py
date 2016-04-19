@@ -119,10 +119,12 @@ def test():
         mainmapper1 = RegionDistances(relations=p[0], distanceorweighs=p[1],
                                       symmetric=p[2], output=p[3], input_=p[4],
                                       input_type=p[5])
+        mainmapper1[slice(0, 1)]
         # Define input
         if p[5] is None:
             if p[4] != 'indices':
                 mainmapper1[mainmapper1.data[0]]
+                mainmapper1[np.array([-1])]
             if p[4] != 'elements_id':
                 mainmapper1[0]
         else:

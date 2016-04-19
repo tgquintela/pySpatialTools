@@ -138,26 +138,37 @@ class RegionDistances:
         if input_type is None:
             if input_ == 'indices':
                 self.filter_reg = self._general_filter_indices_reg
+                self._slice_transform = self._slice_transform_list
             elif input_ == 'elements_id':
                 self.filter_reg = self._general_filter_elements_reg
+                self._slice_transform = self._slice_transform_array
             else:
                 self.filter_reg = self._general_filter_reg
+                self._slice_transform = self._slice_transform_list
         elif input_type == 'general':
             self.filter_reg = self._general_filter_reg
+            self._slice_transform = self._slice_transform_list
         elif input_type in ['int', 'integer']:
             self.filter_reg = self._int_filter_reg
+            self._slice_transform = self._slice_transform_list
         elif input_type == 'array':
             self.filter_reg = self._array_general_filter_reg
+            self._slice_transform = self._slice_transform_array
         elif input_type == 'array1':
             self.filter_reg = self._array1_filter_reg
+            self._slice_transform = self._slice_transform_array
         elif input_type == 'array2':
             self.filter_reg = self._array2_filter_reg
+            self._slice_transform = self._slice_transform_array
         elif input_type == 'list':
             self.filter_reg = self._list_filter_reg
+            self._slice_transform = self._slice_transform_list
         elif input_type == 'list_int':
             self.filter_reg = self._list_int_filter_reg
+            self._slice_transform = self._slice_transform_list
         elif input_type == 'list_array':
             self.filter_reg = self._list_array_filter_reg
+            self._slice_transform = self._slice_transform_array
 
     ################################## Getters ################################
     ###########################################################################
@@ -178,7 +189,8 @@ class RegionDistances:
         elif isinstance(i, slice):
             start, stop, step = i.start, i.stop, i.step
             step = 1 if step is None else step
-            neighs, dists = self[list(range(start, stop, step))]
+            idxs = self._slice_transform(start, stop, step)
+            neighs, dists = self[idxs]
         else:
             raise TypeError("Not correct index")
         return neighs, dists
@@ -275,6 +287,13 @@ class RegionDistances:
         for i in range(len(reg)):
             new_reg.append(self._int_filter_reg(reg[i]))
         return new_reg
+
+    ################ Slice formatting
+    def _slice_transform_list(self, start, stop, step):
+        return list(range(start, stop, step))
+
+    def _slice_transform_array(self, start, stop, step):
+        return np.array(range(start, stop, step))
 
     ##################### Interactors relations candidates ####################
     ###########################################################################
