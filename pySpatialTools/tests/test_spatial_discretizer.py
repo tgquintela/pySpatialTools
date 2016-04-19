@@ -242,6 +242,12 @@ def test():
     format_membership(randint_sparse_matrix(0.2, (2000, 100), 1))
     format_membership(np.random.random((20, 10)))
     format_membership(list_membership(20, 10))
+    memb0 = list_membership(10, 20)
+    memb0 = [list(e) for e in memb0]
+    format_membership(memb0)
+    memb0 = list_membership(10, 20)
+    memb0[0] = 0
+    format_membership(memb0)
 
     ## Format discretizer
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))

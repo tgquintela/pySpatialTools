@@ -150,7 +150,6 @@ class SetDiscretization(SpatialDiscretizor):
 
 def format_membership(membership):
     """Format membership to fit it into the set discretizor standart."""
-
     if type(membership) == np.ndarray:
         _membership = membership
         n_elements = membership.shape[0]
@@ -164,15 +163,18 @@ def format_membership(membership):
         n_elements = len(membership)
         # Formatting to all list
         types = np.array([type(e) for e in membership])
-        op1 = np.any([t == list for t in types])
+        op1 = np.any([t in [np.ndarray, list] for t in types])
         op2 = np.all([t == dict for t in types])
         op30 = np.all([t == list for t in types])
         op31 = np.all([t == np.ndarray for t in types])
         op3 = op30 or op31
         if op1:
             for i in xrange(len(membership)):
-                if type(membership[i]) != list:
+                if type(membership[i]) not in [np.ndarray, list]:
                     membership[i] = [membership[i]]
+            op3 = True
+            types = np.array([type(e) for e in membership])
+            op31 = np.all([t == np.ndarray for t in types])
         # Computing if dicts
         if op2:
             _membership = membership
