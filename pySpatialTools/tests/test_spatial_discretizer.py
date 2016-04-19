@@ -14,6 +14,8 @@ from pySpatialTools.Discretization import *
 from pySpatialTools.utils.artificial_data import *
 from pySpatialTools.Discretization.Discretization_2d.circdiscretization import\
     CircularSpatialDisc
+from pySpatialTools.Discretization.Discretization_2d.griddiscretization import\
+    mapping2grid
 from pySpatialTools.Discretization.Discretization_2d.utils import *
 
 ## TODO:
@@ -57,6 +59,10 @@ def test():
     ############################# Grid discretizer ############################
     disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
     disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
+
+    mapping2grid(Locs[0], (ngx, ngy), xlim=(0, 1), ylim=(0, 1))
+
+
     # Test functions
     disc1[0]
     disc1[locs1[0]]
@@ -73,6 +79,17 @@ def test():
         disc1.belong_region(Locs[i])
         disc1.belong_region(Locs[i], disc1[0])
         disc1.check_neighbors([disc1[0], disc1[1]], disc1[2])
+        disc1.get_limits()
+        disc1.get_limits(disc1[0])
+
+        ## Special functions (recomendable to elevate in the hierharchy)
+        disc1.get_nregs()
+        disc1.get_regions_id()
+        disc1.get_regionslocs()
+        ## Class functions
+        disc1._compute_contiguity_geom()
+        disc1._compute_contiguity_geom(disc1[0])
+
 
     ########################### Bisector discretizer ##########################
     try:
@@ -106,12 +123,14 @@ def test():
         #disc6.get_limits(disc6[0])
 
     ########################### Circular discretizer ##########################
+    # Parameters
     centers = np.random.random((20, 2))
     radios = np.random.random(20)/5
     jit = np.random.random((100, 2))
     locs_r = centers[np.random.randint(0, 20, 100)] + jit/100000.
     regions_ids = [np.arange(20), np.arange(10, 30)]
 
+    # General tests
     disc4 = CircularSpatialDisc(centers, 0.5)
     disc4._compute_limits(disc4.regions_id[0])
     disc4._map_regionid2regionlocs(0)
@@ -123,6 +142,7 @@ def test():
         if boolean:
             raise Exception("It has to halt here.")
 
+    # Exhaustive tests
     for j in range(len(regions_ids)):
         disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
         disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])

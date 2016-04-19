@@ -215,7 +215,7 @@ def mapping2grid(locs, grid_size, xlim=(None, None), ylim=(None, None)):
     "Main function to map a group of points in a 2d to a grid."
 
     ## 1. Grid creation
-    x, y = create_grid(locs, grid_size, xlim, ylim)
+    x, y = create_grid(grid_size, locs, xlim, ylim)
     xv, yv = np.meshgrid(x, y)
 
     ## 2. Application of the grid
