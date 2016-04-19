@@ -19,7 +19,8 @@ from pySpatialTools.Discretization.Discretization_2d.griddiscretization import\
     mapping2grid, compute_contiguity_grid
 from pySpatialTools.Discretization.Discretization_2d.utils import *
 from pySpatialTools.Discretization.Discretization_set.\
-    general_set_discretization import format_membership, to_sparse
+    general_set_discretization import format_membership, to_sparse,\
+    find_idx_in_array
 
 ## TODO:
 ########
@@ -260,6 +261,7 @@ def test():
     memb0 = [dict(zip(m, len(m)*[{}])) for m in memb0]
     memb, out = format_membership(memb0)
     to_sparse(memb, out)
+    find_idx_in_array(10, np.arange(40))
 
     ## Format discretizer
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
@@ -295,79 +297,3 @@ def test():
 #    disc7.check_neighbors([disc7[0], disc7[1]], disc7[2])
 #    disc7.get_limits()
 #    disc7.get_limits(disc6.regions_id[0])
-
-
-### 2016-04-19 spatial_discretizer
-#
-#    # Discretization action
-#    regions = disc1.discretize(locs1)
-#    regions = disc1.discretize(locs2)
-#    regions = disc2.discretize(locs1)
-#    regions = disc2.discretize(locs2)
-#    regions = disc6.discretize(locs1)
-#    regions = disc6.discretize(locs2)
-#    regions = disc4.discretize(locs1)
-#    regions = disc4.discretize(locs2)
-#    regions = disc5.discretize(locs1)
-#    regions = disc5.discretize(locs2)
-#    regions = disc6.discretize(elements1)
-#    regions7 = disc7.discretize(elements2)
-#
-#    a = randint_sparse_matrix(0.2, (2000, 100), 1)
-#
-#    # Inverse discretization action
-#
-#    # Contiguity
-#    contiguity = disc1.get_contiguity()
-#    contiguity = disc2.get_contiguity()
-#    #contiguity = disc6.get_contiguity()
-#    #contiguity = disc4.get_contiguity()
-#    #contiguity = disc5.get_contiguity()
-#    #contiguity = disc6.get_contiguity()
-#    #contiguity = disc7.get_contiguity()
-#
-#    ## Other parameters and functions
-#    disc1.borders, disc5.borders, disc6.borders
-#
-#    ## Extending coverage
-#    n_in, n_out = 100, 20
-#    relations = [np.unique(np.random.randint(0, n_out,
-#                                             np.random.randint(n_out)))
-#                 for i in range(n_in)]
-#
-#    disc8 = SetDiscretization(relations)
-#    relations = [list(e) for e in relations]
-#    disc9 = SetDiscretization(relations)
-#    disc8.discretize(np.random.randint(0, 20, 100))
-#    disc9.discretize(np.random.randint(0, 20, 100))
-#
-#    ## Check regions
-#    neighs = disc1.check_neighbors(np.array([0, 1]), 0)
-#
-#    activated = disc1.get_activated_regions(locs1[:10])
-#    activated = disc2.get_activated_regions(locs1[:10])
-#    activated = disc6.get_activated_regions(locs1[:10])
-#    activated = disc4.get_activated_regions(locs1[:10])
-#    activated = disc5.get_activated_regions(locs1[:10])
-#    activated = disc6.get_activated_regions(elements1[:10])
-#    activated = disc7.get_activated_regions(elements2[:10])
-#    activated = disc8.get_activated_regions(np.array([0, 1]))
-#    activated = disc9.get_activated_regions(np.array([0, 1]))
-#
-#    disc1.belong_region(locs1[0], 0)
-#    disc2.belong_region(locs1[1], 0)
-#    limits = disc1.get_limits()
-#    limits = disc1.get_limits(0)
-#    limits = disc2.get_limits()
-##    limits = disc6.get_limits()
-##    limits = disc4.get_limits(0)
-#
-#    disc1._map_regionid2regionlocs(0)
-#    disc2._map_regionid2regionlocs(0)
-#    disc6._map_regionid2regionlocs(0)
-#    disc4._map_regionid2regionlocs(0)
-#    disc5._map_regionid2regionlocs(0)
-#    disc6._map_regionid2regionlocs(0)
-#    disc7._map_regionid2regionlocs(0)
-#    disc8._map_regionid2regionlocs(0)
-#    disc9._map_regionid2regionlocs(0)
