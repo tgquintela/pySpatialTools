@@ -53,7 +53,7 @@ class SpatialDiscretizor:
 
     def __len__(self):
         """Returns the number of regions or discretization units."""
-        return np.unique(self.regions_id)
+        return len(np.unique(self.regions_id))
 
     def __getitem__(self, key):
         """Get the regions_id which match with the input."""
@@ -164,7 +164,7 @@ class SpatialDiscretizor:
         """
         if region_id is None:
             regions = self.discretize(elements)
-            boolean = not self.check_neighbors(regions, -1)
+            boolean = np.logical_not(self.check_neighbors(regions, -1))
         else:
             regions = self.discretize(elements)
             boolean = self.check_neighbors(regions, region_id)

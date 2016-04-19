@@ -8,6 +8,7 @@ test for spatial discretizors.
 
 ## Imports
 import numpy as np
+from itertools import product
 #import matplotlib.pyplot as plt
 from pySpatialTools.Discretization import *
 from pySpatialTools.utils.artificial_data import *
@@ -19,34 +20,81 @@ from pySpatialTools.utils.artificial_data import *
 
 
 def test():
-    pass
-#    ## 0. Artificial data
-#    # Parameters
-#    n = 1000
-#    ngx, ngy = 100, 100
-#    # Artificial distribution in space
-#    fucnts = [lambda locs: locs[:, 0]*np.cos(locs[:, 1]*2*np.pi),
-#              lambda locs: locs[:, 0]*np.sin(locs[:, 1]*np.pi*2)]
-#    locs1 = random_transformed_space_points(n, 2, None)
-#    locs2 = random_transformed_space_points(n, 2, fucnts)
-#    locs3 = random_transformed_space_points(n/100, 2, None)
-#    # Set discretization
-#    elements1 = np.random.randint(0, 50, 200)
-#    elements2 = np.random.randint(0, 2000, 200)
+    ## 0. Artificial data
+    # Parameters
+    n = 1000
+    ngx, ngy = 100, 100
+    # Artificial distribution in space
+    fucnts = [lambda locs: locs[:, 0]*np.cos(locs[:, 1]*2*np.pi),
+              lambda locs: locs[:, 0]*np.sin(locs[:, 1]*np.pi*2)]
+    locs1 = random_transformed_space_points(n, 2, None)
+    locs2 = random_transformed_space_points(n, 2, fucnts)
+    locs3 = random_transformed_space_points(n/100, 2, None)
+    # Set discretization
+    elements1 = np.random.randint(0, 50, 200)
+    elements2 = np.random.randint(0, 2000, 200)
 #
 #    ## Test distributions
 #    #fig1 = plt.plot(locs[:,0], locs[:, 1], '.')
 #    #fig2 = plt.plot(locs2[:,0], locs2[:, 1], '.')
 #
-#    ## Discretization
-#    # Discretization instantiation
-#    disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
-#    disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
-#    disc3 = BisectorSpatialDisc(locs3, np.arange(len(locs3)))
-#    disc4 = CircularInclusiveSpatialDisc(locs3, np.random.random(len(locs3)))
-#    disc5 = CircularExcludingSpatialDisc(locs3, np.random.random(len(locs3)))
-#    disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
-#    disc7 = SetDiscretization(randint_sparse_matrix(0.2, (2000, 100), 1))
+    ### Discretization
+    # Discretization instantiation
+    disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
+    disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
+
+    ########################### Bisector discretizer ##########################
+    try:
+        boolean = False
+        disc3 = BisectorSpatialDisc(locs3, np.arange(len(locs3)+1))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    disc3 = BisectorSpatialDisc(locs3, np.arange(len(locs3)))
+    # Test functions
+    disc3[0]
+    disc3[locs1[0]]
+    len(disc3)
+    disc3.discretize(locs1)
+    disc3.discretize(locs2)
+    disc3.discretize(locs3)
+    disc3.map_locs2regionlocs(locs1)
+    disc3.map_locs2regionlocs(locs2)
+    disc3.map_locs2regionlocs(locs3)
+    disc3.map2agglocs(locs1)
+    disc3.map2agglocs(locs2)
+    disc3.map2agglocs(locs3)
+    disc3.retrieve_region(locs1[0], {})
+    disc3.retrieve_region(locs2[0], {})
+    disc3.retrieve_region(locs3[0], {})
+    disc3.retrieve_neigh(locs1[0], locs1)
+    disc3.retrieve_neigh(locs2[0], locs2)
+    disc3.retrieve_neigh(locs3[0], locs3)
+    disc3.get_activated_regions(locs1)
+
+#    disc3.get_limits(locs1)
+#    disc3.get_limits(locs1, disc3[0])
+
+    ## Not implemented yet
+    #disc3.get_contiguity()
+    #disc3.get_contiguity(disc3[0])
+
+    disc3.belong_region(locs1)
+    disc3.belong_region(locs1, disc3[0])
+
+    disc3.check_neighbors([disc3[0], disc3[1]], disc3[2])
+
+
+
+
+
+
+    ########################### Circular discretizer ##########################
+    disc4 = CircularInclusiveSpatialDisc(locs3, np.random.random(len(locs3)))
+    disc5 = CircularExcludingSpatialDisc(locs3, np.random.random(len(locs3)))
+    disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
+    disc7 = SetDiscretization(randint_sparse_matrix(0.2, (2000, 100), 1))
 #
 #    # Discretization action
 #    regions = disc1.discretize(locs1)
