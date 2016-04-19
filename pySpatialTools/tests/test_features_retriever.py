@@ -117,9 +117,9 @@ def test():
     len(featret)
 
     ## Empty call
-    Feat0[(([], []), [0])]
-    Feat1[(([], []), [0])]
-    Feat2[(([], []), [0])]
+    Feat0[(([[]], [[]]), [0])]
+    Feat1[(([[]], [[]]), [0])]
+    Feat2[(([[]], [[]]), [0])]
 
     Feat0.set_descriptormodel(avgdesc)
     Feat1.set_descriptormodel(avgdesc)
