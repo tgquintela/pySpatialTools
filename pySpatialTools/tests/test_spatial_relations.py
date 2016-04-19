@@ -139,24 +139,19 @@ def test():
             if p[5] == 'list':
                 mainmapper1[[0]]
                 mainmapper1[[np.array([0])]]
+                try:
+                    boolean = False
+                    mainmapper1[None]
+                    boolean = True
+                except:
+                    if boolean:
+                        raise Exception("It has to halt here.")
             idxs = pos_inputs[pos_input_type.index(p[5])]
-            print '0'*15, p[5], idxs, p
             mainmapper1[idxs]
         # Functions
         mainmapper1.set_inout(p[5], p[4], p[3])
-
+        mainmapper1.transform(lambda x: x)
         ## Extreme cases
-#        try:
-#            boolean = False
-#            regs = np.random.random((10, 10, 1))
-#            mainmapper1 = RegionDistances(relations=regs,
-#                                          distanceorweighs=p[1],
-#                                          symmetric=p[2], output=p[3],
-#                                          input_=p[4], input_type=p[5])
-#            boolean = True
-#        except:
-#            if boolean:
-#                raise Exception("It has to halt here.")
 
     ## Other cases
     # Dummymap instantiation
@@ -169,7 +164,9 @@ def test():
         dummymapper = DummyRegDistance(p[0], p[1])
         idxs = pos_inputs[pos_input_type.index(p[1])]
         dummymapper[idxs]
-        #dummymapper[slice(0, 1)]
+        dummymapper[slice(0, 1)]
+        ## Functions
+        dummymapper.transform(lambda x: x)
 
     # Halting cases
     try:
@@ -186,13 +183,6 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-
-    regs = np.unique(np.random.randint(0, 1000, 200))
-    dummymapper = DummyRegDistance(list(regs))
-    dummymapper = DummyRegDistance(regs)
-    dummymapper.transform(lambda x: x)
-
-    dummymapper[slice(0, 1)]
     try:
         boolean = False
         dummymapper[None]
@@ -207,6 +197,12 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+
+#    regs = np.unique(np.random.randint(0, 1000, 200))
+#    dummymapper = DummyRegDistance(list(regs))
+#    dummymapper = DummyRegDistance(regs)
+#    dummymapper.transform(lambda x: x)
+#    dummymapper[slice(0, 1)]
 
 #
 #    mainmapper1 = RegionDistances(relations=relations, _data=_data,
@@ -285,51 +281,51 @@ def test():
     mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                   symmetric=symmetric, data_in=data_in)
 
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        mainmapper3._list_array_filter_reg([.9])
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
-        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                      symmetric=symmetric, data_in=wrond_data)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    relations = np.random.random((20, 20))
-    try:
-        boolean = False
-        wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        mainmapper3._list_array_filter_reg([.9])
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        sparse_rels = randint_sparse_matrix(0.8, (25, 25))
+#        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
+#                                      symmetric=symmetric, data_in=wrond_data)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    relations = np.random.random((20, 20))
+#    try:
+#        boolean = False
+#        wrond_data = np.random.random((100, 3, 4))
+#        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+#                                      symmetric=symmetric, data_in=data_in)
+#        boolean = True
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
 #
 #    relations, _data, symmetric, store =\
 #        compute_ContiguityRegionDistances(griddisc3, store='network')
