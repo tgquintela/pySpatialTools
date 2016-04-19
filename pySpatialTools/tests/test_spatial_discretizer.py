@@ -51,17 +51,6 @@ def test():
     # testing voronoi tesselation
     tesselation(np.random.random((10, 2)))
 
-
-def mask_application_grid(p, points):
-    "Returns the index in which is placed the point."
-    if p < points[0] or p > points[-1]:
-        return -1
-    for i in xrange(points.shape[0]-1):
-        if p <= points[i+1]:
-            return i
-
-
-
     ### Discretization
     ############################# Grid discretizer ############################
     disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
