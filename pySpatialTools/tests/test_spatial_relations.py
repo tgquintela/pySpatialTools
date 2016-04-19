@@ -124,6 +124,7 @@ def test():
         if p[5] is None:
             if p[4] != 'indices':
                 mainmapper1[mainmapper1.data[0]]
+                mainmapper1[0]
                 mainmapper1[np.array([-1])]
             if p[4] != 'elements_id':
                 mainmapper1[0]
@@ -135,6 +136,9 @@ def test():
                     if boolean:
                         raise Exception("It has to halt here.")
         else:
+            if p[5] == 'list':
+                mainmapper1[[0]]
+                mainmapper1[[np.array([0])]]
             idxs = pos_inputs[pos_input_type.index(p[5])]
             print '0'*15, p[5], idxs, p
             mainmapper1[idxs]
