@@ -268,6 +268,10 @@ def test():
     ###########################################################################
     ############################### Membership ################################
     ###########################################################################
+    # artificial data
+    random_membership(10, 20, True)
+    random_membership(10, 20, False)
+
     n_in, n_out = 100, 20
     relations = [np.unique(np.random.randint(0, n_out,
                                              np.random.randint(n_out)))

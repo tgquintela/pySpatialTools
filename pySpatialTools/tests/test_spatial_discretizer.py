@@ -12,11 +12,14 @@ from itertools import product
 #import matplotlib.pyplot as plt
 from pySpatialTools.Discretization import *
 from pySpatialTools.utils.artificial_data import *
+from pySpatialTools.Discretization.utils import check_discretizors
 from pySpatialTools.Discretization.Discretization_2d.circdiscretization import\
     CircularSpatialDisc
 from pySpatialTools.Discretization.Discretization_2d.griddiscretization import\
-    mapping2grid
+    mapping2grid, compute_contiguity_grid
 from pySpatialTools.Discretization.Discretization_2d.utils import *
+from pySpatialTools.Discretization.Discretization_set.\
+    general_set_discretization import format_membership
 
 ## TODO:
 ########
@@ -55,13 +58,49 @@ def test():
     # testing voronoi tesselation
     tesselation(np.random.random((10, 2)))
 
+    # Checker
+    try:
+        boolean = False
+        check_discretizors(5)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+    class Prueba:
+        def __init__(self):
+            self.n_dim = 9
+            self.metric = None
+            self.format_ = None
+    try:
+        boolean = False
+        check_discretizors(Prueba)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+    class Prueba:
+        def __init__(self):
+            self._compute_limits = 9
+            self._compute_contiguity_geom = None
+            self._map_loc2regionid = None
+            self._map_regionid2regionlocs = None
+    try:
+        boolean = False
+        check_discretizors(Prueba)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
     ### Discretization
     ############################# Grid discretizer ############################
     disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
     disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
 
     mapping2grid(Locs[0], (ngx, ngy), xlim=(0, 1), ylim=(0, 1))
-
+    compute_contiguity_grid(-10, (ngx, ngy))
 
     # Test functions
     disc1[0]
@@ -81,6 +120,10 @@ def test():
         disc1.check_neighbors([disc1[0], disc1[1]], disc1[2])
         disc1.get_limits()
         disc1.get_limits(disc1[0])
+        # General functions applyable to this class
+        disc1.map_locs2regionlocs(Locs[i])
+        disc1.map2agglocs(Locs[i])
+        disc1.get_contiguity()
 
         ## Special functions (recomendable to elevate in the hierharchy)
         disc1.get_nregs()
@@ -89,7 +132,6 @@ def test():
         ## Class functions
         disc1._compute_contiguity_geom()
         disc1._compute_contiguity_geom(disc1[0])
-
 
     ########################### Bisector discretizer ##########################
     try:
@@ -194,11 +236,20 @@ def test():
         disc5.belong_region(locs_r, disc5[0])
 
     ############################## Set discretizer ############################
+    ## Format auxiliar functions
+    random_membership(10, 20, True)
+    random_membership(10, 20, False)
+    format_membership(randint_sparse_matrix(0.2, (2000, 100), 1))
+    format_membership(np.random.random((20, 10)))
+    format_membership(list_membership(20, 10))
+
+    ## Format discretizer
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
     # Test functions
     disc6[0]
     disc6[disc6.regionlocs[0]]
     len(disc6)
+    disc6.borders
     disc6.discretize(disc6.regionlocs)
     disc6._map_regionid2regionlocs(0)
     disc6.retrieve_region(disc6.regionlocs[0], {})
@@ -207,10 +258,13 @@ def test():
     disc6.belong_region(disc6.regionlocs)
     disc6.belong_region(disc6.regionlocs, disc6[0])
     disc6.check_neighbors([disc6[0], disc6[1]], disc6[2])
+#    disc6.get_limits()
+#    disc6.get_limits(disc6.regions_id[0])
 
     disc7 = SetDiscretization(randint_sparse_matrix(0.2, (2000, 100), 1))
     # Test functions
     disc7[0]
+    disc7.borders
     disc7[disc7.regionlocs[0]]
     len(disc7)
     disc7.discretize(disc7.regionlocs)
@@ -221,7 +275,11 @@ def test():
 #    disc7.belong_region(disc6.regionlocs)
 #    disc7.belong_region(disc6.regionlocs, disc7[0])
 #    disc7.check_neighbors([disc7[0], disc7[1]], disc7[2])
+#    disc7.get_limits()
+#    disc7.get_limits(disc6.regions_id[0])
 
+
+### 2016-04-19 spatial_discretizer
 #
 #    # Discretization action
 #    regions = disc1.discretize(locs1)

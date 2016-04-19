@@ -177,7 +177,7 @@ def compute_contiguity_grid(region_id, grid_size):
     "Compute the contiguity of the regions."
     nx, ny = grid_size
     contiguous = []
-    if region_id >= nx*ny:
+    if region_id >= nx*ny or region_id < 0:
         return []
     if (region_id - nx) >= 0:
         contiguous.append(region_id - nx)

@@ -7,6 +7,7 @@ Artificial data
 
 import numpy as np
 
+from artificial_data_membership import random_membership, list_membership
 from artificial_point_locations import random_space_points,\
     random_transformed_space_points
 from artificial_spatial_relations import randint_sparse_matrix,\

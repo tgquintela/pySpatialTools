@@ -23,15 +23,6 @@ class MetricDiscretizor(SpatialDiscretizor):
         regionlocs = self._map_regionid2regionlocs(regionid)
         return regionlocs
 
-    def map2agglocs_pre(self, locs):
-        n_locs = locs.shape[0]
-        agglocs = np.zeros(locs.shape).astype(float)
-        regions = self.discretize(locs)
-        # Average between all the locs circles
-        for i in xrange(n_locs):
-            agglocs[i, :] = np.mean(self.regionlocs[regions[i], :], axis=0)
-        return agglocs
-
     def map2agglocs(self, locs):
         n_locs = locs.shape[0]
         agglocs = np.zeros(locs.shape).astype(float)
@@ -40,6 +31,15 @@ class MetricDiscretizor(SpatialDiscretizor):
         for i in xrange(n_locs):
             agglocs[i, :] = np.mean(locs[regions == regions[i]], axis=0)
         return agglocs
+
+#    def map2agglocs_pre(self, locs):
+#        n_locs = locs.shape[0]
+#        agglocs = np.zeros(locs.shape).astype(float)
+#        regions = self.discretize(locs)
+#        # Average between all the locs circles
+#        for i in xrange(n_locs):
+#            agglocs[i, :] = np.mean(self.regionlocs[regions[i], :], axis=0)
+#        return agglocs
 
 #        if geom is True:
 #            regionlocs = self._map_regionid2regionlocs(regions)
