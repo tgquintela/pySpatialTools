@@ -19,7 +19,7 @@ from pySpatialTools.Discretization.Discretization_2d.griddiscretization import\
     mapping2grid, compute_contiguity_grid
 from pySpatialTools.Discretization.Discretization_2d.utils import *
 from pySpatialTools.Discretization.Discretization_set.\
-    general_set_discretization import format_membership
+    general_set_discretization import format_membership, to_sparse
 
 ## TODO:
 ########
@@ -239,15 +239,27 @@ def test():
     ## Format auxiliar functions
     random_membership(10, 20, True)
     random_membership(10, 20, False)
-    format_membership(randint_sparse_matrix(0.2, (2000, 100), 1))
-    format_membership(np.random.random((20, 10)))
-    format_membership(list_membership(20, 10))
+    memb, out = format_membership(randint_sparse_matrix(0.2, (2000, 100), 1))
+#    to_sparse(memb, out)
+#    memb, out = format_membership(np.random.random((20, 10)))
+    to_sparse(memb, out)
+    memb, out = format_membership(list_membership(20, 10))
+    to_sparse(memb, out)
     memb0 = list_membership(10, 20)
     memb0 = [list(e) for e in memb0]
-    format_membership(memb0)
+    memb, out = format_membership(memb0)
+    to_sparse(memb, out)
     memb0 = list_membership(10, 20)
     memb0[0] = 0
-    format_membership(memb0)
+    memb, out = format_membership(memb0)
+    to_sparse(memb, out)
+    memb0 = [[np.random.randint(0, 20)] for e in range(10)]
+    memb, out = format_membership(memb0)
+    to_sparse(memb, out)
+    memb0 = list_membership(10, 20)
+    memb0 = [dict(zip(m, len(m)*[{}])) for m in memb0]
+    memb, out = format_membership(memb0)
+    to_sparse(memb, out)
 
     ## Format discretizer
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))

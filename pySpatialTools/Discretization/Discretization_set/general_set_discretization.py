@@ -225,9 +225,10 @@ def to_sparse(_membership, out):
     if issparse(_membership):
         return _membership, (range(n_elements), collections_id)
     if _unique:
+        _membership = np.array(_membership).ravel()
         matrix = np.array([aux_map[e] for e in _membership])
         matrix = matrix.astype(int)
-        matrix = coo_matrix((np.ones(sh[0]), (range(sh[0], matrix))),
+        matrix = coo_matrix((np.ones(sh[0]), (range(sh[0]), matrix)),
                             shape=sh)
     elif not _weighted:
         indices = []
