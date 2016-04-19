@@ -12,6 +12,8 @@ from itertools import product
 #import matplotlib.pyplot as plt
 from pySpatialTools.Discretization import *
 from pySpatialTools.utils.artificial_data import *
+from pySpatialTools.Discretization.Discretization_2d.circdiscretization import\
+    CircularSpatialDisc
 from pySpatialTools.Discretization.Discretization_2d.utils import *
 
 ## TODO:
@@ -109,6 +111,17 @@ def test():
     jit = np.random.random((100, 2))
     locs_r = centers[np.random.randint(0, 20, 100)] + jit/100000.
     regions_ids = [np.arange(20), np.arange(10, 30)]
+
+    disc4 = CircularSpatialDisc(centers, 0.5)
+    disc4._compute_limits(disc4.regions_id[0])
+    disc4._map_regionid2regionlocs(0)
+    try:
+        boolean = False
+        disc4._map_regionid2regionlocs(-1)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
     for j in range(len(regions_ids)):
         disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])

@@ -21,15 +21,20 @@ class CircularSpatialDisc(MetricDiscretizor):
     n_dim = 2
 
     def __init__(self, centerlocs, radios, regions_id=None,
-                 multiple_regions=False):
+                 multiple_regions=None):
         """Main information to built the regions."""
         self._initialization()
+        self._format_multiple(multiple_regions)
         if type(radios) in [float, int]:
             radios = np.ones(centerlocs.shape[0])*radios
         self.borders = radios
         self.regionlocs = centerlocs
         self._format_regionsid(regions_id)
         self._compute_limits()
+
+    def _format_multiple(self, multiple_regions):
+        if 'multiple' not in dir(self):
+            self.multiple = multiple_regions
 
     def _format_regionsid(self, regions_id):
         if regions_id is None:
@@ -81,8 +86,6 @@ class CircularSpatialDisc(MetricDiscretizor):
         """
         if type(regions) == int:
             regions = np.array([regions])
-        print regions
-        print self.regions_id
         regionlocs = np.zeros((len(regions), self.regionlocs.shape[1]))
         for i in xrange(len(regions)):
             ## Only get the first one
