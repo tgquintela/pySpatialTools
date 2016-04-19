@@ -20,7 +20,7 @@ from pySpatialTools.utils.artificial_data import randint_sparse_matrix,\
     generate_randint_relations, generate_random_relations_cutoffs,\
     random_transformed_space_points, random_space_points, create_random_image,\
     random_shapely_polygon, random_shapely_polygons
-from pySpatialTools.utils.artificial_data.artificial_data import\
+from pySpatialTools.utils.artificial_data.artificial_data_membership import\
     random_membership
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
     Map_Vals_i, Sp_DescriptorMapper
