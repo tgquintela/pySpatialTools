@@ -593,18 +593,21 @@ class ExplicitFeatures(Features):
             # Default listdict characterizer
             self._characterizer = lambda x, d: [e[0] for e in x]
         elif type(aggfeatures) == np.ndarray:
-            self.k_perturb = aggfeatures.shape[2]-1
             if len(aggfeatures.shape) == 1:
                 self._k_reindices = 1
                 aggfeatures = aggfeatures.reshape((len(aggfeatures), 1, 1))
                 self.features = aggfeatures
+                self.k_perturb = aggfeatures.shape[2]-1
             elif len(aggfeatures.shape) == 2:
                 self._k_reindices = 1
                 aggfeatures = aggfeatures.reshape((len(aggfeatures),
                                                   aggfeatures.shape[1], 1))
+                self.features = aggfeatures
+                self.k_perturb = aggfeatures.shape[2]-1
             elif len(aggfeatures.shape) == 3:
                 self._k_reindices = aggfeatures.shape[2]
                 self.features = aggfeatures
+                self.k_perturb = aggfeatures.shape[2]-1
             elif len(aggfeatures.shape) > 3:
                 raise IndexError("Aggfeatures with more than 3 dimensions.")
         self._format_variables(names)

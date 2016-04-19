@@ -31,7 +31,17 @@ def test():
                                         for i in range(rei-1)]).T
     perturbation = PermutationPerturbation(reindices)
 
-    ## Definition classes
+    ### Definition classes
+    Feat = ExplicitFeatures(np.random.randint(0, 20, 100))
+    Feat = ExplicitFeatures(np.random.random((100, 2)))
+    try:
+        boolean = False
+        ExplicitFeatures(np.random.random((10, 1, 1, 1)))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It should not accept that inputs.")
+    # Instantiation
     Feat = ExplicitFeatures(aggfeatures)
     Feat0 = ImplicitFeatures(features0, perturbation)
     Feat1 = ImplicitFeatures(features1, perturbation)
@@ -41,11 +51,13 @@ def test():
     avgdesc = AvgDescriptor()
     featret = FeaturesManager(features_objects, avgdesc)
     try:
+        boolean = False
         features_objects = [Feat, Feat0, Feat1, Feat2]
         featret = FeaturesManager(features_objects, avgdesc)
-        raise Exception("It should not accept that inputs.")
+        boolean = True
     except:
-        pass
+        if boolean:
+            raise Exception("It should not accept that inputs.")
 
     ## Other functions
     # Indexing
@@ -87,6 +99,35 @@ def test():
     Feat1[[0, 4, 5]]
     Feat2[[0, 4, 5]]
 
+    try:
+        boolean = False
+        Feat[-1]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat0[len(Feat0)]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat1[len(Feat1)]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat2[len(Feat2)]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
     nei = Neighs_Info()
     nei.set((([0], [0]), [0]))
     Feat[nei]
@@ -121,6 +162,7 @@ def test():
     Feat1[(([[]], [[]]), [0])]
     Feat2[(([[]], [[]]), [0])]
 
+    Feat.set_descriptormodel(avgdesc)
     Feat0.set_descriptormodel(avgdesc)
     Feat1.set_descriptormodel(avgdesc)
     Feat2.set_descriptormodel(avgdesc)
