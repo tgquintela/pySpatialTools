@@ -17,8 +17,9 @@ from pySpatialTools.utils.artificial_data import *
 # IrregularSpatialDisc
 # sklearnlike
 
-#
-#def test():
+
+def test():
+    pass
 #    ## 0. Artificial data
 #    # Parameters
 #    n = 1000
