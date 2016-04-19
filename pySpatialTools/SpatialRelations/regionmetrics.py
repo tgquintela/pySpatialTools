@@ -316,7 +316,7 @@ class RegionDistances:
             ## Storing final result
             neighs.append(np.array(neighs_r))
             dists.append(np.array([dists_r]).T)
-        print dists, regs, logi
+        #print dists, regs, logi
         assert(all([len(e.shape) == 2 for e in dists]))
         assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
         if self._out == 'indices':
@@ -410,14 +410,14 @@ class RegionDistances:
             assert(correcness)
         return neighs, dists
 
-    def _general_retrieve_neighs(self, reg):
-        if self._store == 'matrix':
-            neighs, dists = self._matrix_retrieve_neighs(reg)
-        elif self._store == 'sparse':
-            neighs, dists = self._sparse_retrieve_neighs(reg)
-        elif self._store == 'network':
-            neighs, dists = self._netx_retrieve_neighs(reg)
-        return neighs, dists
+#    def _general_retrieve_neighs(self, reg):
+#        if self._store == 'matrix':
+#            neighs, dists = self._matrix_retrieve_neighs(reg)
+#        elif self._store == 'sparse':
+#            neighs, dists = self._sparse_retrieve_neighs(reg)
+#        elif self._store == 'network':
+#            neighs, dists = self._netx_retrieve_neighs(reg)
+#        return neighs, dists
 
     ############################# Transformation ##############################
     ###########################################################################

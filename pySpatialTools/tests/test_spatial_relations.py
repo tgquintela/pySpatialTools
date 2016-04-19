@@ -94,10 +94,10 @@ def test():
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     mainmapper1 = RegionDistances(relations=relations, _data=None,
                                   symmetric=symmetric)
-    neighs, dists = mainmapper1._general_retrieve_neighs([0])
+    neighs, dists = mainmapper1.retrieve_neighs([0])
     assert(len(neighs) == len(dists))
     assert(len(neighs) == 1)
-    neighs, dists = mainmapper1._general_retrieve_neighs([0, 1])
+    neighs, dists = mainmapper1.retrieve_neighs([0, 1])
     assert(len(neighs) == len(dists))
     assert(len(neighs) == 2)
     ###########################################################################
@@ -107,9 +107,9 @@ def test():
                      format_out_relations(relations, 'network')]
     pos_distanceorweighs, pos_sym = [True, False], [True, False]
     pos_inputstypes, pos_outputtypes = [[None, 'indices', 'elements_id']]*2
-    pos_input_type = ['general', 'integer', 'array', 'array1', 'array2',
+    pos_input_type = [None, 'general', 'integer', 'array', 'array1', 'array2',
                       'list', 'list_int', 'list_array']
-    pos_inputs = [0, 0, np.array([0]), np.array([0]), np.array([0]),
+    pos_inputs = [[0], 0, 0, np.array([0]), np.array([0]), np.array([0]),
                   [0], [0], [np.array([0])]]
     pos_data_in, pos_data = [[]]*2
     possibles = [pos_relations, pos_distanceorweighs, pos_sym, pos_outputtypes,
@@ -127,6 +127,13 @@ def test():
                 mainmapper1[np.array([-1])]
             if p[4] != 'elements_id':
                 mainmapper1[0]
+                try:
+                    boolean = False
+                    mainmapper1[-1]
+                    boolean = True
+                except:
+                    if boolean:
+                        raise Exception("It has to halt here.")
         else:
             idxs = pos_inputs[pos_input_type.index(p[5])]
             print '0'*15, p[5], idxs, p
