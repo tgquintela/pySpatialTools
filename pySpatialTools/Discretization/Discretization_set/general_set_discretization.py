@@ -41,6 +41,8 @@ class SetDiscretization(SpatialDiscretizor):
                            self.regionlocs, self.regions_id) =\
             format_membership(membership)
         self.regions_id = self.regions_id.astype(int)
+        if self.regionlocs is None:
+            self.regionlocs = np.arange(self._n)
         self.multiple = not self.multiple
 
     @property
@@ -268,9 +270,11 @@ def indexing_cols(j_col, _membership, regionlocs, multiple):
     if multiple:
         relations_i = _membership.getcol(j_col).A
         idxs = relations_i.nonzero()
+        idxs = idxs[0] if len(idxs) else idxs
         elements_i, weights_i = idxs, relations_i[idxs]
     else:
         idxs = np.where(_membership == j_col)[0]
+        #idxs = idxs[0] if len(idxs) else idxs
         elements_i, weights_i = idxs, np.ones(len(idxs))
     ## Formatting to regionlocs
     if regionlocs is not None:

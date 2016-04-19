@@ -64,10 +64,15 @@ class SpatialDiscretizor:
 
     def _initialization(self):
         """Function to initialize useful class parameters for discretizers."""
-        self.limits = None
-        self.borders = None
-        self.regionlocs = None
-        self.regions_id = None
+        ## Conditionals initialization
+        if 'limits' not in dir(self):
+            self.limits = None
+        if 'borders' not in dir(self):
+            self.borders = None
+        if 'regionlocs' not in dir(self):
+            self.regionlocs = None
+        if 'regions_id' not in dir(self):
+            self.regions_id = None
         check_discretizors(self)
 
     def retrieve_region(self, element_i, info_i, ifdistance=False):
@@ -279,14 +284,14 @@ class SpatialDiscretizor:
         ## Check if there is flag multi
         flag_multi = check_flag_multi(regions)
         if self.multiple:
-            logi = self._check_neighbors_multiple(regions, region)
+            logi = self._check_neighbors_multiple(region, regions)
         else:
             msg = "Regions multi-assigned in a not multi-assign discretizor."
             if flag_multi:
                 warnings.warn(msg)
-                logi = self._check_neighbors_multiple(regions, region)
+                logi = self._check_neighbors_multiple(region, regions)
             else:
-                logi = self._check_neighbors_individual(regions, region)
+                logi = self._check_neighbors_individual(region, regions)
         return logi
 
     ###########################################################################

@@ -55,96 +55,136 @@ def test():
     ############################# Grid discretizer ############################
     disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
     disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
+    # Test functions
+    disc1[0]
+    disc1[locs1[0]]
+    len(disc1)
+    for i in range(len(Locs)):
+        disc1.discretize(Locs[i])
+        disc1.map_locs2regionlocs(Locs[i])
+        disc1.map2agglocs(Locs[i])
+        disc1._map_regionid2regionlocs(0)
+        disc1._map_locs2regionlocs(Locs[i])
+        disc1.retrieve_region(Locs[i][0], {})
+        disc1.retrieve_neigh(Locs[i][0], Locs[i])
+        disc1.get_activated_regions(Locs[i])
+        disc1.belong_region(Locs[i])
+        disc1.belong_region(Locs[i], disc1[0])
+        disc1.check_neighbors([disc1[0], disc1[1]], disc1[2])
 
     ########################### Bisector discretizer ##########################
     try:
         boolean = False
-        disc3 = BisectorSpatialDisc(locs3, np.arange(len(locs3)+1))
+        disc6 = BisectorSpatialDisc(locs3, np.arange(len(locs3)+1))
         boolean = True
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    disc3 = BisectorSpatialDisc(locs3, np.arange(len(locs3)))
+    disc6 = BisectorSpatialDisc(locs3, np.arange(len(locs3)))
     # Test functions
-    disc3[0]
-    disc3[locs1[0]]
-    len(disc3)
+    disc6[0]
+    disc6[locs1[0]]
+    len(disc6)
     for i in range(len(Locs)):
-        disc3.discretize(Locs[i])
-        disc3.map_locs2regionlocs(Locs[i])
-        disc3.map2agglocs(Locs[i])
-        disc3._map_regionid2regionlocs(0)
-        disc3._map_locs2regionlocs(Locs[i])
-        disc3.retrieve_region(Locs[i][0], {})
-        disc3.retrieve_neigh(Locs[i][0], Locs[i])
-        disc3.get_activated_regions(Locs[i])
-        disc3.belong_region(Locs[i])
-        disc3.belong_region(Locs[i], disc3[0])
-        disc3.check_neighbors([disc3[0], disc3[1]], disc3[2])
+        disc6.discretize(Locs[i])
+        disc6.map_locs2regionlocs(Locs[i])
+        disc6.map2agglocs(Locs[i])
+        disc6._map_regionid2regionlocs(0)
+        disc6._map_locs2regionlocs(Locs[i])
+        disc6.retrieve_region(Locs[i][0], {})
+        disc6.retrieve_neigh(Locs[i][0], Locs[i])
+        disc6.get_activated_regions(Locs[i])
+        disc6.belong_region(Locs[i])
+        disc6.belong_region(Locs[i], disc6[0])
+        disc6.check_neighbors([disc6[0], disc6[1]], disc6[2])
         ## Not implemented yet
-        #disc3.get_contiguity()
-        #disc3.get_contiguity(disc3[0])
-        #disc3.get_limits(Locs[i])
-        #disc3.get_limits(Locs[i], disc3[0])
+        #disc6.get_contiguity()
+        #disc6.get_contiguity(disc6[0])
+        #disc6.get_limits(Locs[i])
+        #disc6.get_limits(Locs[i], disc6[0])
 
     ########################### Circular discretizer ##########################
     centers = np.random.random((20, 2))
     radios = np.random.random((20, 2))/5
     regions_ids = [np.arange(20), np.arange(10, 30)]
 
-    for j in range(len(regions_ids)):
-        disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
-        disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])
+#    for j in range(len(regions_ids)):
+#        disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
+#        disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])
+#
+#        # Testing functions
+#        for i in range(len(Locs)):
+#            disc4.discretize(Locs[i])
+#            disc4.map_locs2regionlocs(Locs[i])
+#            disc4.map2agglocs(Locs[i])
+#            disc4._map_regionid2regionlocs(0)
+#            disc4._map_locs2regionlocs(Locs[i])
+#            disc4.retrieve_region(Locs[i][0], {})
+#            disc4.retrieve_neigh(Locs[i][0], Locs[i])
+#            disc4.get_activated_regions(Locs[i])
+#            disc4.belong_region(Locs[i])
+#            disc4.belong_region(Locs[i], disc4[0])
+#            disc4.check_neighbors([disc4[0], disc4[1]], disc4[2])
+#            ## Not implemented yet
+#            #disc4.get_contiguity()
+#            #disc4.get_contiguity(disc6[0])
+#            #disc4.get_limits(Locs[i])
+#            #disc4.get_limits(Locs[i], disc6[0])
+#
+#            disc5.discretize(Locs[i])
+#            disc5.map_locs2regionlocs(Locs[i])
+#            disc5.map2agglocs(Locs[i])
+#            disc5._map_regionid2regionlocs(0)
+#            disc5._map_locs2regionlocs(Locs[i])
+#            disc5.retrieve_region(Locs[i][0], {})
+#            disc5.retrieve_neigh(Locs[i][0], Locs[i])
+#            disc5.get_activated_regions(Locs[i])
+#            disc5.belong_region(Locs[i])
+#            disc5.belong_region(Locs[i], disc5[0])
+#            disc5.check_neighbors([disc5[0], disc5[1]], disc5[2])
+#            ## Not implemented yet
+#            #disc5.get_contiguity()
+#            #disc5.get_contiguity(disc5[0])
+#            #disc5.get_limits(Locs[i])
+#            #disc5.get_limits(Locs[i], disc5[0])
 
-        # Testing functions
-        for i in range(len(Locs)):
-            disc4.discretize(Locs[i])
-            disc4.map_locs2regionlocs(Locs[i])
-            disc4.map2agglocs(Locs[i])
-            disc4._map_regionid2regionlocs(0)
-            disc4._map_locs2regionlocs(Locs[i])
-            disc4.retrieve_region(Locs[i][0], {})
-            disc4.retrieve_neigh(Locs[i][0], Locs[i])
-            disc4.get_activated_regions(Locs[i])
-            disc4.belong_region(Locs[i])
-            disc4.belong_region(Locs[i], disc3[0])
-            disc4.check_neighbors([disc3[0], disc3[1]], disc3[2])
-            ## Not implemented yet
-            #disc4.get_contiguity()
-            #disc4.get_contiguity(disc3[0])
-            #disc4.get_limits(Locs[i])
-            #disc4.get_limits(Locs[i], disc3[0])
-
-            disc5.discretize(Locs[i])
-            disc5.map_locs2regionlocs(Locs[i])
-            disc5.map2agglocs(Locs[i])
-            disc5._map_regionid2regionlocs(0)
-            disc5._map_locs2regionlocs(Locs[i])
-            disc5.retrieve_region(Locs[i][0], {})
-            disc5.retrieve_neigh(Locs[i][0], Locs[i])
-            disc5.get_activated_regions(Locs[i])
-            disc5.belong_region(Locs[i])
-            disc5.belong_region(Locs[i], disc3[0])
-            disc5.check_neighbors([disc3[0], disc3[1]], disc3[2])
-            ## Not implemented yet
-            #disc5.get_contiguity()
-            #disc5.get_contiguity(disc3[0])
-            #disc5.get_limits(Locs[i])
-            #disc5.get_limits(Locs[i], disc3[0])
-
-
-
-
+    ############################## Set discretizer ############################
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
+    # Test functions
+    disc6[0]
+    disc6[disc6.regionlocs[0]]
+    len(disc6)
+    disc6.discretize(disc6.regionlocs)
+    disc6._map_regionid2regionlocs(0)
+    disc6.retrieve_region(disc6.regionlocs[0], {})
+    disc6.retrieve_neigh(disc6.regionlocs[0], disc6.regionlocs)
+    disc6.get_activated_regions(disc6.regionlocs)
+    disc6.belong_region(disc6.regionlocs)
+    disc6.belong_region(disc6.regionlocs, disc6[0])
+    disc6.check_neighbors([disc6[0], disc6[1]], disc6[2])
+
     disc7 = SetDiscretization(randint_sparse_matrix(0.2, (2000, 100), 1))
+    # Test functions
+    disc7[0]
+    disc7[disc7.regionlocs[0]]
+    len(disc7)
+    disc7.discretize(disc7.regionlocs)
+    disc7._map_regionid2regionlocs(0)
+    disc7.retrieve_region(disc7.regionlocs[0], {})
+    disc7.retrieve_neigh(disc7.regionlocs[0], disc7.regionlocs)
+    disc7.get_activated_regions(disc7.regionlocs)
+#    disc7.belong_region(disc6.regionlocs)
+#    disc7.belong_region(disc6.regionlocs, disc7[0])
+#    disc7.check_neighbors([disc7[0], disc7[1]], disc7[2])
+
 #
 #    # Discretization action
 #    regions = disc1.discretize(locs1)
 #    regions = disc1.discretize(locs2)
 #    regions = disc2.discretize(locs1)
 #    regions = disc2.discretize(locs2)
-#    regions = disc3.discretize(locs1)
-#    regions = disc3.discretize(locs2)
+#    regions = disc6.discretize(locs1)
+#    regions = disc6.discretize(locs2)
 #    regions = disc4.discretize(locs1)
 #    regions = disc4.discretize(locs2)
 #    regions = disc5.discretize(locs1)
@@ -159,7 +199,7 @@ def test():
 #    # Contiguity
 #    contiguity = disc1.get_contiguity()
 #    contiguity = disc2.get_contiguity()
-#    #contiguity = disc3.get_contiguity()
+#    #contiguity = disc6.get_contiguity()
 #    #contiguity = disc4.get_contiguity()
 #    #contiguity = disc5.get_contiguity()
 #    #contiguity = disc6.get_contiguity()
@@ -185,7 +225,7 @@ def test():
 #
 #    activated = disc1.get_activated_regions(locs1[:10])
 #    activated = disc2.get_activated_regions(locs1[:10])
-#    activated = disc3.get_activated_regions(locs1[:10])
+#    activated = disc6.get_activated_regions(locs1[:10])
 #    activated = disc4.get_activated_regions(locs1[:10])
 #    activated = disc5.get_activated_regions(locs1[:10])
 #    activated = disc6.get_activated_regions(elements1[:10])
@@ -198,12 +238,12 @@ def test():
 #    limits = disc1.get_limits()
 #    limits = disc1.get_limits(0)
 #    limits = disc2.get_limits()
-##    limits = disc3.get_limits()
+##    limits = disc6.get_limits()
 ##    limits = disc4.get_limits(0)
 #
 #    disc1._map_regionid2regionlocs(0)
 #    disc2._map_regionid2regionlocs(0)
-#    disc3._map_regionid2regionlocs(0)
+#    disc6._map_regionid2regionlocs(0)
 #    disc4._map_regionid2regionlocs(0)
 #    disc5._map_regionid2regionlocs(0)
 #    disc6._map_regionid2regionlocs(0)

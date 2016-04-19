@@ -26,11 +26,17 @@ class GridSpatialDisc(MetricDiscretizor):
         self._create_grid(grid_size, xlim=xlim, ylim=ylim)
         self._compute_limits()
 
+    @property
+    def regions_id_(self):
+        return np.arange(np.prod(self._grid_size))
+
     ########################### Automatic Functions ##########################
     ##########################################################################
     def _create_grid(self, grid_size, xlim=(None, None), ylim=(None, None)):
         "Create a grid with the parameters we want."
         self.borders = create_grid(grid_size=grid_size, xlim=xlim, ylim=ylim)
+        self._grid_size = grid_size
+        self.regions_id = self.regions_id_
 
     ## Automatic
     def _compute_limits(self, region_id=None):
