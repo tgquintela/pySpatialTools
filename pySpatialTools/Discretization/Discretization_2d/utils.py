@@ -22,7 +22,7 @@ from sklearn.neighbors import KDTree
 
 def indices_assignation(indices, regions_id):
     "Function which acts to assign the indices obtained to the regions ids."
-    n = indices.shape[0]
+    n = len(indices)
     regions = -1*np.ones(n).astype(int)
     boolean = indices >= 0
     regions[boolean] = regions_id[indices[boolean]]
@@ -41,10 +41,9 @@ def mask_application_grid(p, points):
 def compute_limital_polygon(limits):
     "Compute a poligon with the imformation given in limits."
     if type(limits) == shapely.geometry.polygon.Polygon:
-        pass
+        lims = limits
     elif type(limits) in [tuple, list, np.ndarray]:
         lims = shapely.geometry.Polygon(limits)
-
     return lims
 
 

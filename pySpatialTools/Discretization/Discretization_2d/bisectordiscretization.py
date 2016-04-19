@@ -84,7 +84,6 @@ class BisectorSpatialDisc(MetricDiscretizor):
         ## Obtain random points around all the r_points
         ## Compute the two nearest points with different region_id
         ## Remove repeated pairs
-        return
 
     def _compute_limits(self, region_id=None):
         """WARNING: probably not yet completely implemented."""

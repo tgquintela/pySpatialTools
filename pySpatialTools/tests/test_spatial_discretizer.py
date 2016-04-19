@@ -12,6 +12,7 @@ from itertools import product
 #import matplotlib.pyplot as plt
 from pySpatialTools.Discretization import *
 from pySpatialTools.utils.artificial_data import *
+from pySpatialTools.Discretization.Discretization_2d.utils import *
 
 ## TODO:
 ########
@@ -30,6 +31,7 @@ def test():
     locs1 = random_transformed_space_points(n, 2, None)
     locs2 = random_transformed_space_points(n, 2, fucnts)
     locs3 = random_transformed_space_points(n/100, 2, None)
+    Locs = [locs1, locs2, locs3]
     # Set discretization
     elements1 = np.random.randint(0, 50, 200)
     elements2 = np.random.randint(0, 2000, 200)
@@ -38,8 +40,30 @@ def test():
 #    #fig1 = plt.plot(locs[:,0], locs[:, 1], '.')
 #    #fig2 = plt.plot(locs2[:,0], locs2[:, 1], '.')
 #
+    ### Testing utils
+    # Discretization 2d utils
+    regions_id = np.arange(10)
+    indices = np.unique(np.random.randint(0, 10, 5))
+    indices_assignation(indices, regions_id)
+    mask_application_grid(np.random.random(), np.random.random(10))
+    #compute_limital_polygon(limits)
+    #match_regions(polygons, regionlocs, n_dim=2)
+    # testing voronoi tesselation
+    tesselation(np.random.random((10, 2)))
+
+
+def mask_application_grid(p, points):
+    "Returns the index in which is placed the point."
+    if p < points[0] or p > points[-1]:
+        return -1
+    for i in xrange(points.shape[0]-1):
+        if p <= points[i+1]:
+            return i
+
+
+
     ### Discretization
-    # Discretization instantiation
+    ############################# Grid discretizer ############################
     disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
     disc2 = GridSpatialDisc((ngx, ngy), xlim=(-1, 1), ylim=(-1, 1))
 
@@ -56,43 +80,72 @@ def test():
     disc3[0]
     disc3[locs1[0]]
     len(disc3)
-    disc3.discretize(locs1)
-    disc3.discretize(locs2)
-    disc3.discretize(locs3)
-    disc3.map_locs2regionlocs(locs1)
-    disc3.map_locs2regionlocs(locs2)
-    disc3.map_locs2regionlocs(locs3)
-    disc3.map2agglocs(locs1)
-    disc3.map2agglocs(locs2)
-    disc3.map2agglocs(locs3)
-    disc3.retrieve_region(locs1[0], {})
-    disc3.retrieve_region(locs2[0], {})
-    disc3.retrieve_region(locs3[0], {})
-    disc3.retrieve_neigh(locs1[0], locs1)
-    disc3.retrieve_neigh(locs2[0], locs2)
-    disc3.retrieve_neigh(locs3[0], locs3)
-    disc3.get_activated_regions(locs1)
-
-#    disc3.get_limits(locs1)
-#    disc3.get_limits(locs1, disc3[0])
-
-    ## Not implemented yet
-    #disc3.get_contiguity()
-    #disc3.get_contiguity(disc3[0])
-
-    disc3.belong_region(locs1)
-    disc3.belong_region(locs1, disc3[0])
-
-    disc3.check_neighbors([disc3[0], disc3[1]], disc3[2])
-
-
-
-
-
+    for i in range(len(Locs)):
+        disc3.discretize(Locs[i])
+        disc3.map_locs2regionlocs(Locs[i])
+        disc3.map2agglocs(Locs[i])
+        disc3._map_regionid2regionlocs(0)
+        disc3._map_locs2regionlocs(Locs[i])
+        disc3.retrieve_region(Locs[i][0], {})
+        disc3.retrieve_neigh(Locs[i][0], Locs[i])
+        disc3.get_activated_regions(Locs[i])
+        disc3.belong_region(Locs[i])
+        disc3.belong_region(Locs[i], disc3[0])
+        disc3.check_neighbors([disc3[0], disc3[1]], disc3[2])
+        ## Not implemented yet
+        #disc3.get_contiguity()
+        #disc3.get_contiguity(disc3[0])
+        #disc3.get_limits(Locs[i])
+        #disc3.get_limits(Locs[i], disc3[0])
 
     ########################### Circular discretizer ##########################
-    disc4 = CircularInclusiveSpatialDisc(locs3, np.random.random(len(locs3)))
-    disc5 = CircularExcludingSpatialDisc(locs3, np.random.random(len(locs3)))
+    centers = np.random.random((20, 2))
+    radios = np.random.random((20, 2))/5
+    regions_ids = [np.arange(20), np.arange(10, 30)]
+
+    for j in range(len(regions_ids)):
+        disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
+        disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])
+
+        # Testing functions
+        for i in range(len(Locs)):
+            disc4.discretize(Locs[i])
+            disc4.map_locs2regionlocs(Locs[i])
+            disc4.map2agglocs(Locs[i])
+            disc4._map_regionid2regionlocs(0)
+            disc4._map_locs2regionlocs(Locs[i])
+            disc4.retrieve_region(Locs[i][0], {})
+            disc4.retrieve_neigh(Locs[i][0], Locs[i])
+            disc4.get_activated_regions(Locs[i])
+            disc4.belong_region(Locs[i])
+            disc4.belong_region(Locs[i], disc3[0])
+            disc4.check_neighbors([disc3[0], disc3[1]], disc3[2])
+            ## Not implemented yet
+            #disc4.get_contiguity()
+            #disc4.get_contiguity(disc3[0])
+            #disc4.get_limits(Locs[i])
+            #disc4.get_limits(Locs[i], disc3[0])
+
+            disc5.discretize(Locs[i])
+            disc5.map_locs2regionlocs(Locs[i])
+            disc5.map2agglocs(Locs[i])
+            disc5._map_regionid2regionlocs(0)
+            disc5._map_locs2regionlocs(Locs[i])
+            disc5.retrieve_region(Locs[i][0], {})
+            disc5.retrieve_neigh(Locs[i][0], Locs[i])
+            disc5.get_activated_regions(Locs[i])
+            disc5.belong_region(Locs[i])
+            disc5.belong_region(Locs[i], disc3[0])
+            disc5.check_neighbors([disc3[0], disc3[1]], disc3[2])
+            ## Not implemented yet
+            #disc5.get_contiguity()
+            #disc5.get_contiguity(disc3[0])
+            #disc5.get_limits(Locs[i])
+            #disc5.get_limits(Locs[i], disc3[0])
+
+
+
+
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))
     disc7 = SetDiscretization(randint_sparse_matrix(0.2, (2000, 100), 1))
 #
