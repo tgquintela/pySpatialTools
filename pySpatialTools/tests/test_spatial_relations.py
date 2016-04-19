@@ -149,10 +149,21 @@ def test():
 
     ## Other cases
     # Dummymap instantiation
+    regs0 = np.unique(np.random.randint(0, 1000, 200))
+    regs1 = regs0.reshape((len(regs0), 1))
+    regs2 = regs0.reshape((len(regs0), 1, 1))
+    pos_regs = [regs0, list(regs0), regs1]
+    possibles = [pos_regs, pos_input_type]
+    for p in product(*possibles):
+        dummymapper = DummyRegDistance(p[0], p[1])
+        idxs = pos_inputs[pos_input_type.index(p[1])]
+        dummymapper[idxs]
+        #dummymapper[slice(0, 1)]
+
+    # Halting cases
     try:
         boolean = False
-        regs = np.random.random((10, 10, 1))
-        dummymapper = DummyRegDistance(regs)
+        dummymapper = DummyRegDistance(regs2)
         boolean = True
     except:
         if boolean:
@@ -164,6 +175,7 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+
     regs = np.unique(np.random.randint(0, 1000, 200))
     dummymapper = DummyRegDistance(list(regs))
     dummymapper = DummyRegDistance(regs)

@@ -175,13 +175,6 @@ class RegionDistances:
     def __getitem__(self, i):
         if type(i) in [list, np.ndarray]:
             neighs, dists = self.retrieve_neighs(i)
-#            neighs, dists = [], []
-#            for j in i:
-#                aux = self[j]
-#                neighs.append(aux[0])
-#                dists.append(aux[0])
-#        if type(i) == np.ndarray:
-#            neighs, dists = self.retrieve_neighs(i)
         elif type(i) == int:
             if self.shape[0] <= i or i < 0:
                 raise IndexError('Index i out of bounds.')
@@ -469,21 +462,6 @@ class DummyRegDistance(RegionDistances):
             regs = regs.reshape((len(regs), 1))
         self._data = regs
         self._format_retrieve_filters(input_type, input_=None)
-
-    def __getitem__(self, i):
-        if type(i) in [list, np.ndarray]:
-            neighs, dists = self.retrieve_neighs(i)
-        elif type(i) == int:
-            if self.shape[0] <= i or i < 0:
-                raise IndexError('Index i out of bounds.')
-            neighs, dists = self.retrieve_neighs(i)
-        elif isinstance(i, slice):
-            start, stop, step = i.start, i.stop, i.step
-            step = 1 if step is None else step
-            neighs, dists = self[list(range(start, stop, step))]
-        else:
-            raise TypeError("Not correct index")
-        return neighs, dists
 
     def retrieve_neighs(self, reg):
         """Retrieve the neighbourhood regions of the region in input.
