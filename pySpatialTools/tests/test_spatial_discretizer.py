@@ -100,21 +100,23 @@ def test():
         ## Not implemented yet
         #disc6.get_contiguity()
         #disc6.get_contiguity(disc6[0])
-        #disc6.get_limits(Locs[i])
-        #disc6.get_limits(Locs[i], disc6[0])
+        #disc6.get_limits()
+        #disc6.get_limits(disc6[0])
 
     ########################### Circular discretizer ##########################
     centers = np.random.random((20, 2))
-    radios = np.random.random((20, 2))/5
+    radios = np.random.random(20)/5
+    jit = np.random.random((100, 2))
+    locs_r = centers[np.random.randint(0, 20, 100)] + jit/100000.
     regions_ids = [np.arange(20), np.arange(10, 30)]
 
-#    for j in range(len(regions_ids)):
-#        disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
-#        disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])
-#
-#        # Testing functions
-#        for i in range(len(Locs)):
-#            disc4.discretize(Locs[i])
+    for j in range(len(regions_ids)):
+        disc4 = CircularInclusiveSpatialDisc(centers, radios, regions_ids[j])
+        disc5 = CircularExcludingSpatialDisc(centers, radios, regions_ids[j])
+
+        # Testing functions
+        for i in range(len(Locs)):
+            disc4.discretize(Locs[i])
 #            disc4.map_locs2regionlocs(Locs[i])
 #            disc4.map2agglocs(Locs[i])
 #            disc4._map_regionid2regionlocs(0)
@@ -130,12 +132,9 @@ def test():
 #            #disc4.get_contiguity(disc6[0])
 #            #disc4.get_limits(Locs[i])
 #            #disc4.get_limits(Locs[i], disc6[0])
-#
-#            disc5.discretize(Locs[i])
-#            disc5.map_locs2regionlocs(Locs[i])
+            disc5.discretize(Locs[i])
+#            #disc5.map_locs2regionlocs(Locs[i])
 #            disc5.map2agglocs(Locs[i])
-#            disc5._map_regionid2regionlocs(0)
-#            disc5._map_locs2regionlocs(Locs[i])
 #            disc5.retrieve_region(Locs[i][0], {})
 #            disc5.retrieve_neigh(Locs[i][0], Locs[i])
 #            disc5.get_activated_regions(Locs[i])
@@ -147,6 +146,19 @@ def test():
 #            #disc5.get_contiguity(disc5[0])
 #            #disc5.get_limits(Locs[i])
 #            #disc5.get_limits(Locs[i], disc5[0])
+        disc4.discretize(locs_r)
+        #disc4.map_locs2regionlocs(locs_r)
+        disc4.map2agglocs(locs_r)
+        disc4.get_activated_regions(locs_r)
+        disc4.belong_region(locs_r)
+        disc4.belong_region(locs_r, disc4[0])
+
+        disc5.discretize(locs_r)
+        #disc5.map_locs2regionlocs(locs_r)
+        disc5.map2agglocs(locs_r)
+        disc5.get_activated_regions(locs_r)
+        disc5.belong_region(locs_r)
+        disc5.belong_region(locs_r, disc5[0])
 
     ############################## Set discretizer ############################
     disc6 = SetDiscretization(np.random.randint(0, 2000, 50))

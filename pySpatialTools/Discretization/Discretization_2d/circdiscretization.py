@@ -81,7 +81,9 @@ class CircularSpatialDisc(MetricDiscretizor):
         """
         if type(regions) == int:
             regions = np.array([regions])
-        regionlocs = np.zeros((regions.shape[0], self.regionlocs.shape[1]))
+        print regions
+        print self.regions_id
+        regionlocs = np.zeros((len(regions), self.regionlocs.shape[1]))
         for i in xrange(len(regions)):
             ## Only get the first one
             idx = np.where(self.regions_id == regions[i])[0]
