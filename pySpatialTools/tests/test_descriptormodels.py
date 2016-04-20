@@ -355,7 +355,7 @@ def test():
 
     #################################
     #### SparseCounter
-#    spcountdesc = SparseCounter()
+    spcountdesc = SparseCounter()
 #
 #    spcountdesc.compute_characs(characs, point_pos)
 #    spcountdesc.compute_characs(characs, None)
