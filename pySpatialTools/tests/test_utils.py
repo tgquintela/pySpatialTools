@@ -19,7 +19,12 @@ import numpy as np
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix,\
     generate_randint_relations, generate_random_relations_cutoffs,\
     random_transformed_space_points, random_space_points, create_random_image,\
-    random_shapely_polygon, random_shapely_polygons
+    random_shapely_polygon, random_shapely_polygons,\
+    continuous_array_features, categorical_agg_dict_features,\
+    categorical_array_features, continuous_dict_features,\
+    categorical_dict_features, continuous_agg_array_features,\
+    categorical_agg_array_features, continuous_agg_dict_features
+
 from pySpatialTools.utils.artificial_data.artificial_data_membership import\
     random_membership
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
@@ -60,6 +65,25 @@ def test():
     random_shapely_polygon(bounding=((0., 1.), None), n_edges=0)
     random_shapely_polygon(bounding=(None, None), n_edges=4)
     random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0)
+
+    ## Artificial random features
+    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
+    n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
+    ks = np.random.randint(1, 20)
+
+    continuous_array_features(n, n_feats)
+    categorical_array_features(n, n_feats)
+    categorical_array_features(n, n_feats2)
+    continuous_dict_features(n, n_feats)
+    categorical_dict_features(n, n_feats)
+    categorical_dict_features(n, n_feats2)
+
+    continuous_agg_array_features(n, n_feats, ks)
+    categorical_agg_array_features(n, n_feats, ks)
+    categorical_agg_array_features(n, n_feats2, ks)
+    continuous_agg_dict_features(n, n_feats, ks)
+    categorical_agg_dict_features(n, n_feats, ks)
+    categorical_agg_dict_features(n, n_feats2, ks)
 
     ###########################################################################
     ############################ Spatial Elements #############################

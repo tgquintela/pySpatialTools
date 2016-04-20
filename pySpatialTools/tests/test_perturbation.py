@@ -243,7 +243,7 @@ def test():
     disc_ind.selfcompute_features(feat_disc)
     try:
         boolean = False
-        disc_ind.apply2features(np.random.random(0, 40, 1000))
+        disc_ind.apply2features(np.random.randint(0, 40, 1000))
         boolean = True
     except:
         if boolean:
@@ -261,6 +261,20 @@ def test():
 #    mix_coll.apply2features_ind(feat_mix, 0, 0)
     mix_coll.selfcompute_features(feat_mix)
 
+    try:
+        boolean = False
+        MixedFeaturePertubation(None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        MixedFeaturePertubation([None])
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
     try:
         boolean = False
         mix_coll.apply2features(None)

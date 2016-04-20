@@ -628,9 +628,10 @@ class ExplicitFeatures(Features):
     ###########################################################################
     def add_perturbations(self, perturbations):
         """Add perturbations."""
-        msg = "Aggregated features can not be perturbated."
-        msg += "Change order of aggregation."
-        raise Exception(msg)
+#        msg = "Aggregated features can not be perturbated."
+#        msg += "Change order of aggregation."
+#        raise Exception(msg)
+        raise NotImplementedError("Not implemented yet.")
 
 
 def checker_sp_descriptor(retriever, features_o):
