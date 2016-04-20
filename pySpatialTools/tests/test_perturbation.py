@@ -20,6 +20,8 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 from pySpatialTools.utils.perturbations import GeneralPerturbation
+from pySpatialTools.utils import sp_general_filter_perturbations,\
+    feat_filter_perturbations, ret_filter_perturbations
 
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 
@@ -273,3 +275,32 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+
+    ###########################################################################
+    ##################### Auxiliar perturbation functions #####################
+    ###########################################################################
+    sp_general_filter_perturbations(perturbation1)
+    feat_filter_perturbations(perturbation1)
+    ret_filter_perturbations(perturbation1)
+    sp_general_filter_perturbations(perturbation2)
+    feat_filter_perturbations(perturbation2)
+    ret_filter_perturbations(perturbation2)
+    sp_general_filter_perturbations(perturbation3)
+    feat_filter_perturbations(perturbation3)
+    ret_filter_perturbations(perturbation3)
+    sp_general_filter_perturbations([perturbation1])
+    feat_filter_perturbations([perturbation1])
+    ret_filter_perturbations([perturbation1])
+    sp_general_filter_perturbations([perturbation2])
+    feat_filter_perturbations([perturbation2])
+    ret_filter_perturbations([perturbation2])
+    sp_general_filter_perturbations([perturbation3])
+    feat_filter_perturbations([perturbation3])
+    ret_filter_perturbations([perturbation3])
+
+    perts = [PermutationPerturbation((n, 5)), NonePerturbation(5),
+             JitterLocations(0.2, 5)]
+
+    sp_general_filter_perturbations(perts)
+    feat_filter_perturbations(perts)
+    ret_filter_perturbations(perts)
