@@ -42,7 +42,7 @@ def append_addresult_function(x, x_i, vals_i):
 
 def replacelist_addresult_function(x, x_i, vals_i):
     """Replace the element in a preinitialized list. For unknown vals_i.
-    * x: [ks][iss_vals][0]{feats} and [ks][iss_vals][1](vals_i)
+    * x: [ks][0][iss_vals]{feats} and [ks][1][iss_vals](vals_i)
 
     See also:
     ---------

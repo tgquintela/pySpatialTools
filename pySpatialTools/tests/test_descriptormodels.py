@@ -56,6 +56,7 @@ def test():
 
     ########################### Auxdescriptormodels ###########################
     ###########################################################################
+    #################################
     #### Reducer testing
     def creation_agg(listfeats):
         n_iss = np.random.randint(1, 10)
@@ -82,6 +83,7 @@ def test():
     sum_reducer(list(aggdesc), p_aggpos)
     avg_reducer(list(aggdesc), p_aggpos)
 
+    #################################
     #### Outformatters
     def creation_outformatter():
         n_iss = np.random.randint(1, 10)
@@ -113,6 +115,7 @@ def test():
         if boolean:
             raise Exception("It has to halt here.")
 
+    #################################
     #### Featurenames
     def creation_features(listfeats):
         n_iss = np.random.randint(1, 10)
@@ -162,6 +165,88 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+
+    #################################
+    #### Characterizers
+    # TODO: listdicts feats based characterizers
+    def creation_feats2characterize(listfeats):
+        n_iss = np.random.randint(1, 10)
+        if listfeats:
+            pass
+        else:
+            pointfeats = np.random.randint(0, 20, n_iss).reshape((n_iss, 1))
+        point_pos = None
+        return pointfeats, point_pos
+
+    pointfeats, point_pos = creation_feats2characterize(False)
+    characterizer_1sh_counter(pointfeats, point_pos)
+    characterizer_summer(pointfeats, point_pos)
+    characterizer_average(pointfeats, point_pos)
+
+    characterizer_1sh_counter(list(pointfeats), point_pos)
+    characterizer_summer(list(pointfeats), point_pos)
+    characterizer_average(list(pointfeats), point_pos)
+
+    #################################
+    #### add2results
+    # TODO: listdicts feats based add2results
+    def creation_x_i(listfeats, n_k, n_iss, n_feats):
+        if listfeats:
+            x_i = []
+            for k in range(n_k):
+                x_i_k = []
+                for i in range(n_iss):
+                    keys = np.unique(np.random.randint(0, n_feats, n_feats))
+                    keys = [str(e) for e in keys]
+                    values = np.random.random(len(keys))
+                    x_i_k.append(dict(zip(keys, values)))
+                x_i.append(x_i_k)
+        else:
+            x_i = np.random.random((n_k, n_iss, n_feats))
+        return x_i
+
+    def creation_add2res(type_):
+        ## Preparations
+        n_feats = np.random.randint(1, 20)
+        n_k = np.random.randint(1, 20)
+        n_iss = np.random.randint(1, 20)
+        max_vals_i = np.random.randint(1, 20)
+        vals_i = []
+        for i in range(n_k):
+            vals_i.append(np.random.randint(0, max_vals_i, n_iss))
+        if type_ == 'replacelist':
+            x = [[[], []]]*n_k
+            x_i = creation_x_i(True, n_k, n_iss, n_feats)
+        elif type_ == 'append':
+            x = [[[]]*n_iss]*n_k
+            x_i = creation_x_i(True, n_k, n_iss, n_feats)
+        elif type_ == 'sum':
+            x_i = creation_x_i(False, n_k, n_iss, n_feats)
+            x = np.random.random((max_vals_i, n_feats, n_k))
+        return x, x_i, vals_i
+
+    types = ['replacelist', 'append', 'sum']
+    x, x_i, vals_i = creation_add2res(types[0])
+    replacelist_addresult_function(x, x_i, vals_i)
+    x, x_i, vals_i = creation_add2res(types[1])
+    append_addresult_function(x, x_i, vals_i)
+    x, x_i, vals_i = creation_add2res(types[2])
+    sum_addresult_function(x, x_i, vals_i)
+
+
+
+    #################################
+    #### Completers
+    # TODO: listdicts feats based completers
+    def creation_2complete_res():
+        return measure
+    sparse_dict_completer
+    sparse_dict_completer_unknown
+    null_completer
+
+
+
+
 
 
 
