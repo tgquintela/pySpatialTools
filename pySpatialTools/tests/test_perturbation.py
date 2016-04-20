@@ -21,8 +21,7 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 from pySpatialTools.utils.perturbations import GeneralPerturbation
 
-from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
-    AvgDescriptor
+from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 
 
 def test():
@@ -221,7 +220,9 @@ def test():
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        disc_ind = DiscreteIndPerturbation(np.random.random((10, 8)))
+        probs = np.random.random((10, 10))
+        probs = (probs.T/probs.sum(1)).T
+        disc_ind = DiscreteIndPerturbation(probs[:8, :])
         boolean = True
     except:
         if boolean:
@@ -260,14 +261,14 @@ def test():
 
     try:
         boolean = False
-        disc_ind.apply2features(None)
+        mix_coll.apply2features(None)
         boolean = True
     except:
         if boolean:
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        disc_ind.apply2features([None])
+        mix_coll.apply2features([None])
         boolean = True
     except:
         if boolean:
