@@ -26,7 +26,8 @@ from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\
     aggregator_average
 
 ## Invocable featurenames functions
-from featurenames_functions import counter_featurenames, array_featurenames
+from featurenames_functions import counter_featurenames, array_featurenames,\
+    list_featurenames
 
 ## Invocable out_formatter functions
 from out_formatters import count_out_formatter_general, null_out_formatter,\

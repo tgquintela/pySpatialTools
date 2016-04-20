@@ -48,7 +48,7 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
             print nei_nfo.set_neighs, nei_nfo.set_sp_rel_pos
             neighs, dists = neighs[0], dists[0]
             # Format neighs information
-            print neighs, dists, k
+            print neighs, dists, ke
             print np.any(neighs)
             print np.any(dists)
             if empty_neighs(neighs):

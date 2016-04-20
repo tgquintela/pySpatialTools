@@ -29,7 +29,7 @@ from collections import Counter
 
 
 def sum_reducer(aggdescriptors_idxs, point_aggpos):
-    "This reducer sum all possible aggregation features."
+    """This reducer sum all possible aggregation features."""
     ## 0. To array
     if type(aggdescriptors_idxs) == list:
         if type(aggdescriptors_idxs[0]) == np.ndarray:
@@ -53,7 +53,7 @@ def sum_reducer(aggdescriptors_idxs, point_aggpos):
 
 
 def avg_reducer(aggdescriptors_idxs, point_aggpos):
-    "This reducer average all possible aggregation features."
+    """This reducer average all possible aggregation features."""
     print '0'*50, aggdescriptors_idxs, type(aggdescriptors_idxs)
     ## 0. To array
     if type(aggdescriptors_idxs) == list:

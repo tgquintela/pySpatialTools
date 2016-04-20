@@ -46,8 +46,8 @@ def count_out_formatter_dict2array(feats, out_features, _out, _nullvalue):
     """Function which contains the out formatting. Has to deal with aggregated
     and point data.
     """
-    feats_o = np.ones((len(feats), len(out_features)))
-    feats_o = feats_o*_nullvalue
+    feats_o = np.ones((len(feats), len(out_features)))*_nullvalue
+    print feats, out_features
     for i in range(len(feats)):
         for e in feats[i]:
             feats_o[i, list(out_features).index(str(e))] = feats[i][e]

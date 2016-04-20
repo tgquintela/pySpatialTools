@@ -30,6 +30,7 @@ from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     SparseCounter
 from pySpatialTools.FeatureManagement.descriptormodel import\
     GeneralDescriptor
+from pySpatialTools.FeatureManagement.aux_descriptormodels import *
 
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
@@ -45,14 +46,125 @@ from pySpatialTools.FeatureManagement.aux_descriptormodels import\
     counter_featurenames, array_featurenames,\
     count_out_formatter_general, null_out_formatter,\
     count_out_formatter_dict2array
-#
-#
-#def test():
-#    n = 100
-#    locs = np.random.random((n, 2))*100
-#    feat_arr0 = np.random.randint(0, 20, (n, 1))
-#    feat_arr1 = np.random.random((n, 10))
-#
+
+
+def test():
+    n = 100
+    locs = np.random.random((n, 2))*100
+    feat_arr0 = np.random.randint(0, 20, (n, 1))
+    feat_arr1 = np.random.random((n, 10))
+
+    ########################### Auxdescriptormodels ###########################
+    ###########################################################################
+    #### Reducer testing
+    def creation_agg(listfeats):
+        n_iss = np.random.randint(1, 10)
+        if listfeats:
+            aggdesc = []
+            for i in range(n_iss):
+                keys = np.unique(np.random.randint(0, 20, 10))
+                values = np.random.random(len(keys))
+                aggdesc.append(dict(zip(keys, values)))
+        else:
+            n_feats = 20
+            aggdesc = np.random.random((n_iss, n_feats))
+        p_aggpos = None
+        return aggdesc, p_aggpos
+
+    ## Reducer
+    aggdesc, p_aggpos = creation_agg(True)
+    sum_reducer(aggdesc, p_aggpos)
+    avg_reducer(aggdesc, p_aggpos)
+    aggdesc, p_aggpos = creation_agg(False)
+    sum_reducer(aggdesc, p_aggpos)
+    avg_reducer(aggdesc, p_aggpos)
+    aggdesc, p_aggpos = creation_agg(False)
+    sum_reducer(list(aggdesc), p_aggpos)
+    avg_reducer(list(aggdesc), p_aggpos)
+
+    #### Outformatters
+    def creation_outformatter():
+        n_iss = np.random.randint(1, 10)
+        outfeats = [str(e) for e in np.arange(20)]
+        feats = []
+        for i in range(n_iss):
+            keys = np.unique(np.random.randint(0, 20, 10))
+            values = np.random.random(len(keys))
+            feats.append(dict(zip(keys, values)))
+        return feats, outfeats
+    _out = ['ndarray', 'dict']
+    feats, outfeats = creation_outformatter()
+    count_out_formatter_general(feats, outfeats, _out[0], 0)
+    count_out_formatter_general(feats, outfeats, _out[1], 0)
+    null_out_formatter(feats, outfeats, _out[0], 0)
+    try:
+        boolean = False
+        count_out_formatter_general(feats, outfeats, '', 0)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        array_feats = np.random.random((10, 1))
+        count_out_formatter_general(array_feats, outfeats, _out[1], 0)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+    #### Featurenames
+    def creation_features(listfeats):
+        n_iss = np.random.randint(1, 10)
+        if listfeats:
+            feats = []
+            for i in range(n_iss):
+                keys = np.unique(np.random.randint(0, 20, 10))
+                values = np.random.random(len(keys))
+                feats.append(dict(zip(keys, values)))
+        else:
+            feats = np.random.randint(0, 20, n_iss).reshape((n_iss, 1))
+        return feats
+    # List feats
+    features_o = creation_features(True)
+    counter_featurenames(features_o)
+    list_featurenames(features_o)
+    try:
+        boolean = False
+        array_featurenames(features_o)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    # Array feats
+    features_o = creation_features(False)
+    counter_featurenames(features_o)
+    array_featurenames(features_o)
+
+    try:
+        boolean = False
+        list_featurenames(features_o)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        counter_featurenames(None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        array_featurenames(None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+
+
 #    ret0 = KRetriever(locs, 3, ifdistance=True)
 #    ret1 = CircRetriever(locs, 3, ifdistance=True)
 #    gret0 = RetrieverManager([ret0])
