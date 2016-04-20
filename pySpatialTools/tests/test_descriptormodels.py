@@ -188,8 +188,14 @@ def test():
     characterizer_average(list(pointfeats), point_pos)
 
     #################################
+    #### Characterizers
+    # TODO: listdicts feats based characterizers
+    aggregator_1sh_counter(pointfeats, point_pos)
+    aggregator_summer(pointfeats, point_pos)
+    aggregator_average(pointfeats, point_pos)
+
+    #################################
     #### add2results
-    # TODO: listdicts feats based add2results
     def creation_x_i(listfeats, n_k, n_iss, n_feats):
         if listfeats:
             x_i = []
@@ -226,28 +232,138 @@ def test():
         return x, x_i, vals_i
 
     types = ['replacelist', 'append', 'sum']
-    x, x_i, vals_i = creation_add2res(types[0])
-    replacelist_addresult_function(x, x_i, vals_i)
-    x, x_i, vals_i = creation_add2res(types[1])
-    append_addresult_function(x, x_i, vals_i)
+#    x, x_i, vals_i = creation_add2res(types[0])
+#    measure_spdict_unknown = replacelist_addresult_function(x, x_i, vals_i)
+#    x, x_i, vals_i = creation_add2res(types[1])
+#    measure_spdict_known = append_addresult_function(x, x_i, vals_i)
     x, x_i, vals_i = creation_add2res(types[2])
-    sum_addresult_function(x, x_i, vals_i)
-
-
+    measure_array = sum_addresult_function(x, x_i, vals_i)
 
     #################################
     #### Completers
-    # TODO: listdicts feats based completers
-    def creation_2complete_res():
-        return measure
-    sparse_dict_completer
-    sparse_dict_completer_unknown
-    null_completer
+#    sparse_dict_completer(measure_spdict_known)
+#    sparse_dict_completer_unknown(measure_spdict_unknown)
+    null_completer(measure_array)
+    global_info = np.random.random(len(measure_array))
+    weighted_completer(measure_array, global_info)
+    global_info = np.random.random(measure_array.shape)
+    weighted_completer(measure_array, global_info)
 
+    ############################# Descriptormodels ############################
+    ###########################################################################
+    #################################
+    #### SumDescriptor
+    sumdesc = SumDescriptor()
+    characs = np.random.random((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.random((100, 10, 2))
 
+    sumdesc.compute_characs(characs, point_pos)
+    sumdesc.compute_characs(characs, None)
 
+    sumdesc.reducer(characs, point_pos)
+    sumdesc.reducer(characs, None)
 
+    sumdesc.aggdescriptor(characs, point_pos)
+    sumdesc.aggdescriptor(characs, None)
 
+    sumdesc.to_complete_measure(measure)
+    #sumdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+
+    # Not specific
+    sumdesc.set_global_info(None)
+    sumdesc.set_functions(None, None)
+
+    #################################
+    #### AvgDescriptor
+    avgdesc = AvgDescriptor()
+    characs = np.random.random((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.random((100, 10, 2))
+
+    avgdesc.compute_characs(characs, point_pos)
+    avgdesc.compute_characs(characs, None)
+
+    avgdesc.reducer(characs, point_pos)
+    avgdesc.reducer(characs, None)
+
+    avgdesc.aggdescriptor(characs, point_pos)
+    avgdesc.aggdescriptor(characs, None)
+
+    avgdesc.to_complete_measure(measure)
+    #avgdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+
+    # Not specific
+    avgdesc.set_global_info(None)
+    avgdesc.set_functions(None, None)
+
+    #################################
+    #### Countdescriptor
+    countdesc = Countdescriptor()
+    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.random((100, 10, 2))
+
+    countdesc.compute_characs(characs, point_pos)
+    countdesc.compute_characs(characs, None)
+
+    countdesc.reducer(characs, point_pos)
+    countdesc.reducer(characs, None)
+
+    countdesc.aggdescriptor(characs, point_pos)
+    countdesc.aggdescriptor(characs, None)
+
+    countdesc.to_complete_measure(measure)
+    #countdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+
+    # Not specific
+    countdesc.set_global_info(None)
+    countdesc.set_functions(None, None)
+
+    #################################
+    #### SparseCounter
+#    spcountdesc = SparseCounter()
+#
+#    spcountdesc.compute_characs(characs, point_pos)
+#    spcountdesc.compute_characs(characs, None)
+#
+#    spcountdesc.reducer(characs, point_pos)
+#    spcountdesc.reducer(characs, None)
+#
+#    spcountdesc.aggdescriptor(characs, point_pos)
+#    spcountdesc.aggdescriptor(characs, None)
+#
+#    spcountdesc.to_complete_measure(measure)
+#    #spcountdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#
+#    # Not specific
+#    spcountdesc.set_global_info(None)
+#    spcountdesc.set_functions(None, None)
+
+    #################################
+    #### NBinsHistogramDesc
+    nbinsdesc = NBinsHistogramDesc(5)
+    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.random((100, 10, 2))
+
+    nbinsdesc.compute_characs(characs, point_pos)
+    nbinsdesc.compute_characs(characs, None)
+
+    nbinsdesc.reducer(characs, point_pos)
+    nbinsdesc.reducer(characs, None)
+
+    nbinsdesc.aggdescriptor(characs, point_pos)
+    nbinsdesc.aggdescriptor(characs, None)
+
+    nbinsdesc.to_complete_measure(measure)
+    #nbinsdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+
+    # Not specific
+    features = np.random.random((100, 5))
+    nbinsdesc.set_global_info(features, True)
+    nbinsdesc.set_global_info(features, False)
+    nbinsdesc.set_functions(None, None)
 
 
 #    ret0 = KRetriever(locs, 3, ifdistance=True)
