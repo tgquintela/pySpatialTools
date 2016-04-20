@@ -19,6 +19,7 @@ from pySpatialTools.FeatureManagement.features_objects import Features,\
 from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
+from pySpatialTools.utils.perturbations import GeneralPerturbation
 
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor
@@ -30,15 +31,47 @@ def test():
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
 
+    ## Perturbations features
+    feat_arr0 = np.random.randint(0, 20, (n, 1))
+    feat_arr1 = np.random.random((n, 10))
+    feat_arr = np.hstack([feat_arr0, feat_arr1])
+
+    ###########################################################################
+    #### GeneralPermutations
     ## Create perturbations
+    class DummyPerturbation(GeneralPerturbation):
+        def __init__(self, ):
+            self._initialization()
+            self.features_p = np.random.random((10, 10, 10))
+            self.locations_p = np.random.random((100, 2, 5))
+    dummypert = DummyPerturbation()
+
+    # Testing main functions
+    dummypert.apply2indice(0, 0)
+    dummypert.apply2locs(locs)
+    dummypert.apply2locs_ind(locs, 0, 0)
+    dummypert.selfcompute_locations(locs)
+    dummypert.apply2features(feat_arr)
+    dummypert.apply2features_ind(feat_arr, 0, 0)
+    dummypert.selfcompute_features(feat_arr)
+
+    ###########################################################################
+    #### Permutations
+    ## Create perturbations
+    perturbation1 = PermutationPerturbation((n, k_perturb1))
     reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
     perturbation1 = PermutationPerturbation(reind.T)
-    perturbation2 = NonePerturbation(k_perturb2)
-    perturbation3 = JitterLocations(0.2, k_perturb3)
-    perturbation4 = [perturbation1, perturbation2, perturbation3]
 
-    ## Perturbation retrievers
-    # Perturbation 1
+    # Testing main functions individually
+    perturbation1.apply2indice(0, 0)
+    perturbation1.apply2locs(locs)
+#    perturbation1.apply2locs_ind(locs, 0, 0)
+    perturbation1.selfcompute_locations(locs)
+    perturbation1.apply2features(feat_arr)
+    perturbation1.apply2features_ind(feat_arr, 0, 0)
+    perturbation1.selfcompute_features(feat_arr)
+
+    # Perturbations in Retriever
     ret1 = KRetriever(locs)
     ret2 = CircRetriever(locs)
     ret1.add_perturbations(perturbation1)
@@ -46,7 +79,28 @@ def test():
     assert(ret1.k_perturb == perturbation1.k_perturb)
     assert(ret2.k_perturb == perturbation1.k_perturb)
 
-    # Perturbation 2
+    # Perturbations in Descriptors
+    features = ImplicitFeatures(feat_arr)
+    features.add_perturbations(perturbation1)
+    avgdesc = AvgDescriptor()
+    features = FeaturesManager(features, avgdesc)
+    assert(features.k_perturb == perturbation1.k_perturb)
+
+    ###########################################################################
+    #### NonePerturbation
+    ## Create perturbations
+    perturbation2 = NonePerturbation(k_perturb2)
+
+    # Testing main functions individually
+    perturbation2.apply2indice(0, 0)
+    perturbation2.apply2locs(locs)
+#    perturbation2.apply2locs_ind(locs, 0, 0)
+    perturbation2.selfcompute_locations(locs)
+    perturbation2.apply2features(feat_arr)
+#    perturbation2.apply2features_ind(feat_arr, 0, 0)
+    perturbation2.selfcompute_features(feat_arr)
+
+    # Perturbations in Retriever
     ret1 = KRetriever(locs)
     ret2 = CircRetriever(locs)
     ret1.add_perturbations(perturbation2)
@@ -54,7 +108,28 @@ def test():
     assert(ret1.k_perturb == perturbation2.k_perturb)
     assert(ret2.k_perturb == perturbation2.k_perturb)
 
-    # Perturbation 3
+    # Perturbations in Descriptors
+    features = ImplicitFeatures(feat_arr)
+    features.add_perturbations(perturbation2)
+    avgdesc = AvgDescriptor()
+    features = FeaturesManager(features, avgdesc)
+    assert(features.k_perturb == perturbation2.k_perturb)
+
+    ###########################################################################
+    #### JitterPerturbations
+    ## Create perturbations
+    perturbation3 = JitterLocations(0.2, k_perturb3)
+
+    # Testing main functions individually
+    perturbation3.apply2indice(0, 0)
+    perturbation3.apply2locs(locs)
+#    perturbation3.apply2locs_ind(locs, 0, 0)
+    perturbation3.selfcompute_locations(locs)
+    perturbation3.apply2features(feat_arr)
+#    perturbation3.apply2features_ind(feat_arr, 0, 0)
+    perturbation3.selfcompute_features(feat_arr)
+
+    # Perturbations in Retriever
     ret1 = KRetriever(locs)
     ret2 = CircRetriever(locs)
     ret1.add_perturbations(perturbation3)
@@ -62,7 +137,19 @@ def test():
     assert(ret1.k_perturb == perturbation3.k_perturb)
     assert(ret2.k_perturb == perturbation3.k_perturb)
 
-    # Perturbation 4
+    # Perturbations in Descriptors
+    features = ImplicitFeatures(feat_arr)
+    features.add_perturbations(perturbation3)
+    avgdesc = AvgDescriptor()
+    features = FeaturesManager(features, avgdesc)
+    assert(features.k_perturb == perturbation3.k_perturb)
+
+    ###########################################################################
+    #### CollectionPerturbations
+    ## Create perturbations
+    perturbation4 = [perturbation1, perturbation2, perturbation3]
+
+    # Perturbations in Retriever
     ret1 = KRetriever(locs)
     ret2 = CircRetriever(locs)
     ret1.add_perturbations(perturbation4)
@@ -70,40 +157,18 @@ def test():
     assert(ret1.k_perturb == k_perturb4)
     assert(ret2.k_perturb == k_perturb4)
 
-    ## Perturbations features
-    feat_arr0 = np.random.randint(0, 20, (n, 1))
-    feat_arr1 = np.random.random((n, 10))
-    feat_arr = np.hstack([feat_arr0, feat_arr1])
-
-    # Perturbation 1
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation1)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation1.k_perturb)
-
-    # Perturbation 2
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation2)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation2.k_perturb)
-
-    # Perturbation 3
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation3)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation3.k_perturb)
-
-    # Perturbation 4
+    # Perturbations in Descriptors
     features = ImplicitFeatures(feat_arr)
     features.add_perturbations(perturbation4)
     avgdesc = AvgDescriptor()
     features = FeaturesManager(features, avgdesc)
     assert(features.k_perturb == k_perturb4)
 
-    ## Individual perturbations
+    ###########################################################################
+    #### IndividualPerturbations
+    ## Create perturbations
+
+    # Individual perturbations
     reind_ind = np.random.permutation(100).reshape((100, 1))
     perm_ind = PermutationIndPerturbation(reind_ind)
     perm_ind.reindices
@@ -118,31 +183,7 @@ def test():
     mix_coll = MixedFeaturePertubation([perm_ind, cont_ind, disc_ind])
     feat_mix = np.hstack([feat_perm, feat_cont, feat_disc.reshape((100, 1))])
 
-    ## TESTING MAIN FUNCTIONS FOR ALL PERTURBATIONS
-    perturbation1.apply2indice(0, 0)
-    perturbation1.apply2locs(locs)
-#    perturbation1.apply2locs_ind(locs, 0, 0)
-    perturbation1.selfcompute_locations(locs)
-    perturbation1.apply2features(feat_arr)
-    perturbation1.apply2features_ind(feat_arr, 0, 0)
-    perturbation1.selfcompute_features(feat_arr)
-
-    perturbation2.apply2indice(0, 0)
-    perturbation2.apply2locs(locs)
-#    perturbation2.apply2locs_ind(locs, 0, 0)
-    perturbation2.selfcompute_locations(locs)
-    perturbation2.apply2features(feat_arr)
-#    perturbation2.apply2features_ind(feat_arr, 0, 0)
-    perturbation2.selfcompute_features(feat_arr)
-
-    perturbation3.apply2indice(0, 0)
-    perturbation3.apply2locs(locs)
-#    perturbation3.apply2locs_ind(locs, 0, 0)
-    perturbation3.selfcompute_locations(locs)
-    perturbation3.apply2features(feat_arr)
-#    perturbation3.apply2features_ind(feat_arr, 0, 0)
-    perturbation3.selfcompute_features(feat_arr)
-
+    # Testing main functions individually
     perm_ind.apply2indice(0, 0)
     perm_ind.apply2locs(locs)
 #    perm_ind.apply2locs_ind(locs, 0, 0)
