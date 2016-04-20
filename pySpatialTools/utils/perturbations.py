@@ -36,11 +36,13 @@ class GeneralPerturbation:
         self.locations_p = None
         self.features_p = None
         self.relations_p = None
+        self.discretizations_p = None
         self.k_perturb = 1
 
     def apply2indice(self, i, k):
         return i
 
+    ################## Transformations of the main elements ###################
     def apply2locs(self, locations):
         return locations
 
@@ -50,6 +52,10 @@ class GeneralPerturbation:
     def apply2relations(self, relations):
         return relations
 
+    def apply2discretizations(self, discretization):
+        return discretization
+
+    ######################### Precomputed applications ########################
     def apply2features_ind(self, features, i, k):
         """For precomputed applications."""
         return self.features_p[i, :, k]
@@ -62,6 +68,7 @@ class GeneralPerturbation:
         """For precomputed applications."""
         return self.relations_p[i, :, k]
 
+    ##################### Selfcomputation of main elements ####################
     def selfcompute_features(self, features):
         pass
 
@@ -71,6 +78,10 @@ class GeneralPerturbation:
     def selfcompute_relations(self, relations):
         pass
 
+    def selfcompute_discretizations(self, discretizations):
+        pass
+
+    ################################# Examples ################################
 #    def selfcompute_locations(self, locations):
 #        self.locations_p = self.apply2locs(locations)
 #
@@ -208,7 +219,7 @@ class DiscreteIndPerturbation(GeneralPerturbation):
 
     def __init__(self, probs):
         self._initialization()
-        if np.all(probs.sum(1)) != 1:
+        if np.all(probs.sum(1) != 1):
             raise TypeError("Not correct probs input.")
         if probs.shape[0] != probs.shape[1]:
             raise IndexError("Probs is noot a square matrix.")

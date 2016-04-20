@@ -50,10 +50,14 @@ def test():
     dummypert.apply2indice(0, 0)
     dummypert.apply2locs(locs)
     dummypert.apply2locs_ind(locs, 0, 0)
-    dummypert.selfcompute_locations(locs)
     dummypert.apply2features(feat_arr)
     dummypert.apply2features_ind(feat_arr, 0, 0)
+    dummypert.apply2relations(None)
+    dummypert.apply2discretizations(None)
     dummypert.selfcompute_features(feat_arr)
+    dummypert.selfcompute_locations(locs)
+    dummypert.selfcompute_relations(None)
+    dummypert.selfcompute_discretizations(None)
 
     ###########################################################################
     #### Permutations
@@ -166,23 +170,16 @@ def test():
 
     ###########################################################################
     #### IndividualPerturbations
-    ## Create perturbations
-
-    # Individual perturbations
-    reind_ind = np.random.permutation(100).reshape((100, 1))
-    perm_ind = PermutationIndPerturbation(reind_ind)
-    perm_ind.reindices
     feat_perm = np.random.random((100, 1))
-
-    cont_ind = ContiniousIndPerturbation(0.5)
+    feat_disc = np.random.randint(0, 10, 100)
     feat_cont = np.random.random((100, 1))
 
-    disc_ind = DiscreteIndPerturbation(np.random.random((10, 10)))
-    feat_disc = np.random.randint(0, 10, 100)
+    ### Reindices individually
+    # Individual perturbations
+    reind_ind = np.random.permutation(100).reshape((100, 1))
 
-    mix_coll = MixedFeaturePertubation([perm_ind, cont_ind, disc_ind])
-    feat_mix = np.hstack([feat_perm, feat_cont, feat_disc.reshape((100, 1))])
-
+    perm_ind = PermutationIndPerturbation(reind_ind)
+    perm_ind.reindices
     # Testing main functions individually
     perm_ind.apply2indice(0, 0)
     perm_ind.apply2locs(locs)
@@ -192,6 +189,9 @@ def test():
     perm_ind.apply2features_ind(feat_perm, 0, 0)
     perm_ind.selfcompute_features(feat_perm)
 
+    ### Continious individually
+    cont_ind = ContiniousIndPerturbation(0.5)
+    # Testing main functions individually
     cont_ind.apply2indice(0, 0)
     cont_ind.apply2locs(locs)
 #    cont_ind.apply2locs_ind(locs, 0, 0)
@@ -200,6 +200,25 @@ def test():
 #    cont_ind.apply2features_ind(feat_cont, 0, 0)
     cont_ind.selfcompute_features(feat_cont)
 
+    ### Discrete individually
+    try:
+        boolean = False
+        disc_ind = DiscreteIndPerturbation(np.random.random((10, 10)))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        disc_ind = DiscreteIndPerturbation(np.random.random((10, 8)))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    probs = np.random.random((10, 10))
+    probs = (probs.T/probs.sum(1)).T
+    disc_ind = DiscreteIndPerturbation(probs)
+    # Testing main functions individually
     disc_ind.apply2indice(0, 0)
     disc_ind.apply2locs(locs)
 #    disc_ind.apply2locs_ind(locs, 0, 0)
@@ -207,7 +226,18 @@ def test():
     disc_ind.apply2features(feat_disc)
 #    disc_ind.apply2features_ind(feat_disc, 0, 0)
     disc_ind.selfcompute_features(feat_disc)
+    try:
+        boolean = False
+        disc_ind.apply2features(np.random.random(0, 40, 1000))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
+    ### Mix individually
+    mix_coll = MixedFeaturePertubation([perm_ind, cont_ind, disc_ind])
+    # Testing main functions individually
+    feat_mix = np.hstack([feat_perm, feat_cont, feat_disc.reshape((100, 1))])
     mix_coll.apply2indice(0, 0)
     mix_coll.apply2locs(locs)
 #    mix_coll.apply2locs_ind(locs, 0, 0)
