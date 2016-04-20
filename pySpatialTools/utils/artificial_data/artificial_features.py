@@ -28,21 +28,20 @@ def categorical_array_features(n, n_feats):
 
 def continuous_dict_features(n, n_feats):
     """Listdict-like continuous features."""
-    n_feats = [n_feats] if type(n_feats) == int else n_feats
     features = []
-    for fea in n_feats:
-        features.append(np.random.randint(0, fea, n))
-    features = np.stack(features, axis=1)
+    for i in range(n):
+        fea = np.unique(np.random.randint(0, n_feats, n_feats))
+        features.append(dict(zip(fea, np.random.random(len(fea)))))
     return features
 
 
 def categorical_dict_features(n, n_feats):
     """Listdict-like categorical features."""
-    n_feats = [n_feats] if type(n_feats) == int else n_feats
+    max_v = np.random.randint(1, n)
     features = []
-    for fea in n_feats:
-        features.append(np.random.randint(0, fea, n))
-    features = np.stack(features, axis=1)
+    for i in range(n):
+        fea = np.unique(np.random.randint(0, n_feats, n_feats))
+        features.append(dict(zip(fea, np.random.randint(0, max_v, len(fea)))))
     return features
 
 

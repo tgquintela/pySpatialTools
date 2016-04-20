@@ -76,14 +76,12 @@ def test():
     categorical_array_features(n, n_feats2)
     continuous_dict_features(n, n_feats)
     categorical_dict_features(n, n_feats)
-    categorical_dict_features(n, n_feats2)
 
     continuous_agg_array_features(n, n_feats, ks)
     categorical_agg_array_features(n, n_feats, ks)
     categorical_agg_array_features(n, n_feats2, ks)
     continuous_agg_dict_features(n, n_feats, ks)
     categorical_agg_dict_features(n, n_feats, ks)
-    categorical_agg_dict_features(n, n_feats2, ks)
 
     ###########################################################################
     ############################ Spatial Elements #############################
