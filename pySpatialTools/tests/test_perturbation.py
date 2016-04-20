@@ -44,6 +44,7 @@ def test():
             self._initialization()
             self.features_p = np.random.random((10, 10, 10))
             self.locations_p = np.random.random((100, 2, 5))
+            self.relations_p = np.random.random((100, 2, 5))
     dummypert = DummyPerturbation()
 
     # Testing main functions
@@ -53,6 +54,7 @@ def test():
     dummypert.apply2features(feat_arr)
     dummypert.apply2features_ind(feat_arr, 0, 0)
     dummypert.apply2relations(None)
+    dummypert.apply2relations_ind(None, 0, 0)
     dummypert.apply2discretizations(None)
     dummypert.selfcompute_features(feat_arr)
     dummypert.selfcompute_locations(locs)
@@ -178,6 +180,13 @@ def test():
     # Individual perturbations
     reind_ind = np.random.permutation(100).reshape((100, 1))
 
+    try:
+        boolean = False
+        perm_ind = PermutationIndPerturbation(list(reind_ind))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
     perm_ind = PermutationIndPerturbation(reind_ind)
     perm_ind.reindices
     # Testing main functions individually
@@ -186,6 +195,7 @@ def test():
 #    perm_ind.apply2locs_ind(locs, 0, 0)
     perm_ind.selfcompute_locations(locs)
     perm_ind.apply2features(feat_perm)
+    perm_ind.apply2features(feat_perm, 0)
     perm_ind.apply2features_ind(feat_perm, 0, 0)
     perm_ind.selfcompute_features(feat_perm)
 
@@ -197,6 +207,7 @@ def test():
 #    cont_ind.apply2locs_ind(locs, 0, 0)
     cont_ind.selfcompute_locations(locs)
     cont_ind.apply2features(feat_cont)
+    cont_ind.apply2features(feat_cont, 0)
 #    cont_ind.apply2features_ind(feat_cont, 0, 0)
     cont_ind.selfcompute_features(feat_cont)
 
@@ -224,6 +235,7 @@ def test():
 #    disc_ind.apply2locs_ind(locs, 0, 0)
     disc_ind.selfcompute_locations(locs)
     disc_ind.apply2features(feat_disc)
+    disc_ind.apply2features(feat_disc, 0)
 #    disc_ind.apply2features_ind(feat_disc, 0, 0)
     disc_ind.selfcompute_features(feat_disc)
     try:
@@ -245,3 +257,18 @@ def test():
     mix_coll.apply2features(feat_mix)
 #    mix_coll.apply2features_ind(feat_mix, 0, 0)
     mix_coll.selfcompute_features(feat_mix)
+
+    try:
+        boolean = False
+        disc_ind.apply2features(None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        disc_ind.apply2features([None])
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")

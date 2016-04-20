@@ -64,7 +64,7 @@ class GeneralPerturbation:
         """For precomputed applications."""
         return self.locations_p[i, :, k]
 
-    def apply2locs_relations(self, relations, i, k):
+    def apply2relations_ind(self, relations, i, k):
         """For precomputed applications."""
         return self.relations_p[i, :, k]
 
