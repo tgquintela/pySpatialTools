@@ -29,12 +29,14 @@ class PjensenDescriptor(DescriptorModel):
     name_desc = "Pjensen descriptor"
     _nullvalue = 0
 
-    def __init__(self):
+    def __init__(self, features=None):
         "The inputs are the needed to compute model_dim."
         ## Initial function set
         self._f_default_names = counter_featurenames
         self._defult_add2result = sum_addresult_function
         self._format_default_functions()
+        if features is not None:
+            self.set_global_info(features)
 
     ###########################################################################
     ####################### Compulsary main functions #########################

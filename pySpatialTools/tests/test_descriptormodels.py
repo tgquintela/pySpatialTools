@@ -318,7 +318,40 @@ def test():
 
     # Not specific
     countdesc.set_global_info(None)
+    countdesc._format_default_functions()
     countdesc.set_functions(None, None)
+    countdesc.set_functions(None, 'dict')
+
+    #################################
+    #### Pjensen
+    pjensen = PjensenDescriptor()
+    # Specific
+    features = list(np.arange(20)) + list(np.random.randint(0, 20, 80))
+    features = np.array(features).reshape((100, 1))
+    pjensen.set_global_info(features)
+
+    pjensen = PjensenDescriptor(features)
+    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.randint(0, 50, 20*20).reshape((20, 20, 1))
+
+    # Functions
+    pjensen.compute_characs(characs, point_pos)
+    pjensen.compute_characs(characs, None)
+
+    pjensen.reducer(characs, point_pos)
+    pjensen.reducer(characs, None)
+
+    pjensen.aggdescriptor(characs, point_pos)
+    pjensen.aggdescriptor(characs, None)
+
+    pjensen.to_complete_measure(measure)
+    #pjensen.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+
+    # Not specific
+    pjensen._format_default_functions()
+    pjensen.set_functions(None, None)
+    pjensen.set_functions(None, 'dict')
 
     #################################
     #### SparseCounter
@@ -348,7 +381,7 @@ def test():
     measure = np.random.random((100, 10, 2))
 
     nbinsdesc.compute_characs(characs, point_pos)
-    nbinsdesc.compute_characs(characs, None)
+    nbinsdesc.compute_characs([characs], None)
 
     nbinsdesc.reducer(characs, point_pos)
     nbinsdesc.reducer(characs, None)
@@ -359,11 +392,14 @@ def test():
     nbinsdesc.to_complete_measure(measure)
     #nbinsdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
 
-    # Not specific
+    # Specific
+    nbinsdesc._format_default_functions()
+    nbinsdesc.set_functions(None, None)
+    nbinsdesc.set_functions(None, 'dict')
     features = np.random.random((100, 5))
     nbinsdesc.set_global_info(features, True)
     nbinsdesc.set_global_info(features, False)
-    nbinsdesc.set_functions(None, None)
+    # Not specific
 
 
 #    ret0 = KRetriever(locs, 3, ifdistance=True)
