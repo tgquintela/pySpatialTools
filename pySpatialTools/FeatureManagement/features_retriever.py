@@ -19,6 +19,7 @@ TODO
 - Indentify different type of feaures we can have: element, aggregate...
 - Support for other type of features?
 - Support for dictionary
+- Or all the same features and choose one or all different and join together.
 
 """
 
@@ -27,7 +28,7 @@ import numpy as np
 from ..utils.util_classes import create_mapper_vals_i, Neighs_Info
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
-    sparse_dict_completer_unknown
+    sparse_dict_completer_unknown, sum_addresult_function
 from aux_featuremanagement import create_aggfeatures, compute_featuresnames
 from features_objects import ImplicitFeatures, ExplicitFeatures
 
@@ -212,8 +213,8 @@ class FeaturesManager:
             shape = (n_vals_i, n_feats, self.k_perturb + 1)
             ## Init global result
             self.initialization_output = lambda: np.zeros(shape)
-            ## Adding result
-            self.add2result = descriptormodel._defult_add2result
+            ## Adding result (Probably it should be decided flexible)
+            self.add2result = sum_addresult_function
             self._join_descriptors = lambda x: np.concatenate(x)
             self.to_complete_measure =\
                 lambda X: descriptormodel.to_complete_measure(X)
@@ -251,9 +252,9 @@ class FeaturesManager:
 #                    lambda: [[[], []] for k in range(self.k_perturb+1)]
 #                ## Adding result
 #                self.add2result = replacelist_addresult_function
-
-        self.to_complete_measure =\
-            lambda X: descriptormodel.to_complete_measure(X)
+#
+#        self.to_complete_measure =\
+#            lambda X: descriptormodel.to_complete_measure(X)
 
     ################################# Setters #################################
     ###########################################################################

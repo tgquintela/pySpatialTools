@@ -445,6 +445,7 @@ class ImplicitFeatures(Features):
                 assert(len(names) == len(self.features[0]))
             self.variables = names
         else:
+            ## TODO: Call to featurenames default computers
             if type(self.features) == np.ndarray:
                 self.variables = list(range(len(self.features)))
             elif type(self.features) == list:

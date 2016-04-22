@@ -158,9 +158,9 @@ def test():
     Feat_imp = ImplicitFeatures(catfeats_dict, perturbation)
 #    test_getitem(Feat_imp)
 
-    Feat0 = ImplicitFeatures(features0, perturbation)
-    Feat1 = ImplicitFeatures(features1, perturbation)
-    Feat2 = ImplicitFeatures(features2, perturbation)
+#    Feat0 = ImplicitFeatures(features0, perturbation)
+#    Feat1 = ImplicitFeatures(features1, perturbation)
+#    Feat2 = ImplicitFeatures(features2, perturbation)
 #
 #    features_objects = [Feat0, Feat1, Feat2]
 #    featret = FeaturesManager(features_objects, avgdesc)
@@ -172,7 +172,7 @@ def test():
 #    except:
 #        if boolean:
 #            raise Exception("It should not accept that inputs.")
-#
+
 #    contfeats_ar0 = continuous_array_features(n, n_feats)
 #    catfeats_ar0 = categorical_array_features(n, n_feats)
 #    catfeats_ar1 = categorical_array_features(n, n_feats2)
