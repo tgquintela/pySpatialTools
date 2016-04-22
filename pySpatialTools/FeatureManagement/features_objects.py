@@ -441,7 +441,6 @@ class ImplicitFeatures(Features):
     def _format_variables(self, names):
         """Format variables."""
         if names:
-            print names
             if type(self.features) == np.ndarray:
                 assert(len(names) == len(self.features[0]))
             self.variables = names
@@ -478,10 +477,6 @@ class ImplicitFeatures(Features):
                 self._dim_perturb.append(p.k_perturb)
                 self._create_map_perturbation()
                 self._perturbators.append(p)
-        else:
-            self._dim_perturb.append(perturbations.k_perturb)
-            self._create_map_perturbation()
-            self._perturbators.append(perturbations)
 
     def _create_map_perturbation(self):
         """Create the map for getting the perturbation object."""

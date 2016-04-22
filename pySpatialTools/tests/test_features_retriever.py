@@ -45,6 +45,7 @@ def test():
         idxs = np.random.randint(0, 5, 20).reshape((1, 4, 5))
         #Feat._get_feats_k(idxs, k)
         #Feat._get_feats_k(list(idxs), k)
+        #Feat[[]]
         Feat[0]
         Feat[(0, 0)]
         Feat[([0], [0])]
@@ -82,7 +83,10 @@ def test():
         ## Empty call
         Feat[(([[]], [[]]), [0])]
         # Descriptormodels setting
+        # null formatters
+        Feat._format_characterizer(None, None)
         #Feat.set_descriptormodel(avgdesc)
+
 
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))
@@ -144,6 +148,8 @@ def test():
     Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
     test_getitem(Feat_imp)
     Feat_imp = ImplicitFeatures(catfeats_ar0, perturbation)
+    test_getitem(Feat_imp)
+    Feat_imp = ImplicitFeatures(catfeats_ar0.ravel(), perturbation, names=[0])
     test_getitem(Feat_imp)
     Feat_imp = ImplicitFeatures(catfeats_ar1, perturbation)
     test_getitem(Feat_imp)
