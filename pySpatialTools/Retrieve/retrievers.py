@@ -425,10 +425,10 @@ class Retriever:
             ## If constant and dynamic
             else:
                 #format_structure = 'tuple_list_tuple_only'
-                format_structure = 'list_tuple'
+                format_structure = 'tuple_list_tuple'
         ## If not constant
         else:
-            format_structure = 'list_tuple'
+            format_structure = 'tuple_list_tuple'
 
         ## Setting iss
         if bool_input_idx:

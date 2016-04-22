@@ -27,160 +27,160 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 
-#
-#def test():
-#    ## Parameters
-#    n = 100
-#    # Implicit
-#    locs = np.random.random((n, 2))*100
-#    locs1 = random_transformed_space_points(n, 2, None)*10
-#    # Explicit
-#    disc0 = SetDiscretization(np.random.randint(0, 20, 100))
-#    input_map = lambda s, x: disc0.discretize(x)
-#    pars4 = {'order': 4}
-#    pars5 = {'lim_distance': 2}
-#    pars8 = {'l': 8, 'center': 0, 'excluded': False}
-#    mainmapper = generate_random_relations_cutoffs(20, store='sparse')
-#    mainmapper.set_inout(output='indices')
-#
-#    ## Perturbations
-#    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
-#    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
-#    ## Create perturbations
-#    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
-#    perturbation1 = PermutationPerturbation(reind.T)
-#    perturbation2 = NonePerturbation(k_perturb2)
-#    perturbation3 = JitterLocations(0.2, k_perturb3)
-#    perturbation4 = [perturbation1, perturbation2, perturbation3]
-#    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
-#                         perturbation4]
-#
-#    _input_map = lambda s, i: i
-#    _output_map = [lambda s, i, x: x]
-#    pos_ifdistance = [True, False]
-#    pos_inmap = [None, _input_map]
-#    pos_constantinfo = [True, False, None]
-#    pos_boolinidx = [True, False, None]
-#
-#    ## KRetriever
-#    pos_inforet = [2, 5, 10]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx, pos_perturbations]
-#    for p in product(*pos):
-#        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-#                         output_map=p[3], constant_info=p[4],
-#                         bool_input_idx=p[5], perturbations=p[6])
-#        if p[5] is False:
-#            i = locs[0]
-#        else:
-#            i = 0
-#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#
-#        ## Testing other functions and parameters
-#        ret.k_perturb
-#
-#    ## CircRetriever
-#    pos_inforet = [2., 5., 10.]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-#                         output_map=p[3], constant_info=p[4],
-#                         bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = locs[0]
-#        else:
-#            i = 0
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#
-#    ## SameEleRetriever
-#    pos_inforet = [None]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                           input_map=p[2], output_map=p[3], constant_info=p[4],
-#                           bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#
-#    ## OrderEleRetriever
-#    pos_inforet = [pars4]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                            input_map=p[2], output_map=p[3],
-#                            constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#            neighs_info = ret.retrieve_neighs(j)
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#
-#    ## LimDistanceRetriever
-#    pos_inforet = [pars5]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                                  input_map=p[2], output_map=p[3],
-#                                  constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            #neighs_info = ret[i]
-#            neighs_info = ret.retrieve_neighs(j)
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#
+
+def test():
+    ## Parameters
+    n = 100
+    # Implicit
+    locs = np.random.random((n, 2))*100
+    locs1 = random_transformed_space_points(n, 2, None)*10
+    # Explicit
+    disc0 = SetDiscretization(np.random.randint(0, 20, 100))
+    input_map = lambda s, x: disc0.discretize(x)
+    pars4 = {'order': 4}
+    pars5 = {'lim_distance': 2}
+    pars8 = {'l': 8, 'center': 0, 'excluded': False}
+    mainmapper = generate_random_relations_cutoffs(20, store='sparse')
+    mainmapper.set_inout(output='indices')
+
+    ## Perturbations
+    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
+    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+    ## Create perturbations
+    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
+    perturbation1 = PermutationPerturbation(reind.T)
+    perturbation2 = NonePerturbation(k_perturb2)
+    perturbation3 = JitterLocations(0.2, k_perturb3)
+    perturbation4 = [perturbation1, perturbation2, perturbation3]
+    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
+                         perturbation4]
+
+    _input_map = lambda s, i: i
+    _output_map = [lambda s, i, x: x]
+    pos_ifdistance = [True, False]
+    pos_inmap = [None, _input_map]
+    pos_constantinfo = [True, False, None]
+    pos_boolinidx = [True, False, None]
+
+    ## KRetriever
+    pos_inforet = [2, 5, 10]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx, pos_perturbations]
+    for p in product(*pos):
+        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+                         output_map=p[3], constant_info=p[4],
+                         bool_input_idx=p[5], perturbations=p[6])
+        if p[5] is False:
+            i = locs[0]
+        else:
+            i = 0
+        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+
+        ## Testing other functions and parameters
+        ret.k_perturb
+
+    ## CircRetriever
+    pos_inforet = [2., 5., 10.]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+                         output_map=p[3], constant_info=p[4],
+                         bool_input_idx=p[5])
+        if p[5] is False:
+            i = locs[0]
+        else:
+            i = 0
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+
+    ## SameEleRetriever
+    pos_inforet = [None]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                           input_map=p[2], output_map=p[3], constant_info=p[4],
+                           bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
+
+    ## OrderEleRetriever
+    pos_inforet = [pars4]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                            input_map=p[2], output_map=p[3],
+                            constant_info=p[4], bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+            neighs_info = ret.retrieve_neighs(j)
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
+
+    ## LimDistanceRetriever
+    pos_inforet = [pars5]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                                  input_map=p[2], output_map=p[3],
+                                  constant_info=p[4], bool_input_idx=p[5])
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            #neighs_info = ret[i]
+            neighs_info = ret.retrieve_neighs(j)
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info = ret.retrieve_neighs(j, p[0])
+
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,
 ##                 perturbations=None, relative_pos=None, input_map=None,
