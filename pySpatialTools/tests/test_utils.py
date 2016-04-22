@@ -68,8 +68,8 @@ def test():
     random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0)
 
     ## Artificial random features
-    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
-    n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
+    n, n_feats = np.random.randint(1, 1000), np.random.randint(2, 20)
+    n_feats2 = [np.random.randint(2, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
 
     feats = continuous_array_features(n, n_feats)
@@ -111,6 +111,7 @@ def test():
     create_artificial_measure_array(ks, n_vals_i, n_feats)
     create_artificial_measure_append(ks, n_vals_i, n_feats)
     create_artificial_measure_replacelist(ks, n_vals_i, n_feats)
+    create_artificial_measure_replacelist(ks, n_vals_i, n_feats, True)
 
     ###########################################################################
     ############################ Spatial Elements #############################

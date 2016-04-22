@@ -39,20 +39,6 @@ def sparse_dict_completer(measure, global_info=None):
                     else:
                         d[e] = aux_dict[e]
             measure[k][vals_i] = d
-
-
-#            for i in range(len(measure[k][vals_i])):
-#                print len(measure[k][vals_i]), type(measure[k][vals_i])
-#                aux_dict = measure[k][vals_i][i]
-#                aux_keys = aux_dict.keys()
-#                pos_feats += aux_keys
-#                for e in aux_keys:
-#                    if e in d:
-#                        d[e] += aux_dict[e]
-#                    else:
-#                        d[e] = aux_dict[e]
-#            measure[k][vals_i] = d
-
     ## Collapsing
     feats_names = list(np.unique(pos_feats))
     for k in range(len(measure)):
@@ -93,7 +79,6 @@ def sparse_dict_completer_unknown(measure, global_info=None):
             for i in range(len(measure[k][1])):
                 dicti = {}
                 for v in range(len(measure[k][1][i])):
-
                     keys = measure[k][0][i][v].keys()
                     values = measure[k][0][i][v].values()
                     for j in xrange(len(keys)):

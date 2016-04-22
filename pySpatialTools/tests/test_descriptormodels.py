@@ -258,6 +258,33 @@ def test():
     characterizer_summer_arrayarray(pointfeats_arrayarray1, point_pos)
     characterizer_summer_arrayarray(pointfeats_arrayarray2, point_pos)
 
+    # Average
+    characterizer_average(pointfeats_arrayarray0, point_pos)
+    characterizer_average(pointfeats_listarray0, point_pos)
+    characterizer_average(pointfeats_arrayarray1, point_pos)
+    characterizer_average(pointfeats_listarray1, point_pos)
+    characterizer_average(pointfeats_arrayarray2, point_pos)
+    characterizer_average(pointfeats_listarray2, point_pos)
+    characterizer_average(pointfeats_listdict0, point_pos)
+    characterizer_average(pointfeats_listdict1, point_pos)
+
+    characterizer_average_array(pointfeats_arrayarray0, point_pos)
+    characterizer_average_array(pointfeats_listarray0, point_pos)
+    characterizer_average_array(pointfeats_arrayarray1, point_pos)
+    characterizer_average_array(pointfeats_listarray1, point_pos)
+    characterizer_average_array(pointfeats_arrayarray2, point_pos)
+    characterizer_average_array(pointfeats_listarray2, point_pos)
+
+    characterizer_average_listdict(pointfeats_listdict0, point_pos)
+    characterizer_average_listdict(pointfeats_listdict1, point_pos)
+
+    characterizer_average_listarray(pointfeats_listarray0, point_pos)
+    characterizer_average_listarray(pointfeats_listarray1, point_pos)
+    characterizer_average_listarray(pointfeats_listarray2, point_pos)
+    characterizer_average_arrayarray(pointfeats_arrayarray0, point_pos)
+    characterizer_average_arrayarray(pointfeats_arrayarray1, point_pos)
+    characterizer_average_arrayarray(pointfeats_arrayarray2, point_pos)
+
     ## Testing utils
     f = characterizer_from_unitcharacterizer(lambda x, y: x[0])
     f(pointfeats_arrayarray0, [point_pos]*n)
@@ -321,7 +348,7 @@ def test():
 #    x, x_i, vals_i = creation_add2res(types[2])
 #    x, x_i, vals_i = creation_add2res(types[1])
 
-    n_feats = np.random.randint(1, 20)
+    n_feats = np.random.randint(2, 20)
     ks = np.random.randint(1, 20)
     n_iss = np.random.randint(1, 20)
     n_vals_i = np.random.randint(1, 20)
@@ -331,8 +358,12 @@ def test():
     x = create_artificial_measure_replacelist(ks, n_vals_i, n_feats)
     x_i = create_empty_features_dict(n_feats, n_iss, ks)
     measure_spdict_unknown = replacelist_addresult_function(x, x_i, vals_i)
+    x = create_artificial_measure_replacelist(ks, n_vals_i, n_feats, True)
+    measure_spdict_unknown = replacelist_addresult_function(x, x_i, vals_i)
 
     x = create_artificial_measure_append(ks, n_vals_i, n_feats)
+    measure_spdict_known = append_addresult_function(x, x_i, vals_i)
+    x[0][0] = x[0][0][0]
     measure_spdict_known = append_addresult_function(x, x_i, vals_i)
 
     x = create_artificial_measure_array(ks, n_vals_i, n_feats)

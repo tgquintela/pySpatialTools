@@ -28,12 +28,18 @@ def create_artificial_measure_append(n_k, n_vals_i, n_feats):
     return measure
 
 
-def create_artificial_measure_replacelist(n_k, n_vals_i, n_feats):
+def create_artificial_measure_replacelist(n_k, n_vals_i, n_feats,
+                                          unique_=False):
+    last = 0
     rounds = np.random.randint(0, 40)
     measure = create_empty_replacelist(n_k, n_vals_i, n_feats)
     for i in range(rounds):
         n_iss = np.random.randint(0, 10)
-        vals_i = create_vals_i(n_iss, n_vals_i, n_k)
+        if unique_:
+            vals_i = np.array([last+np.arange(n_iss)]*n_k)
+            last += n_iss
+        else:
+            vals_i = create_vals_i(n_iss, n_vals_i, n_k)
         x_i = create_features_i_dict(n_feats, n_iss, n_k)
         for k in range(len(vals_i)):
             measure[k][0].append(x_i[k])
