@@ -97,7 +97,7 @@ class Features:
                 for j_i in range(len(i[j_k])):
                     if len(i[j_k][j_i]) == 0:
                         continue
-                    bool_overbound = np.max(i[j_k][j_i]) >= len(self.features)
+                    bool_overbound = np.max(i[j_k][j_i]) >= self.shape[0]
                     bool_lowerbound = np.min(i[j_k][j_i]) < 0
                     if bool_lowerbound or bool_overbound:
                         raise IndexError("Indices out of bounds.")

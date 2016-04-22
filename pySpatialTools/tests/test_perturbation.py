@@ -87,11 +87,11 @@ def test():
     assert(ret2.k_perturb == perturbation1.k_perturb)
 
     # Perturbations in Descriptors
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation1)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation1.k_perturb)
+#    features = ImplicitFeatures(feat_arr)
+#    features.add_perturbations(perturbation1)
+#    avgdesc = AvgDescriptor()
+#    features = FeaturesManager(features, avgdesc)
+#    assert(features.k_perturb == perturbation1.k_perturb)
 
     ###########################################################################
     #### NonePerturbation
@@ -116,11 +116,11 @@ def test():
     assert(ret2.k_perturb == perturbation2.k_perturb)
 
     # Perturbations in Descriptors
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation2)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation2.k_perturb)
+#    features = ImplicitFeatures(feat_arr)
+#    features.add_perturbations(perturbation2)
+#    avgdesc = AvgDescriptor()
+#    features = FeaturesManager(features, avgdesc)
+#    assert(features.k_perturb == perturbation2.k_perturb)
 
     ###########################################################################
     #### JitterPerturbations
@@ -145,11 +145,11 @@ def test():
     assert(ret2.k_perturb == perturbation3.k_perturb)
 
     # Perturbations in Descriptors
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation3)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == perturbation3.k_perturb)
+#    features = ImplicitFeatures(feat_arr)
+#    features.add_perturbations(perturbation3)
+#    avgdesc = AvgDescriptor()
+#    features = FeaturesManager(features, avgdesc)
+#    assert(features.k_perturb == perturbation3.k_perturb)
 
     ###########################################################################
     #### CollectionPerturbations
@@ -165,11 +165,11 @@ def test():
     assert(ret2.k_perturb == k_perturb4)
 
     # Perturbations in Descriptors
-    features = ImplicitFeatures(feat_arr)
-    features.add_perturbations(perturbation4)
-    avgdesc = AvgDescriptor()
-    features = FeaturesManager(features, avgdesc)
-    assert(features.k_perturb == k_perturb4)
+#    features = ImplicitFeatures(feat_arr)
+#    features.add_perturbations(perturbation4)
+#    avgdesc = AvgDescriptor()
+#    features = FeaturesManager(features, avgdesc)
+#    assert(features.k_perturb == k_perturb4)
 
     ###########################################################################
     #### IndividualPerturbations

@@ -28,3 +28,10 @@ from artificial_features import continuous_array_features,\
     categorical_dict_features, continuous_agg_array_features,\
     categorical_agg_array_features, continuous_agg_dict_features,\
     categorical_agg_dict_features
+
+## Artificial random measures
+from artificial_measure import create_vals_i, create_artificial_measure_array,\
+    create_artificial_measure_replacelist, create_artificial_measure_append,\
+    create_empty_array, create_empty_append, create_empty_replacelist,\
+    create_empty_features_array, create_empty_features_dict,\
+    create_features_i_array, create_features_i_dict

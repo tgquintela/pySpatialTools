@@ -42,7 +42,22 @@ class PjensenDescriptor(DescriptorModel):
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute_characs(self, pointfeats, point_pos):
-        "Compulsary function to pass for the feture retriever."
+        """Compulsary function to pass for the feture retriever.
+
+        Parameters
+        ----------
+        pointfeats: list of arrays, np.ndarray or list of list of dicts
+            the point features information. [iss][nei][feats]
+        point_pos: list of arrays or np.ndarray.
+            the element relative position of the neighbourhood.
+            [iss][nei][rel_pos]
+
+        Returns
+        -------
+        descriptors: list of arrays or np.ndarray or list of dicts
+            the descriptor of the neighbourhood. [iss][feats]
+
+        """
         descriptors = characterizer_1sh_counter(pointfeats, point_pos)
         ## TODO: Transform dict to array and reverse
         #keys = [self.mapper[key] for key in counts.keys()]

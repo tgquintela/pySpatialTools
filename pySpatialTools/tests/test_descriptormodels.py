@@ -12,6 +12,12 @@ testing descriptor models utilities.
 from pySpatialTools.Retrieve import create_retriever_input_output,\
     OrderEleNeigh, SameEleNeigh, KRetriever, CircRetriever,\
     RetrieverManager
+from pySpatialTools.utils.artificial_data import\
+    continuous_array_features, categorical_agg_dict_features,\
+    categorical_array_features, continuous_dict_features,\
+    categorical_dict_features, continuous_agg_array_features,\
+    categorical_agg_array_features, continuous_agg_dict_features
+from pySpatialTools.utils.artificial_data.artificial_measure import *
 
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
@@ -37,15 +43,7 @@ from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 import numpy as np
 
 ## Invocable characterizer functions
-from pySpatialTools.FeatureManagement.aux_descriptormodels import\
-    characterizer_1sh_counter, characterizer_summer, characterizer_average,\
-    sum_reducer, avg_reducer, sum_addresult_function,\
-    append_addresult_function, replacelist_addresult_function,\
-    null_completer, weighted_completer, sparse_dict_completer,\
-    aggregator_1sh_counter, aggregator_summer, aggregator_average,\
-    counter_featurenames, array_featurenames,\
-    count_out_formatter_general, null_out_formatter,\
-    count_out_formatter_dict2array
+from pySpatialTools.FeatureManagement.aux_descriptormodels import *
 
 
 def test():
@@ -72,19 +70,57 @@ def test():
         p_aggpos = None
         return aggdesc, p_aggpos
 
-    ## Reducer
-    aggdesc, p_aggpos = creation_agg(True)
-    sum_reducer(aggdesc, p_aggpos)
-    avg_reducer(aggdesc, p_aggpos)
-    aggdesc, p_aggpos = creation_agg(False)
-    sum_reducer(aggdesc, p_aggpos)
-    avg_reducer(aggdesc, p_aggpos)
-    aggdesc, p_aggpos = creation_agg(False)
-    sum_reducer(list(aggdesc), p_aggpos)
-    avg_reducer(list(aggdesc), p_aggpos)
+    point_pos = None
+    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
+    n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
+    ks = np.random.randint(1, 20)
+
+    ### Tests
+    # Example objects
+    pointfeats_arrayarray0 = continuous_array_features(n, n_feats)
+    pointfeats_listarray0 = list(pointfeats_arrayarray0)
+    pointfeats_arrayarray1 = categorical_array_features(n, n_feats)
+    pointfeats_listarray1 = list(pointfeats_arrayarray1)
+    pointfeats_arrayarray2 = categorical_array_features(n, n_feats2)
+    pointfeats_listarray2 = list(pointfeats_arrayarray2)
+    pointfeats_listdict0 = continuous_dict_features(n, n_feats)
+    pointfeats_listdict1 = categorical_dict_features(n, n_feats)
+
+    #################################
+    #### Reducer
+    ###############
+
+    sum_reducer(pointfeats_arrayarray0, point_pos)
+    sum_reducer(pointfeats_listarray0, point_pos)
+    sum_reducer(pointfeats_arrayarray1, point_pos)
+    sum_reducer(pointfeats_listarray1, point_pos)
+    sum_reducer(pointfeats_arrayarray2, point_pos)
+    sum_reducer(pointfeats_listarray2, point_pos)
+    sum_reducer(pointfeats_listdict0, point_pos)
+    sum_reducer(pointfeats_listdict1, point_pos)
+
+    avg_reducer(pointfeats_arrayarray0, point_pos)
+    avg_reducer(pointfeats_listarray0, point_pos)
+    avg_reducer(pointfeats_arrayarray1, point_pos)
+    avg_reducer(pointfeats_listarray1, point_pos)
+    avg_reducer(pointfeats_arrayarray2, point_pos)
+    avg_reducer(pointfeats_listarray2, point_pos)
+    avg_reducer(pointfeats_listdict0, point_pos)
+    avg_reducer(pointfeats_listdict1, point_pos)
+
+#    aggdesc, p_aggpos = creation_agg(True)
+#    sum_reducer(aggdesc, p_aggpos)
+#    avg_reducer(aggdesc, p_aggpos)
+#    aggdesc, p_aggpos = creation_agg(False)
+#    sum_reducer(aggdesc, p_aggpos)
+#    avg_reducer(aggdesc, p_aggpos)
+#    aggdesc, p_aggpos = creation_agg(False)
+#    sum_reducer(list(aggdesc), p_aggpos)
+#    avg_reducer(list(aggdesc), p_aggpos)
 
     #################################
     #### Outformatters
+    ###################
     def creation_outformatter():
         n_iss = np.random.randint(1, 10)
         outfeats = [str(e) for e in np.arange(20)]
@@ -117,6 +153,7 @@ def test():
 
     #################################
     #### Featurenames
+    #################
     def creation_features(listfeats):
         n_iss = np.random.randint(1, 10)
         if listfeats:
@@ -168,238 +205,376 @@ def test():
 
     #################################
     #### Characterizers
-    # TODO: listdicts feats based characterizers
-    def creation_feats2characterize(listfeats):
-        n_iss = np.random.randint(1, 10)
-        if listfeats:
-            pass
-        else:
-            pointfeats = np.random.randint(0, 20, n_iss).reshape((n_iss, 1))
-        point_pos = None
-        return pointfeats, point_pos
+    ###################
+    # We need 2nd level features so we use aggregation ones
+    # [iss][nei]{feats} or [iss](nei, feats) or (iss, nei, feats)
 
-    pointfeats, point_pos = creation_feats2characterize(False)
-    characterizer_1sh_counter(pointfeats, point_pos)
-    characterizer_summer(pointfeats, point_pos)
-    characterizer_average(pointfeats, point_pos)
+    point_pos = None
+    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
+    n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
+    ks = np.random.randint(1, 20)
 
-    characterizer_1sh_counter(list(pointfeats), point_pos)
-    characterizer_summer(list(pointfeats), point_pos)
-    characterizer_average(list(pointfeats), point_pos)
+    ### Tests
+    # Example objects
+    pointfeats_arrayarray0 = continuous_agg_array_features(n, n_feats, ks)
+    pointfeats_listarray0 = list(pointfeats_arrayarray0)
+    pointfeats_arrayarray1 = categorical_agg_array_features(n, n_feats, ks)
+    pointfeats_listarray1 = list(pointfeats_arrayarray1)
+    pointfeats_arrayarray2 = categorical_agg_array_features(n, n_feats2, ks)
+    pointfeats_listarray2 = list(pointfeats_arrayarray2)
+    pointfeats_listdict0 = continuous_agg_dict_features(n, n_feats, ks)
+    pointfeats_listdict1 = categorical_agg_dict_features(n, n_feats, ks)
+
+    # Counter
+    characterizer_1sh_counter(pointfeats_arrayarray0, point_pos)
+    characterizer_1sh_counter(pointfeats_arrayarray1, point_pos)
+    characterizer_1sh_counter(pointfeats_listarray0, point_pos)
+    characterizer_1sh_counter(pointfeats_listarray1, point_pos)
+
+    # Summer
+    characterizer_summer(pointfeats_arrayarray0, point_pos)
+    characterizer_summer(pointfeats_listarray0, point_pos)
+    characterizer_summer(pointfeats_arrayarray1, point_pos)
+    characterizer_summer(pointfeats_listarray1, point_pos)
+    characterizer_summer(pointfeats_arrayarray2, point_pos)
+    characterizer_summer(pointfeats_listarray2, point_pos)
+    characterizer_summer(pointfeats_listdict0, point_pos)
+    characterizer_summer(pointfeats_listdict1, point_pos)
+
+    characterizer_summer_array(pointfeats_arrayarray0, point_pos)
+    characterizer_summer_array(pointfeats_listarray0, point_pos)
+    characterizer_summer_array(pointfeats_arrayarray1, point_pos)
+    characterizer_summer_array(pointfeats_listarray1, point_pos)
+    characterizer_summer_array(pointfeats_arrayarray2, point_pos)
+    characterizer_summer_array(pointfeats_listarray2, point_pos)
+
+    characterizer_summer_listdict(pointfeats_listdict0, point_pos)
+    characterizer_summer_listdict(pointfeats_listdict1, point_pos)
+
+    characterizer_summer_listarray(pointfeats_listarray0, point_pos)
+    characterizer_summer_listarray(pointfeats_listarray1, point_pos)
+    characterizer_summer_listarray(pointfeats_listarray2, point_pos)
+    characterizer_summer_arrayarray(pointfeats_arrayarray0, point_pos)
+    characterizer_summer_arrayarray(pointfeats_arrayarray1, point_pos)
+    characterizer_summer_arrayarray(pointfeats_arrayarray2, point_pos)
+
+    ## Testing utils
+    f = characterizer_from_unitcharacterizer(lambda x, y: x[0])
+    f(pointfeats_arrayarray0, [point_pos]*n)
+    f(pointfeats_listarray0, [point_pos]*n)
+    f(pointfeats_arrayarray1, [point_pos]*n)
+    f(pointfeats_listarray1, [point_pos]*n)
+    f(pointfeats_arrayarray2, [point_pos]*n)
+    f(pointfeats_listarray2, [point_pos]*n)
+    f(pointfeats_listdict0, [point_pos]*n)
+    f(pointfeats_listdict1, [point_pos]*n)
 
     #################################
     #### Characterizers
+    ###################
+
     # TODO: listdicts feats based characterizers
-    aggregator_1sh_counter(pointfeats, point_pos)
-    aggregator_summer(pointfeats, point_pos)
-    aggregator_average(pointfeats, point_pos)
+
+#    aggregator_1sh_counter(pointfeats, point_pos)
+#    aggregator_summer(pointfeats, point_pos)
+#    aggregator_average(pointfeats, point_pos)
 
     #################################
     #### add2results
-    def creation_x_i(listfeats, n_k, n_iss, n_feats):
-        if listfeats:
-            x_i = []
-            for k in range(n_k):
-                x_i_k = []
-                for i in range(n_iss):
-                    keys = np.unique(np.random.randint(0, n_feats, n_feats))
-                    keys = [str(e) for e in keys]
-                    values = np.random.random(len(keys))
-                    x_i_k.append(dict(zip(keys, values)))
-                x_i.append(x_i_k)
-        else:
-            x_i = np.random.random((n_k, n_iss, n_feats))
-        return x_i
-
-    def creation_add2res(type_):
-        ## Preparations
-        n_feats = np.random.randint(1, 20)
-        n_k = np.random.randint(1, 20)
-        n_iss = np.random.randint(1, 20)
-        max_vals_i = np.random.randint(1, 20)
-        vals_i = []
-        for i in range(n_k):
-            vals_i.append(np.random.randint(0, max_vals_i, n_iss))
-        if type_ == 'replacelist':
-            x = [[[], []]]*n_k
-            x_i = creation_x_i(True, n_k, n_iss, n_feats)
-        elif type_ == 'append':
-            x = [[[]]*n_iss]*n_k
-            x_i = creation_x_i(True, n_k, n_iss, n_feats)
-        elif type_ == 'sum':
-            x_i = creation_x_i(False, n_k, n_iss, n_feats)
-            x = np.random.random((max_vals_i, n_feats, n_k))
-        return x, x_i, vals_i
-
-    types = ['replacelist', 'append', 'sum']
+#    def creation_x_i(listfeats, n_k, n_iss, n_feats):
+#        if listfeats:
+#            x_i = []
+#            for k in range(n_k):
+#                x_i_k = []
+#                for i in range(n_iss):
+#                    keys = np.unique(np.random.randint(0, n_feats, n_feats))
+#                    keys = [str(e) for e in keys]
+#                    values = np.random.random(len(keys))
+#                    x_i_k.append(dict(zip(keys, values)))
+#                x_i.append(x_i_k)
+#        else:
+#            x_i = np.random.random((n_k, n_iss, n_feats))
+#        return x_i
+#
+#    def creation_add2res(type_):
+#        ## Preparations
+#        n_feats = np.random.randint(1, 20)
+#        n_k = np.random.randint(1, 20)
+#        n_iss = np.random.randint(1, 20)
+#        max_vals_i = np.random.randint(1, 20)
+#        vals_i = []
+#        for i in range(n_k):
+#            vals_i.append(np.random.randint(0, max_vals_i, n_iss))
+#        if type_ == 'replacelist':
+#            x = [[[], []]]*n_k
+#            x_i = creation_x_i(True, n_k, n_iss, n_feats)
+#        elif type_ == 'append':
+#            x = [[[]]*n_iss]*n_k
+#            x_i = creation_x_i(True, n_k, n_iss, n_feats)
+#        elif type_ == 'sum':
+#            x_i = creation_x_i(False, n_k, n_iss, n_feats)
+#            x = np.random.random((max_vals_i, n_feats, n_k))
+#        return x, x_i, vals_i
+#
+#    types = ['replacelist', 'append', 'sum']
 #    x, x_i, vals_i = creation_add2res(types[0])
-#    measure_spdict_unknown = replacelist_addresult_function(x, x_i, vals_i)
+#    x, x_i, vals_i = creation_add2res(types[2])
 #    x, x_i, vals_i = creation_add2res(types[1])
-#    measure_spdict_known = append_addresult_function(x, x_i, vals_i)
-    x, x_i, vals_i = creation_add2res(types[2])
+
+    n_feats = np.random.randint(1, 20)
+    ks = np.random.randint(1, 20)
+    n_iss = np.random.randint(1, 20)
+    n_vals_i = np.random.randint(1, 20)
+
+    vals_i = create_vals_i(n_iss, n_vals_i, ks)
+
+    x = create_artificial_measure_replacelist(ks, n_vals_i, n_feats)
+    x_i = create_empty_features_dict(n_feats, n_iss, ks)
+    measure_spdict_unknown = replacelist_addresult_function(x, x_i, vals_i)
+
+    x = create_artificial_measure_append(ks, n_vals_i, n_feats)
+    measure_spdict_known = append_addresult_function(x, x_i, vals_i)
+
+    x = create_artificial_measure_array(ks, n_vals_i, n_feats)
+    x_i = create_empty_features_array(n_feats, n_iss, ks)
+
     measure_array = sum_addresult_function(x, x_i, vals_i)
 
     #################################
     #### Completers
-#    sparse_dict_completer(measure_spdict_known)
-#    sparse_dict_completer_unknown(measure_spdict_unknown)
+    x = create_artificial_measure_append(ks, n_vals_i, n_feats)
+    sparse_dict_completer(x)
+    sparse_dict_completer_unknown(measure_spdict_unknown)
     null_completer(measure_array)
     global_info = np.random.random(len(measure_array))
     weighted_completer(measure_array, global_info)
     global_info = np.random.random(measure_array.shape)
     weighted_completer(measure_array, global_info)
+    weighted_completer(measure_array, None)
 
-    ############################# Descriptormodels ############################
-    ###########################################################################
-    #################################
-    #### SumDescriptor
-    sumdesc = SumDescriptor()
-    characs = np.random.random((10, 5))
-    point_pos = np.random.random((10, 5))
-    measure = np.random.random((100, 10, 2))
-
-    sumdesc.compute_characs(characs, point_pos)
-    sumdesc.compute_characs(characs, None)
-
-    sumdesc.reducer(characs, point_pos)
-    sumdesc.reducer(characs, None)
-
-    sumdesc.aggdescriptor(characs, point_pos)
-    sumdesc.aggdescriptor(characs, None)
-
-    sumdesc.to_complete_measure(measure)
-    #sumdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
-
-    # Not specific
-    sumdesc.set_global_info(None)
-    sumdesc.set_functions(None, None)
-
-    #################################
-    #### AvgDescriptor
-    avgdesc = AvgDescriptor()
-    characs = np.random.random((10, 5))
-    point_pos = np.random.random((10, 5))
-    measure = np.random.random((100, 10, 2))
-
-    avgdesc.compute_characs(characs, point_pos)
-    avgdesc.compute_characs(characs, None)
-
-    avgdesc.reducer(characs, point_pos)
-    avgdesc.reducer(characs, None)
-
-    avgdesc.aggdescriptor(characs, point_pos)
-    avgdesc.aggdescriptor(characs, None)
-
-    avgdesc.to_complete_measure(measure)
-    #avgdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
-
-    # Not specific
-    avgdesc.set_global_info(None)
-    avgdesc.set_functions(None, None)
-
-    #################################
-    #### Countdescriptor
-    countdesc = Countdescriptor()
-    characs = np.random.randint(0, 10, 50).reshape((10, 5))
-    point_pos = np.random.random((10, 5))
-    measure = np.random.random((100, 10, 2))
-
-    countdesc.compute_characs(characs, point_pos)
-    countdesc.compute_characs(characs, None)
-
-    countdesc.reducer(characs, point_pos)
-    countdesc.reducer(characs, None)
-
-    countdesc.aggdescriptor(characs, point_pos)
-    countdesc.aggdescriptor(characs, None)
-
-    countdesc.to_complete_measure(measure)
-    #countdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
-
-    # Not specific
-    countdesc.set_global_info(None)
-    countdesc._format_default_functions()
-    countdesc.set_functions(None, None)
-    countdesc.set_functions(None, 'dict')
-
-    #################################
-    #### Pjensen
-    pjensen = PjensenDescriptor()
-    # Specific
-    features = list(np.arange(20)) + list(np.random.randint(0, 20, 80))
-    features = np.array(features).reshape((100, 1))
-    pjensen.set_global_info(features)
-
-    pjensen = PjensenDescriptor(features)
-    characs = np.random.randint(0, 10, 50).reshape((10, 5))
-    point_pos = np.random.random((10, 5))
-    measure = np.random.randint(0, 50, 20*20).reshape((20, 20, 1))
-
-    # Functions
-    pjensen.compute_characs(characs, point_pos)
-    pjensen.compute_characs(characs, None)
-
-    pjensen.reducer(characs, point_pos)
-    pjensen.reducer(characs, None)
-
-    pjensen.aggdescriptor(characs, point_pos)
-    pjensen.aggdescriptor(characs, None)
-
-    pjensen.to_complete_measure(measure)
-    #pjensen.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
-
-    # Not specific
-    pjensen._format_default_functions()
-    pjensen.set_functions(None, None)
-    pjensen.set_functions(None, 'dict')
-
-    #################################
-    #### SparseCounter
-    spcountdesc = SparseCounter()
+#    ############################# Descriptormodels ############################
+#    ###########################################################################
+#    #################################
+#    #### SumDescriptor
+#    sumdesc = SumDescriptor()
+#    characs = np.random.random((10, 5))
+#    point_pos = np.random.random((10, 5))
+#    measure = np.random.random((100, 10, 2))
+#    feats = continuous_array_features(100, 10)
+#    feats_dict = continuous_dict_features(100, 10)
 #
-#    spcountdesc.compute_characs(characs, point_pos)
-#    spcountdesc.compute_characs(characs, None)
+#    sumdesc.compute_characs(characs, point_pos)
+#    sumdesc.compute_characs(characs, None)
+#    sumdesc.compute_characs(feats, point_pos)
+#    sumdesc.compute_characs(feats, None)
+#    sumdesc.compute_characs(feats_dict, point_pos)
+#    sumdesc.compute_characs(feats_dict, None)
 #
-#    spcountdesc.reducer(characs, point_pos)
-#    spcountdesc.reducer(characs, None)
+#    sumdesc.reducer(characs, point_pos)
+#    sumdesc.reducer(characs, None)
+#    sumdesc.reducer(feats, point_pos)
+#    sumdesc.reducer(feats, None)
+#    sumdesc.reducer(feats_dict, point_pos)
+#    sumdesc.reducer(feats_dict, None)
 #
-#    spcountdesc.aggdescriptor(characs, point_pos)
-#    spcountdesc.aggdescriptor(characs, None)
+#    sumdesc.aggdescriptor(characs, point_pos)
+#    sumdesc.aggdescriptor(characs, None)
+#    sumdesc.aggdescriptor(feats, point_pos)
+#    sumdesc.aggdescriptor(feats, None)
+#    sumdesc.aggdescriptor(feats_dict, point_pos)
+#    sumdesc.aggdescriptor(feats_dict, None)
 #
-#    spcountdesc.to_complete_measure(measure)
-#    #spcountdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#    sumdesc.to_complete_measure(measure)
+#    #sumdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
 #
 #    # Not specific
-#    spcountdesc.set_global_info(None)
-#    spcountdesc.set_functions(None, None)
+#    sumdesc.set_global_info(None)
+#    sumdesc.set_functions(None, None)
+#
+#    #################################
+#    #### AvgDescriptor
+#    avgdesc = AvgDescriptor()
+#    characs = np.random.random((10, 5))
+#    point_pos = np.random.random((10, 5))
+#    measure = np.random.random((100, 10, 2))
+#    feats = continuous_array_features(100, 10)
+#    feats_dict = continuous_dict_features(100, 10)
+#
+#    avgdesc.compute_characs(characs, point_pos)
+#    avgdesc.compute_characs(characs, None)
+#    avgdesc.compute_characs(feats, point_pos)
+#    avgdesc.compute_characs(feats, None)
+#    avgdesc.compute_characs(feats_dict, point_pos)
+#    avgdesc.compute_characs(feats_dict, None)
+#
+#    avgdesc.reducer(characs, point_pos)
+#    avgdesc.reducer(characs, None)
+#    avgdesc.reducer(feats, point_pos)
+#    avgdesc.reducer(feats, None)
+#    avgdesc.reducer(feats_dict, point_pos)
+#    avgdesc.reducer(feats_dict, None)
+#
+#    avgdesc.aggdescriptor(characs, point_pos)
+#    avgdesc.aggdescriptor(characs, None)
+#    avgdesc.aggdescriptor(feats, point_pos)
+#    avgdesc.aggdescriptor(feats, None)
+#    avgdesc.aggdescriptor(feats_dict, point_pos)
+#    avgdesc.aggdescriptor(feats_dict, None)
+#    avgdesc.to_complete_measure(measure)
+#    #avgdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#
+#    # Not specific
+#    avgdesc.set_global_info(None)
+#    avgdesc.set_functions(None, None)
+#
+#    #################################
+#    #### Countdescriptor
+#    countdesc = Countdescriptor()
+#    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+#    point_pos = np.random.random((10, 5))
+#    measure = np.random.random((100, 10, 2))
+#    feats = categorical_array_features(100, 10)
+#    feats_dict = categorical_dict_features(100, 10)
+#
+#    countdesc.compute_characs(characs, point_pos)
+#    countdesc.compute_characs(characs, None)
+#    countdesc.compute_characs(feats, point_pos)
+#    countdesc.compute_characs(feats, None)
+#    countdesc.compute_characs(feats_dict, point_pos)
+#    countdesc.compute_characs(feats_dict, None)
+#
+#    countdesc.reducer(characs, point_pos)
+#    countdesc.reducer(characs, None)
+#    countdesc.reducer(feats, point_pos)
+#    countdesc.reducer(feats, None)
+#    countdesc.reducer(feats_dict, point_pos)
+#    countdesc.reducer(feats_dict, None)
+#
+#    countdesc.aggdescriptor(characs, point_pos)
+#    countdesc.aggdescriptor(characs, None)
+#    countdesc.aggdescriptor(feats, point_pos)
+#    countdesc.aggdescriptor(feats, None)
+#    countdesc.aggdescriptor(feats_dict, point_pos)
+#    countdesc.aggdescriptor(feats_dict, None)
+#
+#    countdesc.to_complete_measure(measure)
+#    #countdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#
+#    # Not specific
+#    countdesc.set_global_info(None)
+#    countdesc._format_default_functions()
+#    countdesc.set_functions(None, None)
+#    countdesc.set_functions(None, 'dict')
+#
+#    #################################
+#    #### Pjensen
+#    pjensen = PjensenDescriptor()
+#    # Specific
+#    features = list(np.arange(20)) + list(np.random.randint(0, 20, 80))
+#    features = np.array(features).reshape((100, 1))
+#    pjensen.set_global_info(features)
+#
+#    feats = categorical_array_features(100, 20)
+#    feats_dict = categorical_dict_features(100, 10)
+#
+#    pjensen = PjensenDescriptor(features)
+#    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+#    point_pos = np.random.random((10, 5))
+#    measure = np.random.randint(0, 50, 20*20).reshape((20, 20, 1))
+#
+#    # Functions
+#    pjensen.compute_characs(characs, point_pos)
+#    pjensen.compute_characs(characs, None)
+#    pjensen.compute_characs(feats, point_pos)
+#    pjensen.compute_characs(feats, None)
+#    pjensen.compute_characs(feats_dict, point_pos)
+#    pjensen.compute_characs(feats_dict, None)
+#
+#    pjensen.reducer(characs, point_pos)
+#    pjensen.reducer(characs, None)
+#    pjensen.reducer(feats, point_pos)
+#    pjensen.reducer(feats, None)
+#    pjensen.compute_characs(feats_dict, point_pos)
+#    pjensen.compute_characs(feats_dict, None)
+#
+#    pjensen.aggdescriptor(characs, point_pos)
+#    pjensen.aggdescriptor(characs, None)
+#    pjensen.aggdescriptor(feats, point_pos)
+#    pjensen.aggdescriptor(feats, None)
+#    pjensen.compute_characs(feats_dict, point_pos)
+#    pjensen.compute_characs(feats_dict, None)
+#
+#    pjensen.to_complete_measure(measure)
+#    #pjensen.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#    # Not specific
+#    pjensen._format_default_functions()
+#    pjensen.set_functions(None, None)
+#    pjensen.set_functions(None, 'dict')
+#
+#    #################################
+#    #### SparseCounter
+#    spcountdesc = SparseCounter()
+##
+##    spcountdesc.compute_characs(characs, point_pos)
+##    spcountdesc.compute_characs(characs, None)
+##
+##    spcountdesc.reducer(characs, point_pos)
+##    spcountdesc.reducer(characs, None)
+##
+##    spcountdesc.aggdescriptor(characs, point_pos)
+##    spcountdesc.aggdescriptor(characs, None)
+##
+##    spcountdesc.to_complete_measure(measure)
+##    #spcountdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+##
+##    # Not specific
+##    spcountdesc.set_global_info(None)
+##    spcountdesc.set_functions(None, None)
+#
+#    #################################
+#    #### NBinsHistogramDesc
+#    nbinsdesc = NBinsHistogramDesc(5)
+#    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+#    point_pos = np.random.random((10, 5))
+#    measure = np.random.random((100, 10, 2))
+#    feats = categorical_array_features(100, 20)
+#    feats_dict = categorical_dict_features(100, 10)
+#
+#    nbinsdesc.compute_characs(characs, point_pos)
+#    nbinsdesc.compute_characs([characs], None)
+#    nbinsdesc.compute_characs(feats, point_pos)
+#    nbinsdesc.compute_characs(feats, None)
+#    nbinsdesc.compute_characs(feats_dict, point_pos)
+#    nbinsdesc.compute_characs(feats_dict, None)
+#
+#    nbinsdesc.reducer(characs, point_pos)
+#    nbinsdesc.reducer(characs, None)
+#    nbinsdesc.reducer(feats, point_pos)
+#    nbinsdesc.reducer(feats, None)
+#    nbinsdesc.reducer(feats_dict, point_pos)
+#    nbinsdesc.reducer(feats_dict, None)
+#
+#    nbinsdesc.aggdescriptor(characs, point_pos)
+#    nbinsdesc.aggdescriptor(characs, None)
+#    nbinsdesc.aggdescriptor(feats, point_pos)
+#    nbinsdesc.aggdescriptor(feats, None)
+#    nbinsdesc.aggdescriptor(feats_dict, point_pos)
+#    nbinsdesc.aggdescriptor(feats_dict, None)
+#
+#    nbinsdesc.to_complete_measure(measure)
+#    #nbinsdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+#
+#    # Specific
+#    nbinsdesc._format_default_functions()
+#    nbinsdesc.set_functions(None, None)
+#    nbinsdesc.set_functions(None, 'dict')
+#    features = np.random.random((100, 5))
+#    nbinsdesc.set_global_info(features, True)
+#    nbinsdesc.set_global_info(features, False)
+#    # Not specific
 
-    #################################
-    #### NBinsHistogramDesc
-    nbinsdesc = NBinsHistogramDesc(5)
-    characs = np.random.randint(0, 10, 50).reshape((10, 5))
-    point_pos = np.random.random((10, 5))
-    measure = np.random.random((100, 10, 2))
 
-    nbinsdesc.compute_characs(characs, point_pos)
-    nbinsdesc.compute_characs([characs], None)
 
-    nbinsdesc.reducer(characs, point_pos)
-    nbinsdesc.reducer(characs, None)
-
-    nbinsdesc.aggdescriptor(characs, point_pos)
-    nbinsdesc.aggdescriptor(characs, None)
-
-    nbinsdesc.to_complete_measure(measure)
-    #nbinsdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
-
-    # Specific
-    nbinsdesc._format_default_functions()
-    nbinsdesc.set_functions(None, None)
-    nbinsdesc.set_functions(None, 'dict')
-    features = np.random.random((100, 5))
-    nbinsdesc.set_global_info(features, True)
-    nbinsdesc.set_global_info(features, False)
-    # Not specific
 
 
 #    ret0 = KRetriever(locs, 3, ifdistance=True)

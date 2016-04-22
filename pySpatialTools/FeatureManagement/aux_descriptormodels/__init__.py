@@ -7,8 +7,14 @@ be useful for creating descriptor models.
 """
 
 ## Invocable characterizer functions
-from characterizers import characterizer_1sh_counter, characterizer_summer,\
-    characterizer_average
+from characterizers import characterizer_1sh_counter,\
+    characterizer_summer, characterizer_summer_array,\
+    characterizer_summer_listdict, characterizer_summer_listarray,\
+    characterizer_summer_arrayarray,\
+    characterizer_average, characterizer_average_array,\
+    characterizer_average_listdict, characterizer_average_listarray,\
+    characterizer_average_arrayarray
+from characterizers import characterizer_from_unitcharacterizer
 
 ## Invocable reducer functions
 from reducers import sum_reducer, avg_reducer

@@ -36,7 +36,12 @@ def append_addresult_function(x, x_i, vals_i):
     """
     for k in range(len(vals_i)):
         for i in range(len(vals_i[k])):
-            x[k][vals_i[k][i]].append(x_i[k][i])
+            if type(x[k][vals_i[k][i]]) == list:
+                x[k][vals_i[k][i]].append(x_i[k][i])
+            else:
+                # If precollapsed
+                x[k][vals_i[k][i]] = [x[k][vals_i[k][i]]]
+                x[k][vals_i[k][i]].append(x_i[k][i])
     return x
 
 

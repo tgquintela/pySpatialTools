@@ -16,14 +16,18 @@ def sparse_dict_completer(measure, global_info=None):
 
     See also:
     ---------
-    replacelist_addresult_function
+    append_addresult_function
 
     """
     pos_feats = []
     n_iss = len(measure[0])
     for k in range(len(measure)):
         for vals_i in range(len(measure[k])):
-            ## Add dictionaries and possible features
+            ## Collapse into one dictionary
+            # Just collapsed
+            if type(measure[k][vals_i]) == dict:
+                continue
+            # Add dictionaries and possible features
             d = {}
             for i in range(len(measure[k][vals_i])):
                 aux_dict = measure[k][vals_i][i]
@@ -35,6 +39,19 @@ def sparse_dict_completer(measure, global_info=None):
                     else:
                         d[e] = aux_dict[e]
             measure[k][vals_i] = d
+
+
+#            for i in range(len(measure[k][vals_i])):
+#                print len(measure[k][vals_i]), type(measure[k][vals_i])
+#                aux_dict = measure[k][vals_i][i]
+#                aux_keys = aux_dict.keys()
+#                pos_feats += aux_keys
+#                for e in aux_keys:
+#                    if e in d:
+#                        d[e] += aux_dict[e]
+#                    else:
+#                        d[e] = aux_dict[e]
+#            measure[k][vals_i] = d
 
     ## Collapsing
     feats_names = list(np.unique(pos_feats))
@@ -66,30 +83,32 @@ def sparse_dict_completer_unknown(measure, global_info=None):
     ## Completing measure
     for k in range(len(measure)):
         data, iss, jss = [], [], []
-        vals_res = np.array(measure[k][1])
-        if len(np.unique(vals_res)) == len(vals_res):
-            for i in range(len(vals_res)):
+        val_res_con = np.concatenate(measure[k][1])
+        if len(np.unique(val_res_con)) == len(val_res_con):
+            for i in range(len(measure[k][1])):
                 jss += measure[k][0][i].keys()
                 data += measure[k][0][i].values()
-                iss += len(measure[k][0][i])*[vals_res[i]]
+                iss += len(measure[k][0][i])*[measure[k][1][i]]
         else:
-            for v in np.unique(vals_res):
-                idxs = np.where(v == vals_res)[0]
+            for i in range(len(measure[k][1])):
                 dicti = {}
-                print idxs
-                print measure
-                for i in idxs:
-                    keys = measure[k][0][i].keys()
-                    values = measure[k][0][i].values()
-                    for j in xrange(len(keys)):
-                        try:
-                            dicti[keys[j]] += values[j]
-                        except:
-                            dicti[keys[j]] = values[j]
-                    jss += dicti.keys()
-                    iss += len(dicti.keys())*[v]
-                    data += dicti.values()
+                for v in range(len(measure[k][1][i])):
 
+                    keys = measure[k][0][i][v].keys()
+                    values = measure[k][0][i][v].values()
+                    for j in xrange(len(keys)):
+                        if keys[j] in dicti:
+                            dicti[keys[j]] += values[j]
+                        else:
+                            dicti[keys[j]] = values[j]
+#                        try:
+#                            dicti[keys[j]] += values[j]
+#                        except:
+#                            dicti[keys[j]] = values[j]
+                    ### WARNING: TODO: Featurenames transformation into numbers
+                    jss += [int(e) for e in dicti.keys()]
+                    iss += [measure[k][1][i][v]]*len(dicti.keys())
+                    data += dicti.values()
         ## Building the matrix and storing it in measure
         shape = (int(np.max(iss))+1, int(np.max(jss))+1)
         data, iss, jss = np.array(data), np.array(iss), np.array(jss)

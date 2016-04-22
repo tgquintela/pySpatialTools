@@ -5,6 +5,10 @@ aggregation functions
 This module contains aggregation functions to be used by the aggregation
 function of the features object.
 
+Standart inputs for the aggregation:
+------------------------------------
+
+
 """
 
 #import numpy as np

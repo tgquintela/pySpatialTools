@@ -24,6 +24,7 @@ from pySpatialTools.utils.artificial_data import randint_sparse_matrix,\
     categorical_array_features, continuous_dict_features,\
     categorical_dict_features, continuous_agg_array_features,\
     categorical_agg_array_features, continuous_agg_dict_features
+from pySpatialTools.utils.artificial_data.artificial_measure import *
 
 from pySpatialTools.utils.artificial_data.artificial_data_membership import\
     random_membership
@@ -71,17 +72,45 @@ def test():
     n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
 
-    continuous_array_features(n, n_feats)
-    categorical_array_features(n, n_feats)
-    categorical_array_features(n, n_feats2)
-    continuous_dict_features(n, n_feats)
-    categorical_dict_features(n, n_feats)
+    feats = continuous_array_features(n, n_feats)
+    assert(len(feats.shape) == 2)
+    feats = categorical_array_features(n, n_feats)
+    assert(len(feats.shape) == 2)
+    feats = categorical_array_features(n, n_feats2)
+    assert(len(feats.shape) == 2)
+    feats = continuous_dict_features(n, n_feats)
+    assert(type(feats[0]) == dict)
+    feats = categorical_dict_features(n, n_feats)
+    assert(type(feats[0]) == dict)
 
-    continuous_agg_array_features(n, n_feats, ks)
-    categorical_agg_array_features(n, n_feats, ks)
-    categorical_agg_array_features(n, n_feats2, ks)
-    continuous_agg_dict_features(n, n_feats, ks)
-    categorical_agg_dict_features(n, n_feats, ks)
+    feats = continuous_agg_array_features(n, n_feats, ks)
+    assert(len(feats.shape) == 3)
+    feats = categorical_agg_array_features(n, n_feats, ks)
+    assert(len(feats.shape) == 3)
+    feats = categorical_agg_array_features(n, n_feats2, ks)
+    assert(len(feats.shape) == 3)
+    feats = continuous_agg_dict_features(n, n_feats, ks)
+    assert(type(feats[0][0]) == dict)
+    feats = categorical_agg_dict_features(n, n_feats, ks)
+    assert(type(feats[0][0]) == dict)
+
+    ## Artificial measures
+    n_vals_i, n_iss = np.random.randint(1, 30), np.random.randint(1, 30)
+
+    create_empty_features_array(n_feats, n_iss, ks)
+    create_empty_features_dict(n_feats, n_iss, ks)
+    create_features_i_array(n_feats, n_iss, ks)
+    create_features_i_dict(n_feats, n_iss, ks)
+
+    create_vals_i(n_iss, n_vals_i, ks)
+
+    create_empty_array(ks, n_vals_i, n_feats)
+    create_empty_append(ks, n_iss, n_feats)
+    create_empty_replacelist(ks, n_iss, n_feats)
+
+    create_artificial_measure_array(ks, n_vals_i, n_feats)
+    create_artificial_measure_append(ks, n_vals_i, n_feats)
+    create_artificial_measure_replacelist(ks, n_vals_i, n_feats)
 
     ###########################################################################
     ############################ Spatial Elements #############################
