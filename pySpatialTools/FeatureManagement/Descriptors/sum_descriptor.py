@@ -10,9 +10,13 @@ descriptors.
 from ..descriptormodel import DescriptorModel
 
 ## Specific functions
-from ..aux_descriptormodels import\
-    characterizer_summer, sum_reducer, null_completer, aggregator_summer,\
-    sum_addresult_function, array_featurenames
+from ..aux_descriptormodels import sum_reducer, null_completer,\
+    null_out_formatter, array_featurenames, aggregator_summer
+
+## Characterizers
+from ..aux_descriptormodels import characterizer_summer,\
+    characterizer_summer_array, characterizer_summer_listdict,\
+    characterizer_summer_listarray, characterizer_summer_arrayarray
 
 
 class SumDescriptor(DescriptorModel):
@@ -30,11 +34,11 @@ class SumDescriptor(DescriptorModel):
     name_desc = "Sum descriptor"
     _nullvalue = 0
 
-    def __init__(self):
+    def __init__(self, type_infeatures=None, type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
-        self._f_default_names = array_featurenames
-        self._defult_add2result = sum_addresult_function
+        self._format_default_functions()
+        self.set_functions(type_infeatures)
         ## Check descriptormodel
         self._checker_descriptormodel()
 
@@ -58,7 +62,7 @@ class SumDescriptor(DescriptorModel):
             the descriptor of the neighbourhood. [iss][feats]
 
         """
-        descriptors = characterizer_summer(pointfeats, point_pos)
+        descriptors = self._core_characterizer(pointfeats, point_pos)
         return descriptors
 
     def reducer(self, aggdescriptors_idxs, point_aggpos):
@@ -87,6 +91,27 @@ class SumDescriptor(DescriptorModel):
     ###########################################################################
     ########################## Auxiliary functions ############################
     ###########################################################################
+    def _format_default_functions(self):
+        """Format default mutable functions."""
+        self._out_formatter = null_out_formatter
+        self._core_characterizer = characterizer_summer
+        self._f_default_names = array_featurenames
+#        self._defult_add2result = sum_addresult_function
+
+    def set_functions(self, type_infeatures, type_outfeatures=None):
+        """Set specific functions knowing a constant input and output desired.
+        """
+        ## Preparing the clas for the known input
+        if type_infeatures is None:
+            self._core_characterizer = characterizer_summer
+        elif type_infeatures in ['array', 'ndarray']:
+            self._core_characterizer = characterizer_summer_array
+        elif type_infeatures == 'listdict':
+            self._core_characterizer = characterizer_summer_listdict
+        elif type_infeatures == 'listarray':
+            self._core_characterizer = characterizer_summer_listarray
+        elif type_infeatures == 'arrayarray':
+            self._core_characterizer = characterizer_summer_arrayarray
 
     ###########################################################################
     ######################### Compulsary formatters ###########################

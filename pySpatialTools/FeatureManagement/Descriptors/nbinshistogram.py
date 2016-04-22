@@ -27,15 +27,18 @@ class NBinsHistogramDesc(DescriptorModel):
     name_desc = "N-bins histogram descriptor"
     _nullvalue = 0
 
-    def __init__(self, n_bins):
+    def __init__(self, n_bins, features=None, type_infeatures=None,
+                 type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
-        self._f_default_names = counter_featurenames
-        self._defult_add2result = sum_addresult_function
+        self._format_default_functions()
+        self.set_functions(type_infeatures, type_outfeatures)
         ## Check descriptormodel
         self._checker_descriptormodel()
         ## Globals initialization
         self.globals_ = [n_bins, None, None, False]
+        if features is not None:
+            self.set_global_info(features)
 
     ###########################################################################
     ####################### Compulsary main functions #########################
@@ -118,6 +121,8 @@ class NBinsHistogramDesc(DescriptorModel):
     def _format_default_functions(self):
         """Format default mutable functions."""
         self._out_formatter = count_out_formatter_general
+        self._f_default_names = counter_featurenames
+#        self._defult_add2result = sum_addresult_function
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.

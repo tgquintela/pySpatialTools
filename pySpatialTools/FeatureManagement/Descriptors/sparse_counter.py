@@ -22,12 +22,11 @@ class SparseCounter(Countdescriptor):
     name_desc = "Sparse counting descriptor"
     _nullvalue = 0
 
-    def __init__(self):
+    def __init__(self, type_infeatures=None, type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
         ## Initial function set
-        self._out_formatter = count_out_formatter_general
-        self._f_default_names = counter_featurenames
-        self._defult_add2result = append_addresult_function
+        self._format_default_functions()
+        self.set_functions(type_infeatures, type_outfeatures)
         ## Check descriptormodel
         self._checker_descriptormodel()
 
@@ -49,6 +48,7 @@ class SparseCounter(Countdescriptor):
     ###########################################################################
     ########################## Auxiliary functions ############################
     ###########################################################################
+    # Herency from Countdescriptor
 
     ###########################################################################
     ######################### Compulsary formatters ###########################

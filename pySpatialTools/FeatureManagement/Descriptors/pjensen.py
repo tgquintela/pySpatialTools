@@ -17,7 +17,7 @@ from ..descriptormodel import DescriptorModel
 ## Specific functions
 from ..aux_descriptormodels import\
     characterizer_1sh_counter, sum_reducer, counter_featurenames,\
-    aggregator_1sh_counter, sum_addresult_function, null_out_formatter,\
+    aggregator_1sh_counter, null_out_formatter,\
     count_out_formatter_general, count_out_formatter_dict2array
 
 
@@ -29,14 +29,16 @@ class PjensenDescriptor(DescriptorModel):
     name_desc = "Pjensen descriptor"
     _nullvalue = 0
 
-    def __init__(self, features=None):
+    def __init__(self, features=None, type_infeatures=None,
+                 type_outfeatures=None):
         "The inputs are the needed to compute model_dim."
         ## Initial function set
-        self._f_default_names = counter_featurenames
-        self._defult_add2result = sum_addresult_function
         self._format_default_functions()
+        self.set_functions(type_infeatures, type_outfeatures)
         if features is not None:
             self.set_global_info(features)
+        ## Check descriptormodel
+        self._checker_descriptormodel()
 
     ###########################################################################
     ####################### Compulsary main functions #########################
@@ -58,7 +60,7 @@ class PjensenDescriptor(DescriptorModel):
             the descriptor of the neighbourhood. [iss][feats]
 
         """
-        descriptors = characterizer_1sh_counter(pointfeats, point_pos)
+        descriptors = self._core_characterizer(pointfeats, point_pos)
         ## TODO: Transform dict to array and reverse
         #keys = [self.mapper[key] for key in counts.keys()]
         #descriptors[0, keys] = counts.values()
@@ -118,6 +120,9 @@ class PjensenDescriptor(DescriptorModel):
     def _format_default_functions(self):
         """Format default mutable functions."""
         self._out_formatter = count_out_formatter_general
+        self._f_default_names = counter_featurenames
+        self._core_characterizer = characterizer_1sh_counter
+#        self._defult_add2result = sum_addresult_function
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.
