@@ -41,6 +41,10 @@ def test():
         pass
 
     def test_getitem(Feat):
+        k = 0
+        idxs = np.random.randint(0, 5, 20).reshape((1, 4, 5))
+        #Feat._get_feats_k(idxs, k)
+        #Feat._get_feats_k(list(idxs), k)
         Feat[0]
         Feat[(0, 0)]
         Feat[([0], [0])]
@@ -131,9 +135,26 @@ def test():
     #### Implicit Features testing
     ### Definition classes
     # Instantiation
-#    Feat0 = ImplicitFeatures(features0, perturbation)
-#    Feat1 = ImplicitFeatures(features1, perturbation)
-#    Feat2 = ImplicitFeatures(features2, perturbation)
+    contfeats_ar0 = continuous_array_features(n, n_feats)
+    catfeats_ar0 = categorical_array_features(n, n_feats)
+    catfeats_ar1 = categorical_array_features(n, n_feats2)
+    contfeats_dict = continuous_dict_features(n, n_feats)
+    catfeats_dict = categorical_dict_features(n, n_feats)
+
+    Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
+    test_getitem(Feat_imp)
+    Feat_imp = ImplicitFeatures(catfeats_ar0, perturbation)
+    test_getitem(Feat_imp)
+    Feat_imp = ImplicitFeatures(catfeats_ar1, perturbation)
+    test_getitem(Feat_imp)
+    Feat_imp = ImplicitFeatures(contfeats_dict, perturbation)
+#    test_getitem(Feat_imp)
+    Feat_imp = ImplicitFeatures(catfeats_dict, perturbation)
+#    test_getitem(Feat_imp)
+
+    Feat0 = ImplicitFeatures(features0, perturbation)
+    Feat1 = ImplicitFeatures(features1, perturbation)
+    Feat2 = ImplicitFeatures(features2, perturbation)
 #
 #    features_objects = [Feat0, Feat1, Feat2]
 #    featret = FeaturesManager(features_objects, avgdesc)

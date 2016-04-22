@@ -16,6 +16,7 @@ from pySpatialTools.FeatureManagement.Interpolation_utils import\
 
 import numpy as np
 
+
 class DescriptorModel:
     """Abstract class for desctiptor models. Contain the common functions
     that are required for each desctiptor instantiated object.

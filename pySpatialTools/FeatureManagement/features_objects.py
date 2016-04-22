@@ -286,7 +286,9 @@ class Features:
 
 
 class ImplicitFeatures(Features):
-    """Element features.
+    """Element features. Perturbations are implicit and have to be computed
+    each time we want them.
+    The features will be only with deep=2 [iss]{features} or (iss, features).
     """
     # Type
     typefeat = 'implicit'
@@ -296,6 +298,9 @@ class ImplicitFeatures(Features):
         self._get_characs_k = self._get_characs_k
         self._get_real_data = self._real_data_general
         self._get_virtual_data = self._virtual_data_general
+        ## Specific class parameters
+        self.relabel_indices = None  # TODO
+        self.features_array = None
 
     def __init__(self, features, perturbations=None, names=[], out_features=[],
                  characterizer=None, out_formatter=None):
@@ -313,7 +318,10 @@ class ImplicitFeatures(Features):
 
     @property
     def shape(self):
-        return (len(self.features), len(self.variables), self.k_perturb+1)
+        n = len(self.features)
+        nfeats = None if self.variables is None else len(self.variables)
+        ks = self.k_perturb+1
+        return n, nfeats, ks
 
     ############################### Interaction ###############################
     ###########################################################################
@@ -331,13 +339,14 @@ class ImplicitFeatures(Features):
         """Virtual data array.
         * idxs: (ks, iss_i, nei)
         * feats_k: (iss_i, nei, features)
+
+        TODO: Indices-labels support for each iss.
         """
         nfeats = self.features.shape[1]
         sh = idxs.shape
         print idxs, sh
-        idxs_k = idxs[k]
         # Compute new indices by perturbating them
-        new_idxs = self._perturbators[k_p].apply2indice(idxs_k, k_i)
+        new_idxs = self._perturbators[k_p].apply2indice(idxs[k], k_i)
         # Get rid of the non correct indices
         yes_idxs = np.logical_and(new_idxs >= 0,
                                   new_idxs < len(self.features))
@@ -365,6 +374,8 @@ class ImplicitFeatures(Features):
         """
         * idxs: [ks][iss_i][nei]
         * feats_k: [iss_i](nei, features)
+
+        WARNiNG: k_i in idxs
         """
         feats_k = []
         print idxs, k, k_i, k_p
@@ -415,24 +426,35 @@ class ImplicitFeatures(Features):
     ################################ Formatters ###############################
     ###########################################################################
     def _format_features(self, features, out_features):
-        """Format features."""
-        sh = features.shape
-        features = features if len(sh) == 2 else features.reshape((sh[0], 1))
-        self.features = features
+        """Format features. They have to have deep=2.[iss][feats]."""
+        if type(features) == np.ndarray:
+            sh = features.shape
+            if len(sh) != 2:
+                features = features.reshape((sh[0], 1))
+            self.features = features
+        else:
+            assert(type(features) == list)
+            assert(type(features[0]) == dict)
+            self.features = features
         self.out_features = out_features
 
     def _format_variables(self, names):
         """Format variables."""
-        feats = self[([0], [0]), 0]
-        print feats
         if names:
+            print names
+            if type(self.features) == np.ndarray:
+                assert(len(names) == len(self.features[0]))
             self.variables = names
         else:
-            if type(feats) == list:
-                self.variables = feats[0][0].keys()
-            else:
-                n_feats = feats.shape[1]
-                self.variables = list(range(n_feats))
+            if type(self.features) == np.ndarray:
+                self.variables = list(range(len(self.features)))
+            elif type(self.features) == list:
+                names = []
+                for i in range(len(self.features)):
+                    names += self.features[i].keys()
+                self.variables = list(set(names))
+#            feats = self[([0], [0]), 0]
+#            print feats
 
     ######################### Perturbation management #########################
     ###########################################################################
