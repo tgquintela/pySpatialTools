@@ -133,7 +133,7 @@ def _array_autoexclude(to_exclude_elements, neighs, dists):
 
 
 def _general_autoexclude(to_exclude_elements, neighs, dists):
-    if type(neighs) == np.array:
+    if type(neighs) == np.ndarray:
         neighs, dists = _array_autoexclude(to_exclude_elements, neighs, dists)
     elif type(neighs) == list:
         neighs, dists = _list_autoexclude(to_exclude_elements, neighs, dists)

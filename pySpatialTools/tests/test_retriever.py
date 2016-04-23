@@ -29,6 +29,10 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 from pySpatialTools.Retrieve.aux_retriever import DummyRetriever,\
     _check_retriever, create_retriever_input_output,\
     _general_autoexclude, _array_autoexclude, _list_autoexclude
+## Tools retriever
+from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
+from pySpatialTools.SpatialRelations import DummyRegDistance
+from pySpatialTools.Discretization import GridSpatialDisc
 
 #from scipy.sparse import coo_matrix
 
@@ -129,7 +133,33 @@ def test():
     neighs = neighs.reshape((n_iss, n_neighs))
     dists = np.random.random((n_iss, n_neighs, 2))
     regions = np.random.randint(0, 10, 100)
+    idxs = to_exclude_elements
 
+    # Testing
+    dummyret = DummyRetriever(regions)
+    try:
+        boolean = False
+        _check_retriever(dummyret)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    dummyret = DummyRetriever(regions)
+    dummyret.retriever = None
+    dummyret._default_ret_val = None
+    # Testing
+    dummyret = DummyRetriever(regions)
+    try:
+        boolean = False
+        _check_retriever(dummyret)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    dummyret = DummyRetriever(regions)
+    dummyret._define_retriever = None
+    dummyret._format_output_exclude = None
+    dummyret._format_output_noexclude = None
     # Testing
     dummyret = DummyRetriever(regions)
     try:
@@ -144,10 +174,32 @@ def test():
     _list_autoexclude(to_exclude_elements, neighs, dists)
     _array_autoexclude(to_exclude_elements, neighs, dists)
     _general_autoexclude(to_exclude_elements, neighs, dists)
+    _general_autoexclude(to_exclude_elements, list(neighs), list(dists))
+    _list_autoexclude(to_exclude_elements, neighs, None)
+    _array_autoexclude(to_exclude_elements, neighs, None)
+    _general_autoexclude(to_exclude_elements, neighs, None)
+    _general_autoexclude(to_exclude_elements, list(neighs), None)
 
     # map regions to points
     mapin_regpoints, mapout_regpoints = create_retriever_input_output(regions)
-#    mapout_regpoints(None, (neighs, dists), regions)
+    mapout_regpoints(None, idxs, (neighs, dists))
+
+    ###########################################################################
+    ######### Tools_Retriever module
+    disc1 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
+    regions = np.random.randint(0, 50, 100)
+    ret = create_aggretriever(regions, regmetric=None)
+    ret._input_map(0)
+    try:
+        boolean = False
+        ret._input_map(None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    ret = create_aggretriever(disc1, DummyRegDistance(regions))
+    ret._input_map(np.random.random((1, 2)))
+    create_aggretriever(disc1, retriever=SameEleNeigh)
 
     ###########################################################################
     ######### Preparation parameters for general testing
