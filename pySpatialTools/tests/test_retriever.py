@@ -25,6 +25,11 @@ from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
 
 from pySpatialTools.Retrieve import create_retriever_input_output
 
+## Aux_retriever
+from pySpatialTools.Retrieve.aux_retriever import DummyRetriever,\
+    _check_retriever, create_retriever_input_output,\
+    _general_autoexclude, _array_autoexclude, _list_autoexclude
+
 #from scipy.sparse import coo_matrix
 
 from pySpatialTools.utils.artificial_data import \
@@ -105,10 +110,47 @@ def test():
 
     generate_grid_neighs_coord(coord, shape, 2, l, center, excluded)
     generate_grid_neighs_coord_i(coord, shape, 2, l, center, excluded)
+    generate_grid_neighs_coord_i(coord, shape, 2, l, center, True)
+    try:
+        boolean = False
+        aux = np.random.randint(0, 10, 4).reshape((1, 4))
+        generate_grid_neighs_coord_i(aux, shape, 2, l, center, True)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
+    ###########################################################################
+    ######### Aux_Retriever module
+    # parameters
+    n_iss, n_neighs = 4, 5
+    to_exclude_elements = np.random.randint(0, 10, n_iss).reshape((n_iss, 1))
+    neighs = np.random.randint(0, 10, n_iss*n_neighs)
+    neighs = neighs.reshape((n_iss, n_neighs))
+    dists = np.random.random((n_iss, n_neighs, 2))
+    regions = np.random.randint(0, 10, 100)
 
+    # Testing
+    dummyret = DummyRetriever(regions)
+    try:
+        boolean = False
+        _check_retriever(dummyret)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
+    # Auxiliar exlude functions
+    _list_autoexclude(to_exclude_elements, neighs, dists)
+    _array_autoexclude(to_exclude_elements, neighs, dists)
+    _general_autoexclude(to_exclude_elements, neighs, dists)
 
+    # map regions to points
+    mapin_regpoints, mapout_regpoints = create_retriever_input_output(regions)
+#    mapout_regpoints(None, (neighs, dists), regions)
+
+    ###########################################################################
+    ######### Preparation parameters for general testing
     ## Perturbations
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
