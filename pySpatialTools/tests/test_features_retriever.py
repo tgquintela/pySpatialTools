@@ -27,7 +27,7 @@ def test():
     m = 5
     rei = 10
 
-    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
+    n, n_feats = np.random.randint(10, 1000), np.random.randint(1, 20)
     n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
 

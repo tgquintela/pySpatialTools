@@ -665,7 +665,7 @@ class Retriever:
                     info_i = self._info_ret
             else:
                 if self._info_f is None:
-                    return {}
+                    return self._default_ret_val
                 if type(self._info_f).__name__ == 'function':
                     info_i = self._info_f(i_loc, info_i)
                 else:

@@ -14,6 +14,11 @@ from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     DummyRetriever, GeneralRetriever, WindowsRetriever
 from pySpatialTools.Retrieve.aux_retriever import _check_retriever
 
+## WindowsRetriever functions
+from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
+    windows_iteration, create_map2indices, get_indices_constant_regular,\
+    get_irregular_indices_grid, get_irregular_neighsmatrix,\
+    get_regular_neighsmatrix
 
 from pySpatialTools.Retrieve import create_retriever_input_output
 
@@ -43,6 +48,48 @@ def test():
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
     mainmapper.set_inout(output='indices')
 
+    ###########################################################################
+    ######### WindowRetriever module
+    shape = (10, 10)
+    # creation windowretriever
+    map2indices, map2locs, WindowRetriever = create_window_utils((10, 10))
+    windret = WindowRetriever(shape, map2indices, map2locs)
+    windret.data
+    windret.get_indices(np.array([[0, 0]]))
+    windret.get_locations([0, 1])
+    len(windret)
+    try:
+        boolean = False
+        map2locs(-1)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    map2indices(5)
+
+    map2indices = create_map2indices((10, 10))
+    map2indices(5)
+    map2indices(np.array([[0, 0]]))
+
+    # windows_iteration
+    shape, max_bunch, l, center, excluded = (10, 10), 20, 3, -1, False
+    shapes = np.array(list(np.cumprod(shape[1:][::-1])[::-1]) + [1])
+    for i, nei, rp in windows_iteration(shape, max_bunch, l, center, excluded):
+        pass
+    for i, nei, rp in windows_iteration(shape, max_bunch, l, center, True):
+        pass
+
+    indices, relative_neighs, rel_pos =\
+        get_indices_constant_regular(shape, map2indices, l, center, excluded)
+    extremes, ranges, sizes =\
+        get_irregular_indices_grid(shape, l, center, excluded)
+    neighs = get_irregular_neighsmatrix(indices, relative_neighs, shapes)
+    neighs = get_regular_neighsmatrix(indices, relative_neighs)
+
+    borders, ranges, sizes_nei =\
+        get_irregular_indices_grid(shape, l, center, excluded)
+
+
     ## Perturbations
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
@@ -62,7 +109,9 @@ def test():
     pos_constantinfo = [True, False, None]
     pos_boolinidx = [True, False, None]
 
-    ## KRetriever
+    ###########################################################################
+    #### KRetriever
+    ##################
     pos_inforet = [2, 5, 10]
     pos_outmap = [None, _output_map]
 
@@ -79,14 +128,24 @@ def test():
         print i, p, ret.staticneighs, ret.neighs_info.staticneighs
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
             #neighs_info = ret[i]
+            #neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
 
         ## Testing other functions and parameters
         ret.k_perturb
 
-    ## CircRetriever
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### CircRetriever
+    ##################
     pos_inforet = [2., 5., 10.]
     pos_outmap = [None, _output_map]
 
@@ -103,11 +162,21 @@ def test():
         print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
             #neighs_info = ret[i]
+            #neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
 
-    ## SameEleRetriever
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### SameEleRetriever
+    #####################
     pos_inforet = [None]
     pos_outmap = [None, _output_map]
 
@@ -126,12 +195,23 @@ def test():
         print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
             #neighs_info = ret[i]
+            #neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
 
-    ## OrderEleRetriever
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### OrderEleRetriever
+    ######################
     pos_inforet = [pars4]
     pos_outmap = [None, _output_map]
 
@@ -150,13 +230,25 @@ def test():
         print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
             #neighs_info = ret[i]
+            #neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
 
-    ## LimDistanceRetriever
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### LimDistanceRetriever
+    ##########################
     pos_inforet = [pars5]
     pos_outmap = [None, _output_map]
 
@@ -175,11 +267,21 @@ def test():
         print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
             #neighs_info = ret[i]
+            #neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
+
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
 
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,

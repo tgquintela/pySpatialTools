@@ -179,7 +179,6 @@ class KRetriever(KDTreeBasedRetriever):
             yield indices, neighs
         ## Reset
 
-
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, kneighs, ifdistance=False,
                                       kr=0):
@@ -204,6 +203,7 @@ class KRetriever(KDTreeBasedRetriever):
             the indice of the point_i.
         """
         kneighs = self._get_info_i(point_i, info_i)
+        print kneighs, 'p'*25, self._get_info_i
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), False)
         res = np.array(res), None
