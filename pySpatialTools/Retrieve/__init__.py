@@ -11,6 +11,7 @@ neighbourhood or local properties related with the neighbourhood.
 from implicit_retrievers import KRetriever, CircRetriever, WindowsRetriever
 from explicit_retrievers import SameEleNeigh, OrderEleNeigh,\
     LimDistanceEleNeigh
+from retrievers import DummyRetriever
 
 ## Import wrapper retrievers
 from collectionretrievers import RetrieverManager
@@ -20,4 +21,4 @@ from collectionretrievers import RetrieverManager
 from general_retriever import GeneralRetriever
 
 ## Import useful functions
-from aux_retriever import create_retriever_input_output, DummyRetriever
+from aux_retriever import create_retriever_input_output, NullRetriever

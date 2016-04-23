@@ -351,7 +351,7 @@ def test():
     n_feats = np.random.randint(2, 20)
     ks = np.random.randint(1, 20)
     n_iss = np.random.randint(1, 20)
-    n_vals_i = np.random.randint(1, 20)
+    n_vals_i = np.random.randint(2, 20)
 
     vals_i = create_vals_i(n_iss, n_vals_i, ks)
 

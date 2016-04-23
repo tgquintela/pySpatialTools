@@ -1084,3 +1084,56 @@ class Retriever:
         if n_data == 1:
             nets = nets[0]
         return nets
+
+
+###############################################################################
+############################ Space-Based Retrievers ###########################
+###############################################################################
+class DummyRetriever(Retriever):
+    """Dummy null retriever container. It gives the structure desired by the
+    retrievers classes to work properly.
+    """
+    _default_ret_val = 0
+
+    def __init__(self, n, autodata=False, input_map=None, output_map=None,
+                 info_ret=None, info_f=None, constant_info=None,
+                 perturbations=None, autoexclude=None, ifdistance=None,
+                 relative_pos=None, bool_input_idx=None, typeret='space',
+                 preferable_input_idx=None):
+        ## Special inputs
+        locs = np.arange(n).reshape((n, 1))
+        autolocs = locs if autodata is True else autodata
+        self.preferable_input_idx = preferable_input_idx
+        self.typeret = typeret
+        pars_ret = None
+        ## Reset globals
+        self._initialization()
+        # IO mappers
+        self._format_maps(input_map, output_map)
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
+        # Location information
+        self._format_locs(locs, autolocs)
+        ## Retrieve information
+        self._define_retriever(locs, pars_ret)
+        # Perturbations
+        self._format_perturbation(perturbations)
+        # Output information
+        self._format_output_information(autoexclude, ifdistance, relative_pos)
+        self._format_exclude(bool_input_idx, self.constant_neighs)
+        ## Format retriever function
+        self._format_retriever_function()
+        self._format_getters(bool_input_idx)
+        # Preparation input and output
+        self._format_preparators(bool_input_idx)
+        self._format_neighs_info(bool_input_idx)
+        ## Define specific preprocessors
+        self._define_preprocess_relative_pos()
+        ## Assert properly formatted
+        self.assert_correctness()
+
+    def _define_retriever(self, locs, pars_ret):
+        class DummyAuxRet:
+            def __init__(self, data):
+                self.data = data
+        self.retriever = DummyAuxRet(locs)

@@ -9,8 +9,8 @@ Auxialiar functions for retrieving.
 import numpy as np
 
 
-class DummyRetriever:
-    """Dummy retriever container. It gives the structure desired by the
+class NullRetriever:
+    """Dummy null retriever container. It gives the structure desired by the
     retrievers classes to work properly.
     """
 

@@ -26,9 +26,10 @@ from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
 from pySpatialTools.Retrieve import create_retriever_input_output
 
 ## Aux_retriever
-from pySpatialTools.Retrieve.aux_retriever import DummyRetriever,\
+from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
     _check_retriever, create_retriever_input_output,\
     _general_autoexclude, _array_autoexclude, _list_autoexclude
+from pySpatialTools.Retrieve.retrievers import DummyRetriever
 ## Tools retriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
@@ -136,7 +137,7 @@ def test():
     idxs = to_exclude_elements
 
     # Testing
-    dummyret = DummyRetriever(regions)
+    dummyret = NullRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -144,11 +145,11 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    dummyret = DummyRetriever(regions)
+    dummyret = NullRetriever(regions)
     dummyret.retriever = None
     dummyret._default_ret_val = None
     # Testing
-    dummyret = DummyRetriever(regions)
+    dummyret = NullRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -156,12 +157,12 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    dummyret = DummyRetriever(regions)
+    dummyret = NullRetriever(regions)
     dummyret._define_retriever = None
     dummyret._format_output_exclude = None
     dummyret._format_output_noexclude = None
     # Testing
-    dummyret = DummyRetriever(regions)
+    dummyret = NullRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -200,6 +201,51 @@ def test():
     ret = create_aggretriever(disc1, DummyRegDistance(regions))
     ret._input_map(np.random.random((1, 2)))
     create_aggretriever(disc1, retriever=SameEleNeigh)
+
+    ###########################################################################
+    ######### Exhaustive testing over common retrievers tools
+    n = 1000
+    _input_map = lambda s, i: i
+    _output_map = [lambda s, i, x: x]
+    pos_autodata = [True, False, None, np.arange(n)]
+    pos_inmap = [None, _input_map]
+    pos_outmap = [None, _output_map]
+    pos_inforet = [5]
+    pos_infof = [None, lambda x: 5]
+    pos_constantinfo = [True, False, None]
+    pos_typeret = ['space', '']
+    pos_preturbations = []
+    pos_ifdistance = [True, False, None]
+    pos_autoexclude = [True, False, None]
+    pos_relativepos = [None]
+    pos_boolinidx = [True, False, None]
+    pos_preferable_input = [True, False, None]
+
+    possibles = [pos_autodata, pos_inmap, pos_outmap, pos_inforet, pos_infof,
+                 pos_constantinfo, pos_typeret, pos_preturbations,
+                 pos_ifdistance, pos_autoexclude, pos_relativepos,
+                 pos_boolinidx, pos_preferable_input]
+
+    for p in product(*possibles):
+        ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
+                             info_ret=p[3], info_f=p[4], constant_info=p[5],
+                             perturbations=p[7], autoexclude=p[9],
+                             ifdistance=p[8], relative_pos=p[10],
+                             bool_input_idx=p[11], typeret=p[6],
+                             preferable_input_idx=p[12])
+
+        if p[11] is False:
+            i = np.array([0])
+        else:
+            i = 0
+        if p[5]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[3])
+            neighs_info.get_information()
 
     ###########################################################################
     ######### Preparation parameters for general testing
