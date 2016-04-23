@@ -288,6 +288,45 @@ def test():
 #        pass
 
     ###########################################################################
+    #### WindowsRetriever
+    #####################
+    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
+                   {'l': 4, 'center': 0, 'excluded': False},
+                   {'l': 3, 'center': 1, 'excluded': True}]
+    pos_outmap = [None, _output_map]
+    shape = 10, 10
+    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx, pos_perturbations]
+    for p in product(*pos):
+        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
+                               input_map=p[2], output_map=p[3],
+                               constant_info=p[4], bool_input_idx=p[5],
+                               perturbations=p[6])
+        if p[5] is False:
+            i = gridlocs[0].reshape((1, len(shape)))
+        else:
+            i = 0
+        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            #neighs_info = ret[i]
+            #neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+
+        ## Testing other functions and parameters
+        ret.k_perturb
+
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
     #### SameEleRetriever
     #####################
     pos_inforet = [None]

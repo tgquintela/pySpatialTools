@@ -384,7 +384,7 @@ class WindowsRetriever(SpaceRetriever):
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
                                                  self._ndim, **pars_ret)
         neighs_info = self.retriever[kr].map2indices_iss(neighs_info[0])
-        return neighs_info
+        return neighs_info, None
 
     def _retrieve_neighs_constant_distance(self, element_i, pars_ret, kr=0):
         """Retrieve neighs computing distance by default."""

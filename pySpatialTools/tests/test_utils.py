@@ -95,7 +95,7 @@ def test():
     assert(type(feats[0][0]) == dict)
 
     ## Artificial measures
-    n_vals_i, n_iss = np.random.randint(1, 30), np.random.randint(1, 30)
+    n_vals_i, n_iss = np.random.randint(2, 30), np.random.randint(1, 30)
 
     create_empty_features_array(n_feats, n_iss, ks)
     create_empty_features_dict(n_feats, n_iss, ks)
