@@ -20,7 +20,9 @@ from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
     get_irregular_indices_grid, get_irregular_neighsmatrix,\
     get_regular_neighsmatrix, get_relative_neighs, get_indices_from_borders,\
     new_get_borders_from_irregular_extremes, new_get_irregular_extremes,\
-    get_core_indices, get_extremes_regularneighs_grid
+    get_core_indices, get_extremes_regularneighs_grid,\
+    generate_grid_neighs_coord, generate_grid_neighs_coord_i
+
 from pySpatialTools.Retrieve import create_retriever_input_output
 
 #from scipy.sparse import coo_matrix
@@ -75,6 +77,7 @@ def test():
     # windows_iteration
     shape, max_bunch, l, center, excluded = (10, 10), 20, 3, -1, False
     shapes = np.array(list(np.cumprod(shape[1:][::-1])[::-1]) + [1])
+    coord = np.random.randint(0, 10, 2).reshape((1, 2))
     for i, nei, rp in windows_iteration(shape, max_bunch, l, center, excluded):
         pass
     for i, nei, rp in windows_iteration(shape, max_bunch, l, center, True):
@@ -92,13 +95,16 @@ def test():
     diff = get_relative_neighs(shape, [l]*2, [center]*2, excluded)
     points, ranges = new_get_irregular_extremes(diff, shape)
     get_extremes_regularneighs_grid(shape, l, center, excluded)
-
+    get_extremes_regularneighs_grid(shape, l, center, True)
 
 #    indices = get_indices_from_borders(borders, map2indices)
 #    points_corners, ranges =\
 #        new_get_borders_from_irregular_extremes(borders, shape, ranges)
 #
 #    indices = get_core_indices(borders, map2indices)
+
+    generate_grid_neighs_coord(coord, shape, 2, l, center, excluded)
+    generate_grid_neighs_coord_i(coord, shape, 2, l, center, excluded)
 
 
 
