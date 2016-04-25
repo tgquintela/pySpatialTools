@@ -204,48 +204,83 @@ def test():
 
     ###########################################################################
     ######### Exhaustive testing over common retrievers tools
-    n = 1000
+    ## Perturbations
+    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
+    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+    ## Create perturbations
+    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
+    perturbation1 = PermutationPerturbation(reind.T)
+    perturbation2 = NonePerturbation(k_perturb2)
+    perturbation3 = JitterLocations(0.2, k_perturb3)
+    perturbation4 = [perturbation1, perturbation2, perturbation3]
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
-    pos_autodata = [True, False, None, np.arange(n)]
+    ## Possibilities
+    pos_autodata = [True, None, np.arange(n)]
     pos_inmap = [None, _input_map]
     pos_outmap = [None, _output_map]
     pos_inforet = [5]
-    pos_infof = [None, lambda x: 5]
+    pos_infof = [None, lambda x, pars: 5]
     pos_constantinfo = [True, False, None]
     pos_typeret = ['space', '']
-    pos_preturbations = []
+    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
+                         perturbation4]
     pos_ifdistance = [True, False, None]
     pos_autoexclude = [True, False, None]
     pos_relativepos = [None]
-    pos_boolinidx = [True, False, None]
-    pos_preferable_input = [True, False, None]
+    pos_boolinidx = [True, False]
+    pos_preferable_input = [True, False]
+    pos_constantneighs = [True, False, None]
+    pos_listind = [True, False, None]
 
     possibles = [pos_autodata, pos_inmap, pos_outmap, pos_inforet, pos_infof,
-                 pos_constantinfo, pos_typeret, pos_preturbations,
+                 pos_constantinfo, pos_typeret, pos_perturbations,
                  pos_ifdistance, pos_autoexclude, pos_relativepos,
-                 pos_boolinidx, pos_preferable_input]
-
+                 pos_boolinidx, pos_preferable_input, pos_constantneighs,
+                 pos_listind]
+    counter = -1
     for p in product(*possibles):
+        counter += 1
+        print p, counter
         ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
                              info_ret=p[3], info_f=p[4], constant_info=p[5],
                              perturbations=p[7], autoexclude=p[9],
                              ifdistance=p[8], relative_pos=p[10],
                              bool_input_idx=p[11], typeret=p[6],
-                             preferable_input_idx=p[12])
-
+                             preferable_input_idx=p[12], constant_neighs=p[13],
+                             bool_listind=p[14])
+        ## Selecting point_i
         if p[11] is False:
             i = np.array([0])
+            j = [np.array([0]), np.array([1])]
         else:
             i = 0
-        if p[5]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            neighs_info.get_information()
+            j = [0, 1]
+        ## Testing functions standards
+        # Assert information getting
+        info_i, info_i2 = ret._get_info_i(i, 5), ret._get_info_i(j, 5)
+        assert(info_i == 5)
+        assert(info_i2 == 5)
+        # Assert element getting
+        e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
+        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+        if p[12]:
+            assert(e1 == [0])
+            assert(e2 == [0, 1])
         else:
-            neighs_info = ret.retrieve_neighs(i, p[3])
-            neighs_info.get_information()
+            assert(e1 == [np.array([0])])
+            print type(e2), type(e2[0]), e2[0]
+            assert(np.all([e2 == [np.array([0]), np.array([1])]]))
+
+#
+#        if p[5]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[3])
+#            neighs_info.get_information()
 
     ###########################################################################
     ######### Preparation parameters for general testing
@@ -372,114 +407,114 @@ def test():
 #    for iss, nei in ret:
 #        pass
 
-    ###########################################################################
-    #### SameEleRetriever
-    #####################
-    pos_inforet = [None]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                           input_map=p[2], output_map=p[3], constant_info=p[4],
-                           bool_input_idx=p[5])
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            neighs_info.get_information()
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
-
-    ###########################################################################
-    #### OrderEleRetriever
-    ######################
-    pos_inforet = [pars4]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                            input_map=p[2], output_map=p[3],
-                            constant_info=p[4], bool_input_idx=p[5])
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            neighs_info.get_information()
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
-
-    ###########################################################################
-    #### LimDistanceRetriever
-    ##########################
-    pos_inforet = [pars5]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                                  input_map=p[2], output_map=p[3],
-                                  constant_info=p[4], bool_input_idx=p[5])
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            neighs_info.get_information()
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
+#    ###########################################################################
+#    #### SameEleRetriever
+#    #####################
+#    pos_inforet = [None]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                           input_map=p[2], output_map=p[3], constant_info=p[4],
+#                           bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = mainmapper.data[0]
+#            j = mainmapper.data[[0, 3]]
+#        else:
+#            i = 0
+#            j = [0, 3]
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
+#
+##    ## Iterations
+##    ret.set_iter()
+##    for iss, nei in ret:
+##        pass
+#
+#    ###########################################################################
+#    #### OrderEleRetriever
+#    ######################
+#    pos_inforet = [pars4]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                            input_map=p[2], output_map=p[3],
+#                            constant_info=p[4], bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = mainmapper.data[0]
+#            j = mainmapper.data[[0, 3]]
+#        else:
+#            i = 0
+#            j = [0, 3]
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
+#
+##    ## Iterations
+##    ret.set_iter()
+##    for iss, nei in ret:
+##        pass
+#
+#    ###########################################################################
+#    #### LimDistanceRetriever
+#    ##########################
+#    pos_inforet = [pars5]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+#                                  input_map=p[2], output_map=p[3],
+#                                  constant_info=p[4], bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = mainmapper.data[0]
+#            j = mainmapper.data[[0, 3]]
+#        else:
+#            i = 0
+#            j = [0, 3]
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
+#
+##    ## Iterations
+##    ret.set_iter()
+##    for iss, nei in ret:
+##        pass
 
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,
