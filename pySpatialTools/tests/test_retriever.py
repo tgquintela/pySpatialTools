@@ -241,7 +241,7 @@ def test():
     counter = -1
     for p in product(*possibles):
         counter += 1
-        print p, counter
+#        print p, counter
         ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
                              info_ret=p[3], info_f=p[4], constant_info=p[5],
                              perturbations=p[7], autoexclude=p[9],
@@ -263,13 +263,13 @@ def test():
         assert(info_i2 == 5)
         # Assert element getting
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
-        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+#        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
         if p[12]:
             assert(e1 == [0])
             assert(e2 == [0, 1])
         else:
             assert(e1 == [np.array([0])])
-            print type(e2), type(e2[0]), e2[0]
+#            print type(e2), type(e2[0]), e2[0]
             assert(np.all([e2 == [np.array([0]), np.array([1])]]))
 
 #
@@ -319,7 +319,7 @@ def test():
             i = locs[0]
         else:
             i = 0
-        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
@@ -353,7 +353,7 @@ def test():
             i = locs[0]
         else:
             i = 0
-        print i, p
+#        print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
@@ -389,7 +389,7 @@ def test():
             i = gridlocs[0].reshape((1, len(shape)))
         else:
             i = 0
-        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
