@@ -80,10 +80,10 @@ class Retriever:
         ## 1. Retrieve neighs
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
-        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
+#        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists)
         ## 3. Format neighs_info
-        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance
+#        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance
         self.neighs_info.set(neighs_info, i_loc)
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
@@ -106,9 +106,9 @@ class Retriever:
             nei_k = self._format_output(i_loc, neighs, dists, kr=k_r)
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
-        print neighs_info, '1'*50, self.neighs_info.format_set_info
+#        print neighs_info, '1'*50, self.neighs_info.format_set_info
         self.neighs_info.set((neighs_info, ks), i_loc)
-        print self.staticneighs, self.neighs_info.staticneighs
+#        print self.staticneighs, self.neighs_info.staticneighs
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
@@ -124,10 +124,10 @@ class Retriever:
         ## 1. Retrieve neighs
         if ks == 0 or self.staticneighs:
             # Get neighs info
-            print 'b0'*20, i_loc, info_i, ifdistance
+#            print 'b0'*20, i_loc, info_i, ifdistance
             neighs, dists =\
                 self._retrieve_neighs_spec(i_loc, info_i, ifdistance)
-            print 'b'*25, neighs, dists
+#            print 'b'*25, neighs, dists
             ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
             neighs_info = [neighs_info]
@@ -143,7 +143,7 @@ class Retriever:
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
         ## 3. Format neighs_info
-        print 'a'*100, neighs_info, type(neighs_info[0]), self.staticneighs or ks == 0
+#        print 'a'*100, neighs_info, type(neighs_info[0]), self.staticneighs or ks == 0
         self.neighs_info.set((neighs_info, ks), i_loc)
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
@@ -153,9 +153,9 @@ class Retriever:
         """Format inputs retriever check and format the inputs for retrieving.
         """
         # Prepare information retrieve
-        print 'input', info_i
+#        print 'input', info_i
         info_i = self._get_info_i(i_loc, info_i)
-        print 'output', info_i
+#        print 'output', info_i
         #i_loc = self._get_loc_i(i_loc)
         ifdistance = self._ifdistance if ifdistance is None else ifdistance
         # Prepare perturbation index
@@ -227,9 +227,7 @@ class Retriever:
         function self._define_retriever."""
         if perturbation._categorytype == 'location':
             self.staticneighs = False
-            print ','*50, self.staticneighs, self.neighs_info.staticneighs
             self._format_neighs_info(self.bool_input_idx)
-            print ';'*50, self.staticneighs, self.neighs_info.staticneighs
             for k in range(perturbation.k_perturb):
                 locs_p = perturbation.apply2locs(self.retriever[0].data, k=k)
                 self._define_retriever(locs_p[:, :, 0])
@@ -281,7 +279,7 @@ class Retriever:
         - self._info_ret
         - self.k_perturb
         """
-        print '9'*15, self._ifdistance
+#        print '9'*15, self._ifdistance
         ## Retrieve information getters and functions
         self._format_retriever_info(self._info_ret, self._info_f,
                                     constant_info)
@@ -293,7 +291,7 @@ class Retriever:
         # Preparation input and output
         self._format_preparators(bool_input_idx)
         self._format_neighs_info(bool_input_idx)
-        print '9+'*15, self._ifdistance
+#        print '9+'*15, self._ifdistance
 
     def assert_correctness(self):
         """Assert the class is formatted properly."""
@@ -436,7 +434,7 @@ class Retriever:
         else:
             format_set_iss = 'null'
 
-        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs, self.neighs_info.staticneighs
+#        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs, self.neighs_info.staticneighs
         ## Neighs info setting
         self.neighs_info = Neighs_Info(format_set_iss=format_set_iss,
                                        format_structure=format_structure,
@@ -540,12 +538,12 @@ class Retriever:
         This is a generic function independent on the type of the element.
         """
         ## 0. Detect input i_loc and retrieve to_exclude_elements list
-        print '=0'*15, i_loc, neighs, type(i_loc), len(neighs), self._build_excluded_elements
+#        print '=0'*15, i_loc, neighs, type(i_loc), len(neighs), self._build_excluded_elements
         to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
         neighs, dists =\
             self._exclude_elements(to_exclude_elements, neighs, dists)
-        print 'point of shit debug', neighs, dists, self._exclude_elements
+#        print 'point of shit debug', neighs, dists, self._exclude_elements
         return neighs, dists
 
     def _null_exclude_auto(self, i_loc, neighs, dists, kr=0):
@@ -837,7 +835,7 @@ class Retriever:
     #
     def _get_idx_from_loc_indata(self, loc_i, kr=0):
         """Get indices from stored data."""
-        print 'm'*20, loc_i, self.data_input
+#        print 'm'*20, loc_i, self.data_input
         if type(self.data_input) == np.ndarray:
             indices = []
             for l in loc_i:
@@ -856,7 +854,7 @@ class Retriever:
 
     def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
         """Specific interaction with the data stored in retriever object."""
-        print '/'*20, loc_i
+#        print '/'*20, loc_i
         data_idxs = []
         for i in range(len(loc_i)):
             data_idxs += self._get_idx_from_loc(loc_i[i], kr)

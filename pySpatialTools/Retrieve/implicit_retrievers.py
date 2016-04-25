@@ -132,7 +132,7 @@ class KDTreeBasedRetriever(SpaceRetriever):
 
     def _get_loc_from_idx(self, i, kr=0):
         """Not list indexable interaction with data."""
-        print i, kr
+#        print i, kr
         loc_i = np.array(self.retriever[kr].data[i])
         return loc_i
 
@@ -203,7 +203,7 @@ class KRetriever(KDTreeBasedRetriever):
             the indice of the point_i.
         """
         kneighs = self._get_info_i(point_i, info_i)
-        print kneighs, 'p'*25, self._get_info_i
+#        print kneighs, 'p'*25, self._get_info_i
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), False)
         res = np.array(res), None
@@ -219,7 +219,7 @@ class KRetriever(KDTreeBasedRetriever):
         """
         kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
-        print self._prepare_input, self.get_loc_i, point_i
+#        print self._prepare_input, self.get_loc_i, point_i
         res = self.retriever[kr].query(point_i, int(kneighs), True)
         res = res[1], self._apply_preprocess_relative_pos(list(res[0]))
         ## Correct for another relative spatial measure (Save time indexing)
