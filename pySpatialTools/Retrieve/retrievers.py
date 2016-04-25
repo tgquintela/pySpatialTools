@@ -599,7 +599,7 @@ class Retriever:
         """
         ## 0. Preparing input
         sh = i_loc.shape
-        print i_loc, sh
+#        print i_loc, sh
         i_loc = i_loc if len(sh) == 2 else i_loc.reshape((1, sh[0]))
         ## 1. Building indices to exclude
         to_exclude_elements = []
@@ -712,11 +712,11 @@ class Retriever:
         loc_i = np.array(loc_i)
         if len(loc_i.shape) == 1:
             loc_i = loc_i.reshape((1, len(loc_i)))
-        print loc_i
+#        print loc_i
         loc_i = self._input_map(self, loc_i)
-        print loc_i, self.get_indice_i
+#        print loc_i, self.get_indice_i
         i_loc = self.get_indice_i(loc_i, kr)
-        print i_loc
+#        print i_loc
         return i_loc
 
     ############################## Get locations ##############################
@@ -884,7 +884,7 @@ class Retriever:
     def _get_indice_i_general_from_locations(self, loc_i, kr=0):
         """Get indices of spatial information from spatial information.
         Format properly the input spatial information."""
-        print '+'*20, loc_i, type(loc_i), self._get_idxs_from_locs
+#        print '+'*20, loc_i, type(loc_i), self._get_idxs_from_locs
         if type(loc_i) == list:
             if len(loc_i) == 0:
                 return loc_i
@@ -893,7 +893,7 @@ class Retriever:
             i_locs = self._get_idxs_from_locs(loc_i, kr)
         elif type(loc_i) == np.ndarray:
             i_locs = self._get_idxs_from_locs(loc_i, kr)
-            print '+'*5, i_locs, self._get_idxs_from_locs
+#            print '+'*5, i_locs, self._get_idxs_from_locs
         else:
             loc_i = [loc_i]
             i_locs = self._get_idxs_from_locs(loc_i, kr)
@@ -1168,13 +1168,13 @@ class DummyRetriever(Retriever):
     ######################### Needed getter functions #########################
     def _get_loc_from_idx(self, i, kr=0):
         """Not list indexable interaction with data."""
-        print i, kr
+#        print i, kr
         loc_i = np.array(self.retriever[kr].data[i])
         return loc_i
 
     def _get_idx_from_loc(self, loc_i, kr=0):
         """Get indices from locations."""
-        print loc_i, self.retriever[kr].data.shape, type(loc_i)
+#        print loc_i, self.retriever[kr].data.shape, type(loc_i)
         indices = []
         for i in range(len(loc_i)):
             indices += list(np.where(self.retriever[kr].data == loc_i[i])[0])
@@ -1235,7 +1235,7 @@ class DummyRetriever(Retriever):
         ## Retrieving neighs
         neighs, _ =\
             self._retrieve_neighs_constant_nodistance(point_i, info_i, kr)
-        print neighs, point_i, self.preferable_input_idx, self._prepare_input(point_i, kr)
+#        print neighs, point_i, self.preferable_input_idx, self._prepare_input(point_i, kr)
         dists = [np.zeros((len(e), 1)) for e in neighs]
         neighs_info = neighs, dists
         ## Correct for another relative spatial measure (Save time indexing)
