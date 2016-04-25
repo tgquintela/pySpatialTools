@@ -68,7 +68,7 @@ def test():
     random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0)
 
     ## Artificial random features
-    n, n_feats = np.random.randint(1, 1000), np.random.randint(2, 20)
+    n, n_feats = np.random.randint(10, 1000), np.random.randint(2, 20)
     n_feats2 = [np.random.randint(2, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
 

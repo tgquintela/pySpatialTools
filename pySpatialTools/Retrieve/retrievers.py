@@ -83,7 +83,7 @@ class Retriever:
 #        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists)
         ## 3. Format neighs_info
-#        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance
+        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, i_loc)
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
@@ -377,12 +377,12 @@ class Retriever:
         """
         ## Format Retrievers function
         if self._constant_ret:
-            if self._ifdistance:
-                self._retrieve_neighs_spec =\
-                    self._retrieve_neighs_constant_distance
-            else:
+            if not self._ifdistance:
                 self._retrieve_neighs_spec =\
                     self._retrieve_neighs_constant_nodistance
+            else:
+                self._retrieve_neighs_spec =\
+                    self._retrieve_neighs_constant_distance
             if self.k_perturb == 0 or self.staticneighs:
                 self.retrieve_neighs = self._retrieve_neighs_static
             else:
@@ -692,7 +692,9 @@ class Retriever:
         if not '__len__' in dir(i_loc):
             i_loc = [i_loc]
         if not self.preferable_input_idx:
-            i_loc = np.array(i_loc)
+            if type(i_loc) == np.ndarray:
+                i_loc = list(i_loc) if len(i_loc.shape) == 2 else [i_loc]
+            i_loc = [i_loc] if type(i_loc) != list else i_loc
         i_mloc = self._input_map(self, i_loc)
         return i_mloc
 
@@ -1104,6 +1106,8 @@ class DummyRetriever(Retriever):
         ## Special inputs
         locs = np.arange(n).reshape((n, 1))
         autolocs = locs if autodata is True else autodata
+        if autodata is True:
+            assert(len(autolocs.shape) == 2)
         self._static_class_parameters_def(preferable_input_idx, typeret,
                                           constant_neighs, bool_listind)
         pars_ret = None
@@ -1193,10 +1197,10 @@ class DummyRetriever(Retriever):
         return neighs, dists
 
     ########################### Retriever functions ###########################
-    def _retrieve_neighs_general_spec(self, point_i, info_i, ifdistance=False,
+    def _retrieve_neighs_general_spec(self, point_i, info_i, ifdistance=True,
                                       kr=0):
         """General function to retrieve neighs in the specific way we want."""
-        if ifdistance:
+        if ifdistance or ifdistance is None:
             neighs_info =\
                 self._retrieve_neighs_constant_distance(point_i, info_i, kr)
         else:
@@ -1216,10 +1220,21 @@ class DummyRetriever(Retriever):
         point_i = self._prepare_input(point_i, kr)
         ## Transformation to a list of arrays
         if self.preferable_input_idx:
-            neighs = list(self.data_input[point_i])
+            print 'lk'*2, point_i, point_i[0]
+            assert(type(point_i[0]) in [int, np.int32, np.int64])
+            neighs = [self.data_input[p] for p in point_i]
+            print neighs, self.constant_neighs, point_i
+            assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         else:
-            neighs = list(point_i)
+            neighs = [p for p in point_i]
+            print neighs, self.constant_neighs, point_i, self.preferable_input_idx
+            assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         dists = None
+        ## Constant neighs
+        if self.constant_neighs:
+            neighs = np.array(neighs)
+        print neighs, self.constant_neighs
+        assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         return neighs, dists
 
     def _retrieve_neighs_constant_distance(self, point_i, info_i={}, kr=0):
@@ -1234,7 +1249,11 @@ class DummyRetriever(Retriever):
         neighs, _ =\
             self._retrieve_neighs_constant_nodistance(point_i, info_i, kr)
 #        print neighs, point_i, self.preferable_input_idx, self._prepare_input(point_i, kr)
+        print point_i, neighs
         dists = [np.zeros((len(e), 1)) for e in neighs]
+        if self.constant_neighs:
+            neighs = np.array(neighs)
+            dists = np.array(dists)
         neighs_info = neighs, dists
         ## Correct for another relative spatial measure (Save time indexing)
         point_i = self._prepare_input(point_i, kr)

@@ -60,6 +60,7 @@ def test():
     pars8 = {'l': 8, 'center': 0, 'excluded': False}
     mainmapper = generate_random_relations_cutoffs(20, store='sparse')
     mainmapper.set_inout(output='indices')
+    inttypes = [int, np.int32, np.int64]
 
     ###########################################################################
     ######### WindowRetriever module
@@ -216,7 +217,7 @@ def test():
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
     ## Possibilities
-    pos_autodata = [True, None, np.arange(n)]
+    pos_autodata = [True, None, np.arange(n).reshape((n, 1))]
     pos_inmap = [None, _input_map]
     pos_outmap = [None, _output_map]
     pos_inforet = [5]
@@ -226,7 +227,7 @@ def test():
     pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
                          perturbation4]
     pos_ifdistance = [True, False, None]
-    pos_autoexclude = [True, False, None]
+    pos_autoexclude = [False]  # True, None for other time
     pos_relativepos = [None]
     pos_boolinidx = [True, False]
     pos_preferable_input = [True, False]
@@ -241,7 +242,7 @@ def test():
     counter = -1
     for p in product(*possibles):
         counter += 1
-#        print p, counter
+##        print p, counter
         ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
                              info_ret=p[3], info_f=p[4], constant_info=p[5],
                              perturbations=p[7], autoexclude=p[9],
@@ -263,16 +264,33 @@ def test():
         assert(info_i2 == 5)
         # Assert element getting
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
-#        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+##        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
         if p[12]:
             assert(e1 == [0])
             assert(e2 == [0, 1])
         else:
             assert(e1 == [np.array([0])])
-#            print type(e2), type(e2[0]), e2[0]
+#            print e1, ret._prepare_input, p[11], p[12]
+            assert(all([type(e) == np.ndarray for e in e1]))
+#            print e2, type(e2[0]), ret._prepare_input, p[11], p[12]
             assert(np.all([e2 == [np.array([0]), np.array([1])]]))
+            assert(all([type(e) == np.ndarray for e in e2]))
 
-#
+        # Assert correct retrieving
+        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[8])
+#        print dists, type(dists), p[8]
+        assert(dists is None or not p[8] is False)
+#        print dists, type(dists), p[8]
+        neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[8])
+        assert(dists is None or not p[8] is False)
+#        print neighs, p, counter
+#        print ret.staticneighs, type(neighs[0][0])
+        assert(type(neighs[0][0]) in inttypes)
+#        if ret.staticneighs:
+#            assert(type(neighs[0][0]) in inttypes)
+#        else:
+#            assert(type(neighs[0][0][0]) in inttypes)
+
 #        if p[5]:
 #            neighs_info = ret.retrieve_neighs(i)
 #            neighs_info.get_information()
@@ -282,125 +300,130 @@ def test():
 #            neighs_info = ret.retrieve_neighs(i, p[3])
 #            neighs_info.get_information()
 
-    ###########################################################################
-    ######### Preparation parameters for general testing
-    ## Perturbations
-    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
-    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
-    ## Create perturbations
-    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
-    perturbation1 = PermutationPerturbation(reind.T)
-    perturbation2 = NonePerturbation(k_perturb2)
-    perturbation3 = JitterLocations(0.2, k_perturb3)
-    perturbation4 = [perturbation1, perturbation2, perturbation3]
-    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
-                         perturbation4]
+    ## Iterations
+    ret.set_iter()
+    for iss, nei in ret:
+        pass
 
-    _input_map = lambda s, i: i
-    _output_map = [lambda s, i, x: x]
-    pos_ifdistance = [True, False]
-    pos_inmap = [None, _input_map]
-    pos_constantinfo = [True, False, None]
-    pos_boolinidx = [True, False, None]
-
-    ###########################################################################
-    #### KRetriever
-    ##################
-    pos_inforet = [2, 5, 10]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_perturbations]
-    for p in product(*pos):
-        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-                         output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5], perturbations=p[6])
-        if p[5] is False:
-            i = locs[0]
-        else:
-            i = 0
-#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-
-        ## Testing other functions and parameters
-        ret.k_perturb
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
-
-    ###########################################################################
-    #### CircRetriever
-    ##################
-    pos_inforet = [2., 5., 10.]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-                         output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5])
-        if p[5] is False:
-            i = locs[0]
-        else:
-            i = 0
-#        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
-
-    ###########################################################################
-    #### WindowsRetriever
-    #####################
-    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
-                   {'l': 4, 'center': 0, 'excluded': False},
-                   {'l': 3, 'center': 1, 'excluded': True}]
-    pos_outmap = [None, _output_map]
-    shape = 10, 10
-    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_perturbations]
-    for p in product(*pos):
-        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
-                               input_map=p[2], output_map=p[3],
-                               constant_info=p[4], bool_input_idx=p[5],
-                               perturbations=p[6])
-        if p[5] is False:
-            i = gridlocs[0].reshape((1, len(shape)))
-        else:
-            i = 0
-#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-
-        ## Testing other functions and parameters
-        ret.k_perturb
+#    ###########################################################################
+#    ######### Preparation parameters for general testing
+#    ## Perturbations
+#    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
+#    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+#    ## Create perturbations
+#    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
+#    perturbation1 = PermutationPerturbation(reind.T)
+#    perturbation2 = NonePerturbation(k_perturb2)
+#    perturbation3 = JitterLocations(0.2, k_perturb3)
+#    perturbation4 = [perturbation1, perturbation2, perturbation3]
+#    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
+#                         perturbation4]
+#
+#    _input_map = lambda s, i: i
+#    _output_map = [lambda s, i, x: x]
+#    pos_ifdistance = [True, False]
+#    pos_inmap = [None, _input_map]
+#    pos_constantinfo = [True, False, None]
+#    pos_boolinidx = [True, False, None]
+#
+#    ###########################################################################
+#    #### KRetriever
+#    ##################
+#    pos_inforet = [2, 5, 10]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_perturbations]
+#    for p in product(*pos):
+#        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+#                         output_map=p[3], constant_info=p[4],
+#                         bool_input_idx=p[5], perturbations=p[6])
+#        if p[5] is False:
+#            i = locs[0]
+#        else:
+#            i = 0
+##        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#
+#        ## Testing other functions and parameters
+#        ret.k_perturb
+#
+##    ## Iterations
+##    ret.set_iter()
+##    for iss, nei in ret:
+##        pass
+#
+#    ###########################################################################
+#    #### CircRetriever
+#    ##################
+#    pos_inforet = [2., 5., 10.]
+#    pos_outmap = [None, _output_map]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx]
+#    for p in product(*pos):
+#        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+#                         output_map=p[3], constant_info=p[4],
+#                         bool_input_idx=p[5])
+#        if p[5] is False:
+#            i = locs[0]
+#        else:
+#            i = 0
+##        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#
+##    ## Iterations
+##    ret.set_iter()
+##    for iss, nei in ret:
+##        pass
+#
+#    ###########################################################################
+#    #### WindowsRetriever
+#    #####################
+#    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
+#                   {'l': 4, 'center': 0, 'excluded': False},
+#                   {'l': 3, 'center': 1, 'excluded': True}]
+#    pos_outmap = [None, _output_map]
+#    shape = 10, 10
+#    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_perturbations]
+#    for p in product(*pos):
+#        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
+#                               input_map=p[2], output_map=p[3],
+#                               constant_info=p[4], bool_input_idx=p[5],
+#                               perturbations=p[6])
+#        if p[5] is False:
+#            i = gridlocs[0].reshape((1, len(shape)))
+#        else:
+#            i = 0
+##        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#
+#        ## Testing other functions and parameters
+#        ret.k_perturb
 
 #    ## Iterations
 #    ret.set_iter()
