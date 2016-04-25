@@ -83,7 +83,7 @@ class Retriever:
 #        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists)
         ## 3. Format neighs_info
-        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
+#        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, i_loc)
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
@@ -1180,8 +1180,6 @@ class DummyRetriever(Retriever):
         indices = []
         for i in range(len(loc_i)):
             indices += list(np.where(self.retriever[kr].data == loc_i[i])[0])
-#        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
-#        indices = list(indices)
         return indices
 
     ######################### Format output functions #########################
@@ -1220,20 +1218,16 @@ class DummyRetriever(Retriever):
         point_i = self._prepare_input(point_i, kr)
         ## Transformation to a list of arrays
         if self.preferable_input_idx:
-            print 'lk'*2, point_i, point_i[0]
             assert(type(point_i[0]) in [int, np.int32, np.int64])
             neighs = [self.data_input[p] for p in point_i]
-            print neighs, self.constant_neighs, point_i
             assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         else:
             neighs = [p for p in point_i]
-            print neighs, self.constant_neighs, point_i, self.preferable_input_idx
             assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         dists = None
         ## Constant neighs
         if self.constant_neighs:
             neighs = np.array(neighs)
-        print neighs, self.constant_neighs
         assert(type(neighs[0][0]) in [int, np.int32, np.int64])
         return neighs, dists
 
@@ -1248,8 +1242,6 @@ class DummyRetriever(Retriever):
         ## Retrieving neighs
         neighs, _ =\
             self._retrieve_neighs_constant_nodistance(point_i, info_i, kr)
-#        print neighs, point_i, self.preferable_input_idx, self._prepare_input(point_i, kr)
-        print point_i, neighs
         dists = [np.zeros((len(e), 1)) for e in neighs]
         if self.constant_neighs:
             neighs = np.array(neighs)
