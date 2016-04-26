@@ -388,10 +388,10 @@ def test():
         ret.data_input
         ret.data_output
 
-#        ## Iterations
-#        ret.set_iter()
-#        for iss, nei in ret:
-#            break
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            break
 
 #    ###########################################################################
 #    ######### Preparation parameters for general testing
