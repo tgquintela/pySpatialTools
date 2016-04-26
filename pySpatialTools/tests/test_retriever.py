@@ -224,9 +224,9 @@ def test():
     pos_infof = [None, lambda x, pars: 0]
     pos_constantinfo = [True, False, None]
     pos_typeret = ['space', '']
-    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
-                         perturbation4]
-    pos_ifdistance = [True, False, None]
+    pos_perturbations = [None]  # , perturbation1, perturbation2, perturbation3,
+                        # perturbation4]
+    pos_ifdistance = [True]  # , False, None
     pos_autoexclude = [False]  # True, None for other time
     pos_relativepos = [None]
     pos_boolinidx = [True, False]
@@ -368,19 +368,15 @@ def test():
         else:
             assert(type(neighs[0][0]) in inttypes)
             assert(dists is None or not p[8] is False)
-#        if ret.staticneighs:
-#            assert(type(neighs[0][0]) in inttypes)
-#        else:
-#            assert(type(neighs[0][0][0]) in inttypes)
 
-#        if p[5]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            neighs_info = ret[i]
-#            neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[3])
-#            neighs_info.get_information()
+        if p[5]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[3])
+            neighs_info.get_information()
 
         len(ret)
         ret.export_neighs_info()
