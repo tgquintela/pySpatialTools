@@ -43,7 +43,8 @@ from pySpatialTools.Discretization import SetDiscretization
 from pySpatialTools.Retrieve.aux_windowretriever import windows_iteration
 from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
-    ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
+    ContiniousIndPerturbation, DiscreteIndPerturbation,\
+    MixedFeaturePertubation, PermutationPerturbationLocations
 
 
 def test():
@@ -212,7 +213,9 @@ def test():
     reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
     perturbation1 = PermutationPerturbation(reind.T)
     perturbation2 = NonePerturbation(k_perturb2)
-    perturbation3 = JitterLocations(0.2, k_perturb3)
+#    perturbation3 = JitterLocations(0.2, k_perturb3)
+    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb3)])
+    perturbation3 = PermutationPerturbationLocations(reind.T)
     perturbation4 = [perturbation1, perturbation2, perturbation3]
     _input_map = lambda s, i: i
     _output_map = [lambda s, i, x: x]
@@ -224,9 +227,8 @@ def test():
     pos_infof = [None, lambda x, pars: 0]
     pos_constantinfo = [True, False, None]
     pos_typeret = ['space', '']
-    pos_perturbations = [None]  # , perturbation1, perturbation2, perturbation3,
-                        # perturbation4]
-    pos_ifdistance = [True, False]# , None]  # , False, None
+    pos_perturbations = [None, perturbation4]
+    pos_ifdistance = [True, False]
     pos_autoexclude = [False]  # True, None for other time
     pos_relativepos = [None]
     pos_boolinidx = [True, False]
@@ -378,20 +380,22 @@ def test():
             neighs_info = ret.retrieve_neighs(i, p[3])
             neighs_info.get_information()
 
-        len(ret)
-        ret.export_neighs_info()
-        if not ret._heterogenous_input:
-            ret._n0
-        if not ret._heterogenous_output:
-            ret._n1
-        ret.shape
-        ret.data_input
-        ret.data_output
+        if np.random.random() < 0.1:
+            len(ret)
+            ret.export_neighs_info()
+            if not ret._heterogenous_input:
+                ret._n0
+            if not ret._heterogenous_output:
+                ret._n1
+            ret.shape
+            ret.data_input
+            ret.data_output
 
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            break
+        if np.random.random() < 0.1:
+            ## Iterations
+            ret.set_iter()
+            for iss, nei in ret:
+                break
 
 #    ###########################################################################
 #    ######### Preparation parameters for general testing

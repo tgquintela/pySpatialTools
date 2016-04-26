@@ -130,6 +130,39 @@ class JitterLocations(GeneralPerturbation):
         return locations_p
 
 
+class PermutationPerturbationLocations(GeneralPerturbation):
+    "Reindice perturbation for the whole locations."
+    _categorytype = "location"
+    _perturbtype = "element_permutation"
+
+    def __init__(self, reindices):
+        self._initialization()
+        self._format_reindices(reindices)
+
+    def _format_reindices(self, reindices):
+        if type(reindices) == np.ndarray:
+            self.k_perturb = reindices.shape[1]
+            self.reindices = reindices
+        elif type(reindices) == tuple:
+            n, k_perturb = reindices
+            if type(n) == int and type(k_perturb) == int:
+                self.k_perturb = k_perturb
+                self.reindices = np.vstack([np.random.permutation(n)
+                                            for i in xrange(k_perturb)]).T
+
+    def apply2locs(self, locations, k=None):
+        ## Preparation of ks
+        ks = range(self.k_perturb) if k is None else k
+        ks = [k] if type(k) == int else ks
+        locations_p = np.zeros((len(locations), locations.shape[1], len(ks)))
+        for ik in range(len(ks)):
+            locations_p[:, :, ik] = locations[self.reindices[:, ks[ik]], :]
+        return locations_p
+
+    def apply2indice(self, i, k):
+        return self.reindices[i, k]
+
+
 ###############################################################################
 ########################### Permutation perturbation ##########################
 ###############################################################################

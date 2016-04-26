@@ -82,6 +82,8 @@ class DummyRetriever(Retriever):
         class DummyAuxRet:
             def __init__(self, data):
                 self.data = data
+        if type(locs) == np.ndarray:
+            locs = locs.astype(int)
         self.retriever.append(DummyAuxRet(locs))
 
     def _format_locs(self, locs, autolocs):
