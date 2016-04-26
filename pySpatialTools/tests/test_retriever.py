@@ -226,7 +226,7 @@ def test():
     pos_typeret = ['space', '']
     pos_perturbations = [None]  # , perturbation1, perturbation2, perturbation3,
                         # perturbation4]
-    pos_ifdistance = [True]  # , False, None
+    pos_ifdistance = [True, False]# , None]  # , False, None
     pos_autoexclude = [False]  # True, None for other time
     pos_relativepos = [None]
     pos_boolinidx = [True, False]
