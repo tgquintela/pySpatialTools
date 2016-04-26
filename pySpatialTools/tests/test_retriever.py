@@ -29,7 +29,7 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
     _check_retriever, create_retriever_input_output,\
     _general_autoexclude, _array_autoexclude, _list_autoexclude
-from pySpatialTools.Retrieve.retrievers import DummyRetriever
+from pySpatialTools.Retrieve import DummyRetriever
 ## Tools retriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
@@ -219,9 +219,9 @@ def test():
     ## Possibilities
     pos_autodata = [True, None, np.arange(n).reshape((n, 1))]
     pos_inmap = [None, _input_map]
-    pos_outmap = [None, _output_map]
-    pos_inforet = [5]
-    pos_infof = [None, lambda x, pars: 5]
+    pos_outmap = [None, _output_map, _output_map[0]]
+    pos_inforet = [None, 0, lambda x, pars: 0]
+    pos_infof = [None, lambda x, pars: 0]
     pos_constantinfo = [True, False, None]
     pos_typeret = ['space', '']
     pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
@@ -258,13 +258,61 @@ def test():
             i = 0
             j = [0, 1]
         ## Testing functions standards
+        ## Get Information
+        ################
         # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, 5), ret._get_info_i(j, 5)
-        assert(info_i == 5)
-        assert(info_i2 == 5)
+        info_i, info_i2 = ret._get_info_i(i, 0), ret._get_info_i(j, 0)
+        assert(info_i == 0)
+        assert(info_i2 == 0)
+        ## Get locations
+        ################
+        if p[11]:
+            loc_i = ret.get_loc_i([0])
+        else:
+            loc_i = ret.get_loc_i([np.array([0])])
+#        print loc_i, counter, ret.get_loc_i, p[11]
+        assert(len(loc_i) == 1)
+        assert(type(loc_i) == type(ret.data_input))
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(all(loc_i[0] == np.array([0])))
+        if p[11]:
+            loc_i = ret.get_loc_i([0, 1])
+        else:
+            loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
+#        print loc_i, ret.get_loc_i, p[11]
+        assert(len(loc_i) == 2)
+        assert(type(loc_i) == type(ret.data_input))
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(type(loc_i[1]) == np.ndarray)
+        assert(all(loc_i[0] == np.array([0])))
+        assert(all(loc_i[1] == np.array([1])))
+        ## Get indices
+        ################
+        if p[11]:
+            i_loc = ret.get_indice_i([0])
+        else:
+            i_loc = ret.get_indice_i([np.array([0])])
+#        print i_loc, counter, ret.get_indice_i, p[11]
+        assert(len(i_loc) == 1)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        if p[11]:
+            i_loc = ret.get_indice_i([0, 1])
+        else:
+            i_loc = ret.get_indice_i([np.array([0]), np.array([1])])
+#        print i_loc, ret.get_indice_i, p[11]
+        assert(len(i_loc) == 2)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(type(i_loc[1]) in inttypes)
+        assert(i_loc[0] == 0)
+        assert(i_loc[1] == 1)
+        ## Preparing input
+        ##################
         # Assert element getting
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
-##        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+#        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+#        print ret.preferable_input_idx
         if p[12]:
             assert(e1 == [0])
             assert(e2 == [0, 1])
@@ -272,20 +320,54 @@ def test():
             assert(e1 == [np.array([0])])
 #            print e1, ret._prepare_input, p[11], p[12]
             assert(all([type(e) == np.ndarray for e in e1]))
-#            print e2, type(e2[0]), ret._prepare_input, p[11], p[12]
+#            print e2, type(e2[0]), ret._prepare_input, p[11], p[12], counter
             assert(np.all([e2 == [np.array([0]), np.array([1])]]))
             assert(all([type(e) == np.ndarray for e in e2]))
-
+        ## Retrieve and output
+        ######################
         # Assert correct retrieving
+        ## Retrieve individual
         neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[8])
 #        print dists, type(dists), p[8]
+        assert(type(neighs[0][0]) in inttypes)
         assert(dists is None or not p[8] is False)
 #        print dists, type(dists), p[8]
+        ## Output map
+        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+        assert(type(neighs2[0][0]) in inttypes)
+        assert(dists2 is None or not p[8] is False)
+        ## Output
+        neighs, dists = ret._format_output(i, neighs, dists)
+        if p[9]:
+            print neighs, dists, ret._exclude_auto, i, counter
+            assert(len(neighs) == 1)
+            assert(len(neighs[0]) == 0)
+    #        assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[8] is False)
+        else:
+            assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[8] is False)
+        ## Retrieve multiple
         neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[8])
+        assert(type(neighs[0][0]) in inttypes)
         assert(dists is None or not p[8] is False)
 #        print neighs, p, counter
 #        print ret.staticneighs, type(neighs[0][0])
-        assert(type(neighs[0][0]) in inttypes)
+        ## Output map
+        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+        assert(type(neighs2[0][0]) in inttypes)
+        assert(dists2 is None or not p[8] is False)
+        ## Output
+        neighs, dists = ret._format_output(j, neighs, dists)
+        if p[9]:
+            assert(len(neighs) == 2)
+            assert(len(neighs[0]) == 0)
+            assert(len(neighs[1]) == 0)
+    #        assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[8] is False)
+        else:
+            assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[8] is False)
 #        if ret.staticneighs:
 #            assert(type(neighs[0][0]) in inttypes)
 #        else:
@@ -300,10 +382,20 @@ def test():
 #            neighs_info = ret.retrieve_neighs(i, p[3])
 #            neighs_info.get_information()
 
-    ## Iterations
-    ret.set_iter()
-    for iss, nei in ret:
-        pass
+        len(ret)
+        ret.export_neighs_info()
+        if not ret._heterogenous_input:
+            ret._n0
+        if not ret._heterogenous_output:
+            ret._n1
+        ret.shape
+        ret.data_input
+        ret.data_output
+
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            break
 
 #    ###########################################################################
 #    ######### Preparation parameters for general testing
