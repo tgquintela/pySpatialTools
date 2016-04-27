@@ -142,6 +142,21 @@ class KDTreeBasedRetriever(SpaceRetriever):
         indices = list(indices)
         return indices
 
+    @property
+    def data_input(self):
+        if self._autodata:
+            return np.array(self.retriever[0].data)
+        else:
+            if self.data is None:
+                self._autodata = True
+                return np.array(self.data_input)
+            else:
+                return np.array(self.data)
+
+    @property
+    def data_output(self):
+        return np.array(self.retriever[0].data)
+
 
 ################################ K Neighbours #################################
 ###############################################################################

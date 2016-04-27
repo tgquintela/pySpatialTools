@@ -29,7 +29,7 @@ from pySpatialTools.Retrieve import create_retriever_input_output
 from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
     _check_retriever, create_retriever_input_output,\
     _general_autoexclude, _array_autoexclude, _list_autoexclude
-from pySpatialTools.Retrieve import DummyRetriever
+from pySpatialTools.Retrieve import DummyRetriever, DummyLocObject
 ## Tools retriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
@@ -226,7 +226,7 @@ def test():
     pos_inforet = [None, 0, lambda x, pars: 0]
     pos_infof = [None, lambda x, pars: 0]
     pos_constantinfo = [True, False, None]
-    pos_typeret = ['space', '']
+    pos_typeret = ['space']  # ''
     pos_perturbations = [None, perturbation4]
     pos_ifdistance = [True, False]
     pos_autoexclude = [False]  # True, None for other time
@@ -236,26 +236,55 @@ def test():
     pos_constantneighs = [True, False, None]
     pos_listind = [True, False, None]
 
+    ## Combinations
     possibles = [pos_autodata, pos_inmap, pos_outmap, pos_inforet, pos_infof,
                  pos_constantinfo, pos_typeret, pos_perturbations,
                  pos_ifdistance, pos_autoexclude, pos_relativepos,
                  pos_boolinidx, pos_preferable_input, pos_constantneighs,
                  pos_listind]
+    ## Sequencials
+    pos_auto_excluded = [True, False, None]
+    pos_types = ['array', 'list', 'object', 'listobject']
+    pos_typeret = ['space', '']
+
     counter = -1
     for p in product(*possibles):
+        ## Comtinations
         counter += 1
 ##        print p, counter
+        ## Sequential parameters
+        types = pos_types[np.random.randint(0, 3)]
+#        types = 'object'
+        auto_excluded = pos_auto_excluded[np.random.randint(0, 3)]
+        if types in ['object', 'listobject']:
+            typeret = ''
+        else:
+            typeret = pos_typeret[np.random.randint(0, 2)]
+        ## Non exhaustive
+#        if np.random.random() < 0.25:
+#            continue
+
+        ## Forbidden combinations
+        if types in ['list', 'object', 'listobject'] and p[14]:
+            continue
+
+        ## Instantiation
         ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
                              info_ret=p[3], info_f=p[4], constant_info=p[5],
                              perturbations=p[7], autoexclude=p[9],
                              ifdistance=p[8], relative_pos=p[10],
-                             bool_input_idx=p[11], typeret=p[6],
+                             bool_input_idx=p[11], typeret=typeret,
                              preferable_input_idx=p[12], constant_neighs=p[13],
-                             bool_listind=p[14])
+                             bool_listind=p[14], auto_excluded=auto_excluded,
+                             types=types)
         ## Selecting point_i
         if p[11] is False:
-            i = np.array([0])
-            j = [np.array([0]), np.array([1])]
+            if types == 'listobject':
+                i = DummyLocObject(np.array([0]))
+                j = [i, DummyLocObject(np.array([1]))]
+            else:
+                i = np.array([0])
+                j = [np.array([0]), np.array([1])]
         else:
             i = 0
             j = [0, 1]
@@ -268,40 +297,71 @@ def test():
         assert(info_i2 == 0)
         ## Get locations
         ################
+#        print p[11], types
         if p[11]:
             loc_i = ret.get_loc_i([0])
+            if types == 'listobject':
+                loc_i = [e.location for e in loc_i]
         else:
-            loc_i = ret.get_loc_i([np.array([0])])
-#        print loc_i, counter, ret.get_loc_i, p[11]
+            if types == 'listobject':
+                retloc = DummyLocObject(np.array([0]))
+                loc_i = ret.get_loc_i([retloc])
+                loc_i = [e.location for e in loc_i]
+            else:
+                loc_i = ret.get_loc_i([np.array([0])])
+#        print loc_i, counter, ret._get_loc_from_idxs, p[11], p[12]
         assert(len(loc_i) == 1)
-        assert(type(loc_i) == type(ret.data_input))
+#        assert(type(loc_i) == type(ret.data_input))
+#        print loc_i, types
         assert(type(loc_i[0]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
         assert(all(loc_i[0] == np.array([0])))
+
         if p[11]:
             loc_i = ret.get_loc_i([0, 1])
+            if types == 'listobject':
+                loc_i = [e.location for e in loc_i]
         else:
-            loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
+            if types == 'listobject':
+                aux = DummyLocObject(np.array([0]))
+                loc_i = ret.get_loc_i([aux, DummyLocObject(np.array([1]))])
+                loc_i = [e.location for e in loc_i]
+            else:
+                loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
+
 #        print loc_i, ret.get_loc_i, p[11]
         assert(len(loc_i) == 2)
-        assert(type(loc_i) == type(ret.data_input))
+#        assert(type(loc_i) == type(ret.data_input))
         assert(type(loc_i[0]) == np.ndarray)
         assert(type(loc_i[1]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(len(loc_i[1].shape) == 1)
         assert(all(loc_i[0] == np.array([0])))
         assert(all(loc_i[1] == np.array([1])))
         ## Get indices
         ################
         if p[11]:
-            i_loc = ret.get_indice_i([0])
+            loc_i = [0]
         else:
-            i_loc = ret.get_indice_i([np.array([0])])
-#        print i_loc, counter, ret.get_indice_i, p[11]
+            if types == 'listobject':
+                loc_i = [DummyLocObject(np.array([0]))]
+            else:
+                loc_i = [np.array([0])]
+        i_loc = ret.get_indice_i(loc_i, 0)
+#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[11]
+#        print list(ret.data_input)
         assert(len(i_loc) == 1)
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
         if p[11]:
             i_loc = ret.get_indice_i([0, 1])
         else:
-            i_loc = ret.get_indice_i([np.array([0]), np.array([1])])
+            if types == 'listobject':
+                loc_i = [DummyLocObject(np.array([0]))]
+                loc_i += [DummyLocObject(np.array([1]))]
+            else:
+                loc_i = [np.array([0]), np.array([1])]
+            i_loc = ret.get_indice_i(loc_i, 0)
 #        print i_loc, ret.get_indice_i, p[11]
         assert(len(i_loc) == 2)
         assert(type(i_loc) == list)
@@ -312,13 +372,18 @@ def test():
         ## Preparing input
         ##################
         # Assert element getting
+#        print i, j, p[11], p[12], ret._prepare_input
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
 #        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
 #        print ret.preferable_input_idx
+        if types == 'listobject' and p[12] is not True:
+            e1, e2 = [e.location for e in e1], [e.location for e in e2]
         if p[12]:
+#            print e1, e2, type(e1), type(e2)
             assert(e1 == [0])
             assert(e2 == [0, 1])
         else:
+#            print e1, e2, ret._prepare_input, p[11]
             assert(e1 == [np.array([0])])
 #            print e1, ret._prepare_input, p[11], p[12]
             assert(all([type(e) == np.ndarray for e in e1]))

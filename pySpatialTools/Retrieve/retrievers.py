@@ -25,6 +25,29 @@ Structure:
         - OrderRetriever
         - MaxDistanceRetriever
 
+Main Functionalities
+--------------------
+Function to retrieve required information to retrieve neighbourhood:
+
+get_loc_i: function which is useful to get locations from the data input
+    pool using locations itself or indices.
+get_indice_i: function which serves to get indices of the pool of data
+    locations available to retrieve.
+_prepare_input: internal function useful to prepare the input locations
+    information in order to ensure that the core-retriever gets the
+    information it needs in order to retrieve properly neighbourhoods.
+_get_info_i: function which serves to get the retrieving information of
+    element_i to retrieve its neighbourhood. If there is an open system
+    it uses other information as the own location information to define
+    the retrieving information.
+
+Functions to retrieve neighbourhood:
+retrieve_neighs: the main function to retrieve the neighbourhood. It
+    accepts as parameters the loc_i (information of the element i of
+    which we want to get its neighbourhood), info_i (retrieving
+    information), 
+
+
 TODO:
 ----
 - Ifdistance better implementation
@@ -230,7 +253,14 @@ class Retriever:
             self._format_neighs_info(self.bool_input_idx)
             for k in range(perturbation.k_perturb):
                 locs_p = perturbation.apply2locs(self.retriever[0].data, k=k)
-                self._define_retriever(locs_p[:, :, 0])
+                if type(locs_p) == np.ndarray:
+                    self._define_retriever(locs_p[:, :, 0])
+                else:
+                    if type(self.retriever[0].data) == list:
+                        self._define_retriever(locs_p[0])
+                    else:
+                        aux_locs = SpatialElementsCollection(locs_p[0])
+                        self._define_retriever(aux_locs)
 
     @property
     def k_perturb(self):
@@ -494,10 +524,10 @@ class Retriever:
                 self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
         else:
             self._get_loc_from_idx = self._get_loc_from_idx_indata
-            if type(self.data) == list:
-                self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
-            else:
+            if type(self.data_input) == np.ndarray:
                 self._get_loc_from_idxs = self._get_loc_from_idxs_listind
+            else:
+                self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
 
     def _format_get_indice_i(self, bool_input_idx):
         """Format the get indice function."""
@@ -516,10 +546,11 @@ class Retriever:
                 self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
         else:
             self._get_idx_from_loc = self._get_idx_from_loc_indata
-            if type(self.data) == list:
-                self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
-            else:
-                self._get_idxs_from_locs = self._get_idxs_from_locs_listind
+            self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
+#            if type(self.data) == list:
+#                self._get_idxs_from_locs = self._get_idxs_from_locs_notlistind
+#            else:
+#                self._get_idxs_from_locs = self._get_idxs_from_locs_listind
 
     ###########################################################################
     ################################ Auxiliar #################################
@@ -528,7 +559,7 @@ class Retriever:
     ## Collapse to _exclude_auto in _format_exclude
     # Returns
     # -------
-    # neighs: list of np.ndarray or np.ndarrray
+    # neighs: list of np.ndarray or np.ndarray
     #     the neighs for each iss in i_loc
     # dists: list of list of np.ndarray or np.ndarray
     #     the information or relative position in respect to each iss in i_loc
@@ -676,7 +707,7 @@ class Retriever:
     # -------
     # spatial_info: list of ints or list of np.ndarray or np.ndarray
     #     the spatial information of required to retrieve neighbourhood from
-    #     core retriver.
+    #     core retriever.
     #
     def _general_prepare_input(self, i_loc, kr=0):
         """General prepare input."""
@@ -704,64 +735,82 @@ class Retriever:
         if type(i_loc) not in [list, np.ndarray]:
             i_loc = [i_loc]
         i_loc = self._input_map(self, i_loc)
-        loc_i = self.get_loc_i(i_loc, kr)
+        loc_i = self.get_loc_i(i_loc)
         return loc_i
 
     def _dummy_loc2idx_prepare_input(self, loc_i, kr=0):
         """Dummy prepare input transforming location to indice."""
-        loc_i = np.array(loc_i)
-        if len(loc_i.shape) == 1:
-            loc_i = loc_i.reshape((1, len(loc_i)))
-#        print loc_i
+#        loc_i = np.array(loc_i)
+#        if len(loc_i.shape) == 1:
+#            loc_i = loc_i.reshape((1, len(loc_i)))
+        ## Preprocessing to have list of locs
+        if type(loc_i) != list:
+            if type(loc_i) == np.ndarray:
+                if len(loc_i.shape) == 1:
+                    loc_i = loc_i.reshape((1, len(loc_i)))
+            else:
+                loc_i = [loc_i]
         loc_i = self._input_map(self, loc_i)
-#        print loc_i, self.get_indice_i
         i_loc = self.get_indice_i(loc_i, kr)
-#        print i_loc
         return i_loc
 
     ############################## Get locations ##############################
     ## Collapse to get_loc_i in _format_get_loc_i
-    # Get locations from the input data.
+    # Get locations from the input data or the external loc data input.
     # Returns
     # -------
     # locations: list of np.ndarray or np.ndarray
     #     the spatial information of storage from the indications input.
     #
     ### Standart output
-    # SAME type as data
+    # SAME type as input data
     #####################################################################
-    def _get_loc_from_idxs_notlistind(self, i_loc, kr=0):
+    def _get_loc_from_idxs_notlistind(self, i_loc):
         """Specific interaction with the data stored in retriever object."""
         data_locs = []
+#        print i_loc, type(i_loc), 'p'*10, type(self.data_input)
         i_loc = [i_loc] if type(i_loc) not in [list, np.ndarray] else i_loc
         for i in i_loc:
-            data_locs.append(self._get_loc_from_idx(i, kr))
-        ## Same structure as data
+#            print i, self._get_loc_from_idx
+            data_locs.append(self._get_loc_from_idx(i))
+        ## Same structure as input data
         if type(self.data_input) == np.ndarray:
             data_locs = np.array(data_locs)
         return data_locs
 
-    def _get_loc_from_idxs_listind(self, i_loc, kr=0):
+    def _get_loc_from_idxs_listind(self, i_loc):
         """Specific interaction with the data stored in retriever object."""
-        locs_i = self._get_loc_from_idx(i_loc, kr)
-        ## Same structure as data
+        locs_i = self._get_loc_from_idx(i_loc)
+#        print 'a'*10, locs_i, type(locs_i), type(locs_i[0]), type(self.data_input)
+        ## Same structure as input data
         if type(self.data_input) == np.ndarray:
             locs_i = np.array(locs_i)
         return locs_i
 
-    def _get_loc_from_idx_indata(self, i_loc, kr=0):
+    def _get_loc_from_idx_indata(self, i_loc):
         """Get data from indata."""
-        i_loc = i_loc if type(i_loc) == list else [i_loc]
-        locs_i = [self.data_input[i] for i in i_loc]
-        ## Same structure as data
-        if type(self.data_input) == np.ndarray:
-            locs_i = np.array(locs_i)
+#        i_loc = i_loc if type(i_loc) in [np.ndarray, list] else [i_loc]
+        if type(i_loc) in [list, np.ndarray]:
+            locs_i = [self.data_input[i] for i in i_loc]
+            ## Same structure as input data
+            if type(self.data_input) == np.ndarray:
+                locs_i = np.array(locs_i)
+        else:
+            locs_i = self.data_input[i_loc]
         return locs_i
 
-    def _get_loc_i_general_from_locations(self, i_loc, kr=0):
+    def _get_loc_i_general_from_locations(self, i_loc):
         """Get element spatial information from spatial information.
         Format properly the input spatial information."""
         ### TO CHECK
+#        print 'o'*20, i_loc, self.data_input
+        ## Preprocessing to have list of locs
+        if type(i_loc) != list:
+            if type(i_loc) == np.ndarray:
+                if len(i_loc.shape) == 1:
+                    i_loc = i_loc.reshape((1, len(i_loc)))
+            else:
+                i_loc = [i_loc]
         #####################################################################
         if type(i_loc) == list:
             if len(i_loc) == 0:
@@ -774,33 +823,33 @@ class Retriever:
             loc_i = self._get_loc_dummy_array(i_loc)
         else:
             loc_i = [i_loc]
-        ## Same structure as data
+        ## Same structure as input data
         if type(self.data_input) == np.ndarray:
             loc_i = np.array(loc_i)
         return loc_i
 
-    def _get_loc_i_general_from_indices(self, i_loc, kr=0):
+    def _get_loc_i_general_from_indices(self, i_loc):
         """Get element spatial information from spatial information.
         Format properly the input spatial information."""
         if type(i_loc) == list:
             if len(i_loc) == 0:
                 return i_loc
-            loc_i = self._get_loc_from_idxs(i_loc, kr)
+            loc_i = self._get_loc_from_idxs(i_loc)
         elif type(i_loc) in [int, np.int32, np.int64]:
-            loc_i = self._get_loc_from_idxs([i_loc], kr)
+            loc_i = self._get_loc_from_idxs([i_loc])
         else:
             print i_loc, type(i_loc)
             raise TypeError("Not correct indice.")
         return loc_i
 
-    def _get_loc_i_general(self, i_loc, kr=0):
+    def _get_loc_i_general(self, i_loc):
         """Get element spatial information. Generic function."""
         ## 0. Needed variable computations
         int_types = [int, np.int32, np.int64]
         ## 1. Loc retriever
         # If indice
         if type(i_loc) in int_types:
-            loc_i = self._get_loc_from_idx(i_loc, kr)
+            loc_i = self._get_loc_from_idx(i_loc)
         # If List
         elif type(i_loc) == list:
             # Empty list
@@ -810,7 +859,7 @@ class Retriever:
             if type(i_loc[0]) in int_types:
                 locs_i = []
                 for i in i_loc:
-                    loc_i = self._get_loc_from_idx(i, kr)
+                    loc_i = self._get_loc_from_idx(i)
                     locs_i.append(loc_i)
                 ## Same structure as data
                 if type(self.data_input) == np.ndarray:
@@ -823,28 +872,28 @@ class Retriever:
                     loc_i = np.array(loc_i)
         # if coordinates
         elif type(i_loc) == np.ndarray:
-            loc_i = self._get_loc_dummy_array(i_loc, kr)
-        # if locations objects
-        elif isinstance(i_loc, Locations):
-            loc_i = self._get_loc_dummy_locations(i_loc, kr)
+            loc_i = self._get_loc_dummy_array(i_loc)
+#        # if locations objects
+#        elif isinstance(i_loc, Locations):
+#            loc_i = self._get_loc_dummy_locations(i_loc)
         else:
             loc_i = self._get_loc_dummy(i_loc)
         return loc_i
 
-    def _get_loc_dummy_array(self, i_loc, kr=0):
+    def _get_loc_dummy_array(self, i_loc):
         """Get location from coordinates array."""
-        sh = self.data_input.shape  ## Global computation substitution
-        if len(np.array(i_loc).shape) == 1:
-            i_loc = np.array(i_loc).reshape((1, sh[1]))
+#        sh = self.data_input.shape  # Global computation substitution
+#        if len(np.array(i_loc).shape) == 1:
+#            i_loc = np.array(i_loc).reshape((1, sh[1]))
         loc_i = i_loc
         return loc_i
 
-    def _get_loc_dummy_locations(self, i_loc, kr=0):
-        """"""
-        loc_i = np.array(i_loc.locations).reshape((1, sh[1]))
-        return loc_i
+#    def _get_loc_dummy_locations(self, i_loc):
+#        """"""
+#        loc_i = np.array(i_loc.locations).reshape((1, sh[1]))
+#        return loc_i
 
-    def _get_loc_dummy(self, i_loc, kr=0):
+    def _get_loc_dummy(self, i_loc):
         """Dummy get loc which return the exact input in array-like type."""
         if type(i_loc) not in [np.ndarray, list]:
             loc_i = [i_loc]
@@ -862,34 +911,27 @@ class Retriever:
     #
     def _get_idx_from_loc_indata(self, loc_i, kr=0):
         """Get indices from stored data."""
-#        print 'm'*20, loc_i, self.data_input
-        if type(self.data_input) == np.ndarray:
-            indices = []
-            for l in loc_i:
-                indices.append(np.where(self.data_input == l)[0])
-            indices = np.concatenate(indices)
-            # WARNING: TODO: Probably outside when get_idx is used
-            if len(indices) != len(np.unique(indices)):
-                indices = np.unique(indices)
-            indices = list(indices)
-        elif type(self.data_input) == list:
-            indices = []
-            for l in loc_i:
-                for i in range(len(self.data_input)):
-                    if self.data_input[i] == l:
-                        indices.append(i)
+        ### Check
+        indices = []
+        if type(self.data_input) == list:
+            for j in range(len(self.data_input)):
+                if self.data_input[j] == loc_i:
+                    indices.append(j)
+        else:
+            aux_ind = np.where(self.data_input == loc_i)[0]
+            if len(aux_ind):
+                indices = list(aux_ind)
         return indices
 
     def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
         """Specific interaction with the data stored in retriever object."""
-#        print '/'*20, loc_i
         data_idxs = []
         for i in range(len(loc_i)):
             data_idxs += self._get_idx_from_loc(loc_i[i], kr)
-        # WARNING: TODO: Probably outside when get_idx is used
-        if len(np.unique(data_idxs)) != len(data_idxs):
-            data_idxs = np.unique(data_idxs)
-        data_idxs = list(data_idxs)
+#        # WARNING: TODO: Probably outside when get_idx is used
+#        if len(np.unique(data_idxs)) != len(data_idxs):
+#            data_idxs = np.unique(data_idxs)
+#        data_idxs = list(data_idxs)
         return data_idxs
 
     def _get_idxs_from_locs_listind(self, loc_i, kr=0):
@@ -958,7 +1000,7 @@ class Retriever:
     ## Collapse to _apply_relative_pos in _format_output_information
     # Returns
     # -------
-    # neighs: list of np.ndarray or np.ndarrray
+    # neighs: list of np.ndarray or np.ndarray
     #     the neighs for each iss in i_loc
     # dists: list of list of np.ndarray or np.ndarray
     #     the information or relative position in respect to each iss in i_loc

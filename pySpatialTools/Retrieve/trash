@@ -1,8 +1,50 @@
 
 """
 """
+######## 2016-04-26 Retrievers
 
-
+    def _get_idx_from_loc_indata(self, loc_i, kr=0):
+        """Get indices from stored data."""
+        ### Check
+        indices = []
+        if type(self.data_input) == list:
+            for j in range(len(self.data_input)):
+                if self.data_input[j] == loc_i:
+                    indices.append(j)
+        else:
+            print '='*20, loc_i, type(loc_i)
+            aux_ind = np.where(self.data_input == loc_i)[0]
+            if len(aux_ind):
+                indices = list(aux_ind)
+            print '-'*20, indices
+#        print 'm'*20, loc_i, self.data_input
+#        if type(self.data_input) == np.ndarray:
+#            indices = []
+#            aux_ind = np.where(self.data_input == loc_i)[0]
+#            if len(indices):
+#                indices = aux_ind
+##            for l in loc_i:
+##                indices.append(np.where(self.data_input == l)[0])
+##            indices = np.concatenate(indices)
+##            # WARNING: TODO: Probably outside when get_idx is used
+##            if len(indices) != len(np.unique(indices)):
+##                indices = np.unique(indices)
+##            indices = list(indices)
+#        elif type(self.data_input) == list:
+#            indices = []
+#            for j in range(len(self.data_input)):
+#                if self.data_input[j] == loc_i:
+#                    indices.append(j)
+##            for l in loc_i:
+##                for i in range(len(self.data_input)):
+##                    if self.data_input[i] == l:
+##                        indices.append(i)
+#        else:
+#            indices = []
+#            for l in loc_i:
+#                indices.append(np.where(self.data_input == l))
+#            indices = np.concatenate(indices)
+        return indices
 
 ######## 2016-04-13 ImplicitRetriever, WindowsRetriever
 

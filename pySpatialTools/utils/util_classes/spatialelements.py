@@ -47,11 +47,13 @@ class SpatialElementsCollection:
                 yield self[e]
 
     def __eq__(self, loc):
-        "Retrieve which points have the same coordinates."
+        """Retrieve which points have the same coordinates. It returns a
+        1d-boolean array.
+        """
         if type(self.elements) == list:
-            logi = np.array([e == loc for e in self.elements])
+            logi = np.array([np.all(e == loc) for e in self.elements])
         else:
-            logi = self.elements == loc
+            logi = (self.elements == loc).ravel()
         return logi
 
     def relabel_elements(self, relabel_map):

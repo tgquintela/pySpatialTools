@@ -22,3 +22,4 @@ from general_retriever import GeneralRetriever
 
 ## Import useful functions
 from aux_retriever import create_retriever_input_output, NullRetriever
+from dummy_retrievers import DummyLocObject

@@ -154,9 +154,17 @@ class PermutationPerturbationLocations(GeneralPerturbation):
         ## Preparation of ks
         ks = range(self.k_perturb) if k is None else k
         ks = [k] if type(k) == int else ks
-        locations_p = np.zeros((len(locations), locations.shape[1], len(ks)))
-        for ik in range(len(ks)):
-            locations_p[:, :, ik] = locations[self.reindices[:, ks[ik]], :]
+        ##Be coherent with the input location types
+        ndim = 1 if '__len__' not in dir(locations[0]) else len(locations[0])
+        if type(locations) == np.ndarray:
+            locations_p = np.zeros((len(locations), ndim, len(ks)))
+            for ik in range(len(ks)):
+                locations_p[:, :, ik] = locations[self.reindices[:, ks[ik]]]
+        else:
+            locations_p = [[[]]*len(locations)]*len(ks)
+            for ik in range(len(ks)):
+                for i in range(len(locations)):
+                    locations_p[ik][i] = locations[self.reindices[i, ks[ik]]]
         return locations_p
 
     def apply2indice(self, i, k):
