@@ -141,6 +141,7 @@ class Retriever:
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
         """
+        assert(not self._constant_ret)
         ## 0. Prepare variables
         info_i, ifdistance, ks =\
             self._format_inputs_retriever(i_loc, info_i, ifdistance, k, output)
@@ -394,8 +395,10 @@ class Retriever:
             if info_f is None and info_ret is None:
                 self._get_info_i = self._dummy_get_info_i
             elif info_f is None:
-                ## TODO: Another flag for the case of indexable get_info_i
                 self._get_info_i = self._dummy_get_info_i_stored
+                if '__len__' in dir(info_ret) and self.data_input is not None:
+                    if len(info_ret) == len(self.data_input):
+                        self._get_info_i = self._dummy_get_info_i_indexed
             else:
                 self._get_info_i = self._dummy_get_info_i_f
         else:
@@ -675,6 +678,7 @@ class Retriever:
 
     def _dummy_get_info_i_indexed(self, i_loc, info_i=None):
         """Dummy indexable retrieve information."""
+        ### TODO: Referenced that __len__ and == len(self.data_input)
         return self._info_ret[i_loc]
 
     def _dummy_get_info_i_f(self, i_loc, info_i=None):

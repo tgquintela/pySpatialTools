@@ -37,12 +37,12 @@ class DummyRetriever(Retriever):
         self._initialization()
         # IO mappers
         self._format_maps(input_map, output_map)
-        ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f, constant_info)
         # Location information
         self._format_locs(locs, autolocs)
         ## Retrieve information
         self._define_retriever(locs, pars_ret)
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
         # Perturbations
         self._format_perturbation(perturbations)
         # Output information

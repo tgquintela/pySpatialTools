@@ -223,29 +223,33 @@ def test():
     pos_autodata = [True, None, np.arange(n).reshape((n, 1))]
     pos_inmap = [None, _input_map]
     pos_outmap = [None, _output_map, _output_map[0]]
-    pos_inforet = [None, 0, lambda x, pars: 0]
-    pos_infof = [None, lambda x, pars: 0]
     pos_constantinfo = [True, False, None]
-    pos_typeret = ['space']  # ''
     pos_perturbations = [None, perturbation4]
     pos_ifdistance = [True, False]
-    pos_autoexclude = [False]  # True, None for other time
-    pos_relativepos = [None]
     pos_boolinidx = [True, False]
     pos_preferable_input = [True, False]
-    pos_constantneighs = [True, False, None]
     pos_listind = [True, False, None]
 
+    pos_inforet = [None, 0, lambda x, pars: 0]
+    pos_infof = [None, lambda x, pars: 0]
+    pos_typeret = ['space']  # ''
+    pos_autoexclude = [False]  # True, None for other time
+    pos_relativepos = [None]
+    pos_constantneighs = [True, False, None]
+
     ## Combinations
-    possibles = [pos_autodata, pos_inmap, pos_outmap, pos_inforet, pos_infof,
-                 pos_constantinfo, pos_typeret, pos_perturbations,
-                 pos_ifdistance, pos_autoexclude, pos_relativepos,
-                 pos_boolinidx, pos_preferable_input, pos_constantneighs,
-                 pos_listind]
+    possibles = [pos_autodata, pos_inmap, pos_outmap, pos_constantinfo,
+                 pos_perturbations, pos_ifdistance, pos_boolinidx,
+                 pos_preferable_input, pos_listind]
     ## Sequencials
     pos_auto_excluded = [True, False, None]
     pos_types = ['array', 'list', 'object', 'listobject']
     pos_typeret = ['space', '']
+    pos_constantneighs = [True, False, None]
+    pos_autoexclude = [False]  # True, None for other time
+    pos_relativepos = [None]
+    pos_inforet = [None, 0, lambda x, pars: 0, np.zeros(n)]
+    pos_infof = [None, lambda x, pars: 0]
 
     counter = -1
     for p in product(*possibles):
@@ -253,32 +257,40 @@ def test():
         counter += 1
 ##        print p, counter
         ## Sequential parameters
-        types = pos_types[np.random.randint(0, 3)]
+        types = pos_types[np.random.randint(0, len(pos_types))]
 #        types = 'object'
         auto_excluded = pos_auto_excluded[np.random.randint(0, 3)]
         if types in ['object', 'listobject']:
             typeret = ''
         else:
-            typeret = pos_typeret[np.random.randint(0, 2)]
+            typeret = pos_typeret[np.random.randint(0, len(pos_typeret))]
+        const = pos_constantneighs[np.random.randint(0, 3)]
+        inforet = pos_inforet[np.random.randint(0, len(pos_inforet))]
+        infof = pos_infof[np.random.randint(0, len(pos_infof))]
+        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
+        auto_excl = pos_autoexclude[np.random.randint(0, len(pos_autoexclude))]
+
         ## Non exhaustive
 #        if np.random.random() < 0.25:
 #            continue
 
         ## Forbidden combinations
-        if types in ['list', 'object', 'listobject'] and p[14]:
+        if types in ['list', 'object', 'listobject'] and p[8]:
+            continue
+        if p[6] is False and type(inforet) == np.ndarray:
             continue
 
         ## Instantiation
         ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
-                             info_ret=p[3], info_f=p[4], constant_info=p[5],
-                             perturbations=p[7], autoexclude=p[9],
-                             ifdistance=p[8], relative_pos=p[10],
-                             bool_input_idx=p[11], typeret=typeret,
-                             preferable_input_idx=p[12], constant_neighs=p[13],
-                             bool_listind=p[14], auto_excluded=auto_excluded,
-                             types=types)
+                             info_ret=inforet, info_f=infof,
+                             constant_info=p[3], perturbations=p[4],
+                             autoexclude=auto_excl, ifdistance=p[5],
+                             relative_pos=rel_pos, bool_input_idx=p[6],
+                             typeret=typeret, preferable_input_idx=p[7],
+                             constant_neighs=const, bool_listind=p[8],
+                             auto_excluded=auto_excluded, types=types)
         ## Selecting point_i
-        if p[11] is False:
+        if p[6] is False:
             if types == 'listobject':
                 i = DummyLocObject(np.array([0]))
                 j = [i, DummyLocObject(np.array([1]))]
@@ -294,11 +306,11 @@ def test():
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, 0), ret._get_info_i(j, 0)
         assert(info_i == 0)
-        assert(info_i2 == 0)
+        assert(np.all(info_i2 == 0))
         ## Get locations
         ################
-#        print p[11], types
-        if p[11]:
+#        print p[6], types
+        if p[6]:
             loc_i = ret.get_loc_i([0])
             if types == 'listobject':
                 loc_i = [e.location for e in loc_i]
@@ -309,7 +321,7 @@ def test():
                 loc_i = [e.location for e in loc_i]
             else:
                 loc_i = ret.get_loc_i([np.array([0])])
-#        print loc_i, counter, ret._get_loc_from_idxs, p[11], p[12]
+#        print loc_i, counter, ret._get_loc_from_idxs, p[6], p[7]
         assert(len(loc_i) == 1)
 #        assert(type(loc_i) == type(ret.data_input))
 #        print loc_i, types
@@ -317,7 +329,7 @@ def test():
         assert(len(loc_i[0].shape) == 1)
         assert(all(loc_i[0] == np.array([0])))
 
-        if p[11]:
+        if p[6]:
             loc_i = ret.get_loc_i([0, 1])
             if types == 'listobject':
                 loc_i = [e.location for e in loc_i]
@@ -329,7 +341,7 @@ def test():
             else:
                 loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
 
-#        print loc_i, ret.get_loc_i, p[11]
+#        print loc_i, ret.get_loc_i, p[6]
         assert(len(loc_i) == 2)
 #        assert(type(loc_i) == type(ret.data_input))
         assert(type(loc_i[0]) == np.ndarray)
@@ -340,7 +352,7 @@ def test():
         assert(all(loc_i[1] == np.array([1])))
         ## Get indices
         ################
-        if p[11]:
+        if p[6]:
             loc_i = [0]
         else:
             if types == 'listobject':
@@ -348,12 +360,12 @@ def test():
             else:
                 loc_i = [np.array([0])]
         i_loc = ret.get_indice_i(loc_i, 0)
-#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[11]
+#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[6]
 #        print list(ret.data_input)
         assert(len(i_loc) == 1)
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
-        if p[11]:
+        if p[6]:
             i_loc = ret.get_indice_i([0, 1])
         else:
             if types == 'listobject':
@@ -362,7 +374,7 @@ def test():
             else:
                 loc_i = [np.array([0]), np.array([1])]
             i_loc = ret.get_indice_i(loc_i, 0)
-#        print i_loc, ret.get_indice_i, p[11]
+#        print i_loc, ret.get_indice_i, p[6]
         assert(len(i_loc) == 2)
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
@@ -372,71 +384,71 @@ def test():
         ## Preparing input
         ##################
         # Assert element getting
-#        print i, j, p[11], p[12], ret._prepare_input
+#        print i, j, p[6], p[7], ret._prepare_input
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
-#        print i, j, e1, e2, p[11], p[12], ret._prepare_input, ret.get_indice_i
+#        print i, j, e1, e2, p[6], p[7], ret._prepare_input, ret.get_indice_i
 #        print ret.preferable_input_idx
-        if types == 'listobject' and p[12] is not True:
+        if types == 'listobject' and p[7] is not True:
             e1, e2 = [e.location for e in e1], [e.location for e in e2]
-        if p[12]:
+        if p[7]:
 #            print e1, e2, type(e1), type(e2)
             assert(e1 == [0])
             assert(e2 == [0, 1])
         else:
-#            print e1, e2, ret._prepare_input, p[11]
+#            print e1, e2, ret._prepare_input, p[6]
             assert(e1 == [np.array([0])])
-#            print e1, ret._prepare_input, p[11], p[12]
+#            print e1, ret._prepare_input, p[6], p[7]
             assert(all([type(e) == np.ndarray for e in e1]))
-#            print e2, type(e2[0]), ret._prepare_input, p[11], p[12], counter
+#            print e2, type(e2[0]), ret._prepare_input, p[6], p[7], counter
             assert(np.all([e2 == [np.array([0]), np.array([1])]]))
             assert(all([type(e) == np.ndarray for e in e2]))
         ## Retrieve and output
         ######################
         # Assert correct retrieving
         ## Retrieve individual
-        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[8])
-#        print dists, type(dists), p[8]
+        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
+#        print dists, type(dists), p[5]
         assert(type(neighs[0][0]) in inttypes)
-        assert(dists is None or not p[8] is False)
-#        print dists, type(dists), p[8]
+        assert(dists is None or not p[5] is False)
+#        print dists, type(dists), p[5]
         ## Output map
         neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
         assert(type(neighs2[0][0]) in inttypes)
-        assert(dists2 is None or not p[8] is False)
+        assert(dists2 is None or not p[5] is False)
         ## Output
         neighs, dists = ret._format_output(i, neighs, dists)
-        if p[9]:
+        if auto_excl:
             print neighs, dists, ret._exclude_auto, i, counter
             assert(len(neighs) == 1)
             assert(len(neighs[0]) == 0)
     #        assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[8] is False)
+            assert(dists is None or not p[5] is False)
         else:
             assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[8] is False)
+            assert(dists is None or not p[5] is False)
         ## Retrieve multiple
-        neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[8])
+        neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[5])
         assert(type(neighs[0][0]) in inttypes)
-        assert(dists is None or not p[8] is False)
+        assert(dists is None or not p[5] is False)
 #        print neighs, p, counter
 #        print ret.staticneighs, type(neighs[0][0])
         ## Output map
         neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
         assert(type(neighs2[0][0]) in inttypes)
-        assert(dists2 is None or not p[8] is False)
+        assert(dists2 is None or not p[5] is False)
         ## Output
         neighs, dists = ret._format_output(j, neighs, dists)
-        if p[9]:
+        if auto_excl:
             assert(len(neighs) == 2)
             assert(len(neighs[0]) == 0)
             assert(len(neighs[1]) == 0)
     #        assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[8] is False)
+            assert(dists is None or not p[5] is False)
         else:
             assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[8] is False)
+            assert(dists is None or not p[5] is False)
 
-        if p[5]:
+        if p[3]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
             neighs_info = ret[i]
