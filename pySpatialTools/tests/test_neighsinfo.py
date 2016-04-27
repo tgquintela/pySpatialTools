@@ -107,13 +107,17 @@ def test():
                 if boolean:
                     raise Exception("It has to halt here.")
             continue
-
+        ## Avoid non-allowed
         if p[4] == 'list_tuple_only' and p[0]:
             continue
         ## TESTING:
         if p[3] == 'integer':
             continue
 #        print p
+        ## Save effort
+        if p[4] == 'tuple':
+            if np.random.random() < 0.9:
+                continue
 
         ## Instantiation
         neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
