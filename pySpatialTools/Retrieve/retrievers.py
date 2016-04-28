@@ -47,6 +47,10 @@ retrieve_neighs: the main function to retrieve the neighbourhood. It
     which we want to get its neighbourhood), info_i (retrieving
     information), 
 
+Functions to format neighbourhood information
+_exclude_auto:
+
+
 
 TODO:
 ----
@@ -68,6 +72,9 @@ from aux_retriever import _check_retriever, _general_autoexclude,\
 from ..utils import NonePerturbation
 from ..utils import ret_filter_perturbations
 from ..utils.util_classes import SpatialElementsCollection, Neighs_Info
+
+arraytypes = [np.ndarray, list]
+inttypes = [int, np.int32, np.int64]
 
 
 class Retriever:
@@ -359,7 +366,7 @@ class Retriever:
             self._build_excluded_elements =\
                 self._indices_build_excluded_elements
         elif bool_input_idx is False:
-            self._build_excluded_elements = self._array_build_excluded_elements
+            self._build_excluded_elements = self._locs_build_excluded_elements
         else:
             self._build_excluded_elements =\
                 self._general_build_excluded_elements
@@ -575,9 +582,11 @@ class Retriever:
 #        print '=0'*15, i_loc, neighs, type(i_loc), len(neighs), self._build_excluded_elements
         to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
+#        print 'point of pre debug', neighs, dists, to_exclude_elements
         neighs, dists =\
             self._exclude_elements(to_exclude_elements, neighs, dists)
 #        print 'point of shit debug', neighs, dists, self._exclude_elements
+#        assert(len(neighs) != 0)
         return neighs, dists
 
     def _null_exclude_auto(self, i_loc, neighs, dists, kr=0):
@@ -605,7 +614,7 @@ class Retriever:
         # If it is an element spatial information
         else:
             to_exclude_elements =\
-                self._array_build_excluded_elements(i_loc, kr)
+                self._locs_build_excluded_elements(i_loc, kr)
         return to_exclude_elements
 
     def _indices_build_excluded_elements(self, i_loc, kr=0):
@@ -622,7 +631,7 @@ class Retriever:
             to_exclude_elements = self._list_build_excluded_elements(i_loc, kr)
         return to_exclude_elements
 
-    def _array_build_excluded_elements(self, i_loc, kr=0):
+    def _locs_build_excluded_elements(self, i_loc, kr=0):
         """
         Parameters
         ----------
@@ -630,28 +639,17 @@ class Retriever:
             the locations we want to retrieve their neighbourhood.
         """
         ## 0. Preparing input
-        sh = i_loc.shape
-#        print i_loc, sh
-        i_loc = i_loc if len(sh) == 2 else i_loc.reshape((1, sh[0]))
+        i_loc = [i_loc] if type(i_loc) not in arraytypes else i_loc
         ## 1. Building indices to exclude
         to_exclude_elements = []
         for i in range(len(i_loc)):
             # Getting indices from the pool of elements
-            try:
-                logi = np.all(self.retriever[kr].data == i_loc[i], axis=1)
-            except:
-                try:
-                    logi = np.all(self.retriever[kr].data == i_loc[i])
-                except:
-                    n = len(self.retriever[kr].data)
-                    logi = np.array([self.retriever[kr].data[j] == i_loc[i]
-                                     for j in xrange(n)])
-            # Transforming into indices and adding to the collection
-            logi = np.where(logi.ravel())[0]
-            if len(logi) > 0:
-                to_exclude_elements.append(list(logi))
-            else:
-                to_exclude_elements.append([])
+            to_exclude_elements.append(self.get_indice_i(i_loc[i]))
+        ## 2. Check correct output
+#        print to_exclude_elements, i_loc
+#        assert(all([type(e) in arraytypes for e in to_exclude_elements]))
+#        assert(all([all([type(e1) in inttypes for e1 in e])
+#                    for e in to_exclude_elements if len(e)]))
         return to_exclude_elements
 
     def _list_build_excluded_elements(self, i_loc, kr=0):
@@ -773,7 +771,7 @@ class Retriever:
         """Specific interaction with the data stored in retriever object."""
         data_locs = []
 #        print i_loc, type(i_loc), 'p'*10, type(self.data_input)
-        i_loc = [i_loc] if type(i_loc) not in [list, np.ndarray] else i_loc
+        i_loc = [i_loc] if type(i_loc) not in arraytypes else i_loc
         for i in i_loc:
 #            print i, self._get_loc_from_idx
             data_locs.append(self._get_loc_from_idx(i))
@@ -794,7 +792,7 @@ class Retriever:
     def _get_loc_from_idx_indata(self, i_loc):
         """Get data from indata."""
 #        i_loc = i_loc if type(i_loc) in [np.ndarray, list] else [i_loc]
-        if type(i_loc) in [list, np.ndarray]:
+        if type(i_loc) in arraytypes:
             locs_i = [self.data_input[i] for i in i_loc]
             ## Same structure as input data
             if type(self.data_input) == np.ndarray:

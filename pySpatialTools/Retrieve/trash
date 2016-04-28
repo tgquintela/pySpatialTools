@@ -1,6 +1,46 @@
 
 """
 """
+
+######## 2016-04-28 Retrievers
+
+    def _locs_build_excluded_elements(self, i_loc, kr=0):
+        """
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        """
+        ## 0. Preparing input
+#        i_loc = [i_loc] if '__len__' not in dir(i_loc) else i_loc
+        i_loc = [i_loc] if type(i_loc) not in [np.ndarray, list] else i_loc
+#        i_loc = np.array(i_loc)
+#        sh = i_loc.shape
+#        print i_loc, sh
+#        i_loc = i_loc if len(sh) == 2 else i_loc.reshape((1, sh[0]))
+        ## 1. Building indices to exclude
+        to_exclude_elements = []
+        for i in range(len(i_loc)):
+            # Getting indices from the pool of elements
+            to_exclude_elements.append([self.get_indice_i(i_loc[i])])
+#            try:
+#                logi = np.all(self.retriever[kr].data == i_loc[i], axis=1)
+#            except:
+#                try:
+#                    logi = np.all(self.retriever[kr].data == i_loc[i])
+#                except:
+#                    n = len(self.retriever[kr].data)
+#                    logi = np.array([self.retriever[kr].data[j] == i_loc[i]
+#                                     for j in xrange(n)])
+#            # Transforming into indices and adding to the collection
+#            logi = np.where(logi.ravel())[0]
+#            if len(logi) > 0:
+#                to_exclude_elements.append(list(logi))
+#            else:
+#                to_exclude_elements.append([])
+        return to_exclude_elements
+
+
 ######## 2016-04-26 Retrievers
 
     def _get_idx_from_loc_indata(self, loc_i, kr=0):

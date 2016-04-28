@@ -206,6 +206,7 @@ def test():
 
     ###########################################################################
     ######### Exhaustive testing over common retrievers tools
+    ## TODO: Support for autoexclude (problems with space perturbation)
     ## Perturbations
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
@@ -218,7 +219,6 @@ def test():
         def compute(self, x, y):
             return comp_rel_pos(x, y)
     comp_class_rel_pos = Comp_Relpos()
-
 
     ## Create perturbations
     reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
@@ -427,9 +427,10 @@ def test():
         assert(type(neighs2[0][0]) in inttypes)
         assert(dists2 is None or not p[5] is False)
         ## Output
+        print neighs, dists
         neighs, dists = ret._format_output(i, neighs, dists)
         if auto_excl and not auto_excluded:
-            print neighs, dists, ret._exclude_auto, i, counter
+#            print neighs, dists, ret._exclude_auto, i, counter
             assert(len(neighs) == 1)
             assert(len(neighs[0]) == 0)
     #        assert(type(neighs[0][0]) in inttypes)
