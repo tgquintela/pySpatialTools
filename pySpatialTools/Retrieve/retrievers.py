@@ -162,17 +162,18 @@ class Retriever:
             ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
             neighs_info = [neighs_info]
-        else:
-            neighs_info = []
-            for k in range(len(ks)):
-                # Map perturb
-                _, k_r = self._map_perturb(k)
-                # Retrieve
-                neighs, dists =\
-                    self._retrieve_neighs_spec(i_loc, info_i, ifdistance, k_r)
-                # Format output
-                nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
-                neighs_info.append(nei_k)
+######## To use in future
+#        else:
+#            neighs_info = []
+#            for k in range(len(ks)):
+#                # Map perturb
+#                _, k_r = self._map_perturb(k)
+#                # Retrieve
+#                neighs, dists =\
+#                    self._retrieve_neighs_spec(i_loc, info_i, ifdistance, k_r)
+#                # Format output
+#                nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
+#                neighs_info.append(nei_k)
         ## 3. Format neighs_info
 #        print 'a'*100, neighs_info, type(neighs_info[0]), self.staticneighs or ks == 0
         self.neighs_info.set((neighs_info, ks), i_loc)
@@ -1090,21 +1091,23 @@ class Retriever:
     @property
     def data_input(self):
         if self._autodata:
-            return np.array(self.retriever[0].data)
+            return self.retriever[0].data
         else:
             if self.data is None:
                 self._autodata = True
-                return np.array(self.data_input)
+                return self.data_input
             else:
-                return np.array(self.data)
+                return self.data
 
     @property
     def data_output(self):
-        return np.array(self.retriever[0].data)
+        return self.retriever[0].data
 
-    def compute_neighnet(self):
+    def compute_neighnet(self, mapper, datavalue=None):
         """Compute the relations neighbours and build a network or multiplex
         with the defined retriever class.
+        If we have an explicit retriever it is probably better to use algebra
+        in order to vectorize computations.
 
         TODO
         ----
@@ -1127,33 +1130,47 @@ class Retriever:
 #        except:
 #            n_data = 1
         ks = self.neighs_info.ks
-        n_data = len(self.neighs_info.ks)
+        ks = [0] if ks is None else ks
+#        n_data = len(self.neighs_info.ks)
         sh = (self._n0, self._n1)
         ## 1. Computation
-        # If explicit:
-        if self.type == 'explicit':
-            kr = 0 if mapper is None else mapper
-            return self.retrievers[kr].relations
+        # If explicit: (not the best way to use that, it is better to use algebra)
+#        if self.type == 'explicit':
+#            assert(type(mapper) in inttypes or mapper is None)
+#            kr = 0 if mapper is None else mapper
+#            return self.retrievers[kr].relations
         # else
-        iss, jss = [], []
-        data = [[] for i in range(n_data)]
-        for i in xrange(self._n0):
-            neighs_info = self[i]
-            neighs, ks, iss_nei, rel_pos = neighs_info.get_information(0)
-            #dists = np.array(dists).reshape((len(dists), n_data))
-            n_i = len(neighs[0])
-            if n_i != 0:
-                iss_i, jss_i = [i]*n_i, list(neighs[0])
-                iss.append(iss_i)
-                jss.append(jss_i)
-                for k in range(n_data):
-                    data[k] += list(dists[0])
+        iss, jss = [[] for i in range(len(ks))], [[] for i in range(len(ks))]
+        data = [[] for i in range(len(ks))]
+        self.set_iter()
+        for iss_i, neighs_info in self:
+#        for i in xrange(sh[0]):
+#            neighs_info = self[i]
+            neighs, rel_pos, ks, iss_nei = neighs_info.get_information()
+            ## Adding for each k perturbation if they are neighs to add
+            for k in range(len(ks)):
+                # Number of neighs for i in k perturbation
+                n_i = len(neighs[k][0])
+                if n_i != 0:
+                    iss_i, jss_i = [i]*n_i, list(neighs[k][0])
+                    iss[k].append(iss_i)
+                    jss[k].append(jss_i)
+                    ## Data definition
+                    if datavalue is not None:
+                        data[k] += [datavalue]*n_i
+                    elif self._ifdistance is True:
+                        data[k] += list(rel_pos[k][0])
+                    else:
+                        data[k] += [1.]*n_i
         ## 2. Format output
-        iss, jss = np.hstack(iss), np.hstack(jss)
-        data = [np.hstack(data[k]) for k in range(n_data)]
+        # Concatenation
+        iss = [np.hstack(iss[k]) for k in range(len(ks))]
+        jss = [np.hstack(jss[k]) for k in range(len(ks))]
+        data = [np.hstack(data[k]) for k in range(len(ks))]
+        # Nets creations
         nets = []
-        for k in range(n_data):
-            nets.append(coo_matrix((data[k], (iss, jss)), shape=sh))
-        if n_data == 1:
+        for k in range(len(ks)):
+            nets.append(coo_matrix((data[k], (iss[k], jss[k])), shape=sh))
+        if len(ks) == 1:
             nets = nets[0]
         return nets

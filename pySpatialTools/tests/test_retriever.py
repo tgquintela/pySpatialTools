@@ -427,13 +427,34 @@ def test():
         assert(type(neighs2[0][0]) in inttypes)
         assert(dists2 is None or not p[5] is False)
         ## Output
-        print neighs, dists
+#        print neighs, dists
         neighs, dists = ret._format_output(i, neighs, dists)
         if auto_excl and not auto_excluded:
 #            print neighs, dists, ret._exclude_auto, i, counter
             assert(len(neighs) == 1)
             assert(len(neighs[0]) == 0)
-    #        assert(type(neighs[0][0]) in inttypes)
+#            assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[5] is False)
+        else:
+            assert(type(neighs[0][0]) in inttypes)
+            assert(dists is None or not p[5] is False)
+        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
+#        print dists, type(dists), p[5]
+        assert(type(neighs[0][0]) in inttypes)
+        assert(dists is None or not p[5] is False)
+#        print dists, type(dists), p[5]
+        ## Output map
+        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+        assert(type(neighs2[0][0]) in inttypes)
+        assert(dists2 is None or not p[5] is False)
+        ## Output
+#        print neighs, dists
+        neighs, dists = ret._format_output(i, neighs, dists)
+        if auto_excl and not auto_excluded:
+#            print neighs, dists, ret._exclude_auto, i, counter
+            assert(len(neighs) == 1)
+            assert(len(neighs[0]) == 0)
+#            assert(type(neighs[0][0]) in inttypes)
             assert(dists is None or not p[5] is False)
         else:
             assert(type(neighs[0][0]) in inttypes)
@@ -485,6 +506,15 @@ def test():
             ret.set_iter()
             for iss, nei in ret:
                 break
+
+#### Special cases
+    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
+                         preferable_input_idx=True)
+    net = ret.compute_neighnet(mapper=0)
+    net = ret.compute_neighnet(mapper=0, datavalue=1.)
+    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
+                         preferable_input_idx=True, ifdistance=False)
+    net = ret.compute_neighnet(mapper=0)
 
 #    ###########################################################################
 #    ######### Preparation parameters for general testing

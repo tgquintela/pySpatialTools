@@ -21,9 +21,9 @@ class DummyRetriever(Retriever):
     """
     _default_ret_val = 0
 
-    def __init__(self, n, autodata=False, input_map=None, output_map=None,
+    def __init__(self, n, autodata=True, input_map=None, output_map=None,
                  info_ret=None, info_f=None, constant_info=None,
-                 perturbations=None, autoexclude=None, ifdistance=None,
+                 perturbations=None, autoexclude=None, ifdistance=True,
                  relative_pos=None, bool_input_idx=None, typeret='space',
                  preferable_input_idx=None, constant_neighs=True,
                  bool_listind=None, types='array', auto_excluded=True):
@@ -226,22 +226,6 @@ class DummyRetriever(Retriever):
         point_i = self._prepare_input(point_i, kr)
         neighs_info = self._apply_relative_pos_spec(neighs_info, point_i)
         return neighs_info
-
-    ########################### Data aux functions ############################
-    @property
-    def data_input(self):
-        if self._autodata:
-            return self.retriever[0].data
-        else:
-            if self.data is None:
-                self._autodata = True
-                return self.data_input
-            else:
-                return self.data
-
-    @property
-    def data_output(self):
-        return self.retriever[0].data
 
 
 class DummyLocObject:
