@@ -20,9 +20,9 @@ matrix:
 # installation
 install:
   - source administrative_tools/continuous_integration/install.sh
-  - travis_wait 20 mvn install
 # command to run tests
 script:
-  -  bash administrative_tools/continuous_integration/test_script.sh
+  - travis_wait 20
+  - bash administrative_tools/continuous_integration/test_script.sh
 after_success:
   - coveralls
