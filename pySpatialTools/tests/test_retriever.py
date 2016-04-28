@@ -209,6 +209,17 @@ def test():
     ## Perturbations
     k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
     k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+    comp_rel_pos = lambda x, y: np.zeros((len(y), len(y[0]), 1))
+
+    class Comp_Relpos:
+        def __init__(self):
+            pass
+
+        def compute(self, x, y):
+            return comp_rel_pos(x, y)
+    comp_class_rel_pos = Comp_Relpos()
+
+
     ## Create perturbations
     reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
     perturbation1 = PermutationPerturbation(reind.T)
@@ -247,7 +258,7 @@ def test():
     pos_typeret = ['space', '']
     pos_constantneighs = [True, False, None]
     pos_autoexclude = [False]  # True, None for other time
-    pos_relativepos = [None]
+    pos_relativepos = [None, comp_rel_pos, comp_class_rel_pos]
     pos_inforet = [None, 0, lambda x, pars: 0, np.zeros(n)]
     pos_infof = [None, lambda x, pars: 0]
 
@@ -417,7 +428,7 @@ def test():
         assert(dists2 is None or not p[5] is False)
         ## Output
         neighs, dists = ret._format_output(i, neighs, dists)
-        if auto_excl:
+        if auto_excl and not auto_excluded:
             print neighs, dists, ret._exclude_auto, i, counter
             assert(len(neighs) == 1)
             assert(len(neighs[0]) == 0)
@@ -438,7 +449,7 @@ def test():
         assert(dists2 is None or not p[5] is False)
         ## Output
         neighs, dists = ret._format_output(j, neighs, dists)
-        if auto_excl:
+        if auto_excl and not auto_excluded:
             assert(len(neighs) == 2)
             assert(len(neighs[0]) == 0)
             assert(len(neighs[1]) == 0)
