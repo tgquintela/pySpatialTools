@@ -54,7 +54,9 @@ class NetworkRetriever(Retriever):
         """Retrieve element neighbourhood information. """
         elem_i = self._prepare_input(elem_i, kr)
         print '.'*25, elem_i, self._prepare_input
-        info_i = self._format_info_i_reg(info_i, elem_i)
+#        info_i = self._format_info_i_reg(info_i, elem_i)
+        info_i = self._get_info_i(elem_i, info_i)
+        print '_'*25, info_i, elem_i, self._get_info_i, self._info_ret
         neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
         if ifdistance:
             neighs, dists =\
@@ -99,11 +101,11 @@ class NetworkRetriever(Retriever):
         loc_i = np.array(self.retriever[kr].data[i])
         return loc_i
 
-    def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from locations."""
-        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
-        indices = list(indices)
-        return indices
+#    def _get_idx_from_loc(self, loc_i, kr=0):
+#        """Get indices from locations."""
+#        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
+#        indices = list(indices)
+#        return indices
 
     def _get_idx_from_loc(self, loc_i, kr=0):
         """Get indices from stored data."""
@@ -123,9 +125,9 @@ class NetworkRetriever(Retriever):
             self.preferable_input_idx = True
         elif main_mapper._input == 'elements_id':
             self.preferable_input_idx = False
-        else:
-            raise Exception("Not possible option.")
-            self.preferable_input_idx = None
+#        else:
+#            raise Exception("Not possible option.")
+#            self.preferable_input_idx = None
 
     def _check_proper_retriever(self):
         "Check the correctness of the retriever for this class."
@@ -183,10 +185,47 @@ class NetworkRetriever(Retriever):
         return self.retriever[0].data_input
 
 
+class SameEleNeigh(NetworkRetriever):
+    """Network retriever which returns the same element as the mapper defined
+    in the retriever maps.
+    """
+    _default_ret_val = {}
+    ## Basic information of the core retriever
+#    preferable_input_idx = True
+#    constant_neighs = False
+    auto_excluded = False
+    ## Interaction with the stored data
+    bool_listind = False
+
+    def _retrieve_neighs_spec2(self, elem_i, kr=0):
+        """Retrieve the elements which are defined by the parameters of the
+        inputs and the nature of this object method.
+
+        Parameters
+        ----------
+        elem_i: int or numpy.ndarray
+            the element we want to get its neighsbour elements.
+
+        Returns
+        -------
+        neighs: numpy.ndarray
+            the ids of the neighbourhood elements.
+        dists: numpy.ndarray
+            the distances between elements.
+
+        """
+#        print 'k'*50, self.neighs_info.set_neighs, elem_i
+        neighs, dists = self.retriever[kr][elem_i]
+#        print 'o'*50, neighs, type(neighs), dists
+        assert(len(neighs) == len(elem_i))
+        assert(all([len(e.shape) == 2 for e in dists]))
+        return neighs, dists
+
+
 class LimDistanceEleNeigh(NetworkRetriever):
     """Region Neighbourhood based on the limit distance bound.
     """
-    _default_ret_val = {}
+    _default_ret_val = {'lim_distance': 1}
     ## Basic information of the core retriever
 #    preferable_input_idx = True
 #    constant_neighs = False
@@ -229,46 +268,9 @@ class LimDistanceEleNeigh(NetworkRetriever):
                         logi = dists[i].ravel() < lim_distance
                     else:
                         logi = dists[i].ravel() > lim_distance
-                print neighs, dists, logi
+#                print neighs, dists, logi
                 neighs[i] = np.array(neighs[i][logi])
                 dists[i] = np.array(dists[i][logi])
-        return neighs, dists
-
-
-class SameEleNeigh(NetworkRetriever):
-    """Network retriever which returns the same element as the mapper defined
-    in the retriever maps.
-    """
-    _default_ret_val = {}
-    ## Basic information of the core retriever
-#    preferable_input_idx = True
-#    constant_neighs = False
-    auto_excluded = False
-    ## Interaction with the stored data
-    bool_listind = False
-
-    def _retrieve_neighs_spec2(self, elem_i, kr=0):
-        """Retrieve the elements which are defined by the parameters of the
-        inputs and the nature of this object method.
-
-        Parameters
-        ----------
-        elem_i: int or numpy.ndarray
-            the element we want to get its neighsbour elements.
-
-        Returns
-        -------
-        neighs: numpy.ndarray
-            the ids of the neighbourhood elements.
-        dists: numpy.ndarray
-            the distances between elements.
-
-        """
-#        print 'k'*50, self.neighs_info.set_neighs, elem_i
-        neighs, dists = self.retriever[kr][elem_i]
-#        print 'o'*50, neighs, type(neighs), dists
-        assert(len(neighs) == len(elem_i))
-        assert(all([len(e.shape) == 2 for e in dists]))
         return neighs, dists
 
 
@@ -276,7 +278,7 @@ class OrderEleNeigh(NetworkRetriever):
     """Network retriever based on the order it is away from element
     direct neighbours in a network.
     """
-    _default_ret_val = {}
+    _default_ret_val = {'order': 0, 'exactorlimit': False}
     ## Basic information of the core retriever
 #    preferable_input_idx = True
 #    constant_neighs = False
@@ -399,8 +401,10 @@ class OrderEleNeigh(NetworkRetriever):
                         dists_oi = np.array([[]]).T
                     print dists_oi, new_dists, dists_oi.shape
                     assert(len(dists_oi.shape) == 2)
+                    print neighs[iss_i]
                     neighs[iss_i] = np.concatenate([neighs[iss_i],
                                                     neighs_oi]).astype(int)
+                    print neighs[iss_i], neighs[iss_i].extend(neighs_oi)
                     print dists_oi, dists[iss_i], neighs_oi, np.array(dists[iss_i]).shape, dists_oi.shape
                     dists[iss_i] = np.concatenate([np.array(dists[iss_i]),
                                                    dists_oi])
@@ -416,6 +420,7 @@ class OrderEleNeigh(NetworkRetriever):
                     ## Filter previsited
                     neighs_oi, idxs = np.unique(neighs_oi, True)
                     dists_oi = dists_oi[idxs]
+                    print neighs_oi, neighs_oi[0], neighs[iss_i], neighs
                     indices = [i for i in range(len(neighs_oi))
                                if neighs_oi[i] not in neighs[iss_i]]
                     ## Storing globals

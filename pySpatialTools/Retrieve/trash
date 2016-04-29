@@ -1,6 +1,32 @@
 
 """
 """
+######## 2016-04-29 Retrievers
+    def _format_retriever_info(self, info_ret, info_f, constant_info):
+        """Format properly the retriever information."""
+        if type(info_ret).__name__ == 'function':
+            self._info_f = info_ret
+            self._info_ret = self._default_ret_val
+        else:
+            self._info_f = info_f
+            aux_default = self._default_ret_val
+            print 'o'*25, info_ret, info_ret is None
+            self._info_ret = aux_default if info_ret is None else info_ret
+        ## Constant retrieve?
+        if constant_info:
+            self._constant_ret = True
+            if info_f is None and info_ret is None:
+                self._get_info_i = self._dummy_get_info_i
+            elif info_f is None:
+                self._get_info_i = self._dummy_get_info_i_stored
+                if '__len__' in dir(info_ret) and self.data_input is not None:
+                    if len(info_ret) == len(self.data_input):
+                        self._get_info_i = self._dummy_get_info_i_indexed
+            else:
+                self._get_info_i = self._dummy_get_info_i_f
+        else:
+            self._get_info_i = self._general_get_info_i
+            self._constant_ret = False
 
 ######## 2016-04-28 Retrievers
 

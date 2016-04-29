@@ -400,9 +400,7 @@ class Retriever:
         ## Constant retrieve?
         if constant_info:
             self._constant_ret = True
-            if info_f is None and info_ret is None:
-                self._get_info_i = self._dummy_get_info_i
-            elif info_f is None:
+            if info_f is None:
                 self._get_info_i = self._dummy_get_info_i_stored
                 if '__len__' in dir(info_ret) and self.data_input is not None:
                     if len(info_ret) == len(self.data_input):
@@ -668,8 +666,8 @@ class Retriever:
     # info_ret: optional
     #     the information parameters to retrieve neighbourhood.
     #
-    def _dummy_get_info_i(self, i_loc, info_i):
-        return info_i
+#    def _dummy_get_info_i(self, i_loc, info_i):
+#        return info_i
 
     def _dummy_get_info_i_stored(self, i_loc, info_i=None):
         """Dummy get retrieve information."""
@@ -689,19 +687,15 @@ class Retriever:
         input i with the data_input. It is a generic function independent on
         the type of the elements we want to retrieve.
         """
-        if not info_i:
-            if type(i_loc) in [int, np.int32, np.int64]:
-                if type(self._info_ret) in [list, np.ndarray]:
-                    info_i = self._info_ret[i_loc]
-                else:
-                    info_i = self._info_ret
+        if info_i in [{}, [], None]:
+            if self._info_f is None:
+                info_i = self._dummy_get_info_i_stored(i_loc, info_i)
+                logi = self.data_input is not None
+                if '__len__' in dir(self._info_ret) and logi:
+                    if len(self._info_ret) == len(self.data_input):
+                        info_i = self._dummy_get_info_i_indexed(i_loc, info_i)
             else:
-                if self._info_f is None:
-                    return self._default_ret_val
-                if type(self._info_f).__name__ == 'function':
-                    info_i = self._info_f(i_loc, info_i)
-                else:
-                    raise TypeError("self._info_f not defined properly.")
+                info_i = self._dummy_get_info_i_f(i_loc, info_i)
         return info_i
 
     ########################### GetLocation managing ##########################
@@ -929,15 +923,12 @@ class Retriever:
     def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
         """Specific interaction with the data stored in retriever object."""
         data_idxs = []
-        print loc_i, len(loc_i)
         for i in range(len(loc_i)):
-            print self._get_idx_from_loc(loc_i[i], kr)
             data_idxs += self._get_idx_from_loc(loc_i[i], kr)
 #        # WARNING: TODO: Probably outside when get_idx is used
 #        if len(np.unique(data_idxs)) != len(data_idxs):
 #            data_idxs = np.unique(data_idxs)
 #        data_idxs = list(data_idxs)
-        print '2'*10, data_idxs
         return data_idxs
 
     def _get_idxs_from_locs_listind(self, loc_i, kr=0):

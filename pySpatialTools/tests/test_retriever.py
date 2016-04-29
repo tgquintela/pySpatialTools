@@ -689,7 +689,7 @@ def test():
         ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
                            input_map=p[2], output_map=p[3], constant_info=p[4],
                            bool_input_idx=p[5], autoexclude=False)
-        print p
+#        print p
         ## Selecting point_i
         if p[5] is False:
             i = mainmapper.data[0]
@@ -701,9 +701,7 @@ def test():
         ## Get Information
         ################
         # Assert information getting
-        print ret._get_info_i
         info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        print info_i, info_i2
         assert(info_i == {})
         assert(info_i2 == {})
 
@@ -726,146 +724,26 @@ def test():
         ## Get indices
         ################
         i_loc = ret.get_indice_i([i], 0)
-        print i, i_loc, ret.get_indice_i, ret._get_idxs_from_locs
         assert(len(i_loc) == 1)
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
         i_loc = ret.get_indice_i(j, 0)
-        print j, i_loc, ret.get_indice_i, ret._get_idxs_from_locs
         assert(len(i_loc) == 2)
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
         assert(type(i_loc[1]) in inttypes)
-        assert(i_loc[0] == 0)
-        assert(i_loc[1] == 3)
+        print ret.data_input, i_loc, j, p[5]
+        assert(i_loc[0] == j[0])
+        assert(i_loc[1] == j[1])
 
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
             neighs_info = ret[i]
             neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            neighs_info.get_information()
-
-#
-#        if p[6]:
-#            loc_i = [0]
-#        else:
-#            if types == 'listobject':
-#                loc_i = [DummyLocObject(np.array([0]))]
-#            else:
-#                loc_i = [np.array([0])]
-#        i_loc = ret.get_indice_i(loc_i, 0)
-##        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[6]
-##        print list(ret.data_input)
-#        assert(len(i_loc) == 1)
-#        assert(type(i_loc) == list)
-#        assert(type(i_loc[0]) in inttypes)
-#        if p[6]:
-#            i_loc = ret.get_indice_i([0, 1])
-#        else:
-#            if types == 'listobject':
-#                loc_i = [DummyLocObject(np.array([0]))]
-#                loc_i += [DummyLocObject(np.array([1]))]
-#            else:
-#                loc_i = [np.array([0]), np.array([1])]
-#            i_loc = ret.get_indice_i(loc_i, 0)
-##        print i_loc, ret.get_indice_i, p[6]
-#        assert(len(i_loc) == 2)
-#        assert(type(i_loc) == list)
-#        assert(type(i_loc[0]) in inttypes)
-#        assert(type(i_loc[1]) in inttypes)
-#        assert(i_loc[0] == 0)
-#        assert(i_loc[1] == 1)
-
-
-
-#        if p[6]:
-#            loc_i = ret.get_loc_i([0])
-#            if types == 'listobject':
-#                loc_i = [e.location for e in loc_i]
-#        else:
-#            if types == 'listobject':
-#                retloc = DummyLocObject(np.array([0]))
-#                loc_i = ret.get_loc_i([retloc])
-#                loc_i = [e.location for e in loc_i]
-#            else:
-#                loc_i = ret.get_loc_i([np.array([0])])
-#        print loc_i, counter, ret._get_loc_from_idxs, p[6], p[7]
-#        assert(len(loc_i) == 1)
-##        assert(type(loc_i) == type(ret.data_input))
-##        print loc_i, types
-#        assert(type(loc_i[0]) == np.ndarray)
-#        assert(len(loc_i[0].shape) == 1)
-#        assert(all(loc_i[0] == np.array([0])))
-#
-#        if p[6]:
-#            loc_i = ret.get_loc_i([0, 1])
-#            if types == 'listobject':
-#                loc_i = [e.location for e in loc_i]
-#        else:
-#            if types == 'listobject':
-#                aux = DummyLocObject(np.array([0]))
-#                loc_i = ret.get_loc_i([aux, DummyLocObject(np.array([1]))])
-#                loc_i = [e.location for e in loc_i]
-#            else:
-#                loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
-#        print loc_i, ret.get_loc_i, p[6]
-#        assert(len(loc_i) == 2)
-##        assert(type(loc_i) == type(ret.data_input))
-#        assert(type(loc_i[0]) == np.ndarray)
-#        assert(type(loc_i[1]) == np.ndarray)
-#        assert(len(loc_i[0].shape) == 1)
-#        assert(len(loc_i[1].shape) == 1)
-#        assert(all(loc_i[0] == np.array([0])))
-#        assert(all(loc_i[1] == np.array([1])))
-
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
-
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
-
-    ###########################################################################
-    #### OrderEleRetriever
-    ######################
-    pos_inforet = [pars4]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                            input_map=p[2], output_map=p[3],
-                            constant_info=p[4], bool_input_idx=p[5],
-                            autoexclude=False)
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
@@ -881,7 +759,9 @@ def test():
     ###########################################################################
     #### LimDistanceRetriever
     ##########################
-    pos_inforet = [pars5]
+    pars_lim0, pars_lim1 = pars5, {'lim_distance': None}
+    pars_lim2 = {'maxif': False, 'lim_distance': 1}
+    pos_inforet = [None, pars_lim0, pars_lim1, pars_lim2]
     pos_outmap = [None, _output_map]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
@@ -891,6 +771,57 @@ def test():
                                   input_map=p[2], output_map=p[3],
                                   constant_info=p[4], bool_input_idx=p[5],
                                   autoexclude=False)
+#        print p
+        ## Selecting point_i
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+
+        ## Get Information
+        ################
+        # Assert information getting
+        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+        if p[0] is None:
+            assert(info_i == ret._default_ret_val)
+            assert(info_i2 == ret._default_ret_val)
+        else:
+            assert(info_i == p[0])
+            assert(info_i2 == p[0])
+
+        ## Get locations
+        ################
+        loc_i = ret.get_loc_i([i])
+        assert(len(loc_i) == 1)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        loc_i = ret.get_loc_i(j)
+        assert(len(loc_i) == 2)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(type(loc_i[1]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(len(loc_i[1].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        assert(all(loc_i[1] == mainmapper.data[3]))
+
+        ## Get indices
+        ################
+        i_loc = ret.get_indice_i([i], 0)
+        assert(len(i_loc) == 1)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        i_loc = ret.get_indice_i(j, 0)
+        assert(len(i_loc) == 2)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(type(i_loc[1]) in inttypes)
+        assert(i_loc[0] == j[0])
+        assert(i_loc[1] == j[1])
+
         if p[5] is False:
             i = mainmapper.data[0]
             j = mainmapper.data[[0, 3]]
@@ -901,9 +832,11 @@ def test():
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
-            #neighs_info = ret[i]
-            #neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
@@ -915,6 +848,99 @@ def test():
 #    ret.set_iter()
 #    for iss, nei in ret:
 #        pass
+
+    ###########################################################################
+    #### OrderEleRetriever
+    ######################
+    pars_order0, pars_order1 = pars4, {'exactorlimit': True, 'order': 2}
+    pos_inforet = [None, pars_order0, pars_order1]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                            input_map=p[2], output_map=p[3],
+                            constant_info=p[4], bool_input_idx=p[5],
+                            autoexclude=False)
+#        print p
+        ## Selecting point_i
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+
+        ## Get Information
+        ################
+        # Assert information getting
+        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+        if p[0] is None:
+            assert(info_i == ret._default_ret_val)
+            assert(info_i2 == ret._default_ret_val)
+        else:
+            assert(info_i == p[0])
+            assert(info_i2 == p[0])
+
+        ## Get locations
+        ################
+        loc_i = ret.get_loc_i([i])
+        assert(len(loc_i) == 1)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        loc_i = ret.get_loc_i(j)
+        assert(len(loc_i) == 2)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(type(loc_i[1]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(len(loc_i[1].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        assert(all(loc_i[1] == mainmapper.data[3]))
+
+        ## Get indices
+        ################
+        i_loc = ret.get_indice_i([i], 0)
+        assert(len(i_loc) == 1)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        i_loc = ret.get_indice_i(j, 0)
+        assert(len(i_loc) == 2)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(type(i_loc[1]) in inttypes)
+        assert(i_loc[0] == j[0])
+        assert(i_loc[1] == j[1])
+
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
+
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
 
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,
