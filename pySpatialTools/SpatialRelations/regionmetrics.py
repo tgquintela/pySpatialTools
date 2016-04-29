@@ -368,7 +368,9 @@ class RegionDistances:
                     correcness.append(all([type(e) in inttypes for e in nei]))
                 else:
                     correcness.append(nei.dtype in inttypes)
-            assert(correcness)
+            print correcness, neighs, regs, len(neighs), len(regs)
+            #assert(correcness)
+            assert(len(neighs) == len(regs))
         return neighs, dists
 
     def _netx_retrieve_neighs(self, regs):

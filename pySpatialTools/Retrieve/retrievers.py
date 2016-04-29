@@ -929,12 +929,15 @@ class Retriever:
     def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
         """Specific interaction with the data stored in retriever object."""
         data_idxs = []
+        print loc_i, len(loc_i)
         for i in range(len(loc_i)):
+            print self._get_idx_from_loc(loc_i[i], kr)
             data_idxs += self._get_idx_from_loc(loc_i[i], kr)
 #        # WARNING: TODO: Probably outside when get_idx is used
 #        if len(np.unique(data_idxs)) != len(data_idxs):
 #            data_idxs = np.unique(data_idxs)
 #        data_idxs = list(data_idxs)
+        print '2'*10, data_idxs
         return data_idxs
 
     def _get_idxs_from_locs_listind(self, loc_i, kr=0):

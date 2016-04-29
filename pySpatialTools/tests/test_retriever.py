@@ -537,27 +537,27 @@ def test():
                          preferable_input_idx=True, ifdistance=False)
     net = ret.compute_neighnet(mapper=0)
 
-#    ###########################################################################
-#    ######### Preparation parameters for general testing
-#    ## Perturbations
-#    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
-#    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
-#    ## Create perturbations
-#    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
-#    perturbation1 = PermutationPerturbation(reind.T)
-#    perturbation2 = NonePerturbation(k_perturb2)
-#    perturbation3 = JitterLocations(0.2, k_perturb3)
-#    perturbation4 = [perturbation1, perturbation2, perturbation3]
-#    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
-#                         perturbation4]
-#
-#    _input_map = lambda s, i: i
-#    _output_map = [lambda s, i, x: x]
-#    pos_ifdistance = [True, False]
-#    pos_inmap = [None, _input_map]
-#    pos_constantinfo = [True, False, None]
-#    pos_boolinidx = [True, False, None]
-#
+    ###########################################################################
+    ######### Preparation parameters for general testing
+    ## Perturbations
+    k_perturb1, k_perturb2, k_perturb3 = 5, 10, 3
+    k_perturb4 = k_perturb1+k_perturb2+k_perturb3
+    ## Create perturbations
+    reind = np.vstack([np.random.permutation(n) for i in range(k_perturb1)])
+    perturbation1 = PermutationPerturbation(reind.T)
+    perturbation2 = NonePerturbation(k_perturb2)
+    perturbation3 = JitterLocations(0.2, k_perturb3)
+    perturbation4 = [perturbation1, perturbation2, perturbation3]
+    pos_perturbations = [None, perturbation1, perturbation2, perturbation3,
+                         perturbation4]
+
+    _input_map = lambda s, i: i
+    _output_map = [lambda s, i, x: x]
+    pos_ifdistance = [True, False]
+    pos_inmap = [None, _input_map]
+    pos_constantinfo = [True, False, None]
+    pos_boolinidx = [True, False]
+
 #    ###########################################################################
 #    #### KRetriever
 #    ##################
@@ -572,25 +572,33 @@ def test():
 #                         bool_input_idx=p[5], perturbations=p[6])
 #        if p[5] is False:
 #            i = locs[0]
+#            j = [locs[0], locs[1]]
 #        else:
 #            i = 0
+#            j = [0, 1]
 ##        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
 #        if p[4]:
 #            neighs_info = ret.retrieve_neighs(i)
 #            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
+#            neighs_info = ret[i]
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            neighs_info.get_information()
 #        else:
 #            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
 #            neighs_info.get_information()
 #
 #        ## Testing other functions and parameters
 #        ret.k_perturb
 #
-##    ## Iterations
-##    ret.set_iter()
-##    for iss, nei in ret:
-##        pass
+##        ## Iterations
+##        ret.set_iter()
+##        for iss, nei in ret:
+##            break
 #
 #    ###########################################################################
 #    #### CircRetriever
@@ -606,22 +614,30 @@ def test():
 #                         bool_input_idx=p[5])
 #        if p[5] is False:
 #            i = locs[0]
+#            j = [locs[0], locs[1]]
 #        else:
 #            i = 0
+#            j = [0, 1]
 ##        print i, p
 #        if p[4]:
 #            neighs_info = ret.retrieve_neighs(i)
 #            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
+#            neighs_info = ret[i]
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            neighs_info.get_information()
 #        else:
 #            neighs_info = ret.retrieve_neighs(i, p[0])
 #            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
 #
-##    ## Iterations
-##    ret.set_iter()
-##    for iss, nei in ret:
-##        pass
+##        ## Iterations
+##        ret.set_iter()
+##        for iss, nei in ret:
+##            break
 #
 #    ###########################################################################
 #    #### WindowsRetriever
@@ -656,120 +672,249 @@ def test():
 #
 #        ## Testing other functions and parameters
 #        ret.k_perturb
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### SameEleRetriever
+    #####################
+    pos_inforet = [None]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                           input_map=p[2], output_map=p[3], constant_info=p[4],
+                           bool_input_idx=p[5], autoexclude=False)
+        print p
+        ## Selecting point_i
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+
+        ## Get Information
+        ################
+        # Assert information getting
+        print ret._get_info_i
+        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+        print info_i, info_i2
+        assert(info_i == {})
+        assert(info_i2 == {})
+
+        ## Get locations
+        ################
+        loc_i = ret.get_loc_i([i])
+        assert(len(loc_i) == 1)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        loc_i = ret.get_loc_i(j)
+        assert(len(loc_i) == 2)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(type(loc_i[1]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(len(loc_i[1].shape) == 1)
+        assert(all(loc_i[0] == mainmapper.data[0]))
+        assert(all(loc_i[1] == mainmapper.data[3]))
+
+        ## Get indices
+        ################
+        i_loc = ret.get_indice_i([i], 0)
+        print i, i_loc, ret.get_indice_i, ret._get_idxs_from_locs
+        assert(len(i_loc) == 1)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        i_loc = ret.get_indice_i(j, 0)
+        print j, i_loc, ret.get_indice_i, ret._get_idxs_from_locs
+        assert(len(i_loc) == 2)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(type(i_loc[1]) in inttypes)
+        assert(i_loc[0] == 0)
+        assert(i_loc[1] == 3)
+
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
+
+#
+#        if p[6]:
+#            loc_i = [0]
+#        else:
+#            if types == 'listobject':
+#                loc_i = [DummyLocObject(np.array([0]))]
+#            else:
+#                loc_i = [np.array([0])]
+#        i_loc = ret.get_indice_i(loc_i, 0)
+##        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[6]
+##        print list(ret.data_input)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        if p[6]:
+#            i_loc = ret.get_indice_i([0, 1])
+#        else:
+#            if types == 'listobject':
+#                loc_i = [DummyLocObject(np.array([0]))]
+#                loc_i += [DummyLocObject(np.array([1]))]
+#            else:
+#                loc_i = [np.array([0]), np.array([1])]
+#            i_loc = ret.get_indice_i(loc_i, 0)
+##        print i_loc, ret.get_indice_i, p[6]
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+#        assert(i_loc[0] == 0)
+#        assert(i_loc[1] == 1)
+
+
+
+#        if p[6]:
+#            loc_i = ret.get_loc_i([0])
+#            if types == 'listobject':
+#                loc_i = [e.location for e in loc_i]
+#        else:
+#            if types == 'listobject':
+#                retloc = DummyLocObject(np.array([0]))
+#                loc_i = ret.get_loc_i([retloc])
+#                loc_i = [e.location for e in loc_i]
+#            else:
+#                loc_i = ret.get_loc_i([np.array([0])])
+#        print loc_i, counter, ret._get_loc_from_idxs, p[6], p[7]
+#        assert(len(loc_i) == 1)
+##        assert(type(loc_i) == type(ret.data_input))
+##        print loc_i, types
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == np.array([0])))
+#
+#        if p[6]:
+#            loc_i = ret.get_loc_i([0, 1])
+#            if types == 'listobject':
+#                loc_i = [e.location for e in loc_i]
+#        else:
+#            if types == 'listobject':
+#                aux = DummyLocObject(np.array([0]))
+#                loc_i = ret.get_loc_i([aux, DummyLocObject(np.array([1]))])
+#                loc_i = [e.location for e in loc_i]
+#            else:
+#                loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
+#        print loc_i, ret.get_loc_i, p[6]
+#        assert(len(loc_i) == 2)
+##        assert(type(loc_i) == type(ret.data_input))
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == np.array([0])))
+#        assert(all(loc_i[1] == np.array([1])))
+
+#        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            #neighs_info = ret[i]
+#            #neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
 
 #    ## Iterations
 #    ret.set_iter()
 #    for iss, nei in ret:
 #        pass
 
-#    ###########################################################################
-#    #### SameEleRetriever
-#    #####################
-#    pos_inforet = [None]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                           input_map=p[2], output_map=p[3], constant_info=p[4],
-#                           bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
-#
-##    ## Iterations
-##    ret.set_iter()
-##    for iss, nei in ret:
-##        pass
-#
-#    ###########################################################################
-#    #### OrderEleRetriever
-#    ######################
-#    pos_inforet = [pars4]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                            input_map=p[2], output_map=p[3],
-#                            constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j)
-#            neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
-#
-##    ## Iterations
-##    ret.set_iter()
-##    for iss, nei in ret:
-##        pass
-#
-#    ###########################################################################
-#    #### LimDistanceRetriever
-#    ##########################
-#    pos_inforet = [pars5]
-#    pos_outmap = [None, _output_map]
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx]
-#    for p in product(*pos):
-#        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-#                                  input_map=p[2], output_map=p[3],
-#                                  constant_info=p[4], bool_input_idx=p[5])
-#        if p[5] is False:
-#            i = mainmapper.data[0]
-#            j = mainmapper.data[[0, 3]]
-#        else:
-#            i = 0
-#            j = [0, 3]
-#        print i, p
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            #neighs_info = ret[i]
-#            #neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j)
-#            neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
-#
-##    ## Iterations
-##    ret.set_iter()
-##    for iss, nei in ret:
-##        pass
+    ###########################################################################
+    #### OrderEleRetriever
+    ######################
+    pos_inforet = [pars4]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                            input_map=p[2], output_map=p[3],
+                            constant_info=p[4], bool_input_idx=p[5],
+                            autoexclude=False)
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            #neighs_info = ret[i]
+            #neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
+
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
+
+    ###########################################################################
+    #### LimDistanceRetriever
+    ##########################
+    pos_inforet = [pars5]
+    pos_outmap = [None, _output_map]
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx]
+    for p in product(*pos):
+        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+                                  input_map=p[2], output_map=p[3],
+                                  constant_info=p[4], bool_input_idx=p[5],
+                                  autoexclude=False)
+        if p[5] is False:
+            i = mainmapper.data[0]
+            j = mainmapper.data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+        print i, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            #neighs_info = ret[i]
+            #neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
+
+#    ## Iterations
+#    ret.set_iter()
+#    for iss, nei in ret:
+#        pass
 
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,

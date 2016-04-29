@@ -21,7 +21,7 @@ class NetworkRetriever(Retriever):
     _default_ret_val = {}
 
     def __init__(self, main_mapper, info_ret=None, pars_ret=None,
-                 autoexclude=True, ifdistance=True, info_f=None,
+                 autoexclude=False, ifdistance=True, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
                  output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element network retriever class method."
@@ -91,6 +91,26 @@ class NetworkRetriever(Retriever):
         neighs, dists = self._apply_relative_pos_spec((neighs, dists), elem_i)
         return neighs, dists
 
+    ############################# Getter functions ############################
+    ###########################################################################
+    def _get_loc_from_idx(self, i, kr=0):
+        """Not list indexable interaction with data."""
+#        print i, kr
+        loc_i = np.array(self.retriever[kr].data[i])
+        return loc_i
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from locations."""
+        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
+        indices = list(indices)
+        return indices
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from stored data."""
+        i_loc = np.where(self.retriever[kr].data_input == loc_i)[0]
+        i_loc = list(i_loc) if len(i_loc) else []
+        return i_loc
+
     ############################ Auxiliar functions ###########################
     ###########################################################################
     def _define_retriever(self, main_mapper, pars_ret={}):
@@ -104,6 +124,7 @@ class NetworkRetriever(Retriever):
         elif main_mapper._input == 'elements_id':
             self.preferable_input_idx = False
         else:
+            raise Exception("Not possible option.")
             self.preferable_input_idx = None
 
     def _check_proper_retriever(self):
@@ -113,14 +134,14 @@ class NetworkRetriever(Retriever):
 
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output."
-        print 'this is the point of debug', neighs, dists, i_locs
+#        print 'this is the point of debug', neighs, dists, i_locs
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
 #        neighs, dists = np.array(neighs), np.array(dists)
 #        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
 #        dists = dists.reshape((len(dists), n_dim))
-        print 'c'*20, neighs, dists, type(neighs)
+#        print 'c'*20, neighs, dists, type(neighs)
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
-        print 'd'*20, neighs, dists, self.neighs_info.set_neighs, type(neighs), self._exclude_auto, self._output_map
+#        print 'd'*20, neighs, dists, self.neighs_info.set_neighs, type(neighs), self._exclude_auto, self._output_map
         return neighs, dists
 
     def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
@@ -155,12 +176,6 @@ class NetworkRetriever(Retriever):
         """Over-writtable function."""
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
-
-    def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from stored data."""
-        print '0'*25, self.retriever[kr].data_input
-        i_loc = np.where(self.retriever[kr].data_input == loc_i)[0]
-        return i_loc
 
     @property
     def data_input(self):
@@ -249,9 +264,9 @@ class SameEleNeigh(NetworkRetriever):
             the distances between elements.
 
         """
-        print 'k'*50, self.neighs_info.set_neighs, elem_i
+#        print 'k'*50, self.neighs_info.set_neighs, elem_i
         neighs, dists = self.retriever[kr][elem_i]
-        print 'o'*50, neighs, type(neighs), dists
+#        print 'o'*50, neighs, type(neighs), dists
         assert(len(neighs) == len(elem_i))
         assert(all([len(e.shape) == 2 for e in dists]))
         return neighs, dists
