@@ -101,12 +101,6 @@ class NetworkRetriever(Retriever):
         loc_i = np.array(self.retriever[kr].data[i])
         return loc_i
 
-#    def _get_idx_from_loc(self, loc_i, kr=0):
-#        """Get indices from locations."""
-#        indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
-#        indices = list(indices)
-#        return indices
-
     def _get_idx_from_loc(self, loc_i, kr=0):
         """Get indices from stored data."""
         i_loc = np.where(self.retriever[kr].data_input == loc_i)[0]
@@ -153,25 +147,6 @@ class NetworkRetriever(Retriever):
 #        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
 #        dists = dists.reshape((len(dists), n_dim))
         return neighs, dists
-
-    def _format_info_i_reg(self, info_i, i=-1):
-        "TODO: match index from relations."
-        if bool(info_i):
-            pass
-        else:
-            info_i = self._info_ret
-#            if type(i) == np.ndarray:
-#                i = np.where(self.retriever.data == i)[0]
-#                i = i[0] if i.any() else -1
-#            if self._info_ret is not None:
-#                if type(self._info_ret) == list:
-#                    if i != -1:
-#                        info_i = self._info_ret[i]
-#                    else:
-#                        info_i = {}
-#                elif type(self._info_ret) == dict:
-#                    info_i = self._info_ret
-        return info_i
 
     def _preformat_neighs_info(self, format_level=None, type_neighs=None,
                                type_sp_rel_pos=None):
