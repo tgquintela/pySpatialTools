@@ -394,6 +394,8 @@ def test():
         assert(i_loc[1] == 1)
         ## Preparing input
         ##################
+        ret._general_prepare_input([i], kr=0)
+        ret._general_prepare_input(j, kr=0)
         # Assert element getting
 #        print i, j, p[6], p[7], ret._prepare_input
         e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
@@ -501,11 +503,30 @@ def test():
             ret.data_input
             ret.data_output
 
+        if ret.k_perturb == 0:
+            k_option = 1
+        else:
+            k_options = [-1, 100]
+            k_option = k_options[np.random.randint(0, 2)]
         if np.random.random() < 0.1:
             ## Iterations
             ret.set_iter()
             for iss, nei in ret:
                 break
+            try:
+                boolean = False
+                ret.retrieve_neighs(0, k=k_option)
+                boolean = True
+            except:
+                if boolean:
+                    raise Exception("It has to halt here.")
+            try:
+                boolean = False
+                ret._map_perturb(k_option)
+                boolean = True
+            except:
+                if boolean:
+                    raise Exception("It has to halt here.")
 
 #### Special cases
     ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,

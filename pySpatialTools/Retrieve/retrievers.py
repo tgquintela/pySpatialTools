@@ -717,7 +717,7 @@ class Retriever:
         if self.preferable_input_idx:
             i_mloc = self._get_indice_i_general(i_loc, kr)
         else:
-            i_mloc = self._get_loc_i_general(i_loc, kr)
+            i_mloc = self._get_loc_i_general(i_loc)
         return i_mloc
 
     def _dummy_prepare_input(self, i_loc, kr=0):
@@ -896,14 +896,14 @@ class Retriever:
 #        loc_i = np.array(i_loc.locations).reshape((1, sh[1]))
 #        return loc_i
 
-    def _get_loc_dummy(self, i_loc):
-        """Dummy get loc which return the exact input in array-like type."""
-        if type(i_loc) not in [np.ndarray, list]:
-            loc_i = [i_loc]
-        ## Same structure as data
-        if type(self.data_input) == np.ndarray:
-            loc_i = np.array(loc_i)
-        return i_loc
+#    def _get_loc_dummy(self, i_loc):
+#        """Dummy get loc which return the exact input in array-like type."""
+#        if type(i_loc) not in [np.ndarray, list]:
+#            loc_i = [i_loc]
+#        ## Same structure as data
+#        if type(self.data_input) == np.ndarray:
+#            loc_i = np.array(loc_i)
+#        return i_loc
 
     ############################### Get indices ###############################
     ## Collapse to get_indice_i in _format_get_indice_i
