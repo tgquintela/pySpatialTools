@@ -114,7 +114,7 @@ class Retriever:
         neighs_info = self._format_output(i_loc, neighs, dists)
         ## 3. Format neighs_info
 #        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
-        self.neighs_info.set(neighs_info, i_loc)
+        self.neighs_info.set(neighs_info, self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
@@ -137,7 +137,7 @@ class Retriever:
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
 #        print neighs_info, '1'*50, self.neighs_info.format_set_info
-        self.neighs_info.set((neighs_info, ks), i_loc)
+        self.neighs_info.set((neighs_info, ks), self.get_indice_i(i_loc))
 #        print self.staticneighs, self.neighs_info.staticneighs
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
@@ -175,8 +175,10 @@ class Retriever:
 #                nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
 #                neighs_info.append(nei_k)
         ## 3. Format neighs_info
-#        print 'a'*100, neighs_info, type(neighs_info[0]), self.staticneighs or ks == 0
-        self.neighs_info.set((neighs_info, ks), i_loc)
+        print 'a'*100, i_loc, self.k_perturb, neighs_info, type(neighs_info[0])
+        print self.staticneighs, ks == 0, self.get_indice_i(i_loc)
+        print self.neighs_info.staticneighs, self.neighs_info._set_iss, self.neighs_info._set_info, self.neighs_info.set_neighs
+        self.neighs_info.set((neighs_info, ks), self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info
         return neighs_info
@@ -468,10 +470,11 @@ class Retriever:
             format_structure = 'tuple_list_tuple'
 
         ## Setting iss
-        if bool_input_idx:
-            format_set_iss = 'general'
-        else:
-            format_set_iss = 'null'
+#        if bool_input_idx:
+#            format_set_iss = 'general'
+#        else:
+#            format_set_iss = 'null'
+        format_set_iss = 'list'
 
 #        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs, self.neighs_info.staticneighs
         ## Neighs info setting

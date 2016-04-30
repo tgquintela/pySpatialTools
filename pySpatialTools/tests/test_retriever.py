@@ -623,21 +623,21 @@ def test():
         assert(i_loc[0] == 0)
         assert(i_loc[1] == 1)
 
-#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            neighs_info = ret[i]
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j)
-#            neighs_info.get_information()
-#            neighs_info = ret[j]
-#            neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
+        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
 
         ## Testing other functions and parameters
         ret.k_perturb
@@ -646,7 +646,7 @@ def test():
 #        ret.set_iter()
 #        for iss, nei in ret:
 #            break
-#
+
     ###########################################################################
     #### CircRetriever
     ##################
@@ -710,20 +710,20 @@ def test():
         assert(i_loc[0] == 0)
         assert(i_loc[1] == 1)
 
-#        if p[4]:
-#            neighs_info = ret.retrieve_neighs(i)
-#            neighs_info.get_information()
-#            neighs_info = ret[i]
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j)
-#            neighs_info.get_information()
-#            neighs_info = ret[j]
-#            neighs_info.get_information()
-#        else:
-#            neighs_info = ret.retrieve_neighs(i, p[0])
-#            neighs_info.get_information()
-#            neighs_info = ret.retrieve_neighs(j, p[0])
-#            neighs_info.get_information()
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
 
 #        ## Iterations
 #        ret.set_iter()

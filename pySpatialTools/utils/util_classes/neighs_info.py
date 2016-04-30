@@ -396,10 +396,12 @@ class Neighs_Info:
         if type(self.idxs) in [list, np.ndarray]:
 #            print self.idxs, self.iss, self.set_neighs
             if self.staticneighs:
-                ### Checker ### To ensure correct format. Probably redundant
+                ### WARNING: Redefinition of iss.
                 if len(self.idxs) != len(self.iss):
-                    assert(len(self.idxs[0]) == len(self.iss))
-                    self.idxs = self.idxs[0]
+                    if len(self.idxs[0]) == len(self.iss):
+                        self.idxs = self.idxs[0]
+                    else:
+                        self.iss = range(len(self.idxs))
             else:
                 assert(all([len(k) == len(self.idxs[0]) for k in self.idxs]))
 
