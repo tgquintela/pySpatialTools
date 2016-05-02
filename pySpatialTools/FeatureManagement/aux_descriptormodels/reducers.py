@@ -22,6 +22,11 @@ INPUTS:
 OUTPUTS:
 - descriptors: in dict or array format depending on the descriptors convenience
 
+Standards
+---------
+- aggdescriptors_idxs: [iss][nei][nfeats]
+- point_aggpos: [iss][nei][dim]
+
 """
 
 import numpy as np
@@ -29,6 +34,24 @@ from collections import Counter
 
 
 def sum_reducer(aggdescriptors_idxs, point_aggpos):
+    """This reducer sum all possible aggregation features."""
+    descriptors = []
+    for iss in range(len(aggdescriptors_idxs)):
+        aux = sum_reducer_ind(aggdescriptors_idxs[iss], point_aggpos[iss])
+        descriptors.append(aux)
+    return descriptors
+
+
+def avg_reducer(aggdescriptors_idxs, point_aggpos):
+    """This reducer average all possible aggregation features."""
+    descriptors = []
+    for iss in range(len(aggdescriptors_idxs)):
+        aux = avg_reducer_ind(aggdescriptors_idxs[iss], point_aggpos[iss])
+        descriptors.append(aux)
+    return descriptors
+
+
+def sum_reducer_ind(aggdescriptors_idxs, point_aggpos):
     """This reducer sum all possible aggregation features."""
     ## 0. To array
     if type(aggdescriptors_idxs) == list:
@@ -52,7 +75,7 @@ def sum_reducer(aggdescriptors_idxs, point_aggpos):
     return descriptors
 
 
-def avg_reducer(aggdescriptors_idxs, point_aggpos):
+def avg_reducer_ind(aggdescriptors_idxs, point_aggpos):
     """This reducer average all possible aggregation features."""
     ## 0. To array
     if type(aggdescriptors_idxs) == list:

@@ -70,43 +70,85 @@ def test():
         p_aggpos = None
         return aggdesc, p_aggpos
 
-    point_pos = None
-    n, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
+    nnei, n_feats = np.random.randint(1, 1000), np.random.randint(1, 20)
     n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
-    ks = np.random.randint(1, 20)
+    n_iss = np.random.randint(1, 20)
+    point_pos = [None]*n_iss
 
     ### Tests
     # Example objects
-    pointfeats_arrayarray0 = continuous_array_features(n, n_feats)
-    pointfeats_listarray0 = list(pointfeats_arrayarray0)
-    pointfeats_arrayarray1 = categorical_array_features(n, n_feats)
-    pointfeats_listarray1 = list(pointfeats_arrayarray1)
-    pointfeats_arrayarray2 = categorical_array_features(n, n_feats2)
-    pointfeats_listarray2 = list(pointfeats_arrayarray2)
-    pointfeats_listdict0 = continuous_dict_features(n, n_feats)
-    pointfeats_listdict1 = categorical_dict_features(n, n_feats)
+
+    pointfeats_arrayarray0 = [continuous_array_features(nnei, n_feats)]*n_iss
+    pointfeats_listarray0 = np.array(pointfeats_arrayarray0)
+    pointfeats_arrayarray1 = [categorical_array_features(nnei, n_feats)]*n_iss
+    pointfeats_listarray1 = np.array(pointfeats_arrayarray1)
+    pointfeats_arrayarray2 = [categorical_array_features(nnei, n_feats2)]*n_iss
+    pointfeats_listarray2 = np.array(pointfeats_arrayarray2)
+    pointfeats_listdict0 = [continuous_dict_features(nnei, n_feats)]*n_iss
+    pointfeats_listdict1 = [categorical_dict_features(nnei, n_feats)]*n_iss
+
+#    pointfeats_arrayarray0 = continuous_agg_array_features(n, n_feats, ks)
+#    pointfeats_listarray0 = list(pointfeats_arrayarray0)
+#    pointfeats_arrayarray1 = categorical_agg_array_features(n, n_feats, ks)
+#    pointfeats_listarray1 = list(pointfeats_arrayarray1)
+#    pointfeats_arrayarray2 = categorical_agg_array_features(n, n_feats2, ks)
+#    pointfeats_listarray2 = list(pointfeats_arrayarray2)
+#    pointfeats_listdict0 = continuous_agg_dict_features(n, n_feats, ks)
+#    pointfeats_listdict1 = categorical_agg_dict_features(n, n_feats, ks)
 
     #################################
     #### Reducer
     ###############
 
-    sum_reducer(pointfeats_arrayarray0, point_pos)
-    sum_reducer(pointfeats_listarray0, point_pos)
-    sum_reducer(pointfeats_arrayarray1, point_pos)
-    sum_reducer(pointfeats_listarray1, point_pos)
-    sum_reducer(pointfeats_arrayarray2, point_pos)
-    sum_reducer(pointfeats_listarray2, point_pos)
-    sum_reducer(pointfeats_listdict0, point_pos)
-    sum_reducer(pointfeats_listdict1, point_pos)
+    desc = sum_reducer(pointfeats_arrayarray0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_listarray0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_arrayarray1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_listarray1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_arrayarray2, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_listarray2, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = sum_reducer(pointfeats_listdict0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == dict)
+    desc = sum_reducer(pointfeats_listdict1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == dict)
 
-    avg_reducer(pointfeats_arrayarray0, point_pos)
-    avg_reducer(pointfeats_listarray0, point_pos)
-    avg_reducer(pointfeats_arrayarray1, point_pos)
-    avg_reducer(pointfeats_listarray1, point_pos)
-    avg_reducer(pointfeats_arrayarray2, point_pos)
-    avg_reducer(pointfeats_listarray2, point_pos)
-    avg_reducer(pointfeats_listdict0, point_pos)
-    avg_reducer(pointfeats_listdict1, point_pos)
+    desc = avg_reducer(pointfeats_arrayarray0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_listarray0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_arrayarray1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_listarray1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_arrayarray2, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_listarray2, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == np.ndarray)
+    desc = avg_reducer(pointfeats_listdict0, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == dict)
+    desc = avg_reducer(pointfeats_listdict1, point_pos)
+    assert(type(desc) == list)
+    assert(type(desc[0]) == dict)
 
 #    aggdesc, p_aggpos = creation_agg(True)
 #    sum_reducer(aggdesc, p_aggpos)

@@ -31,7 +31,33 @@ def test():
     n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
 
+    class DummyDesc:
+        def set_functions(self, typefeatures, outformat):
+            pass
+
+    class Dummy1Desc(DummyDesc):
+        def __init__(self):
+            self.compute_characs = None
+            self._out_formatter = None
+            self.reducer = None
+
+    class Dummy2Desc_exp(DummyDesc):
+        def __init__(self):
+            self.compute_characs = lambda x, d: [e[0] for e in x]
+            self._out_formatter = lambda x, y1, y2, y3: x
+            self.reducer = None
+
+    class Dummy2Desc_imp(DummyDesc):
+        def __init__(self):
+            self.compute_characs = lambda x, d: np.array([e[0] for e in x])
+            self._out_formatter = lambda x, y1, y2, y3: x
+            self.reducer = None
+
+    ## Possible descriptormodels to test
     avgdesc = AvgDescriptor()
+    dum1desc = Dummy1Desc()
+    dum2desc = Dummy2Desc_imp()
+    dum2desc_agg = Dummy2Desc_exp()
 
     ### Test functions definitions
     def test_getfeatsk(Feat):
@@ -41,8 +67,8 @@ def test():
         pass
 
     def test_getitem(Feat):
-        k = 0
-        idxs = np.random.randint(0, 5, 20).reshape((1, 4, 5))
+        #k = 0
+        #idxs = np.random.randint(0, 5, 20).reshape((1, 4, 5))
         #Feat._get_feats_k(idxs, k)
         #Feat._get_feats_k(list(idxs), k)
         #Feat[[]]
@@ -84,9 +110,13 @@ def test():
         Feat[(([[]], [[]]), [0])]
         # Descriptormodels setting
         # null formatters
-        Feat._format_characterizer(None, None)
-        #Feat.set_descriptormodel(avgdesc)
-
+        #Feat._format_characterizer(None, None)
+        Feat.set_descriptormodel(dum1desc)
+        if Feat.typefeat == 'implicit':
+            Feat.set_descriptormodel(dum2desc)
+        else:
+            Feat.set_descriptormodel(dum2desc_agg)
+        Feat.set_descriptormodel(avgdesc)
 
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))

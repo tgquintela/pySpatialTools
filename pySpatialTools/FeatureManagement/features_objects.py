@@ -137,15 +137,15 @@ class Features:
             ## Interaction with the features stored and computing characs
             feats_k = self._get_characs_k(k, idxs, d)
 
-            ## Testing #############
+#            ## Testing #############
 #            print feats_k
 #            assert(len(feats_k) == len(idxs[k]))
-            if type(feats_k) == list:
-                assert(type(feats_k[0]) == dict)
-            else:
-                print feats_k.shape, idxs
-                assert(len(feats_k.shape) == 2)
-            ########################
+#            if type(feats_k) == list:
+#                assert(type(feats_k[0]) == dict)
+#            else:
+#                print feats_k.shape, idxs
+#                assert(len(feats_k.shape) == 2)
+#            ########################
 
             ## Adding to global result
             feats.append(feats_k)
