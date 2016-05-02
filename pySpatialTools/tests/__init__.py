@@ -69,7 +69,7 @@ def test():
 #        test_descriptormodels.test()
 #        test_features_retriever.test()
 #        test_perturbation.test()
-#        test_spatial_relations.test()
+        test_spatial_relations.test()
         test_retriever.test()
 #        test_spdescriptormodels.test()
 #        test_interpolation.test()
