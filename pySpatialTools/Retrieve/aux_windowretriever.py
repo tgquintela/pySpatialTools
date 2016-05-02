@@ -330,6 +330,11 @@ def get_relative_neighs_comb(ranges):
 def generate_grid_neighs_coord(coords, shape, ndim, l, center=0,
                                excluded=False):
     """Generation of neighs for different coords."""
+    ## Preparation inputs
+    coords = np.array(coords).astype(int)
+    if len(coords.shape) != 2:
+        coords = coords.reshape((1, ndim))
+    ## Computing
     neighs_coords, rel_poss = [], []
     for i in range(len(coords)):
         neighs_coord, rel_pos =\
@@ -358,7 +363,7 @@ def generate_grid_neighs_coord_i(coord, shape, ndim, l, center=0,
         windows = []
         for i in range(ndim):
             ws = []
-            for w in range(-int(window_l[i])/2, int(window_l[i])/2):
+            for w in range(-(int(window_l[i])/2), int(window_l[i]+1)/2):
                 x = coord[i] + center[i] + w
                 if x >= 0 and x < shape[i] and (center[i]+w) != 0:
                     ws.append(x)
@@ -367,7 +372,7 @@ def generate_grid_neighs_coord_i(coord, shape, ndim, l, center=0,
         windows = []
         for i in range(ndim):
             ws = []
-            for w in range(-int(window_l[i])/2, int(window_l[i])/2):
+            for w in range(-(int(window_l[i])/2), int(window_l[i]+1)/2):
                 x = coord[i] + center[i] + w
                 if x >= 0 and x < shape[i]:
                     ws.append(x)

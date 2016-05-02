@@ -730,32 +730,90 @@ def test():
 #        for iss, nei in ret:
 #            break
 
-#    ###########################################################################
-#    #### WindowsRetriever
-#    #####################
-#    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
-#                   {'l': 4, 'center': 0, 'excluded': False},
-#                   {'l': 3, 'center': 1, 'excluded': True}]
-#    pos_outmap = [None, _output_map]
-#    shape = 10, 10
-#    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
-#
-#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-#           pos_constantinfo, pos_boolinidx, pos_perturbations]
-#    for p in product(*pos):
-#        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
-#                               input_map=p[2], output_map=p[3],
-#                               constant_info=p[4], bool_input_idx=p[5],
-#                               perturbations=p[6])
+    ###########################################################################
+    #### WindowsRetriever
+    #####################
+    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
+                   {'l': 4, 'center': 0, 'excluded': False},
+                   {'l': 3, 'center': 1, 'excluded': True}]
+    pos_outmap = [None, _output_map]
+    shape = 10, 10
+    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
+
+    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+           pos_constantinfo, pos_boolinidx, pos_perturbations]
+    for p in product(*pos):
+        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
+                               input_map=p[2], output_map=p[3],
+                               constant_info=p[4], bool_input_idx=p[5],
+                               perturbations=p[6])
 ##        print p
-#        ## Selecting point_i
-#        if p[5] is False:
-#            i = locs[0]
-#            j = [locs[0], locs[1]]
-#        else:
-#            i = 0
-#            j = [0, 1]
-#
+        ## Selecting point_i
+        if p[5] is False:
+            i = ret.retriever[0].data[0]
+            j = ret.retriever[0].data[[0, 3]]
+        else:
+            i = 0
+            j = [0, 3]
+
+        ## Get Information
+        ################
+        # Assert information getting
+        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+        if p[0] is None:
+            assert(info_i == ret._default_ret_val)
+            assert(info_i2 == ret._default_ret_val)
+        else:
+            assert(info_i == p[0])
+            assert(info_i2 == p[0])
+
+        ## Get locations
+        ################
+        loc_i = ret.get_loc_i([i])
+        assert(len(loc_i) == 1)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == locs[0]))
+        loc_i = ret.get_loc_i(j)
+        assert(len(loc_i) == 2)
+        assert(type(loc_i[0]) == np.ndarray)
+        assert(type(loc_i[1]) == np.ndarray)
+        assert(len(loc_i[0].shape) == 1)
+        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == locs[0]))
+#        assert(all(loc_i[1] == locs[1]))
+
+        ## Get indices
+        ################
+        i_loc = ret.get_indice_i([i], 0)
+        assert(len(i_loc) == 1)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(i_loc[0] == 0)
+        i_loc = ret.get_indice_i(j, 0)
+        assert(len(i_loc) == 2)
+        assert(type(i_loc) == list)
+        assert(type(i_loc[0]) in inttypes)
+        assert(type(i_loc[1]) in inttypes)
+        assert(i_loc[0] == 0)
+        assert(i_loc[1] == 3)
+
+#        print 'b'*25, p
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
+            neighs_info.get_information()
+        else:
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            neighs_info.get_information()
+
 #        ## Get Information
 #        ################
 #        # Assert information getting

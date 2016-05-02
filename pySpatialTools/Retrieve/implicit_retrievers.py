@@ -29,7 +29,7 @@ class SpaceRetriever(Retriever):
     typeret = 'space'
 
     def __init__(self, locs, info_ret=None, autolocs=None, pars_ret=None,
-                 autoexclude=True, ifdistance=False, info_f=None,
+                 autoexclude=False, ifdistance=False, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
                  output_map=None, constant_info=False, bool_input_idx=None):
         "Creation a element space retriever class method."
@@ -39,10 +39,10 @@ class SpaceRetriever(Retriever):
         self._format_maps(input_map, output_map)
         # Location information
         self._format_locs(locs, autolocs)
-        ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f, constant_info)
         ## Retrieve information
         self._define_retriever(locs, pars_ret)
+        ## Info_ret mangement
+        self._format_retriever_info(info_ret, info_f, constant_info)
         # Perturbations
         self._format_perturbation(perturbations)
         # Output information
@@ -350,7 +350,7 @@ class WindowsRetriever(SpaceRetriever):
     ## Basic information of the core retriever
     constant_neighs = True
     preferable_input_idx = False
-    auto_excluded = False
+    auto_excluded = True
     ## Interaction with the stored data
     bool_listind = True
 
@@ -369,16 +369,23 @@ class WindowsRetriever(SpaceRetriever):
             ### Set neighs_info !!!    
             yield inds, neighs, rel_pos
 
+    def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
+        "Format output with excluding."
+        raise Exception("Combination impossible")
+
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, element_i, pars_ret,
                                       ifdistance=False, kr=0):
         """Retrieve all the neighs in the window described by pars_ret."""
         ## Get loc
         loc_i = self._prepare_input(element_i, kr)
-        assert(len(loc_i.shape) == 2)
+#        assert(len(loc_i.shape) == 2)
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
                                                  self._ndim, **pars_ret)
-        neighs = self.retriever[kr].map2indices_iss(neighs_info[0])
+        neighs = []
+        for i in range(len(neighs_info[0])):
+            neighs += [self.retriever[kr].map2indices_iss(neighs_info[0][i])]
+        print neighs, type(neighs)
         ## Compute neighs_info
         if ifdistance:
             neighs_info = neighs, neighs_info[1]
@@ -395,24 +402,34 @@ class WindowsRetriever(SpaceRetriever):
         """Retrieve neighs not computing distance by default."""
         pars_ret = self._get_info_i(element_i, pars_ret)
         loc_i = self._prepare_input(element_i, kr)
-        assert(len(loc_i.shape) == 2)
+#        print loc_i, type(loc_i)
+#        assert(len(loc_i.shape) == 2)
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
                                                  self._ndim, **pars_ret)
-        neighs_info = self.retriever[kr].map2indices_iss(neighs_info[0])
-        return neighs_info, None
+        neighs = []
+        for i in range(len(neighs_info[0])):
+            neighs += [self.retriever[kr].map2indices_iss(neighs_info[0][i])]
+#        neighs_info = self.retriever[kr].map2indices_iss(neighs_info[0])
+        return neighs, None
 
     def _retrieve_neighs_constant_distance(self, element_i, pars_ret, kr=0):
         """Retrieve neighs computing distance by default."""
         pars_ret = self._get_info_i(element_i, pars_ret)
         loc_i = self._prepare_input(element_i, kr)
-        assert(len(loc_i.shape) == 2)
-        neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
+#        print loc_i, type(loc_i)
+#        assert(len(loc_i.shape) == 2)
+        neighs_info = generate_grid_neighs_coord(np.array(loc_i), self._shape,
                                                  self._ndim, **pars_ret)
-        aux_neigh = self.retriever[kr].map2indices_iss(neighs_info[0])
-        neighs_info = aux_neigh, neighs_info[1]
+        neighs = []
+        for i in range(len(neighs_info[0])):
+            neighs += [self.retriever[kr].map2indices_iss(neighs_info[0][i])]
+#        aux_neigh = self.retriever[kr].map2indices_iss(neighs_info[0])
+        print loc_i, type(loc_i), neighs, neighs_info[0]
+#        assert(len(loc_i.shape) == 2)
+        neighs_info = neighs, neighs_info[1]
         ## Correct for another relative spatial measure (Save time indexing)
         if self.relative_pos is not None:
-            neighs_info = self._apply_relative_pos(neighs_info[0], element_i,
+            neighs_info = self._apply_relative_pos(neighs_info, element_i,
                                                    neighs_info[1])
         return neighs_info
 
@@ -472,57 +489,57 @@ class WindowsRetriever(SpaceRetriever):
         self._heterogenous_output = False
 
 
-###############################################################################
-######################### Discretizors-Based Retrievers #######################
-###############################################################################
-class DiscretizationRetriever(Retriever):
-    """Retriever of elements considering its spacial information from a pool
-    of elements retrievable.
-    """
-    typeret = 'discretizor'
-
-    def __init__(self, discretizor, info_ret=None, autolocs=None,
-                 pars_ret=None, autoexclude=True, ifdistance=False,
-                 info_f=None, perturbations=None, relative_pos=None,
-                 input_map=None, output_map=None, constant_info=False, bool_input_idx=None,
-                 format_level=None, type_neighs=None, type_sp_rel_pos=None):
-        "Creation a element space retriever class method."
-        ## Reset globals
-        self._initialization()
-        ## Info_ret mangement
-        self._format_retriever_info(info_ret, info_f, constant_info)
-        # Location information
-        self._format_locs(locs, autolocs)
-        # Perturbations
-        self._format_perturbation(perturbations)
-        # Output information
-        self._format_output_information(autoexclude, ifdistance, relative_pos)
-        self._format_exclude(bool_input_idx, self.constant_neighs)
-        ## Retrieve information
-        self._define_retriever(locs, pars_ret)
-        ## Format retriever function
-        self._format_retriever_function()
-        self._format_getters(bool_input_idx)
-        # IO mappers
-        self._format_maps(input_map, output_map)
-        self._format_preparators(bool_input_idx)
-        self._format_neighs_info(bool_input_idx, format_level, type_neighs,
-                                 type_sp_rel_pos)
-
-    ######################## Retrieve-driven retrieve #########################
-    def __iter__(self):
-        ## Prepare iteration
-        assert(self.data is not None)
-        bool_input_idx, constant_neighs = True, True
-        self._constant_ret = True
-        ## Format functions
-        self._format_exclude(bool_input_idx, constant_neighs)
-        self._format_preparators(bool_input_idx)
-        self._format_retriever_function()
-        self._format_getters(bool_input_idx)
-        ## Prepare indices
-        indices = split_parallel(np.arange(self._n0), self._max_bunch)
-        ## Iteration
-        for idxs in indices:
-            neighs = self.retrieve_neighs(list(idxs))
-            yield indices, neighs
+################################################################################
+########################## Discretizors-Based Retrievers #######################
+################################################################################
+#class DiscretizationRetriever(Retriever):
+#    """Retriever of elements considering its spacial information from a pool
+#    of elements retrievable.
+#    """
+#    typeret = 'discretizor'
+#
+#    def __init__(self, discretizor, info_ret=None, autolocs=None,
+#                 pars_ret=None, autoexclude=True, ifdistance=False,
+#                 info_f=None, perturbations=None, relative_pos=None,
+#                 input_map=None, output_map=None, constant_info=False, bool_input_idx=None,
+#                 format_level=None, type_neighs=None, type_sp_rel_pos=None):
+#        "Creation a element space retriever class method."
+#        ## Reset globals
+#        self._initialization()
+#        ## Info_ret mangement
+#        self._format_retriever_info(info_ret, info_f, constant_info)
+#        # Location information
+#        self._format_locs(locs, autolocs)
+#        # Perturbations
+#        self._format_perturbation(perturbations)
+#        # Output information
+#        self._format_output_information(autoexclude, ifdistance, relative_pos)
+#        self._format_exclude(bool_input_idx, self.constant_neighs)
+#        ## Retrieve information
+#        self._define_retriever(locs, pars_ret)
+#        ## Format retriever function
+#        self._format_retriever_function()
+#        self._format_getters(bool_input_idx)
+#        # IO mappers
+#        self._format_maps(input_map, output_map)
+#        self._format_preparators(bool_input_idx)
+#        self._format_neighs_info(bool_input_idx, format_level, type_neighs,
+#                                 type_sp_rel_pos)
+#
+#    ######################## Retrieve-driven retrieve #########################
+#    def __iter__(self):
+#        ## Prepare iteration
+#        assert(self.data is not None)
+#        bool_input_idx, constant_neighs = True, True
+#        self._constant_ret = True
+#        ## Format functions
+#        self._format_exclude(bool_input_idx, constant_neighs)
+#        self._format_preparators(bool_input_idx)
+#        self._format_retriever_function()
+#        self._format_getters(bool_input_idx)
+#        ## Prepare indices
+#        indices = split_parallel(np.arange(self._n0), self._max_bunch)
+#        ## Iteration
+#        for idxs in indices:
+#            neighs = self.retrieve_neighs(list(idxs))
+#            yield indices, neighs
