@@ -29,6 +29,7 @@ def test():
     ### Parameters or externals
     info_ret = {'order': 2}
     locs = np.random.random((1000, 2))
+    inttypes = [int, np.int32, np.int64]
 #    mainmapper1 = generate_random_relations(25, store='sparse')
 #    mainmapper2 = generate_random_relations(100, store='sparse')
 #    mainmapper3 = generate_random_relations(5000, store='sparse')
@@ -101,8 +102,19 @@ def test():
     assert(len(neighs) == len(dists))
     assert(len(neighs) == 2)
 
-    def ensure_output(neighs, dists):
-        pass
+    def ensure_output(neighs, dists, mainmapper):
+#        print dists
+        assert(all([len(e.shape) == 2 for e in dists]))
+        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+        if mainmapper._out == 'indices':
+#            print neighs
+            correcness = []
+            for nei in neighs:
+                if len(nei):
+                    correcness.append(all([type(e) in inttypes for e in nei]))
+                else:
+                    correcness.append(nei.dtype in inttypes)
+            assert(correcness)
 
     ###########################################################################
     ### Massive combinatorial testing
@@ -128,14 +140,14 @@ def test():
         if p[5] is None:
             if p[4] != 'indices':
                 neighs, dists = mainmapper1[mainmapper1.data[0]]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
                 neighs, dists = mainmapper1[0]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
                 neighs, dists = mainmapper1[np.array([-1])]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
             if p[4] != 'elements_id':
                 neighs, dists = mainmapper1[0]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
                 try:
                     boolean = False
                     mainmapper1[-1]
@@ -147,9 +159,9 @@ def test():
             if p[5] == 'list':
                 # Get item
                 neighs, dists = mainmapper1[[0]]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
                 neighs, dists = mainmapper1[[np.array([0])]]
-                ensure_output(neighs, dists)
+                ensure_output(neighs, dists, mainmapper1)
                 try:
                     boolean = False
                     mainmapper1[[None]]
@@ -159,7 +171,7 @@ def test():
                         raise Exception("It has to halt here.")
             idxs = pos_inputs[pos_input_type.index(p[5])]
             neighs, dists = mainmapper1[idxs]
-            ensure_output(neighs, dists)
+            ensure_output(neighs, dists, mainmapper1)
         # Functions
         mainmapper1.set_inout(p[5], p[4], p[3])
         mainmapper1.transform(lambda x: x)
@@ -229,9 +241,9 @@ def test():
         # Get item
         idxs = pos_inputs[pos_input_type.index(p[1])]
         neighs, dists = dummymapper[idxs]
-        ensure_output(neighs, dists)
+        ensure_output(neighs, dists, dummymapper)
         neighs, dists = dummymapper[slice(0, 1)]
-        ensure_output(neighs, dists)
+        ensure_output(neighs, dists, dummymapper)
         ## Functions
         dummymapper.transform(lambda x: x)
         dummymapper.data

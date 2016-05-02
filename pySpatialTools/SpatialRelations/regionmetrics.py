@@ -211,9 +211,9 @@ class RegionDistances:
         reg = self.filter_reg(reg)
         ## 1. Perform the retrieve
         neighs, dists = self.retrieve_neighs_spec(reg)
-        print dists, reg
-        assert(all([len(e.shape) == 2 for e in dists]))
-        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+#        print dists, reg
+#        assert(all([len(e.shape) == 2 for e in dists]))
+#        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
         return neighs, dists
 
     ######################## Input filtering candidates #######################
@@ -303,7 +303,6 @@ class RegionDistances:
                     neighs.append(np.array([]))
                 dists.append(np.array([[]]).T)
                 continue
-            print self.relations, self.relations.shape
             logi = (self._data == reg).ravel()
             logi = self.relations[logi] != self._null_value
             logi = logi[:, 0]
@@ -316,19 +315,19 @@ class RegionDistances:
             ## Storing final result
             neighs.append(np.array(neighs_r))
             dists.append(np.array([dists_r]).T)
-        #print dists, regs, logi
-        assert(all([len(e.shape) == 2 for e in dists]))
-        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
-        if self._out == 'indices':
-            print neighs
-            inttypes = [int, np.int32, np.int64]
-            correcness = []
-            for nei in neighs:
-                if len(nei):
-                    correcness.append(all([type(e) in inttypes for e in nei]))
-                else:
-                    correcness.append(nei.dtype in inttypes)
-            assert(correcness)
+#        #print dists, regs, logi
+#        assert(all([len(e.shape) == 2 for e in dists]))
+#        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+#        if self._out == 'indices':
+#            print neighs
+#            inttypes = [int, np.int32, np.int64]
+#            correcness = []
+#            for nei in neighs:
+#                if len(nei):
+#                    correcness.append(all([type(e) in inttypes for e in nei]))
+#                else:
+#                    correcness.append(nei.dtype in inttypes)
+#            assert(correcness)
         return neighs, dists
 
     def _sparse_retrieve_neighs(self, regs):
@@ -357,20 +356,20 @@ class RegionDistances:
             ## Storing final result
             neighs.append(np.array(neighs_r))
             dists.append(np.array([dists_r]).T)
-        assert(all([len(e.shape) == 2 for e in dists]))
-        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
-        if self._out == 'indices':
-            print neighs, regs
-            inttypes = [int, np.int32, np.int64]
-            correcness = []
-            for nei in neighs:
-                if len(nei):
-                    correcness.append(all([type(e) in inttypes for e in nei]))
-                else:
-                    correcness.append(nei.dtype in inttypes)
-            print correcness, neighs, regs, len(neighs), len(regs)
-            #assert(correcness)
-            assert(len(neighs) == len(regs))
+#        assert(all([len(e.shape) == 2 for e in dists]))
+#        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+#        if self._out == 'indices':
+#            print neighs, regs
+#            inttypes = [int, np.int32, np.int64]
+#            correcness = []
+#            for nei in neighs:
+#                if len(nei):
+#                    correcness.append(all([type(e) in inttypes for e in nei]))
+#                else:
+#                    correcness.append(nei.dtype in inttypes)
+#            print correcness, neighs, regs, len(neighs), len(regs)
+#            #assert(correcness)
+#            assert(len(neighs) == len(regs))
         return neighs, dists
 
     def _netx_retrieve_neighs(self, regs):
@@ -397,19 +396,19 @@ class RegionDistances:
             ## Storing final result
             neighs.append(np.array(neighs_r))
             dists.append(np.array([dists_r]).T)
-        print dists
-        assert(all([len(e.shape) == 2 for e in dists]))
-        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
-        if self._out == 'indices':
-            print neighs
-            inttypes = [int, np.int32, np.int64]
-            correcness = []
-            for nei in neighs:
-                if len(nei):
-                    correcness.append(all([type(e) in inttypes for e in nei]))
-                else:
-                    correcness.append(nei.dtype in inttypes)
-            assert(correcness)
+#        print dists
+#        assert(all([len(e.shape) == 2 for e in dists]))
+#        assert(all([len(e) == 0 for e in dists if np.prod(e.shape) == 0]))
+#        if self._out == 'indices':
+#            print neighs
+#            inttypes = [int, np.int32, np.int64]
+#            correcness = []
+#            for nei in neighs:
+#                if len(nei):
+#                    correcness.append(all([type(e) in inttypes for e in nei]))
+#                else:
+#                    correcness.append(nei.dtype in inttypes)
+#            assert(correcness)
         return neighs, dists
 
 #    def _general_retrieve_neighs(self, reg):
@@ -488,5 +487,5 @@ class DummyRegDistance(RegionDistances):
         reg = self.filter_reg(reg)
         ## 1. Perform the retrieve
         neighs = list(np.array(reg).reshape((len(reg), 1)))
-        dists = np.array([[1.]*len(neighs)]).T
+        dists = [np.array([[1.]*len(neighs)]).T]*len(reg)
         return neighs, dists
