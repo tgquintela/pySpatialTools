@@ -6,12 +6,13 @@ Testing the feature retriever.
 
 """
 
+import numpy as np
+from itertools import product
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
 from pySpatialTools.FeatureManagement.features_objects import Features,\
     ImplicitFeatures, ExplicitFeatures
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
-import numpy as np
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.artificial_data import continuous_array_features,\
     categorical_array_features, continuous_dict_features,\
@@ -30,6 +31,28 @@ def test():
     n, n_feats = np.random.randint(10, 1000), np.random.randint(1, 20)
     n_feats2 = [np.random.randint(1, 20) for i in range(n_feats)]
     ks = np.random.randint(1, 20)
+
+    def create_ids(n1):
+        aux = np.random.randint(1, 4, n1)
+        return np.cumsum(aux)
+
+    def create_featurenames(n1):
+        aux = create_ids(n1)
+        return [str(e) for e in aux]
+
+    def extract_featurenames_agg(aggdictfeats):
+        names = []
+        for k in range(len(aggdictfeats)):
+            names += extract_featurenames(aggdictfeats[k])
+        names = list(set(names))
+        return names
+
+    def extract_featurenames(aggdictfeats):
+        names = []
+        for i in range(len(aggdictfeats)):
+            names += aggdictfeats[i].keys()
+        names = list(set(names))
+        return names
 
     class DummyDesc:
         def set_functions(self, typefeatures, outformat):
@@ -147,22 +170,52 @@ def test():
         if boolean:
             raise Exception("It should not accept that inputs.")
 
+    ## Exhaustive instantiation testing
     aggcontfeats_ar0 = continuous_agg_array_features(n, n_feats, ks)
     aggcatfeats_ar0 = categorical_agg_array_features(n, n_feats, ks)
     aggcatfeats_ar1 = categorical_agg_array_features(n, n_feats2, ks)
     aggcontfeats_dict = continuous_agg_dict_features(n, n_feats, ks)
     aggcatfeats_dict = categorical_agg_dict_features(n, n_feats, ks)
 
-    Feat = ExplicitFeatures(aggcontfeats_ar0)
-    test_getitem(Feat)
-    Feat = ExplicitFeatures(aggcatfeats_ar0)
-    test_getitem(Feat)
-    Feat = ExplicitFeatures(aggcatfeats_ar1)
-    test_getitem(Feat)
-    Feat = ExplicitFeatures(aggcontfeats_dict)
-    test_getitem(Feat)
-    Feat = ExplicitFeatures(aggcatfeats_dict)
-    test_getitem(Feat)
+    pos_feats = [aggcontfeats_ar0, aggcatfeats_ar0, aggcatfeats_ar1,
+                 aggcontfeats_dict, aggcatfeats_dict]
+    pos_names = [create_featurenames(n_feats), create_featurenames(1),
+                 create_featurenames(len(n_feats2)),
+                 create_featurenames(n_feats),
+                 extract_featurenames_agg(aggcontfeats_dict),
+                 extract_featurenames_agg(aggcatfeats_dict)]
+    pos_nss = [0, 1, 2, 3, 4]
+    pos_null = [None, 0., np.inf]
+    pos_characterizer = [None]
+    pos_outformatter = [None]
+    pos_indices = [None]
+
+    possibilities = [pos_nss, pos_null, pos_characterizer, pos_outformatter,
+                     pos_indices]
+
+    for p in product(*possibilities):
+#        print p
+        ## Names definition
+        names = []
+        if np.random.randint(0, 2):
+            names = pos_names[p[0]]
+        ## Instantiation
+        Feat = ExplicitFeatures(pos_feats[p[0]], names=names, indices=p[4],
+                                characterizer=p[2], out_formatter=p[3],
+                                nullvalue=p[1])
+        ## Testing main functions
+        test_getitem(Feat)
+
+#    Feat = ExplicitFeatures(aggcontfeats_ar0)
+#    test_getitem(Feat)
+#    Feat = ExplicitFeatures(aggcatfeats_ar0)
+#    test_getitem(Feat)
+#    Feat = ExplicitFeatures(aggcatfeats_ar1)
+#    test_getitem(Feat)
+#    Feat = ExplicitFeatures(aggcontfeats_dict)
+#    test_getitem(Feat)
+#    Feat = ExplicitFeatures(aggcatfeats_dict)
+#    test_getitem(Feat)
 
     ###########################################################################
     ##########################
@@ -174,6 +227,38 @@ def test():
     catfeats_ar1 = categorical_array_features(n, n_feats2)
     contfeats_dict = continuous_dict_features(n, n_feats)
     catfeats_dict = categorical_dict_features(n, n_feats)
+
+    pos_feats = [contfeats_ar0, catfeats_ar0, catfeats_ar1,
+                 contfeats_dict, catfeats_dict]
+    pos_names = [create_featurenames(n_feats), create_featurenames(1),
+                 create_featurenames(len(n_feats2)),
+                 create_featurenames(n_feats),
+                 extract_featurenames(contfeats_dict),
+                 extract_featurenames(catfeats_dict)]
+    pos_nss = [0, 1, 2, 3, 4]
+    pos_null = [None]  # TODO: [None, 0., np.inf]
+    pos_characterizer = [None]
+    pos_outformatter = [None]
+    pos_indices = [None]  # TODO
+    pos_perturbations = [None, perturbation]
+
+    possibilities = [pos_nss, pos_null, pos_characterizer, pos_outformatter,
+                     pos_indices, pos_perturbations]
+    ## Combination of inputs testing
+    for p in product(*possibilities):
+#        print p
+        ## Names definition
+        names = []
+        if np.random.randint(0, 2):
+            names = pos_names[p[0]]
+        ## Instantiation
+        Feat = ImplicitFeatures(pos_feats[p[0]], names=names,
+                                characterizer=p[2], out_formatter=p[3],
+                                perturbations=p[5])
+        ## Testing main functions
+        if p[0] < 3:
+            test_getitem(Feat)
+
 
     Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
     test_getitem(Feat_imp)
@@ -219,10 +304,6 @@ def test():
 #    test_getitem(Feat)
 #    Feat = ImplicitFeatures(catfeats_dict)
 #    test_getitem(Feat)
-
-
-
-
 
 
     ## Other functions

@@ -197,11 +197,13 @@ class Features:
             self._format_out_k = out_formatter
 
         if not (characterizer is None or out_formatter is None):
+            ## Test
             self[([0], [0.]), 0]
-            try:
-                self[([0], [0.]), 0]
-            except:
-                raise TypeError("Incorrect characterizer.")
+            ## Redundant
+#            try:
+#                self[([0], [0.]), 0]
+#            except:
+#                raise TypeError("Incorrect characterizer.")
 
 #    def _format_feat_interactors(self, typeidxs):
 #        """Programming this class in order to fit properly to the inputs and
