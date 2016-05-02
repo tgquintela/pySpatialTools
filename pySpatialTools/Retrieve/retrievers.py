@@ -113,7 +113,7 @@ class Retriever:
 #        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists)
         ## 3. Format neighs_info
-        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
+#        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info

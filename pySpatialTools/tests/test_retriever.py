@@ -371,7 +371,7 @@ def test():
             else:
                 loc_i = [np.array([0])]
         i_loc = ret.get_indice_i(loc_i, 0)
-#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs, p[6]
+#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs
 #        print list(ret.data_input)
         assert(len(i_loc) == 1)
         assert(type(i_loc) == list)
@@ -583,7 +583,7 @@ def test():
         ################
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
         if p[0] is None:
             assert(info_i == ret._default_ret_val)
             assert(info_i2 == ret._default_ret_val)
@@ -619,11 +619,11 @@ def test():
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
         assert(type(i_loc[1]) in inttypes)
-        print i_loc, j
+#        print i_loc, j
         assert(i_loc[0] == 0)
         assert(i_loc[1] == 1)
 
-        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
@@ -642,10 +642,10 @@ def test():
         ## Testing other functions and parameters
         ret.k_perturb
 
-#        ## Iterations
-#        ret.set_iter()
-#        for iss, nei in ret:
-#            break
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            break
 
     ###########################################################################
     #### CircRetriever
@@ -672,7 +672,7 @@ def test():
         ################
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
         if p[0] is None:
             assert(info_i == ret._default_ret_val)
             assert(info_i2 == ret._default_ret_val)
@@ -725,14 +725,15 @@ def test():
             neighs_info = ret.retrieve_neighs(j, p[0])
             neighs_info.get_information()
 
-#        ## Iterations
-#        ret.set_iter()
-#        for iss, nei in ret:
-#            break
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            break
 
     ###########################################################################
     #### WindowsRetriever
     #####################
+    ## TODO: Relative pos and autoexclude=True
     pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
                    {'l': 4, 'center': 0, 'excluded': False},
                    {'l': 3, 'center': 1, 'excluded': True}]
@@ -742,11 +743,17 @@ def test():
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
            pos_constantinfo, pos_boolinidx, pos_perturbations]
+    ## Random exploration of inputs space
+    pos_relativepos = [None, comp_rel_pos, comp_class_rel_pos]
+
     for p in product(*pos):
+        ## Random exploration of inputs space
+        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
+
         ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
                                input_map=p[2], output_map=p[3],
                                constant_info=p[4], bool_input_idx=p[5],
-                               perturbations=p[6])
+                               perturbations=p[6], relative_pos=rel_pos)
 ##        print p
         ## Selecting point_i
         if p[5] is False:
@@ -798,7 +805,6 @@ def test():
         assert(i_loc[0] == 0)
         assert(i_loc[1] == 3)
 
-#        print 'b'*25, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
@@ -814,40 +820,18 @@ def test():
             neighs_info = ret.retrieve_neighs(j, p[0])
             neighs_info.get_information()
 
-#        ## Get Information
-#        ################
-#        # Assert information getting
-#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
-#        if p[0] is None:
-#            assert(info_i == ret._default_ret_val)
-#            assert(info_i2 == ret._default_ret_val)
-#        else:
-#            assert(info_i == p[0])
-#            assert(info_i2 == p[0])
-#
-#
-##        if p[4]:
-##            neighs_info = ret.retrieve_neighs(i)
-##            neighs_info.get_information()
-##            neighs_info = ret[i]
-##            neighs_info.get_information()
-##            neighs_info = ret.retrieve_neighs(j)
-##            neighs_info.get_information()
-##            neighs_info = ret[j]
-##            neighs_info.get_information()
-##        else:
-##            neighs_info = ret.retrieve_neighs(i, p[0])
-##            neighs_info.get_information()
-##            neighs_info = ret.retrieve_neighs(j, p[0])
-##            neighs_info.get_information()
-#
-#        ## Testing other functions and parameters
-#        ret.k_perturb
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            pass
+
+    try:
+        boolean = False
+        ret = WindowsRetriever((10, 10, 10.))
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
     ###########################################################################
     #### SameEleRetriever
@@ -904,7 +888,7 @@ def test():
         assert(type(i_loc) == list)
         assert(type(i_loc[0]) in inttypes)
         assert(type(i_loc[1]) in inttypes)
-        print ret.data_input, i_loc, j, p[5]
+#        print ret.data_input, i_loc, j, p[5]
         assert(i_loc[0] == j[0])
         assert(i_loc[1] == j[1])
 
@@ -923,10 +907,10 @@ def test():
             neighs_info = ret.retrieve_neighs(j, p[0])
             neighs_info.get_information()
 
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            break
 
     ###########################################################################
     #### LimDistanceRetriever
@@ -956,7 +940,7 @@ def test():
         ################
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
         if p[0] is None:
             assert(info_i == ret._default_ret_val)
             assert(info_i2 == ret._default_ret_val)
@@ -1000,7 +984,7 @@ def test():
         else:
             i = 0
             j = [0, 3]
-        print i, p
+#        print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
@@ -1016,10 +1000,10 @@ def test():
             neighs_info = ret.retrieve_neighs(j, p[0])
             neighs_info.get_information()
 
-#    ## Iterations
-#    ret.set_iter()
-#    for iss, nei in ret:
-#        pass
+        ## Iterations
+        ret.set_iter()
+        for iss, nei in ret:
+            break
 
     ###########################################################################
     #### OrderEleRetriever
@@ -1048,7 +1032,7 @@ def test():
         ################
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
         if p[0] is None:
             assert(info_i == ret._default_ret_val)
             assert(info_i2 == ret._default_ret_val)

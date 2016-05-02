@@ -98,22 +98,23 @@ def windows_iteration(shape, max_bunch, l, center, excluded):
         get_irregular_indices_grid(shape, l, center, excluded)
     ## Retrieving by sizes of neighbourhood
     sizes_u = np.unique(sizes_nei)
-    for s in sizes_u:
-        inds, neighs = [], []
-        size_idx = np.where(s == sizes_nei)[0]
-        for idx_s in size_idx:
-            # Get indices of the special points
-            inds_s = get_indices_from_borders(borders[idx_s], coord2ind)
-            # Get relative position
-            rel_pos = get_relative_neighs_comb(ranges[idx_s])
-            # Get neigbours
-            neighs_s = get_irregular_neighsmatrix(inds_s, rel_pos, shapes)
-            inds.append(inds_s)
-            neighs.append(neighs_s)
-        ## Formatting properly
-        inds, neighs = np.concatenate(inds), np.concatenate(neighs, axis=1)
-        inds, neighs = inds.astype(int), neighs.astype(int)
-        yield inds, neighs, rel_pos
+    if len(sizes_u) != 1:
+        for s in sizes_u:
+            inds, neighs = [], []
+            size_idx = np.where(s == sizes_nei)[0]
+            for idx_s in size_idx:
+                # Get indices of the special points
+                inds_s = get_indices_from_borders(borders[idx_s], coord2ind)
+                # Get relative position
+                rel_pos = get_relative_neighs_comb(ranges[idx_s])
+                # Get neigbours
+                neighs_s = get_irregular_neighsmatrix(inds_s, rel_pos, shapes)
+                inds.append(inds_s)
+                neighs.append(neighs_s)
+            ## Formatting properly
+            inds, neighs = np.concatenate(inds), np.concatenate(neighs, axis=1)
+            inds, neighs = inds.astype(int), neighs.astype(int)
+            yield inds, neighs, rel_pos
 
     indices, relative_neighs, rel_pos =\
         get_indices_constant_regular(shape, coord2ind, l, center, excluded)

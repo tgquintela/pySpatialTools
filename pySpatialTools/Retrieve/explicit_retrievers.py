@@ -7,7 +7,7 @@ The module which groups the explicit defined retrievers of generic elements.
 """
 
 import numpy as np
-from itertools import combinations
+#from itertools import combinations
 from retrievers import Retriever
 
 
@@ -53,10 +53,10 @@ class NetworkRetriever(Retriever):
                                       ifdistance=True, kr=0):
         """Retrieve element neighbourhood information. """
         elem_i = self._prepare_input(elem_i, kr)
-        print '.'*25, elem_i, self._prepare_input
+#        print '.'*25, elem_i, self._prepare_input
 #        info_i = self._format_info_i_reg(info_i, elem_i)
         info_i = self._get_info_i(elem_i, info_i)
-        print '_'*25, info_i, elem_i, self._get_info_i, self._info_ret
+#        print '_'*25, info_i, elem_i, self._get_info_i, self._info_ret
         neighs, dists = self._retrieve_neighs_spec2(elem_i, kr=kr, **info_i)
         if ifdistance:
             neighs, dists =\
