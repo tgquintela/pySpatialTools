@@ -57,6 +57,7 @@ n: maximum number of id of elements retrieved.
 """
 
 import numpy as np
+from copy import copy
 import warnings
 warnings.filterwarnings("always")
 
@@ -122,6 +123,9 @@ class Neighs_Info:
 
     def reset(self):
         self._set_init()
+
+    def copy(self):
+        return copy(self)
 
     @property
     def shape(self):
@@ -1396,7 +1400,7 @@ def check_compatibility_neighs(neighs_info0, neighs_info1):
     assert(neighs_info0.ks == neighs_info1.ks)
     assert(len(neighs_info0.idxs) == len(neighs_info1.idxs))
     assert(neighs_info0.staticneighs == neighs_info1.staticneighs)
-    if neighs_info0.staticneighs:
+    if not neighs_info0.staticneighs:
         assert(len(neighs_info0.idxs[0]) == len(neighs_info1.idxs[0]))
     none_sprelpos0 = neighs_info0.sp_relative_pos is None
     none_sprelpos1 = neighs_info1.sp_relative_pos is None
@@ -1492,8 +1496,9 @@ def join_neighsinfo_AND_static_dist(neighs_info0, neighs_info1, joiner_pos):
         joined_idxs[i], joined_relpos[i] =\
             join_neighs_AND(neighs0_ki, neighs1_ki, relpos0_ki,
                             relpos1_ki, joiner_pos)
-    neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_AND_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
@@ -1510,8 +1515,9 @@ def join_neighsinfo_AND_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
         joined_idxs[k][i], joined_relpos[k][i] =\
             join_neighs_AND(neighs0_ki, neighs1_ki, relpos0_ki,
                             relpos1_ki, joiner_pos)
-    neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_AND_static_notdist(neighs_info0, neighs_info1):
@@ -1526,8 +1532,9 @@ def join_neighsinfo_AND_static_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_static_notdist(neighs_info0, neighs_info1)
     for i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[i] = join_neighs_AND_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighsinfo_AND_notstatic_notdist(neighs_info0, neighs_info1):
@@ -1543,15 +1550,16 @@ def join_neighsinfo_AND_notstatic_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_notstatic_notdist(neighs_info0, neighs_info1)
     for k, i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[k][i] = join_neighs_AND_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighs_AND(idxs0_ki, idxs1_ki, relpos0_ki, relpos1_ki, joiner_pos):
     """Join neighs with AND."""
     neighs, rel_pos = [], []
     for i in range(len(idxs0_ki)):
-        if idxs0_ki[i] not in idxs1_ki:
+        if idxs0_ki[i] in idxs1_ki:
             neighs.append(idxs0_ki[i])
             j = np.where(np.array(idxs1_ki) == idxs0_ki[i])[0][0]
             rel_pos.append(joiner_pos(relpos0_ki[i], relpos1_ki[j]))
@@ -1562,7 +1570,7 @@ def join_neighs_AND_notrelpos(idxs0_ki, idxs1_ki):
     """Join neighs with AND."""
     neighs = []
     for i in range(len(idxs0_ki)):
-        if idxs0_ki[i] not in idxs1_ki:
+        if idxs0_ki[i] in idxs1_ki:
             neighs.append(idxs0_ki[i])
     return neighs
 
@@ -1609,7 +1617,9 @@ def join_neighsinfo_OR_static_dist(neighs_info0, neighs_info1, joiner_pos):
             join_neighs_OR(neighs0_ki, neighs1_ki, relpos0_ki,
                            relpos1_ki, joiner_pos)
     neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_OR_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
@@ -1626,8 +1636,9 @@ def join_neighsinfo_OR_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
         joined_idxs[k][i], joined_relpos[k][i] =\
             join_neighs_OR(neighs0_ki, neighs1_ki, relpos0_ki,
                            relpos1_ki, joiner_pos)
-    neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_OR_static_notdist(neighs_info0, neighs_info1):
@@ -1642,8 +1653,9 @@ def join_neighsinfo_OR_static_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_static_notdist(neighs_info0, neighs_info1)
     for i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[i] = join_neighs_OR_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighsinfo_OR_notstatic_notdist(neighs_info0, neighs_info1):
@@ -1658,8 +1670,9 @@ def join_neighsinfo_OR_notstatic_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_notstatic_notdist(neighs_info0, neighs_info1)
     for k, i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[k][i] = join_neighs_OR_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighs_OR(idxs0_ki, idxs1_ki, relpos0_ki, relpos1_ki, joiner_pos):
@@ -1731,8 +1744,9 @@ def join_neighsinfo_XOR_static_dist(neighs_info0, neighs_info1, joiner_pos):
         joined_idxs[i], joined_relpos[i] =\
             join_neighs_XOR(neighs0_ki, neighs1_ki, relpos0_ki,
                             relpos1_ki, joiner_pos)
-    neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_XOR_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
@@ -1749,8 +1763,9 @@ def join_neighsinfo_XOR_notstatic_dist(neighs_info0, neighs_info1, joiner_pos):
         joined_idxs[k][i], joined_relpos[k][i] =\
             join_neighs_XOR(neighs0_ki, neighs1_ki, relpos0_ki,
                             relpos1_ki, joiner_pos)
-    neighs_info0.direct_set(joined_idxs, joined_relpos)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs, joined_relpos)
+    return new_neighs_info
 
 
 def join_neighsinfo_XOR_static_notdist(neighs_info0, neighs_info1):
@@ -1765,8 +1780,9 @@ def join_neighsinfo_XOR_static_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_static_notdist(neighs_info0, neighs_info1)
     for i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[i] = join_neighs_XOR_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighsinfo_XOR_notstatic_notdist(neighs_info0, neighs_info1):
@@ -1781,8 +1797,9 @@ def join_neighsinfo_XOR_notstatic_notdist(neighs_info0, neighs_info1):
     sequency = get_ki_info_notstatic_notdist(neighs_info0, neighs_info1)
     for k, i, neighs0_ki, neighs1_ki in sequency:
         joined_idxs[k][i] = join_neighs_XOR_notrelpos(neighs0_ki, neighs1_ki)
-    neighs_info0.direct_set(joined_idxs)
-    return neighs_info0
+    new_neighs_info = neighs_info0.copy()
+    new_neighs_info.direct_set(joined_idxs)
+    return new_neighs_info
 
 
 def join_neighs_XOR(idxs0_ki, idxs1_ki, relpos0_ki, relpos1_ki, joiner_pos):

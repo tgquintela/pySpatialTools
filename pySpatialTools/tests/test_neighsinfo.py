@@ -22,23 +22,9 @@ def test():
 #                           'list_tuple', 'list_tuple1', 'list_tuple2',
 #                           'array', 'slice', 'tuple', 'tuple_int',
 #                           'tuple_slice', 'tuple_tuple', 'tuple_others']
+
+    ############################# USEFUL FUNCTIONS ############################
     joinpos = lambda x, y: x
-
-    pos_ifdistance = [True, False, None]
-    pos_constant_neighs = [True, False, None]
-    pos_format_get_k_info = [None, "general", "default", "list", "integer"]
-    pos_format_get_info = [None, "default", "general"]
-    pos_type_neighs = [None, 'general', 'array', 'list', 'slice']
-    pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
-    pos_format_level = [None, 0, 1, 2, 3]
-    pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
-                            'list_tuple_only', 'tuple_list_tuple']
-    pos_staticneighs = [None, True, False]
-
-    pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
-           pos_format_get_k_info, pos_format_structure, pos_format_level,
-           pos_type_neighs, pos_type_sp_rel_pos, pos_staticneighs]
-    ###############################
 
     ### Creation of possible inputs
     creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, lvl))
@@ -81,61 +67,9 @@ def test():
 #    neighs_list = lambda x: list([neighs_int() for i in range(x)])
 #    neighs_array = lambda x: np.array([neighs_int() for i in range(x)])
     neighs_slice = lambda top: slice(0, top)
-    ###############################
-    level_dependent = ['list_tuple_only', 'tuple_list_tuple']
 
-    ### Testing possible combinations
-    k = 0
-    for p in product(*pos):
-        ## General instantiation. It has to be able to eat any input
-        neighs_info_general = Neighs_Info()
-        ## Defintiion of forbidden combinations
-        bool_error = p[4] in level_dependent and p[5] != 2
-        bool_error = bool_error or p[2] == "default" or p[3] == "default"
-        ## Testing raising errors of forbidden combinations:
-        if bool_error:
-            try:
-                boolean = False
-                neighs_info = Neighs_Info(constant_neighs=p[0],
-                                          ifdistance=p[1],
-                                          format_get_info=p[2],
-                                          format_get_k_info=p[3],
-                                          format_structure=p[4],
-                                          format_level=p[5],
-                                          type_neighs=p[6],
-                                          type_sp_rel_pos=p[7],
-                                          staticneighs=p[8])
-                boolean = True
-            except:
-                if boolean:
-                    raise Exception("It has to halt here.")
-            continue
-        ## Avoid non-allowed
-        if p[4] == 'list_tuple_only' and p[0]:
-            continue
-        ## TESTING:
-        if p[3] == 'integer':
-            continue
-#        print p
-        ## Save effort
-        if p[4] == 'tuple':
-            if np.random.random() < 0.9:
-                continue
-
-        ## Instantiation
-        neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
-                                  format_get_info=p[2], format_get_k_info=p[3],
-                                  format_structure=p[4], format_level=p[5],
-                                  type_neighs=p[6], type_sp_rel_pos=p[7],
-                                  staticneighs=p[8])
-        neighs_info.set_information(100, 100)
-
+    def creation_neighs_nfo(p, sh, k_len, nei_len):
         ## Presetting
-        lvl = np.random.random(4) if p[5] is None else p[5]
-        sh = creator_lvl(lvl)
-        k_len = sh[0] if len(sh) == 3 else np.random.randint(1, 9)
-        iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(1, 100)
-        nei_len = sh[-1] if len(sh) > 0 else np.random.randint(100)
         sh_static = sh
         if len(sh_static) == 3:
             sh_static = list(sh_static)
@@ -173,13 +107,86 @@ def test():
                           range(k_len))
         else:
             neighs_nfo = neighs
+        return neighs_nfo
 
+    ###########################################################################
+
+    pos_ifdistance = [True, False, None]
+    pos_constant_neighs = [True, False, None]
+    pos_format_get_k_info = [None, "general", "default", "list", "integer"]
+    pos_format_get_info = [None, "default", "general"]
+    pos_type_neighs = [None, 'general', 'array', 'list', 'slice']
+    pos_type_sp_rel_pos = [None, 'general', 'array', 'list']
+    pos_format_level = [None, 0, 1, 2, 3]
+    pos_format_structure = [None, 'raw', 'tuple', 'tuple_only', 'tuple_tuple',
+                            'list_tuple_only', 'tuple_list_tuple']
+    pos_staticneighs = [None, True, False]
+
+    pos = [pos_constant_neighs, pos_ifdistance, pos_format_get_info,
+           pos_format_get_k_info, pos_format_structure, pos_format_level,
+           pos_type_neighs, pos_type_sp_rel_pos, pos_staticneighs]
+
+    ###############################
+    ###############################
+    level_dependent = ['list_tuple_only', 'tuple_list_tuple']
+
+    ### Testing possible combinations
+    k = 0
+    for p in product(*pos):
+        ## General instantiation. It has to be able to eat any input
+        neighs_info_general = Neighs_Info()
+        ## Defintiion of forbidden combinations
+        bool_error = p[4] in level_dependent and p[5] != 2
+        bool_error = bool_error or p[2] == "default" or p[3] == "default"
+        ## Testing raising errors of forbidden combinations:
+        if bool_error:
+            try:
+                boolean = False
+                neighs_info = Neighs_Info(constant_neighs=p[0],
+                                          ifdistance=p[1],
+                                          format_get_info=p[2],
+                                          format_get_k_info=p[3],
+                                          format_structure=p[4],
+                                          format_level=p[5],
+                                          type_neighs=p[6],
+                                          type_sp_rel_pos=p[7],
+                                          staticneighs=p[8])
+                boolean = True
+            except:
+                if boolean:
+                    raise Exception("It has to halt here.")
+            continue
+        ## Avoid non-allowed
+        if p[4] == 'list_tuple_only' and p[0]:
+            continue
         tupletypes = ['tuple', 'tuple_only', 'tuple_tuple', 'list_tuple_only',
                       'tuple_list_tuple']
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
+        ## TESTING:
+        if p[3] == 'integer':
+            continue
+#        print p
+        ## Save effort
+        if p[4] == 'tuple':
+            if np.random.random() < 0.9:
+                continue
 
-#        print 'neighs_info', k, neighs_nfo, type(neighs_nfo), p
+        ## Instantiation
+        neighs_info = Neighs_Info(constant_neighs=p[0], ifdistance=p[1],
+                                  format_get_info=p[2], format_get_k_info=p[3],
+                                  format_structure=p[4], format_level=p[5],
+                                  type_neighs=p[6], type_sp_rel_pos=p[7],
+                                  staticneighs=p[8])
+        neighs_info.set_information(100, 100)
+
+        lvl = np.random.random(4) if p[5] is None else p[5]
+        sh = creator_lvl(lvl)
+        iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(1, 100)
+        k_len = sh[0] if len(sh) == 3 else np.random.randint(1, 9)
+        nei_len = sh[-1] if len(sh) > 0 else np.random.randint(100)
+        neighs_nfo = creation_neighs_nfo(p, sh, k_len, nei_len)
+
         neighs_info.set(neighs_nfo, range(iss_len))
         ks = [0] if neighs_info.ks is None else neighs_info.ks
         neighs_info.get_information(ks)
@@ -225,6 +232,16 @@ def test():
                 join_neighsinfo_AND_general(neighs_info, neighs_info, joinpos)
                 join_neighsinfo_OR_general(neighs_info, neighs_info, joinpos)
                 join_neighsinfo_XOR_general(neighs_info, neighs_info, joinpos)
+                neighs_nfo2 = creation_neighs_nfo(p, sh, k_len, nei_len)
+                neighs_info2 = neighs_info.copy()
+                neighs_info2.set(neighs_nfo2, range(iss_len))
+                neighs_info2.sp_relative_pos = neighs_info.sp_relative_pos
+                neighs_info.join_neighs(neighs_info2, 'and', joinpos)
+                neighs_info.join_neighs(neighs_info2, 'or', joinpos)
+                neighs_info.join_neighs(neighs_info2, 'xor', joinpos)
+                join_neighsinfo_AND_general(neighs_info, neighs_info2, joinpos)
+                join_neighsinfo_OR_general(neighs_info, neighs_info2, joinpos)
+                join_neighsinfo_XOR_general(neighs_info, neighs_info2, joinpos)
 
         k += 1
 #        print '-'*20, k
