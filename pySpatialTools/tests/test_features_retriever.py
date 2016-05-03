@@ -156,6 +156,8 @@ def test():
             Feat.set_descriptormodel(dum2desc)
         else:
             Feat.set_descriptormodel(dum2desc_agg)
+
+        avgdesc = AvgDescriptor()
         Feat.set_descriptormodel(avgdesc)
 
     ## Definition arrays
@@ -285,8 +287,9 @@ def test():
                                 characterizer=p[2], out_formatter=p[3],
                                 perturbations=p[5])
         ## Testing main functions
-        if p[0] < 3:
-            test_getitem(Feat)
+#        if p[0] < 3:
+#            test_getitem(Feat)
+        test_getitem(Feat)
 
     Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
     test_getitem(Feat_imp)

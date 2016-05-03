@@ -247,7 +247,7 @@ class Features:
         perturbations."""
         if type(self.features) == list:
             if type(idxs) == list:
-                feats_k = self._virtual_data_dict_dict(idxs, k, k_i, k_p)
+                feats_k = self._virtual_data_dict_list(idxs, k, k_i, k_p)
             elif type(idxs) == np.ndarray:
                 feats_k = self._virtual_data_dict_array(idxs, k, k_i, k_p)
         elif type(self.features) == np.ndarray:
@@ -273,13 +273,13 @@ class Features:
         print feats_k, self._characterizer
         feats_k = self._format_out(feats_k)
 
-        #### Testing #######################
-        print feats_k, type(feats_k)
-        if type(feats_k) == list:
-            pass
-        else:
-            assert(len(feats_k.shape) == 2)
-        ####################################
+#        #### Testing #######################
+#        print feats_k, type(feats_k)
+#        if type(feats_k) == list:
+#            pass
+#        else:
+#            assert(len(feats_k.shape) == 2)
+#        ####################################
         return feats_k
 
     def _get_relpos_k(self, k, d):
@@ -397,17 +397,64 @@ class ImplicitFeatures(Features):
         return feats_k
 
     def _virtual_data_dict_array(self, idxs, k, k_i, k_p):
-        raise NotImplementedError("Not adapted to non-array element features.")
+        """
+        * idxs: (ks, iss_i, nei)
+        * feats_k: [iss_i][nei]{features}
+        """
+        feats_k = self._virtual_data_dict_list(idxs, k, k_i, k_p)
+        return feats_k
 
-    def _virtual_data_dict_dict(self, idxs, k, k_i, k_p):
-        raise NotImplementedError("Not adapted to non-array element features.")
+    def _virtual_data_dict_list(self, idxs, k, k_i, k_p):
+        """
+        * idxs: (ks, iss_i, nei)
+        * feats_k: [iss_i][nei]{features}
+        """
+#        raise NotImplementedError("Not adapted to non-array element features.")
+        feats_k = []
+        print idxs, k, k_i, k_p
+        for i in range(len(idxs[k_i])):
+            # Perturbation indices
+            new_idxs = self._perturbators[k_p].apply2indice(idxs[k_i][i], k_i)
+            # Indices in bounds
+            yes_idxs = [j for j in range(len(new_idxs))
+                        if new_idxs[j] < len(self.features[0])]
+            # Features
+            feats_ki = []
+            for j in range(len(new_idxs)):
+                if j in yes_idxs:
+                    aux_feat = self._perturbators[k_p].\
+                        apply2features_ind(self.features, new_idxs[j], k_i)
+                    feats_ki.append(aux_feat)
+                else:
+                    feats_ki.append({})
+            feats_k.append(feats_ki)
+        return feats_k
 
     def _real_data_dict_array(self, idxs, k, k_i=0, k_p=0):
-        raise NotImplementedError("Not adapted to non-array element features.")
+        """
+        * idxs: (ks, iss_i, nei)
+        * feats_k: [iss_i][nei]{features}
+        """
+        feats_k = self._real_data_dict_list(idxs, k, k_i, k_p)
+        return feats_k
 
     def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
-        raise NotImplementedError("Not adapted to non-array element features.")
+        """
+        * idxs: (ks, iss_i, nei)
+        * feats_k: [iss_i][nei]{features}
+        """
+        feats_k = []
+        for i in range(len(idxs[k])):
+            feats_nei = []
+            for nei in range(len(idxs[k][i])):
+                feats_nei.append(self.features[idxs[k][i][nei]])
+            feats_k.append(feats_nei)
+        return feats_k
 
+    ###########################################################################
+
+    ################################# Getters #################################
+    ###########################################################################
     def _get_feats_k(self, k, idxs):
         """Interaction with the stored features."""
         ## Applying k map for perturbations
@@ -419,11 +466,6 @@ class ImplicitFeatures(Features):
         else:
             feats_k = self._get_virtual_data(idxs, k, k_i, k_p)
         return feats_k
-
-    ###########################################################################
-
-    ################################# Getters #################################
-    ###########################################################################
 
     ################################ Formatters ###############################
     ###########################################################################
@@ -546,7 +588,6 @@ class ExplicitFeatures(Features):
         * idxs: (ks, iss_i, nei)
         * feats_k: (iss_i, nei, features)
         """
-        print idxs, k, self.features.shape
         feats_k = self.features[:, :, k][idxs[k]]
         assert(len(feats_k.shape) == 3)
         return feats_k
@@ -591,16 +632,50 @@ class ExplicitFeatures(Features):
             feats_k.append(feats_ki)
         return feats_k
 
-    def _get_feats_k(self, k, idxs):
-        """Interaction with the stored features."""
-        ## Not perturbed k
-        feats_k = self._get_real_data(idxs, k)
-        return feats_k
+#    def _virtual_data_dict_array(self, idxs, k, k_i, k_p):
+#        """
+#        * idxs: (ks, iss_i, nei)
+#        * feats_k: [iss_i][nei]{features}
+#        """
+#        feats_k = self._virtual_data_dict_list(idxs, k, k_i, k_p)
+#        return feats_k
+#
+#    def _virtual_data_dict_list(self, idxs, k, k_i, k_p):
+#        """
+#        * idxs: (ks, iss_i, nei)
+#        * feats_k: [iss_i][nei]{features}
+#        """
+##        raise NotImplementedError("Not adapted to non-array element features.")
+#        feats_k = []
+#        print idxs, k, k_i, k_p
+#        for i in range(len(idxs[k_i])):
+#            # Perturbation indices
+#            new_idxs = self._perturbators[k_p].apply2indice(idxs[k_i][i], k_i)
+#            # Indices in bounds
+#            yes_idxs = [j for j in range(len(new_idxs))
+#                        if new_idxs[j] < len(self.features[0])]
+#            # Features
+#            feats_ki = []
+#            for j in range(len(new_idxs)):
+#                if j in yes_idxs:
+#                    aux_feat = self._perturbators[k_p].\
+#                        apply2features_ind(self.features[k_i], new_idxs[j], k_i)
+#                    feats_ki.append(aux_feat)
+#                else:
+#                    feats_ki.append({})
+#            feats_k.append(feats_ki)
+#        return feats_k
 
     ###########################################################################
 
     ################################# Getters #################################
     ###########################################################################
+    def _get_feats_k(self, k, idxs):
+        """Interaction with the stored features."""
+        ## Not perturbed k
+        ## TODO: Extension for perturbated
+        feats_k = self._get_real_data(idxs, k)
+        return feats_k
 
     ################################ Formatters ###############################
     ###########################################################################

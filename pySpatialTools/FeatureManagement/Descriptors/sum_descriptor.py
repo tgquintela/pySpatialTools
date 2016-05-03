@@ -106,7 +106,7 @@ class SumDescriptor(DescriptorModel):
             self._core_characterizer = characterizer_summer
         elif type_infeatures in ['array', 'ndarray']:
             self._core_characterizer = characterizer_summer_array
-        elif type_infeatures == 'listdict':
+        elif type_infeatures in ['list', 'listdict']:
             self._core_characterizer = characterizer_summer_listdict
         elif type_infeatures == 'listarray':
             self._core_characterizer = characterizer_summer_listarray
