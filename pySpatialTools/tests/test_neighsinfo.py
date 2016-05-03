@@ -10,6 +10,7 @@ it links to some db.
 import numpy as np
 from itertools import product
 from ..utils.util_classes import Neighs_Info
+from ..utils.util_classes.neighs_info import *
 
 
 def test():
@@ -21,6 +22,8 @@ def test():
 #                           'list_tuple', 'list_tuple1', 'list_tuple2',
 #                           'array', 'slice', 'tuple', 'tuple_int',
 #                           'tuple_slice', 'tuple_tuple', 'tuple_others']
+    joinpos = lambda x, y: x
+
     pos_ifdistance = [True, False, None]
     pos_constant_neighs = [True, False, None]
     pos_format_get_k_info = [None, "general", "default", "list", "integer"]
@@ -202,6 +205,26 @@ def test():
             neighs_info.reset_level(p[5])
             neighs_info.reset_structure(p[4])
         neighs_info_general.set(neighs_nfo, range(iss_len))
+
+        ## Testing joining
+        logi = neighs_info.ifdistance and neighs_info.sp_relative_pos is None
+        if np.random.random() < 0.1:
+            if logi or type(neighs_info.idxs) == slice:
+                try:
+                    boolean = False
+                    mode = ['and', 'or', 'xor'][np.random.randint(0, 3)]
+                    neighs_info.join_neighs(neighs_info, mode, joinpos)
+                    boolean = True
+                except:
+                    if boolean:
+                        raise Exception("It has to halt here.")
+            else:
+                neighs_info.join_neighs(neighs_info, 'and', joinpos)
+                neighs_info.join_neighs(neighs_info, 'or', joinpos)
+                neighs_info.join_neighs(neighs_info, 'xor', joinpos)
+                join_neighsinfo_AND_general(neighs_info, neighs_info, joinpos)
+                join_neighsinfo_OR_general(neighs_info, neighs_info, joinpos)
+                join_neighsinfo_XOR_general(neighs_info, neighs_info, joinpos)
 
         k += 1
 #        print '-'*20, k
