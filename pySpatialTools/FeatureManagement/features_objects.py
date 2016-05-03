@@ -115,7 +115,7 @@ class Features:
         if type(k) != list:
             raise TypeError("Incorrect type of k perturbation index.")
         # Retrive features
-        print ' '*50, i, k, d, type(i), type(k)
+#        print ' '*50, i, k, d, type(i), type(k)
         feats = self._retrieve_feats(i, k, d)
         return feats
 
@@ -229,7 +229,6 @@ class Features:
     ###########################################################################
     def _real_data_general(self, idxs, k, k_i=0, k_p=0):
         """General interaction with the real data."""
-        print type(self.features), type(idxs), idxs
         if type(self.features) == list:
             if type(idxs) == list:
                 feats_k = self._real_data_dict_list(idxs, k, k_i, k_p)
@@ -262,15 +261,15 @@ class Features:
     def _get_characs_k(self, k, idxs, d):
         """Getting characs with array idxs."""
         ## Interaction with the features stored
-        print 'characs_inputs', k, idxs, d
+#        print 'characs_inputs', k, idxs, d
         feats_k = self._get_feats_k(k, idxs)
         d_k = self._get_relpos_k(k, d)
         ## Computing characterizers
-        print d
-        print 'characterizer_inputs', feats_k, d_k, self._out
+#        print d
+#        print 'characterizer_inputs', feats_k, d_k, self._out
         feats_k = self._characterizer(feats_k, d_k)
         ## Formatting result
-        print feats_k, self._characterizer
+#        print feats_k, self._characterizer
         feats_k = self._format_out(feats_k)
 
 #        #### Testing #######################
@@ -346,7 +345,7 @@ class ImplicitFeatures(Features):
         """
         nfeats = self.features.shape[1]
         sh = idxs.shape
-        print idxs, sh
+#        print idxs, sh
         # Compute new indices by perturbating them
         new_idxs = self._perturbators[k_p].apply2indice(idxs[k], k_i)
         # Get rid of the non correct indices
@@ -380,7 +379,7 @@ class ImplicitFeatures(Features):
         WARNiNG: k_i in idxs
         """
         feats_k = []
-        print idxs, k, k_i, k_p
+#        print idxs, k, k_i, k_p
         for i in range(len(idxs[k_i])):
             # Perturbation indices
             new_idxs = self._perturbators[k_p].apply2indice(idxs[k_i][i], k_i)
@@ -409,9 +408,7 @@ class ImplicitFeatures(Features):
         * idxs: (ks, iss_i, nei)
         * feats_k: [iss_i][nei]{features}
         """
-#        raise NotImplementedError("Not adapted to non-array element features.")
         feats_k = []
-        print idxs, k, k_i, k_p
         for i in range(len(idxs[k_i])):
             # Perturbation indices
             new_idxs = self._perturbators[k_p].apply2indice(idxs[k_i][i], k_i)
@@ -645,7 +642,6 @@ class ExplicitFeatures(Features):
 #        * idxs: (ks, iss_i, nei)
 #        * feats_k: [iss_i][nei]{features}
 #        """
-##        raise NotImplementedError("Not adapted to non-array element features.")
 #        feats_k = []
 #        print idxs, k, k_i, k_p
 #        for i in range(len(idxs[k_i])):
@@ -659,7 +655,8 @@ class ExplicitFeatures(Features):
 #            for j in range(len(new_idxs)):
 #                if j in yes_idxs:
 #                    aux_feat = self._perturbators[k_p].\
-#                        apply2features_ind(self.features[k_i], new_idxs[j], k_i)
+#                        apply2features_ind(self.features[k_p], new_idxs[j],
+#                        k_i)
 #                    feats_ki.append(aux_feat)
 #                else:
 #                    feats_ki.append({})
