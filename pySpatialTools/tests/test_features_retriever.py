@@ -223,6 +223,18 @@ def test():
         ## Testing main functions
         test_getitem(Feat)
 
+    ## Particular cases
+    try:
+        boolean = False
+        names = [str(i) for i in range(len(aggcontfeats_ar0[0])+1)]
+        ExplicitFeatures(aggcontfeats_ar0, names=names, indices=p[4],
+                         characterizer=p[2], out_formatter=p[3],
+                         nullvalue=p[1])
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
 #    Feat = ExplicitFeatures(aggcontfeats_ar0)
 #    test_getitem(Feat)
 #    Feat = ExplicitFeatures(aggcatfeats_ar0)
@@ -288,6 +300,32 @@ def test():
 #    test_getitem(Feat_imp)
     Feat_imp = ImplicitFeatures(catfeats_dict, perturbation)
 #    test_getitem(Feat_imp)
+
+    try:
+        boolean = False
+        Feat = ImplicitFeatures(contfeats_ar0, None)
+        Feat._map_perturb(-1)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat = ImplicitFeatures(contfeats_ar0, perturbation)
+        Feat._map_perturb(-1)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat = ImplicitFeatures(contfeats_ar0, perturbation)
+        Feat._map_perturb(1000)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
 
 #    Feat0 = ImplicitFeatures(features0, perturbation)
 #    Feat1 = ImplicitFeatures(features1, perturbation)
