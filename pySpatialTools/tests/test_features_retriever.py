@@ -103,10 +103,27 @@ def test():
         Feat[:]
         Feat[((0, 0), 0)]
         Feat[(([0], [0]), [0])]
+        if Feat.k_perturb:
+            print 'x'*100, Feat.k_perturb, Feat.shape
+            Feat[(([[0], [0]], [[0], [0]]), [0, 1])]
         Feat[[0, 4, 5]]
         try:
             boolean = False
             Feat[-1]
+            boolean = True
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
+        try:
+            boolean = False
+            feats = Feat._retrieve_feats([[[0]]], -1, None)
+            boolean = True
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
+        try:
+            boolean = False
+            Feat._retrieve_feats([[[0]]], 10000, None)
             boolean = True
         except:
             if boolean:
@@ -258,7 +275,6 @@ def test():
         ## Testing main functions
         if p[0] < 3:
             test_getitem(Feat)
-
 
     Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
     test_getitem(Feat_imp)

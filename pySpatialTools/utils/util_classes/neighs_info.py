@@ -707,8 +707,9 @@ class Neighs_Info:
         if self.staticneighs:
             self.idxs = np.array([[key]]*len(self.iss))
         else:
-            len_ks = 1 if self.ks is None else len(self.ks)
-            self.ks = range(len_ks) if self.ks is None else self.ks
+            if self.ks is None:
+                self.ks = range(1)
+            len_ks = len(self.ks)
             self.idxs = np.array([[[key]]*len(self.iss)]*len_ks)
         self._constant_neighs = True
         self._setted = True
@@ -863,7 +864,7 @@ class Neighs_Info:
         """
         * [neighs_info{array-like form}, ...] [ks][iss][neighs]
         """
-        self.ks = list(range(len(key)))
+        self.ks = list(range(len(key))) if self.ks is None else self.ks
         if self._constant_neighs:
             self.idxs = np.array(key)
         else:
@@ -1127,7 +1128,10 @@ class Neighs_Info:
 
     def _default_get_k(self, k=None):
         """Default get ks."""
-        return [0]
+        if self.ks is None:
+            return [0]
+        else:
+            return self.ks
 
     def _integer_get_k(self, k):
         """Integer get k."""
