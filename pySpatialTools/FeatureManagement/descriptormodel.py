@@ -24,13 +24,13 @@ class DescriptorModel:
 
     def complete_desc_i(self, i, neighs_info, desc_i, desc_neighs, vals_i):
         """Dummy completion for general abstract class."""
+#        print desc_neighs, len(desc_neighs), len(vals_i), vals_i
+#        if type(desc_neighs) == np.ndarray:
+#            print desc_neighs.shape, vals_i, i
+#            assert(len(desc_neighs.shape) == 3)
+#        elif type(desc_neighs) == list:
+#            assert(type(desc_neighs[0][0]) == dict)
         desc = []
-        print desc_neighs, len(desc_neighs), len(vals_i), vals_i
-        if type(desc_neighs) == np.ndarray:
-            print desc_neighs.shape, vals_i, i
-            assert(len(desc_neighs.shape) == 3)
-        elif type(desc_neighs) == list:
-            assert(type(desc_neighs[0][0]) == dict)
         for k in xrange(len(vals_i)):
             desc.append(self.relative_descriptors(i, neighs_info, desc_i[k],
                                                   desc_neighs[k], vals_i[k]))
@@ -66,6 +66,28 @@ class DescriptorModel:
     ###########################################################################
     ########################## Formatter functions ############################
     ###########################################################################
+
+
+class DummyDescriptor(DescriptorModel):
+    """Dummy descriptor model created for testing purposes."""
+
+    name_desc = "Dummy descriptor"
+
+    def __init__(self):
+        ## Check descriptormodel
+        self._checker_descriptormodel()
+
+    def compute_characs(self, pointfeats, point_pos):
+        """From [iss][nei][feats] to [iss][feats]"""
+        return [pfeats[0] for pfeats in pointfeats]
+
+    def reducer(self, aggdescriptors_idxs, point_aggpos):
+        """From [iss][nei][feats] to [iss][feats]"""
+        return self.compute_characs(aggdescriptors_idxs, point_aggpos)
+
+    def aggdescriptor(self, pointfeats, point_pos):
+        """From [iss][nei][feats] to [iss][feats]"""
+        return self.compute_characs(pointfeats, point_pos)
 
 
 class GeneralDescriptor(DescriptorModel):

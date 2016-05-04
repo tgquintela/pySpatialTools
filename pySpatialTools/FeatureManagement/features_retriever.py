@@ -47,11 +47,13 @@ class FeaturesManager:
     def _initialization(self):
         """Initialization of mutable class parameters."""
         ## Main objects to manage
-        self.descriptormodel = None
+        self.descriptormodels = []
         self.features = []
+        self.mode = None
         ## IO information
-        self._variables = {}
-        self.featuresnames = []
+        self._variables = {}       ## TO CHANGE
+        self.featuresnames = []    ## TO CHANGE
+        self.out_features = []
         self.k_perturb = 0
         self._out = 'ndarray'  # dict
         ## IO managers
@@ -59,14 +61,17 @@ class FeaturesManager:
         self._maps_output = None
         self._maps_vals_i = None
 
-    def __init__(self, features_objects, descriptormodel, maps_input=None,
-                 maps_output=None, maps_vals_i=None, out=None):
+    def __init__(self, features_objects, mode=None, maps_input=None,
+                 maps_output=None, maps_vals_i=None, descriptormodels=None):
         self._initialization()
-        out = out if out in ['ndarray', 'dict'] else None
-        self._out = self._out if out is None else out
-        self._format_features(features_objects)
+#        out = out if out in ['ndarray', 'dict'] else None
+#        self._out = self._out if out is None else out
         self._format_maps(maps_input, maps_output, maps_vals_i)
-        self._format_descriptormodel(descriptormodel)
+        self._format_features(features_objects)
+        self._format_mode(mode)
+        self._format_outfeatures()
+        self._format_result_building()
+        self._format_descriptormodel(descriptormodels)
 
     def __getitem__(self, i_feat):
         if i_feat < 0 or i_feat >= len(self.features):
@@ -78,7 +83,9 @@ class FeaturesManager:
 
     @property
     def shape(self):
-        return self.features[0].shape
+        """As a mapper its shapes represents the size of the input and the
+        output stored in maps_vals_i."""
+        return self._maps_vals_i.n_in, self._maps_vals_i.n_out
 
     @property
     def nfeats(self):
@@ -86,6 +93,7 @@ class FeaturesManager:
 
     ################################ Formatters ###############################
     ###########################################################################
+    ############################## Format features ############################
     def _format_features(self, features_objects):
         """Formatter of features."""
         ## 0. Format to list mode
@@ -96,26 +104,19 @@ class FeaturesManager:
         nfeat = len(features_objects)
         for i in range(nfeat):
             features_objects[i] = self._auxformat_features(features_objects[i])
+        self.features = features_objects
         ## 1. Check input
         if nfeat == 0:
             msg = "Any feature object is input in the featureRetriever."
             raise TypeError(msg)
-        ## 2. Get main global information from feature objects
-        k_perturb = [features_objects[i].k_perturb for i in range(nfeat)]
-        vars_o = [set(features_objects[i].variables) for i in range(nfeat)]
-        k_rei_bool = [k_perturb[i] == k_perturb[0] for i in range(nfeat)]
-        ## 3. Check class parameters
+        ## 2. Format kperturb
+        kp = self[0].k_perturb
+        k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
         # Check k perturbations
         if not all(k_rei_bool):
             msg = "Not all the feature objects have the same perturbations."
             raise Exception(msg)
-        # Check variables
-        ## 4. Storing variables
-        self._variables = vars_o[0]
-        self.k_perturb = k_perturb[0]
-        self.features = features_objects
-        for i in range(nfeat):
-            self.features[i]._out = self._out
+        self.k_perturb = kp
 
     def _auxformat_features(self, features):
         """Format individual features information."""
@@ -133,34 +134,72 @@ class FeaturesManager:
                 raise TypeError("Incorrect features format.")
         return features
 
-    def _format_descriptormodel(self, descriptormodel):
-        """Formatter of the descriptormodel."""
-        ## Check descriptormodel
-        if descriptormodel is None:
-            raise TypeError("Incorrect descriptormodel type.")
-        ## Outfeatures management
-        out_features = []
-        for i in range(len(self)):
-            out_i = compute_featuresnames(descriptormodel, self.features[i])
-            out_features.append(out_i)
-        logi = all([out == out_features[0] for out in out_features])
-        if logi:
-            self.featuresnames = out_features[0]
-            for i in range(len(self)):
-                self[i].out_features = out_features[0]
+    def _format_descriptormodel(self, descriptormodels=None):
+        """Formatter of the descriptormodels."""
+        if descriptormodels is None:
+            self.descriptormodels =\
+                [lambda i, neighs_info, desc_i, desc_neigh, vals_i: desc_neigh]
         else:
-            raise Exception("Not the same output features.")
-        ## Set descriptormodel
-        # Set global information (using first features as default)
-        descriptormodel.set_global_info(self.features[0].features)
-        # Link to this class
-        self.descriptormodel = descriptormodel
-        for i in range(len(self)):
-            self.features[i].set_descriptormodel(descriptormodel,
-                                                 self.featuresnames)
-        ## Set output
-        self._format_result_building(descriptormodel)
+            if type(descriptormodels) != list:
+                descriptormodels = [descriptormodels]
+            self.descriptormodels += descriptormodels
 
+    def _format_result_building(self):
+        ## Size of the possible results.
+        n_vals_i = self._maps_vals_i.n_out
+        n_feats = len(self.out_features)
+        if self._out == 'ndarray':
+            assert(self.mode in ['sequential', 'parallel'])
+            if self.mode == 'sequential':
+                ## Format initialization descriptors
+                def initialization_desc(self):
+                    descriptors = []
+                    for i in range(len(self)):
+                        aux_i = np.ones((1, len(self[i].out_features)))
+                        descriptors.append(aux_i * self[i]._nullvalue)
+                    descriptors = np.concatenate(descriptors, axis=1)
+                    return descriptors
+                # Set initialization descriptors
+                self.initialization_desc = initialization_desc
+                ## Pure Array
+                if n_vals_i is not None:
+                    shape = (n_vals_i, n_feats, self.k_perturb+1)
+                    # Set initialization output descriptors
+                    self.initialization_output = lambda: np.zeros(shape)
+                    self._join_descriptors = lambda x: np.concatenate(x)
+                    ## Option to externally set add2result and to_complete
+                    self.add2result = sum_addresult_function
+                    self.to_complete_measure = lambda X: X
+                ## List array measure
+                else:
+                    shape = (n_vals_i, n_feats, self.k_perturb+1)
+                    # Set initialization output descriptors
+                    self.initialization_output = lambda: []  ## TODO: All dimensions
+                    self._join_descriptors = lambda x: np.concatenate(x)
+                    ## Option to externally set add2result and to_complete
+                    self.add2result = append_addresult_function
+                    self.to_complete_measure = lambda X: np.concatenate(X)
+            else:
+                self.initialization_desc = lambda: [{}]
+                if n_vals_i is not None:
+                    ## Init global result
+                    self.initialization_output =\
+                        lambda: [[[] for i in range(n_vals_i)]
+                                 for k in range(self.k_perturb+1)]
+                    self._join_descriptors = lambda x: x
+                    ## Adding result (TODO: External set option)
+                    self.add2result = append_addresult_function
+                    self.to_complete_measure = sparse_dict_completer
+                else:
+                    ## Init global result
+                    self.initialization_output =\
+                        lambda: [[[], []] for k in range(self.k_perturb+1)]
+                    self._join_descriptors = lambda x: x
+                    ## Adding result (TODO: External set option)
+                    self.add2result = replacelist_addresult_function
+                    self.to_complete_measure = sparse_dict_completer_unknown
+
+    ############################## Format IO maps #############################
     def _format_map_vals_i(self, sp_typemodel):
         """Format mapper to indicate external val_i to aggregate result."""
         if sp_typemodel is not None:
@@ -180,81 +219,71 @@ class FeaturesManager:
         else:
             if type(maps_input).__name__ == 'function':
                 self._maps_input = [lambda i_info, k=0: maps_input(i_info, k)]
-            else:
-                self._maps_input = [maps_input]
+#            else:
+#                self._maps_input = [maps_input]
         ## 2. Format output maps (TODO)
         if maps_output is None:
             self._maps_output = lambda self, feats: feats
         else:
             if type(maps_output).__name__ == 'function':
                 self._maps_output = lambda feats: maps_output(self, feats)
-            else:
-                self._maps_output = maps_output
+#            else:
+#                self._maps_output = maps_output
         self._format_map_vals_i(maps_vals_i)
 
-    def _format_result_building(self, descriptormodel):
-        """Format how to build and aggregate results."""
-        "TODO: Dict-array."
-        "TODO: null_value."
-        ## Size of the possible results.
-        n_vals_i = self._maps_vals_i.n_out
-        n_feats = self.nfeats
-        ## Initialization features
-        if self._out == 'ndarray':
-            null_value = self.features[0]._nullvalue
-            self.initialization_desc =\
-                lambda: np.ones((1, n_feats))*null_value
+    ############################ Format mode utils ############################
+    def _format_mode(self, mode=None):
+        """Format which mode is going to be this manager (sequential or
+        parallel). In sequential the features are options between which we
+        have to choose in order to get the outfeatures. In parallel we have to
+        use everyone and join the results into a final result.
+        """
+        ## Format basic modes
+        if mode is None:
+            ## If open out_features
+            if self[0].out_features is None:
+                self._out = 'dict'
+                logi = [self[i].out_features is None for i in range(len(self))]
+                assert(all(logi))
+                self.out_features = None
+                self.mode = None
+            else:
+                self._out = 'ndarray'
+                outs = self[0].out_features
+                logi = [self[i].out_features == outs for i in range(len(self))]
+                if all(logi):
+                    n_f = len(self)
+                    nulls = self[0]._nullvalue
+                    assert([self[i]._nullvalue == nulls for i in range(n_f)])
+                    self.mode = 'sequential'
+                else:
+                    self.mode = 'parallel'
         else:
-            # Empty intialization descriptor.
-            # It is composed by free dictionary length
-            self.initialization_desc = lambda: {}
-        ## Global construction of result
-        if n_vals_i is not None and self._out == 'ndarray':
-            shape = (n_vals_i, n_feats, self.k_perturb + 1)
-            ## Init global result
-            self.initialization_output = lambda: np.zeros(shape)
-            ## Adding result (Probably it should be decided flexible)
-            self.add2result = sum_addresult_function
-            self._join_descriptors = lambda x: np.concatenate(x)
-            self.to_complete_measure =\
-                lambda X: descriptormodel.to_complete_measure(X)
-        elif n_vals_i is not None and self._out == 'dict':
-            ## Init global result
-            self.initialization_output =\
-                lambda: [[[] for i in range(n_vals_i)]
-                         for k in range(self.k_perturb+1)]
-            ## Adding result
-            self.add2result = append_addresult_function
-            self._join_descriptors = lambda x: x
-            self.to_complete_measure = sparse_dict_completer
-        else:
-            ## Init global result
-            self.initialization_output =\
-                lambda: [[[], []] for k in range(self.k_perturb+1)]
-            ## Adding result
-            self.add2result = replacelist_addresult_function
-            self._join_descriptors = lambda x: x
-            self.to_complete_measure = sparse_dict_completer_unknown
+            assert(mode in ['sequential', 'parallel'])
+            self.mode = mode
 
-#            flag = 'sparse_dict_completer' in \
-#                str(descriptormodel.to_complete_measure) or \
-#                'replacelist_addresult_function' in \
-#                str(descriptormodel._defult_add2result)
-#            if not flag:
-#                ## Init global result
-#                self.initialization_output =\
-#                    lambda: [[] for k in range(self.k_perturb+1)]
-#                ## Adding result
-#                self.add2result = append_addresult_function
-#            else:
-#                ## Init global result
-#                self.initialization_output =\
-#                    lambda: [[[], []] for k in range(self.k_perturb+1)]
-#                ## Adding result
-#                self.add2result = replacelist_addresult_function
-#
-#        self.to_complete_measure =\
-#            lambda X: descriptormodel.to_complete_measure(X)
+    def _format_outfeatures(self):
+        """Format the output features of this manager."""
+        ## If open out_features
+        logi = [self[i].out_features for i in range(len(self))]
+        if self[0].out_features is None:
+            logi = [self[i].out_features is None for i in range(len(self))]
+            assert(all(logi))
+            self.out_features = None
+        ## If close out_features
+        else:
+            ## If mode parallel
+            if self.mode == 'parallel':
+                outfeatures = []
+                for i in range(len(self)):
+                    outfeatures.append(self[i].out_features)
+                self.out_features = outfeatures
+            ## If mode sequential
+            elif self.mode == 'sequential':
+                outs = self[0].out_features
+                logi = [self[i].out_features == outs for i in range(len(self))]
+                assert(all(logi))
+                self.out_features = outs
 
     ################################# Setters #################################
     ###########################################################################
@@ -278,7 +307,7 @@ class FeaturesManager:
         sh = neighs_info.shape
         assert(len(i_input) == sh[0] and len(ks) == sh[2])
         ## 1. Prepare selectors
-        t_feat_in, t_feat_out = self._get_typefeats(feat_selectors)
+        t_feat_in, t_feat_out, t_feat_des = self._get_typefeats(feat_selectors)
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
@@ -287,10 +316,12 @@ class FeaturesManager:
         vals_i = self._get_vals_i(i, ks)
         print '+'*10, vals_i, desc_neigh, desc_i
 
-        ## 4. Complete descriptors
-        descriptors =\
-            self.descriptormodel.complete_desc_i(i, neighs_info, desc_i,
-                                                 desc_neigh, vals_i)
+        ## 4. Complete descriptors (TODO)
+        descriptors = self.complete_desc_i(i, neighs_info, desc_i, desc_neigh,
+                                           vals_i, t_feat_des)
+#        descriptors =\
+#            self.descriptormodel.complete_desc_i(i, neighs_info, desc_i,
+#                                                 desc_neigh, vals_i)
         ## 5. Join descriptors
         descriptors = self._join_descriptors(descriptors)
 
@@ -345,15 +376,27 @@ class FeaturesManager:
         assert(len(np.array([i]).ravel()) == vals_i.shape[1])
         return vals_i
 
+    def complete_desc_i(self, i, neighs_info, desc_i, desc_neigh, vals_i,
+                        t_feat_desc):
+        """Complete descriptors by interaction of point features and
+        neighbourhood features."""
+        if t_feat_desc[0]:
+            descriptors = self.features[t_feat_desc[1]].\
+                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
+        else:
+            descriptors = self.descriptormodels[t_feat_desc[1]].\
+                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
+        return descriptors
+
     def _get_typefeats(self, typefeats):
         """Format properly typefeats selector information."""
         if typefeats is None or type(typefeats) != tuple:
-            typefeats = (0, 0, 0, 0)
+            typefeats = (0, 0, 0, 0, 0, 0)
         elif '__len__' not in dir(typefeats):
-            typefeats = (0, 0, 0, 0)
-        elif len(typefeats) != 4:
-            typefeats = (0, 0, 0, 0)
-        return typefeats[:2], typefeats[2:]
+            typefeats = (0, 0, 0, 0, 0, 0)
+        elif len(typefeats) != 6:
+            typefeats = (0, 0, 0, 0, 0, 0)
+        return typefeats[:2], typefeats[2:4], typefeats[4:]
 
     ######################## Perturbation management ##########################
     ###########################################################################

@@ -28,8 +28,8 @@ class Features:
     def _global_initialization(self):
         ## Main attributes
         self.features = None
-        self.variables = None
-        self.out_features = None
+        self.variables = []
+        self.out_features = []
         self._setdescriptor = False
         ## Other attributes
         self._nullvalue = 0
@@ -176,7 +176,11 @@ class Features:
         elif self.typefeat == 'explicit':
             self._format_characterizer(descriptormodel.reducer,
                                        descriptormodel._out_formatter)
-        self._format_variables(featuresnames)
+        if featuresnames:
+            self._format_variables(featuresnames)
+        else:
+            featuresnames = descriptormodel._f_default_names(self.features)
+            self._format_variables(featuresnames)
         self._setdescriptor = True
 
     ################################ Formatters ###############################
@@ -477,14 +481,17 @@ class ImplicitFeatures(Features):
             assert(type(features) == list)
             assert(type(features[0]) == dict)
             self.features = features
-        self.out_features = out_features
+        if out_features or type(self.features) == list:
+            self.out_features = out_features
+        else:
+            self.out_features = list(range(len(self.features[0])))
 
     def _format_variables(self, names):
         """Format variables."""
         if names:
             if type(self.features) == np.ndarray:
                 assert(len(names) == len(self.features[0]))
-            self.variables = names
+                self.variables = names
         else:
             ## TODO: Call to featurenames default computers
             if type(self.features) == np.ndarray:

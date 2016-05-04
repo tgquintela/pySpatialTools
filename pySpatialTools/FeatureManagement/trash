@@ -1,6 +1,101 @@
 
-###### 2016-04-07 FeatureObjects
 
+###### 2016-05-04 FeatureManager
+################################
+    def _format_descriptormodel(self, descriptormodel):
+        """Formatter of the descriptormodel."""
+#        ## Check descriptormodel
+#        if descriptormodel is None:
+#            raise TypeError("Incorrect descriptormodel type.")
+#        ## Outfeatures management
+#        out_features = []
+#        for i in range(len(self)):
+#            out_i = compute_featuresnames(descriptormodel, self.features[i])
+#            out_features.append(out_i)
+#        logi = all([out == out_features[0] for out in out_features])
+#        if logi:
+#            self.featuresnames = out_features[0]
+#            for i in range(len(self)):
+#                self[i].out_features = out_features[0]
+#        else:
+#            raise Exception("Not the same output features.")
+        ## Set descriptormodel
+        # Set global information (using first features as default)
+#        descriptormodel.set_global_info(self.features[0].features)
+        # Link to this class
+#        self.descriptormodel = descriptormodel
+#        for i in range(len(self)):
+#            self.features[i].set_descriptormodel(descriptormodel,
+#                                                 self.featuresnames)
+        ## Set output
+#        self._format_result_building(descriptormodel)
+
+#    def _format_result_building(self, descriptormodel):
+#        """Format how to build and aggregate results."""
+#        "TODO: Dict-array."
+#        "TODO: null_value."
+#        ## Size of the possible results.
+#        n_vals_i = self._maps_vals_i.n_out
+#        n_feats = self.nfeats
+#        ## Initialization features
+#        if self._out == 'ndarray':
+#            null_value = self.features[0]._nullvalue
+#            self.initialization_desc =\
+#                lambda: np.ones((1, n_feats))*null_value
+#        else:
+#            # Empty intialization descriptor.
+#            # It is composed by free dictionary length
+#            self.initialization_desc = lambda: {}
+#        ## Global construction of result
+#        if n_vals_i is not None and self._out == 'ndarray':
+#            shape = (n_vals_i, n_feats, self.k_perturb + 1)
+#            ## Init global result
+#            self.initialization_output = lambda: np.zeros(shape)
+#            ## Adding result (Probably it should be decided flexible)
+#            self.add2result = sum_addresult_function
+#            self._join_descriptors = lambda x: np.concatenate(x)
+#            self.to_complete_measure =\
+#                lambda X: descriptormodel.to_complete_measure(X)
+#        elif n_vals_i is not None and self._out == 'dict':
+#            ## Init global result
+#            self.initialization_output =\
+#                lambda: [[[] for i in range(n_vals_i)]
+#                         for k in range(self.k_perturb+1)]
+#            ## Adding result
+#            self.add2result = append_addresult_function
+#            self._join_descriptors = lambda x: x
+#            self.to_complete_measure = sparse_dict_completer
+#        else:
+#            ## Init global result
+#            self.initialization_output =\
+#                lambda: [[[], []] for k in range(self.k_perturb+1)]
+#            ## Adding result
+#            self.add2result = replacelist_addresult_function
+#            self._join_descriptors = lambda x: x
+#            self.to_complete_measure = sparse_dict_completer_unknown
+
+#            flag = 'sparse_dict_completer' in \
+#                str(descriptormodel.to_complete_measure) or \
+#                'replacelist_addresult_function' in \
+#                str(descriptormodel._defult_add2result)
+#            if not flag:
+#                ## Init global result
+#                self.initialization_output =\
+#                    lambda: [[] for k in range(self.k_perturb+1)]
+#                ## Adding result
+#                self.add2result = append_addresult_function
+#            else:
+#                ## Init global result
+#                self.initialization_output =\
+#                    lambda: [[[], []] for k in range(self.k_perturb+1)]
+#                ## Adding result
+#                self.add2result = replacelist_addresult_function
+#
+#        self.to_complete_measure =\
+#            lambda X: descriptormodel.to_complete_measure(X)
+
+###### 2016-04-07 FeatureObjects
+################################
 #    def _get_characs_k_array(self, k, idxs, d):
 #        """Getting characs with array idxs."""
 #        ## Interaction with the features stored

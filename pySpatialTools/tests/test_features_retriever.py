@@ -54,6 +54,12 @@ def test():
         names = list(set(names))
         return names
 
+    def compute_featurenames(features):
+        names = []
+        if type(features) == np.ndarray:
+            names = [str(e) for e in range(len(features[0]))]
+        return names
+
     class DummyDesc:
         def set_functions(self, typefeatures, outformat):
             pass
@@ -63,18 +69,21 @@ def test():
             self.compute_characs = None
             self._out_formatter = None
             self.reducer = None
+            self._f_default_names = compute_featurenames
 
     class Dummy2Desc_exp(DummyDesc):
         def __init__(self):
             self.compute_characs = lambda x, d: [e[0] for e in x]
             self._out_formatter = lambda x, y1, y2, y3: x
             self.reducer = None
+            self._f_default_names = compute_featurenames
 
     class Dummy2Desc_imp(DummyDesc):
         def __init__(self):
             self.compute_characs = lambda x, d: np.array([e[0] for e in x])
             self._out_formatter = lambda x, y1, y2, y3: x
             self.reducer = None
+            self._f_default_names = compute_featurenames
 
     ## Possible descriptormodels to test
     avgdesc = AvgDescriptor()
@@ -340,6 +349,59 @@ def test():
     ##########################
     #### FeatureRetriever testing
 
+    ## Impossible cases
+    try:
+        boolean = False
+        fm = FeaturesManager(None, None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        avgdesc = AvgDescriptor()
+        fm = FeaturesManager([], avgdesc)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
+        fm = FeaturesManager(Feat_imp, None)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
 
+    feats0 = np.random.random(100)
+    feats1 = np.random.random((100, 1))
+    feats2 = np.random.random((100, 1, 1))
+    Feat_imp = ImplicitFeatures(feats1)
+    avgdesc = AvgDescriptor()
 
+    pos_feats = [feats0, feats1, feats2, Feat_imp, [feats2, Feat_imp]]
 
+    pos_mapvals_i = [None, ('matrix', 100, 20)]
+    pos_map_in = [None, lambda i_info, k: i_info]
+    pos_map_out = [None, lambda self, feats: feats]
+    pos_mode = [None, 'parallel', 'sequential']
+    pos_desc = [None, avgdesc]
+
+    possibilities = [pos_feats, pos_mapvals_i, pos_map_in, pos_map_out,
+                     pos_mode, pos_desc]
+
+    ## Combinations
+    for p in product(*possibilities):
+#        ## Random exploration of parameters
+#        feats = pos_feats[np.random.randint(0, len(pos_feats))]
+#        m_input = pos_map_in[np.random.randint(0, len(pos_map_in))]
+#        m_out = pos_map_out[np.random.randint(0, len(pos_map_out))]
+#        m_vals_i = pos_mapvals_i[np.random.randint(0, len(pos_mapvals_i))]
+#        mode = pos_mode[np.random.randint(0, len(pos_mode))]
+#        desc = pos_desc[np.random.randint(0, len(pos_desc))]
+        ## Exhaustive exploration of parameters
+        feats, m_input, m_out, m_vals_i, mode, desc = p
+        ## Instantiation
+        FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
+                        maps_vals_i=m_vals_i, mode=mode, descriptormodels=desc)
