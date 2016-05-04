@@ -401,6 +401,7 @@ def test():
     feats1 = np.random.random((100, 1))
     feats2 = np.random.random((100, 1, 1))
     Feat_imp = ImplicitFeatures(feats1)
+    Feat_imp2 = ImplicitFeatures(np.random.random((100, 2)), names=[3, 4])
     Feat_exp = ExplicitFeatures(aggcatfeats_dict)
     avgdesc = AvgDescriptor()
 
@@ -442,7 +443,7 @@ def test():
         fm.set_map_vals_i(m_vals_i)
         # Strange cases
         if mode is None:
-            FeaturesManager([feats2, Feat_imp], mode=mode)
+            FeaturesManager([Feat_imp2, Feat_imp], mode=mode)
 
     ## Impossible function cases
     try:

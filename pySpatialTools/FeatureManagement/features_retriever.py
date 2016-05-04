@@ -267,11 +267,12 @@ class FeaturesManager:
     def _format_outfeatures(self):
         """Format the output features of this manager."""
         ## If open out_features
-        logi = [self[i].out_features for i in range(len(self))]
-        if self[0].out_features is None:
-            logi = [self[i].out_features is None for i in range(len(self))]
+        logi = [type(self[i].out_features) == list for i in range(len(self))]
+        assert(all(logi))
+        if len(self[0].out_features) == 0:
+            logi = [len(self[i].out_features) == 0 for i in range(len(self))]
             assert(all(logi))
-            self.out_features = None
+            self.out_features = []
         ## If close out_features
         else:
             ## If mode parallel

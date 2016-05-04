@@ -10,6 +10,44 @@ import numpy as np
 from features_objects import ExplicitFeatures
 
 
+#
+#def create_aggfeatures(discretization, regmetric, features, descriptormodel):
+#    """Create aggregated features.
+#    """
+#    ### 0. Create Aggregator sp_model
+#    ## 00. Create map_vals_i and data_input
+#    if type(discretization) == tuple:
+#        locs, discretizor = discretization
+#        regs = discretizor.discretize(locs)
+#    else:
+#        regs = discretization
+#    u_regs = np.unique(regs)
+#    u_regs = np.array([u_regs[i] for i in range(len(u_regs))
+#                       if u_regs[i] in regmetric.data_input])
+#    u_regs = u_regs.reshape((len(u_regs), 1))
+#    # Map_vals_i (TODO)
+#
+#    # Map_output
+#    def m_out(neighs_info):
+#        outs = np.where(regs == x)[0]
+##        if len(outs) == 
+#
+#    ## 01. Join Retriever with the pieces
+#
+#    ## 02. Assert and format features retriever
+#    # tuple features+pars+descriptormodel
+#    # tuple Features+descriptormodel
+#    # object Features
+#
+#    ## 03. Create Sp_descmodel
+#
+#    ### 1. Compute measure with sp_descmodel
+#
+#    ### 2. Prepare output (characterizer?)
+#    agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
+#    return agg
+
+
 def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     """Create aggregated features.
     """
