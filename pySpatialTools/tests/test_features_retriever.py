@@ -389,7 +389,6 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-
     try:
         boolean = False
         fm = FeaturesManager(lambda x: x)
@@ -397,7 +396,6 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-
 
     feats0 = np.random.random(100)
     feats1 = np.random.random((100, 1))
@@ -440,6 +438,10 @@ def test():
         fm.set_map_vals_i(m_vals_i)
         fm.initialization_desc()
         fm.initialization_output()
+        fm.set_map_vals_i(m_vals_i)
+        # Strange cases
+        if mode is None:
+            FeaturesManager([feats2, Feat_imp], mode=mode)
 
     ## Impossible function cases
     try:

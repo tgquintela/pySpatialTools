@@ -131,8 +131,8 @@ def create_mapper_vals_i(type_sp='correlation', features_out=None):
             assert(np.sum(mapper == (-1)) == 0)
             n_in = len(features_out)
             n_out = len(np.unique(features_out).ravel())
-        elif type(features_out) not in [int, slice, np.ndarray]:
-            n_out = len(features_out)
+#        elif type(features_out) not in [int, slice, np.ndarray]:
+#            n_out = len(features_out)
 
     ## 1. Create mapper
     if type(type_sp) == str:

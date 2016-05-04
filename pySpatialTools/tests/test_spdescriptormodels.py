@@ -37,32 +37,37 @@ from ..utils.artificial_data import create_random_image
 from ..utils.util_external.Logger import Logger
 from ..io.io_images import create_locs_features_from_image
 
-#
-#def test():
-#    n, nx, ny = 100, 100, 100
-#    locs = np.random.random((n, 2))*10
-#    ## Retrievers management
-#    ret0 = KRetriever(locs, 3, ifdistance=True)
-#    ret1 = CircRetriever(locs, .3, ifdistance=True)
-#    #countdesc = Countdescriptor()
-#
-#    # Creation of retriever of regions
-#    griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
-#    regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
-#    regret = SameEleNeigh(regdists, bool_input_idx=False)
-#    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
-#    regret._output_map = [m_out]
-#    gret = RetrieverManager([ret0, ret1, regret])
-#    regret = SameEleNeigh(regdists, bool_input_idx=False)
-#
-#    ## Features management
-#    feat_arr0 = np.random.randint(0, 20, (n, 1))
-#
-#    features = ImplicitFeatures(feat_arr0)
-#    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
-#    perturbation = PermutationPerturbation(reindices.T)
-#
-#    features.add_perturbations(perturbation)
+
+def test():
+    n, nx, ny = 100, 100, 100
+    locs = np.random.random((n, 2))*10
+    ## Retrievers management
+    ret0 = KRetriever(locs, 3, ifdistance=True)
+    ret1 = CircRetriever(locs, .3, ifdistance=True)
+    #countdesc = Countdescriptor()
+
+    ###########################################################################
+    ###########################################################################
+    ######## Testing aggregation
+    # Creation of retriever of regions
+    griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
+    regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
+    regret = SameEleNeigh(regdists, bool_input_idx=False)
+    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
+    regret._output_map = [m_out]
+    gret = RetrieverManager([ret0, ret1, regret])
+    regret = SameEleNeigh(regdists, bool_input_idx=False)
+
+    ## Features management
+    feat_arr0 = np.random.randint(0, 20, (n, 1))
+
+    features = ImplicitFeatures(feat_arr0)
+    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
+    perturbation = PermutationPerturbation(reindices.T)
+
+    features.add_perturbations(perturbation)
+
+
 #
 #    ## Create MAP VALS (indices)
 #    corr_arr = -1*np.ones(n)
