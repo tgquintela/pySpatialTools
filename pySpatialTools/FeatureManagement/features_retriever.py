@@ -152,7 +152,7 @@ class FeaturesManager:
             assert(self.mode in ['sequential', 'parallel'])
             if self.mode == 'sequential':
                 ## Format initialization descriptors
-                def initialization_desc(self):
+                def initialization_desc():
                     descriptors = []
                     for i in range(len(self)):
                         aux_i = np.ones((1, len(self[i].out_features)))
@@ -203,10 +203,11 @@ class FeaturesManager:
     def _format_map_vals_i(self, sp_typemodel):
         """Format mapper to indicate external val_i to aggregate result."""
         if sp_typemodel is not None:
-            if type(sp_typemodel) == tuple:
-                map_vals_i = create_mapper_vals_i(sp_typemodel, self)
-            else:
-                map_vals_i = create_mapper_vals_i(sp_typemodel, self)
+            map_vals_i = create_mapper_vals_i(sp_typemodel, self)
+#            if type(sp_typemodel) == tuple:
+#                map_vals_i = create_mapper_vals_i(sp_typemodel, self)
+#            else:
+#                map_vals_i = create_mapper_vals_i(sp_typemodel, self)
             self._maps_vals_i = map_vals_i
         else:
             self._maps_vals_i = create_mapper_vals_i(self._maps_vals_i, self)
