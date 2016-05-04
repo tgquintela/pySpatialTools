@@ -349,7 +349,7 @@ def test():
     ##########################
     #### FeatureRetriever testing
 
-    ## Impossible cases
+    ## Impossible instantiation cases
     try:
         boolean = False
         fm = FeaturesManager(None, None)
@@ -403,5 +403,24 @@ def test():
         ## Exhaustive exploration of parameters
         feats, m_input, m_out, m_vals_i, mode, desc = p
         ## Instantiation
-        FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
-                        maps_vals_i=m_vals_i, mode=mode, descriptormodels=desc)
+        fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
+                             maps_vals_i=m_vals_i, mode=mode,
+                             descriptormodels=desc)
+        # Check basic functions
+        fm[0]
+        fm.shape
+        len(fm)
+        fm.nfeats
+
+
+
+
+    ## Impossible function cases
+    try:
+        boolean = False
+        fm[-1]
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+

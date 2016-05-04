@@ -27,7 +27,7 @@ def test():
     joinpos = lambda x, y: x
 
     ### Creation of possible inputs
-    creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, lvl))
+    creator_lvl = lambda lvl: tuple(np.random.randint(1, 10, int(lvl)))
     creator2_lvl = lambda sh: tuple(list(sh) + [np.random.randint(5)])
 
     extend_list = lambda lista, n: [lista for i in range(n)]
