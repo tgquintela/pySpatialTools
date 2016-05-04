@@ -65,7 +65,7 @@ def test():
 #        test_utils.test()
 #        test_neighsinfo.test()
 #        test_preprocess.test()
-#        test_spatial_discretizer.test()
+        test_spatial_discretizer.test()
         test_descriptormodels.test()
         test_features_retriever.test()
 #        test_perturbation.test()
