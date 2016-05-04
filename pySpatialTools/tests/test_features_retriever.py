@@ -411,6 +411,7 @@ def test():
         fm.shape
         len(fm)
         fm.nfeats
+        fm.set_map_vals_i(m_vals_i)
 
 
 

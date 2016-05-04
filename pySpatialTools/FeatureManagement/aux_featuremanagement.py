@@ -78,12 +78,12 @@ def empty_neighs(neighs):
     return logi
 
 
-def compute_featuresnames(descriptormodel, featureobject):
-    """Compute the possible feature names from the pointfeatures."""
-    if type(featureobject) == np.ndarray:
-        featuresnames = descriptormodel._f_default_names(featureobject)
-        return featuresnames
-    if 'typefeat' in dir(featureobject):
-        featuresnames =\
-            descriptormodel._f_default_names(featureobject.features)
-    return featuresnames
+#def compute_featuresnames(descriptormodel, featureobject):
+#    """Compute the possible feature names from the pointfeatures."""
+#    if type(featureobject) == np.ndarray:
+#        featuresnames = descriptormodel._f_default_names(featureobject)
+#        return featuresnames
+#    if 'typefeat' in dir(featureobject):
+#        featuresnames =\
+#            descriptormodel._f_default_names(featureobject.features)
+#    return featuresnames

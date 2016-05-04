@@ -29,7 +29,7 @@ from ..utils.util_classes import create_mapper_vals_i, Neighs_Info
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
     sparse_dict_completer_unknown, sum_addresult_function
-from aux_featuremanagement import create_aggfeatures, compute_featuresnames
+from aux_featuremanagement import create_aggfeatures
 from features_objects import ImplicitFeatures, ExplicitFeatures
 
 

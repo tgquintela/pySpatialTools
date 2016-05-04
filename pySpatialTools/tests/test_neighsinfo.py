@@ -180,7 +180,7 @@ def test():
                                   staticneighs=p[8])
         neighs_info.set_information(100, 100)
 
-        lvl = np.random.random(4) if p[5] is None else p[5]
+        lvl = np.random.randint(4) if p[5] is None else p[5]
         sh = creator_lvl(lvl)
         iss_len = sh[len(sh)-2] if len(sh) > 1 else np.random.randint(1, 100)
         k_len = sh[0] if len(sh) == 3 else np.random.randint(1, 9)
