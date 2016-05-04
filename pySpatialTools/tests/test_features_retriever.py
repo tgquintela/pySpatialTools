@@ -390,16 +390,25 @@ def test():
         if boolean:
             raise Exception("It has to halt here.")
 
+    try:
+        boolean = False
+        fm = FeaturesManager(lambda x: x)
+        boolean = True
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+
     feats0 = np.random.random(100)
     feats1 = np.random.random((100, 1))
     feats2 = np.random.random((100, 1, 1))
     Feat_imp = ImplicitFeatures(feats1)
-    Feat_exp = Feat = ExplicitFeatures(aggcatfeats_dict)
+    Feat_exp = ExplicitFeatures(aggcatfeats_dict)
     avgdesc = AvgDescriptor()
 
     pos_feats = [feats0, feats1, feats2, Feat_imp, Feat_exp,
                  [feats2, Feat_imp]]
-    pos_mapvals_i = [None, ('matrix', 100, 20), lambda x: x]
+    pos_mapvals_i = [None, ('matrix', 100, 20), lambda x: x, 'matrix']
     pos_map_in = [None, lambda i_info, k: i_info]
     pos_map_out = [None, lambda self, feats: feats]
     pos_mode = [None, 'parallel', 'sequential']

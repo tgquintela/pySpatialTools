@@ -150,54 +150,54 @@ class FeaturesManager:
         n_feats = len(self.out_features)
         if self._out == 'ndarray':
             assert(self.mode in ['sequential', 'parallel'])
-            if self.mode == 'sequential':
-                ## Format initialization descriptors
-                def initialization_desc():
-                    descriptors = []
-                    for i in range(len(self)):
-                        aux_i = np.ones((1, len(self[i].out_features)))
-                        descriptors.append(aux_i * self[i]._nullvalue)
-                    descriptors = np.concatenate(descriptors, axis=1)
-                    return descriptors
-                # Set initialization descriptors
-                self.initialization_desc = initialization_desc
-                ## Pure Array
-                if n_vals_i is not None:
-                    shape = (n_vals_i, n_feats, self.k_perturb+1)
-                    # Set initialization output descriptors
-                    self.initialization_output = lambda: np.zeros(shape)
-                    self._join_descriptors = lambda x: np.concatenate(x)
-                    ## Option to externally set add2result and to_complete
-                    self.add2result = sum_addresult_function
-                    self.to_complete_measure = lambda X: X
-                ## List array measure
-                else:
-                    shape = (n_vals_i, n_feats, self.k_perturb+1)
-                    # Set initialization output descriptors
-                    self.initialization_output = lambda: []  ## TODO: All dimensions
-                    self._join_descriptors = lambda x: np.concatenate(x)
-                    ## Option to externally set add2result and to_complete
-                    self.add2result = append_addresult_function
-                    self.to_complete_measure = lambda X: np.concatenate(X)
+
+            ## Format initialization descriptors
+            def initialization_desc():
+                descriptors = []
+                for i in range(len(self)):
+                    aux_i = np.ones((1, len(self[i].out_features)))
+                    descriptors.append(aux_i * self[i]._nullvalue)
+                descriptors = np.concatenate(descriptors, axis=1)
+                return descriptors
+            # Set initialization descriptors
+            self.initialization_desc = initialization_desc
+            ## Pure Array
+            if n_vals_i is not None:
+                shape = (n_vals_i, n_feats, self.k_perturb+1)
+                # Set initialization output descriptors
+                self.initialization_output = lambda: np.zeros(shape)
+                self._join_descriptors = lambda x: np.concatenate(x)
+                ## Option to externally set add2result and to_complete
+                self.add2result = sum_addresult_function
+                self.to_complete_measure = lambda X: X
+            ## List array measure
             else:
-                self.initialization_desc = lambda: [{}]
-                if n_vals_i is not None:
-                    ## Init global result
-                    self.initialization_output =\
-                        lambda: [[[] for i in range(n_vals_i)]
-                                 for k in range(self.k_perturb+1)]
-                    self._join_descriptors = lambda x: x
-                    ## Adding result (TODO: External set option)
-                    self.add2result = append_addresult_function
-                    self.to_complete_measure = sparse_dict_completer
-                else:
-                    ## Init global result
-                    self.initialization_output =\
-                        lambda: [[[], []] for k in range(self.k_perturb+1)]
-                    self._join_descriptors = lambda x: x
-                    ## Adding result (TODO: External set option)
-                    self.add2result = replacelist_addresult_function
-                    self.to_complete_measure = sparse_dict_completer_unknown
+                shape = (n_vals_i, n_feats, self.k_perturb+1)
+                # Set initialization output descriptors
+                self.initialization_output = lambda: []  ## TODO: All dimensions
+                self._join_descriptors = lambda x: np.concatenate(x)
+                ## Option to externally set add2result and to_complete
+                self.add2result = append_addresult_function
+                self.to_complete_measure = lambda X: np.concatenate(X)
+        else:
+            self.initialization_desc = lambda: [{}]
+            if n_vals_i is not None:
+                ## Init global result
+                self.initialization_output =\
+                    lambda: [[[] for i in range(n_vals_i)]
+                             for k in range(self.k_perturb+1)]
+                self._join_descriptors = lambda x: x
+                ## Adding result (TODO: External set option)
+                self.add2result = append_addresult_function
+                self.to_complete_measure = sparse_dict_completer
+            else:
+                ## Init global result
+                self.initialization_output =\
+                    lambda: [[[], []] for k in range(self.k_perturb+1)]
+                self._join_descriptors = lambda x: x
+                ## Adding result (TODO: External set option)
+                self.add2result = replacelist_addresult_function
+                self.to_complete_measure = sparse_dict_completer_unknown
 
     ############################## Format IO maps #############################
     def _format_map_vals_i(self, sp_typemodel):
@@ -242,11 +242,12 @@ class FeaturesManager:
         ## Format basic modes
         if mode is None:
             ## If open out_features
-            if self[0].out_features is None:
+            if not len(self[0].out_features):
                 self._out = 'dict'
-                logi = [self[i].out_features is None for i in range(len(self))]
+                n_f = len(self)
+                logi = [not len(self[i].out_features) for i in range(n_f)]
                 assert(all(logi))
-                self.out_features = None
+                self.out_features = []
                 self.mode = None
             else:
                 self._out = 'ndarray'
