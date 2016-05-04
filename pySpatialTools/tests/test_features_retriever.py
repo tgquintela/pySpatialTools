@@ -406,13 +406,13 @@ def test():
 
     pos_feats = [feats0, feats1, feats2, Feat_imp, Feat_exp,
                  [feats2, Feat_imp]]
-    pos_mapvals_i = [None, ('matrix', 100, 20), lambda x: x, 'matrix']
+    pos_mapvals_i = [None, ('matrix', 100, 20)]#, lambda x: x, 'matrix']
     pos_map_in = [None, lambda i_info, k: i_info]
     pos_map_out = [None, lambda self, feats: feats]
     pos_mode = [None, 'parallel', 'sequential']
     pos_desc = [None, avgdesc]
 
-    possibilities = [pos_feats, pos_mapvals_i, pos_map_in, pos_map_out,
+    possibilities = [pos_feats, pos_map_in, pos_map_out, pos_mapvals_i,
                      pos_mode, pos_desc]
 
     ## Combinations
@@ -438,6 +438,7 @@ def test():
         fm.set_map_vals_i(m_vals_i)
         fm.initialization_desc()
         fm.initialization_output()
+        fm.set_map_vals_i(100)
         fm.set_map_vals_i(m_vals_i)
         # Strange cases
         if mode is None:

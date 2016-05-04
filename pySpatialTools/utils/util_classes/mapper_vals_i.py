@@ -133,7 +133,6 @@ def create_mapper_vals_i(type_sp='correlation', features_out=None):
             n_out = len(np.unique(features_out).ravel())
 #        elif type(features_out) not in [int, slice, np.ndarray]:
 #            n_out = len(features_out)
-
     ## 1. Create mapper
     if type(type_sp) == str:
         if type_sp == 'correlation':

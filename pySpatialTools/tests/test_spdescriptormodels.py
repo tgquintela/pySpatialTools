@@ -52,11 +52,13 @@ def test():
     # Creation of retriever of regions
     griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
     regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
-    regret = SameEleNeigh(regdists, bool_input_idx=False)
-    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
-    regret._output_map = [m_out]
-    gret = RetrieverManager([ret0, ret1, regret])
-    regret = SameEleNeigh(regdists, bool_input_idx=False)
+    
+    
+#    regret = SameEleNeigh(regdists, bool_input_idx=False)
+#    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
+#    regret._output_map = [m_out]
+#    gret = RetrieverManager([ret0, ret1, regret])
+#    regret = SameEleNeigh(regdists, bool_input_idx=False)
 
     ## Features management
     feat_arr0 = np.random.randint(0, 20, (n, 1))
