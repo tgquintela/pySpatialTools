@@ -137,7 +137,7 @@ def test():
         neighs_info_general = Neighs_Info()
         ## Defintiion of forbidden combinations
         bool_error = p[4] in level_dependent and p[5] != 2
-        bool_error = bool_error or p[2] == "default" or p[3] == "default"
+#        bool_error = bool_error or p[2] == "default" or p[3] == "default"
         ## Testing raising errors of forbidden combinations:
         if bool_error:
             try:
@@ -152,11 +152,14 @@ def test():
                                           type_sp_rel_pos=p[7],
                                           staticneighs=p[8])
                 boolean = True
+                raise Exception("It has to halt here.")
             except:
                 if boolean:
                     raise Exception("It has to halt here.")
             continue
         ## Avoid non-allowed
+        if p[2] == "default" or p[3] == "default":
+            continue
         if p[4] == 'list_tuple_only' and p[0]:
             continue
         tupletypes = ['tuple', 'tuple_only', 'tuple_tuple', 'list_tuple_only',
@@ -222,6 +225,7 @@ def test():
                     mode = ['and', 'or', 'xor'][np.random.randint(0, 3)]
                     neighs_info.join_neighs(neighs_info, mode, joinpos)
                     boolean = True
+                    raise Exception("It has to halt here.")
                 except:
                     if boolean:
                         raise Exception("It has to halt here.")
@@ -253,6 +257,7 @@ def test():
         boolean = False
         neighs_info._default_get_neighs()
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -260,6 +265,7 @@ def test():
         boolean = False
         neighs_info._default_get_information()
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -280,6 +286,7 @@ def test():
         neighs_info._kret = 10
         neighs_info._integer_get_k(100000)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -305,6 +312,7 @@ def test():
         boolean = False
         neighs_info._general_set_rel_pos(True)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -318,6 +326,7 @@ def test():
         boolean = False
         neighs_info._general_set_neighs(True)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -344,6 +353,7 @@ def test():
         boolean = False
         neighs_info._set_tuple_only_structure((range(2), None, 5))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -369,6 +379,7 @@ def test():
         boolean = False
         neighs_info._integer_get_k(100000)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -450,6 +461,7 @@ def test():
         sp_relative_pos = np.random.random((tuple(list(sh1)+[3])))
         neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -462,6 +474,7 @@ def test():
         sp_relative_pos = np.random.random((tuple(list(sh1)+[3])))
         neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -469,6 +482,7 @@ def test():
         boolean = False
         neighs_info.check_output_standards(None, sp_relative_pos, ks, iss)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -477,6 +491,7 @@ def test():
         neighs_info.idxs = None
         neighs_info.assert_goodness()
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -486,6 +501,7 @@ def test():
         neighs_info.staticneighs = True
         neighs_info.assert_goodness()
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

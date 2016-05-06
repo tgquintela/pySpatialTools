@@ -11,7 +11,7 @@ from ..descriptormodel import DescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import avg_reducer, null_completer,\
-    aggregator_summer, sum_addresult_function, array_featurenames,\
+    aggregator_summer, sum_addresult_function, general_featurenames,\
     null_out_formatter
 
 ## Characterizers
@@ -95,7 +95,7 @@ class AvgDescriptor(DescriptorModel):
     def _format_default_functions(self):
         """Format default mutable functions."""
         self._out_formatter = null_out_formatter
-        self._f_default_names = array_featurenames
+        self._f_default_names = general_featurenames
 #        self._defult_add2result = sum_addresult_function
 
     def set_functions(self, type_infeatures, type_outfeatures=None):

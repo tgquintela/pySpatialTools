@@ -37,6 +37,16 @@ def counter_featurenames(features_o):
     return featurenames
 
 
+def general_featurenames(features_o):
+    """Compute featurenames of the array-like features and let as void
+    featurenames for the dict-based featues."""
+    if type(features_o) == list and type(features_o[0]) == list:
+        featurenames = []
+    else:
+        featurenames = list(np.arange(len(features_o[0])))
+    return featurenames
+
+
 def list_featurenames(features_o):
     """Compute the featurenames for list of dicts features collections."""
     keys = []
@@ -51,9 +61,9 @@ def array_featurenames(features_o):
     if type(features_o) == np.ndarray:
         featurenames = list(np.arange(features_o.shape[1]))
     else:
-        try:
-            featurenames = list(np.arange(len(features_o[0])))
-        except:
+        if type(features_o[0]) == np.ndarray:
+            featurenames = list(np.arange(features_o.shape[1]))
+        else:
             msg = "Incorrect feature type input in order to compute its "
             msg += "features names."
             raise TypeError(msg)

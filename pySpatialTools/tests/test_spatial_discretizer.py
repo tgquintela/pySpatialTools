@@ -64,6 +64,7 @@ def test():
         boolean = False
         check_discretizors(5)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -77,6 +78,7 @@ def test():
         boolean = False
         check_discretizors(Prueba)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -91,6 +93,7 @@ def test():
         boolean = False
         check_discretizors(Prueba)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -139,6 +142,7 @@ def test():
         boolean = False
         disc6 = BisectorSpatialDisc(locs3, np.arange(len(locs3)+1))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -181,6 +185,7 @@ def test():
         boolean = False
         disc4._map_regionid2regionlocs(-1)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

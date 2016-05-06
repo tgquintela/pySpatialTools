@@ -293,6 +293,7 @@ class Retriever:
         self.retriever = []
         self._info_ret = None
         self._info_f = None
+        self._max_bunch = 1
         ## Perturbation
         self._dim_perturb = [1]
         self._map_perturb = lambda x: (0, 0)

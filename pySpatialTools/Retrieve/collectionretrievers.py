@@ -49,6 +49,13 @@ class RetrieverManager:
             raise IndexError("Not correct index for features.")
         return self.retrievers[i_ret]
 
+    def __iter__(self):
+        """It assumes preferent retriever 0."""
+        ## If constant selected retriever
+        for neighs_info in self[0]:
+            yield neighs_info
+        ## If mapper active (TODO)
+
     def retrieve_neighs(self, i, info_i=None, ifdistance=None,
                         typeret_i=None, k=None):
         typeret_i, out_ret = self._get_type_ret(typeret_i, i, k)
@@ -103,9 +110,14 @@ class RetrieverManager:
             raise TypeError("Incorrect type. Not retrievers list.")
         ## WARNING: By default it is determined by the first retriever
         self.n_inputs = len(self.retrievers[0])
+
+    def _format_staticneighs(self):
+        """Format staticneighs."""
         ## Set staticneighs
         n_ret = len(self.retrievers)
-        self.staticneighs = all([self[i].staticneighs for i in range(n_ret)])
+        self.staticneighs = self[0].staticneighs
+        aux = [self[i].staticneighs == self.staticneighs for i in range(n_ret)]
+        assert(aux)
 
     ######################## Perturbation management ##########################
     ###########################################################################
@@ -114,8 +126,7 @@ class RetrieverManager:
         for i_ret in range(len(self.retrievers)):
             self.retrievers[i_ret].add_perturbations(perturbations)
         ## Update staticneighs
-        n_ret = len(self.retrievers)
-        self.staticneighs = all([self[i].staticneighs for i in range(n_ret)])
+        self._format_staticneighs()
 
     ######################### Aggregation management ##########################
     ###########################################################################

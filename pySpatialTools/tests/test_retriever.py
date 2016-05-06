@@ -77,6 +77,7 @@ def test():
         boolean = False
         map2locs(-1)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -123,6 +124,7 @@ def test():
         aux = np.random.randint(0, 10, 4).reshape((1, 4))
         generate_grid_neighs_coord_i(aux, shape, 2, l, center, True)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -144,6 +146,7 @@ def test():
         boolean = False
         _check_retriever(dummyret)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -156,6 +159,7 @@ def test():
         boolean = False
         _check_retriever(dummyret)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -169,6 +173,7 @@ def test():
         boolean = False
         _check_retriever(dummyret)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -197,6 +202,7 @@ def test():
         boolean = False
         ret._input_map(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -517,6 +523,7 @@ def test():
                 boolean = False
                 ret.retrieve_neighs(0, k=k_option)
                 boolean = True
+                raise Exception("It has to halt here.")
             except:
                 if boolean:
                     raise Exception("It has to halt here.")
@@ -524,6 +531,7 @@ def test():
                 boolean = False
                 ret._map_perturb(k_option)
                 boolean = True
+                raise Exception("It has to halt here.")
             except:
                 if boolean:
                     raise Exception("It has to halt here.")
@@ -829,6 +837,7 @@ def test():
         boolean = False
         ret = WindowsRetriever((10, 10, 10.))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -1096,6 +1105,60 @@ def test():
 #    ret.set_iter()
 #    for iss, nei in ret:
 #        pass
+
+
+
+
+    ###########################################################################
+    #### Retriever Manager
+    ######################
+    data_input = np.random.random((100, 2))
+    data1 = np.random.random((50, 2))
+    data2 = np.random.random((70, 2))
+
+    ret1 = KRetriever(data1, autolocs=data_input, info_ret=3)
+    ret2 = KRetriever(data_input, info_ret=4)
+    ret3 = CircRetriever(data2, info_ret=0.1, autolocs=data_input)
+
+    gret1 = RetrieverManager([ret1, ret2, ret3])
+    gret2 = RetrieverManager([ret1, ret2, ret3], np.random.randint(0, 3, 100))
+
+    len(gret1)
+    len(gret2)
+    gret1[0]
+    gret2[0]
+
+    for neighs_info in gret1:
+        pass
+    for neighs_info in gret2:
+        pass
+
+    gret1.set_neighs_info(True)
+    gret2.set_neighs_info(True)
+    gret1.add_perturbations(perturbation4)
+    gret2.add_perturbations(perturbation4)
+
+    ## Impossible cases
+#    try:
+#        boolean = False
+#        print 'x'*10
+#        RetrieverManager([ret1, ret2, ret3], np.random.randint(0, 3, 200))
+#        print 'y'*10
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        print 'x'*10
+#        RetrieverManager([ret1, ret2, ret3], np.random.randint(0, 5, 100))
+#        print 'y'*10
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
 
 
 ##info_ret=None, autolocs=None, pars_ret=None,

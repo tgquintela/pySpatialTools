@@ -74,6 +74,8 @@ class DummyDescriptor(DescriptorModel):
     name_desc = "Dummy descriptor"
 
     def __init__(self):
+        self._out_formatter = null_out_formatter
+        self._f_default_names = array_featurenames
         ## Check descriptormodel
         self._checker_descriptormodel()
 

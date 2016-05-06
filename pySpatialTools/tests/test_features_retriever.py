@@ -120,6 +120,7 @@ def test():
             boolean = False
             Feat[-1]
             boolean = True
+            raise Exception("It has to halt here.")
         except:
             if boolean:
                 raise Exception("It has to halt here.")
@@ -127,6 +128,7 @@ def test():
             boolean = False
             feats = Feat._retrieve_feats([[[0]]], -1, None)
             boolean = True
+            raise Exception("It has to halt here.")
         except:
             if boolean:
                 raise Exception("It has to halt here.")
@@ -134,6 +136,7 @@ def test():
             boolean = False
             Feat._retrieve_feats([[[0]]], 10000, None)
             boolean = True
+            raise Exception("It has to halt here.")
         except:
             if boolean:
                 raise Exception("It has to halt here.")
@@ -141,6 +144,7 @@ def test():
             boolean = False
             Feat[len(Feat)]
             boolean = True
+            raise Exception("It has to halt here.")
         except:
             if boolean:
                 raise Exception("It has to halt here.")
@@ -194,6 +198,7 @@ def test():
         boolean = False
         ExplicitFeatures(np.random.random((10, 1, 1, 1)))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It should not accept that inputs.")
@@ -242,6 +247,7 @@ def test():
                          characterizer=p[2], out_formatter=p[3],
                          nullvalue=p[1])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -325,6 +331,7 @@ def test():
         Feat = ImplicitFeatures(contfeats_ar0, None)
         Feat._map_perturb(-1)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -333,6 +340,7 @@ def test():
         Feat = ImplicitFeatures(contfeats_ar0, perturbation)
         Feat._map_perturb(-1)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -341,6 +349,7 @@ def test():
         Feat = ImplicitFeatures(contfeats_ar0, perturbation)
         Feat._map_perturb(1000)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -351,48 +360,59 @@ def test():
 
     ## Impossible instantiation cases
     try:
+        # Not valid oject as a feature
         boolean = False
         fm = FeaturesManager(None, None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
     try:
+        # Object not valid as a feature
         boolean = False
         avgdesc = AvgDescriptor()
         fm = FeaturesManager([], avgdesc)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
+#        fm = FeaturesManager(Feat_imp, None)
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
     try:
-        boolean = False
-        Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
-        fm = FeaturesManager(Feat_imp, None)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
+        # Different k_perturb
         boolean = False
         feats0 = ExplicitFeatures(np.random.random((100, 2, 4)))
         feats1 = ExplicitFeatures(np.random.random((100, 3, 3)))
         fm = FeaturesManager([feats0, feats1])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
     try:
+        # Object not valid as a features
         boolean = False
         fm = FeaturesManager([5])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
     try:
+        # Object not valid as a features
         boolean = False
         fm = FeaturesManager(lambda x: x)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -450,6 +470,7 @@ def test():
         boolean = False
         fm[-1]
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

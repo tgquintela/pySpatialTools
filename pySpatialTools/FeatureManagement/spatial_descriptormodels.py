@@ -252,7 +252,6 @@ class SpatialDescriptorModel:
         ks = list(range(k_pert))
         neighs_info =\
             self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=ks)
-        print staticneighs, neighs_info.staticneighs
         assert(staticneighs == neighs_info.staticneighs)
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)

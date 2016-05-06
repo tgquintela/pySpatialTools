@@ -152,6 +152,7 @@ def test():
                     boolean = False
                     mainmapper1[-1]
                     boolean = True
+                    raise Exception("It has to halt here.")
                 except:
                     if boolean:
                         raise Exception("It has to halt here.")
@@ -166,6 +167,7 @@ def test():
                     boolean = False
                     mainmapper1[[None]]
                     boolean = True
+                    raise Exception("It has to halt here.")
                 except:
                     if boolean:
                         raise Exception("It has to halt here.")
@@ -196,6 +198,7 @@ def test():
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -206,6 +209,7 @@ def test():
         mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -215,6 +219,7 @@ def test():
         mainmapper3 = RegionDistances(relations=relations, _data=data_in,
                                       symmetric=symmetric, data_in=wrond_data)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -225,6 +230,7 @@ def test():
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
                                       symmetric=symmetric, data_in=data_in)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -255,6 +261,7 @@ def test():
         boolean = False
         dummymapper = DummyRegDistance(regs2)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -262,6 +269,7 @@ def test():
         boolean = False
         dummymapper = DummyRegDistance(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -269,6 +277,7 @@ def test():
         boolean = False
         dummymapper[None]
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -276,6 +285,7 @@ def test():
         boolean = False
         dummymapper[-1]
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

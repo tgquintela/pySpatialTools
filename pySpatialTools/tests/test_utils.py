@@ -136,6 +136,7 @@ def test():
         flag_error = False
         SpatialElementsCollection(0)
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -143,6 +144,7 @@ def test():
         flag_error = False
         SpatialElementsCollection(words, np.arange(len(words)+1))
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -151,6 +153,7 @@ def test():
         tags = range(len(words)) + [len(words)-1]
         SpatialElementsCollection(words, tags)
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -158,6 +161,7 @@ def test():
         flag_error = False
         SpatialElementsCollection(words, 5)
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -168,6 +172,7 @@ def test():
         flag_error = False
         words_elements[len(words_elements)]
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -175,6 +180,7 @@ def test():
         flag_error = False
         words_elements2[words[0]]
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -184,6 +190,7 @@ def test():
         flag_error = False
         words_elements[words[0]]
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -247,6 +254,7 @@ def test():
         flag_error = False
         locs = Locations(locs1, 5)
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -254,6 +262,7 @@ def test():
         flag_error = False
         locs = Locations(locs1, list(range(len(locs1)+1)))
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -263,6 +272,7 @@ def test():
         tags[0] = 1
         locs = Locations(locs1, tags)
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -275,6 +285,7 @@ def test():
         flag_error = False
         locs[-1]
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -282,6 +293,7 @@ def test():
         flag_error = False
         locsbis[slice(0, 9)]
         flag_error = True
+        raise Exception("It has to halt here.")
     except:
         if flag_error:
             raise Exception("It has to halt here.")
@@ -503,6 +515,7 @@ def test():
         boolean = False
         map_vals_i = create_mapper_vals_i('correlation')
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("The test has to halt here.")

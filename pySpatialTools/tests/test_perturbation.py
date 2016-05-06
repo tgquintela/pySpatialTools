@@ -185,6 +185,7 @@ def test():
         boolean = False
         perm_ind = PermutationIndPerturbation(list(reind_ind))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -217,6 +218,7 @@ def test():
         boolean = False
         disc_ind = DiscreteIndPerturbation(np.random.random((10, 10)))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -226,6 +228,7 @@ def test():
         probs = (probs.T/probs.sum(1)).T
         disc_ind = DiscreteIndPerturbation(probs[:8, :])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -245,6 +248,7 @@ def test():
         boolean = False
         disc_ind.apply2features(np.random.randint(0, 40, 1000))
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -265,6 +269,7 @@ def test():
         boolean = False
         MixedFeaturePertubation(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -272,6 +277,7 @@ def test():
         boolean = False
         MixedFeaturePertubation([None])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -279,6 +285,7 @@ def test():
         boolean = False
         mix_coll.apply2features(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -286,6 +293,7 @@ def test():
         boolean = False
         mix_coll.apply2features([None])
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

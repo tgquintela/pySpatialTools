@@ -181,17 +181,20 @@ def test():
         boolean = False
         count_out_formatter_general(feats, outfeats, '', 0)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        array_feats = np.random.random((10, 1))
-        count_out_formatter_general(array_feats, outfeats, _out[1], 0)
-        boolean = True
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
+#    try:
+#        # In the future probably has to halt
+#        boolean = False
+#        array_feats = np.random.random((10, 1))
+#        count_out_formatter_general(array_feats, outfeats, _out[1], 0)
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
 
     #################################
     #### Featurenames
@@ -215,6 +218,7 @@ def test():
         boolean = False
         array_featurenames(features_o)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -227,6 +231,7 @@ def test():
         boolean = False
         list_featurenames(features_o)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -234,6 +239,7 @@ def test():
         boolean = False
         counter_featurenames(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")
@@ -241,6 +247,7 @@ def test():
         boolean = False
         array_featurenames(None)
         boolean = True
+        raise Exception("It has to halt here.")
     except:
         if boolean:
             raise Exception("It has to halt here.")

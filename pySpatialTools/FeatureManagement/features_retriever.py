@@ -31,6 +31,7 @@ from aux_descriptormodels import append_addresult_function,\
     sparse_dict_completer_unknown, sum_addresult_function
 from aux_featuremanagement import create_aggfeatures
 from features_objects import ImplicitFeatures, ExplicitFeatures
+from descriptormodel import DummyDescriptor
 
 
 class FeaturesManager:
@@ -137,8 +138,7 @@ class FeaturesManager:
     def _format_descriptormodel(self, descriptormodels=None):
         """Formatter of the descriptormodels."""
         if descriptormodels is None:
-            self.descriptormodels =\
-                [lambda i, neighs_info, desc_i, desc_neigh, vals_i: desc_neigh]
+            self.descriptormodels = [DummyDescriptor]
         else:
             if type(descriptormodels) != list:
                 descriptormodels = [descriptormodels]
@@ -297,6 +297,10 @@ class FeaturesManager:
             _maps_vals_i = (self._maps_vals_i, _maps_vals_i)
             self._format_map_vals_i(_maps_vals_i)
         self._format_map_vals_i(_maps_vals_i)
+
+    def set_descriptormodels(self, descriptormodels):
+        """Set descriptormodels."""
+        self._format_descriptormodel(descriptormodels)
 
     ################################# Getters #################################
     ###########################################################################
