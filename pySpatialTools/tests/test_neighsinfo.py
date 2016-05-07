@@ -14,6 +14,8 @@ from ..utils.util_classes.neighs_info import *
 
 
 def test():
+    import warnings
+    warnings.simplefilter("ignore")
     ###########################################################################
     ############################### Neighs_Info ###############################
 
@@ -495,13 +497,14 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        neighs_info.idxs = [[]]
-        neighs_info.staticneighs = True
-        neighs_info.assert_goodness()
-        boolean = True
-        raise Exception("It has to halt here.")
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
+# Why should be halt?
+#    try:
+#        boolean = False
+#        neighs_info.idxs = [[]]
+#        neighs_info.staticneighs = True
+#        neighs_info.assert_goodness()
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")

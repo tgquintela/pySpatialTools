@@ -29,9 +29,12 @@ from pySpatialTools.utils.artificial_data.artificial_measure import *
 from pySpatialTools.utils.artificial_data.artificial_data_membership import\
     random_membership
 from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
-    Map_Vals_i, Sp_DescriptorMapper
+    Map_Vals_i
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
+from pySpatialTools.utils.util_classes import DummySelector,\
+    GeneralCollectionSelectors, Spatial_RetrieverSelector,\
+    Feat_RetrieverSelector
 
 
 def test():
@@ -523,7 +526,70 @@ def test():
     ###########################################################################
     ############################## Spdesc_mapper ##############################
     ###########################################################################
-    selector = Sp_DescriptorMapper()
+    #selector1 = Sp_DescriptorMapper()
+    mapper_array = np.random.randint(0, 5, 100)
+    mapper_function = lambda idx: mapper_array[idx]
+    mapper_function1 = lambda idx: tuple([mapper_array[idx]]*2)
+
+    pos_mappers = [{'mapper': mapper_array}, {'mapper': mapper_function},
+                   {'mapper': mapper_function, 'compute': True},
+                   {'mapper': mapper_function, 'n_in': 5, 'n_out': 6},
+                   {'mapper': mapper_function1, 'n_in': 5, 'n_out': [3, 4]}]
+
+    for p in pos_mappers:
+        comb_selector = DummySelector(**p)
+#        comb_selector = GeneralSelector(**p)
+        comb_selector[0]
+
+        # Impossible cases
+        try:
+            ## Non-integer inputs
+            boolean = False
+            map_vals_i = comb_selector[.2]
+            boolean = True
+            raise Exception("It has to halt here.")
+        except:
+            if boolean:
+                raise Exception("The test has to halt here.")
+
+    selector1 = DummySelector(mapper_array)
+    selector2 = DummySelector(lambda idx: mapper_array[idx], n_in=100, n_out=3)
+    selector3 = DummySelector(lambda idx: [mapper_array[idx]]*3, n_in=100)
+    sl = GeneralCollectionSelectors([selector1, selector2, selector3])
+
+    # Spatial retriever selector
+    Spatial_RetrieverSelector(mapper_array)
+    Spatial_RetrieverSelector(mapper_array, mapper_array)
+    try:
+        ## Different types of core mappers
+        boolean = False
+        Spatial_RetrieverSelector(mapper_array, mapper_function)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
+
+#    # Feature retriever selector
+#    Feat_RetrieverSelector(mapper_array)
+#    Feat_RetrieverSelector(mapper_array, mapper_array)
+#    try:
+#        ## Different types of core mappers
+#        boolean = False
+#        Feat_RetrieverSelector(mapper_array, mapper_function)
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("The test has to halt here.")
+
+
+
+
+
+
+#    selector2 = Spatial_RetrieverSelector()
+#    selector3 = Feat_RetrieverSelector()
 
 #    selector[0]
 #    selector.set_from_array()

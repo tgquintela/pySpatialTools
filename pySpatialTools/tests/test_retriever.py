@@ -1133,12 +1133,33 @@ def test():
     for neighs_info in gret2:
         pass
 
+    gret1.add_retrievers(ret3)
     gret1.set_neighs_info(True)
     gret2.set_neighs_info(True)
     gret1.add_perturbations(perturbation4)
     gret2.add_perturbations(perturbation4)
 
+#    gret1.retrieve_neighs(10)
+
     ## Impossible cases
+    try:
+        boolean = False
+        gret1[-1]
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+    try:
+        boolean = False
+        gret1.add_retrievers(type(None))
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
+
 #    try:
 #        boolean = False
 #        print 'x'*10
@@ -1159,6 +1180,8 @@ def test():
 #    except:
 #        if boolean:
 #            raise Exception("It has to halt here.")
+
+
 
 
 ##info_ret=None, autolocs=None, pars_ret=None,

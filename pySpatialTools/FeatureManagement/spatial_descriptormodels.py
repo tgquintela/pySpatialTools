@@ -14,7 +14,7 @@ TODO
 import numpy as np
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import RetrieverManager
-from pySpatialTools.utils.util_classes import Sp_DescriptorMapper
+#from pySpatialTools.utils.util_classes import Sp_DescriptorMapper
 from ..utils import sp_general_filter_perturbations
 
 
