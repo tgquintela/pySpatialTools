@@ -34,7 +34,7 @@ from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 from pySpatialTools.utils.util_classes import DummySelector,\
     GeneralCollectionSelectors, Spatial_RetrieverSelector,\
-    Feat_RetrieverSelector, FeatInd_RetrieverSelector
+    Feat_RetrieverSelector, FeatInd_RetrieverSelector, Desc_RetrieverSelector
 
 
 def test():
@@ -564,6 +564,8 @@ def test():
     # Spatial retriever selector
     Spatial_RetrieverSelector(np.array([mapper_array]*2).T)
     Spatial_RetrieverSelector(mapper_array, mapper_array)
+    Spatial_RetrieverSelector(mapper_function1)
+    Spatial_RetrieverSelector(mapper_function, mapper_function)
     try:
         ## Different types of core mappers
         boolean = False
@@ -586,6 +588,8 @@ def test():
     # FeatureInd retriever selector
     FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
     FeatInd_RetrieverSelector(mapper_array, mapper_array)
+    FeatInd_RetrieverSelector(mapper_function1)
+    FeatInd_RetrieverSelector(mapper_function, mapper_function)
     try:
         ## Different types of core mappers
         boolean = False
@@ -605,8 +609,71 @@ def test():
         if boolean:
             raise Exception("The test has to halt here.")
 
+    # FeatureInd retriever selector
+    Desc_RetrieverSelector(np.array([mapper_array]*2).T)
+    Desc_RetrieverSelector(mapper_array, mapper_array)
+    Desc_RetrieverSelector(mapper_function1)
+    Desc_RetrieverSelector(mapper_function, mapper_function)
+    try:
+        ## Different types of core mappers
+        boolean = False
+        Desc_RetrieverSelector(mapper_array, mapper_function)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
+    try:
+        ## Different types of core mappers
+        boolean = False
+        Desc_RetrieverSelector(np.array([mapper_array]*10).T)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
+
+    # FeatureInd retriever selector
+    sel1 = FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
+    sel2 = FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
+    sel3 = Desc_RetrieverSelector(np.array([mapper_array]*2).T)
+    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0]
+    sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
+    sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
+    sel3 = Desc_RetrieverSelector(mapper_array, mapper_array)
+    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0]
+    sel1 = FeatInd_RetrieverSelector(mapper_function1)
+    sel2 = FeatInd_RetrieverSelector(mapper_function1)
+    sel3 = Desc_RetrieverSelector(mapper_function1)
+    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0]
+    sel1 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
+    sel2 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
+    sel3 = Desc_RetrieverSelector(mapper_function, mapper_function)
+    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0]
 
 
+#    try:
+#        ## Different types of core mappers
+#        boolean = False
+#        Desc_RetrieverSelector(mapper_array, mapper_function)
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("The test has to halt here.")
+#    try:
+#        ## Different types of core mappers
+#        boolean = False
+#        Desc_RetrieverSelector(np.array([mapper_array]*10).T)
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("The test has to halt here.")
 
 
 #    # Feature retriever selector
@@ -621,17 +688,3 @@ def test():
 #    except:
 #        if boolean:
 #            raise Exception("The test has to halt here.")
-
-
-
-
-
-
-#    selector2 = Spatial_RetrieverSelector()
-#    selector3 = Feat_RetrieverSelector()
-
-#    selector[0]
-#    selector.set_from_array()
-#    selector.set_from_function()
-#    selector.checker()
-#    selector.set_default_with_constraints()

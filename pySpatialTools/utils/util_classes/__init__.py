@@ -10,7 +10,7 @@ Classes which represent data types useful for the package pySpatialTools.
 #from spdesc_mapper import Sp_DescriptorMapper
 from spdesc_mapper import DummySelector, GeneralCollectionSelectors,\
     Feat_RetrieverSelector, Spatial_RetrieverSelector,\
-    FeatInd_RetrieverSelector
+    FeatInd_RetrieverSelector, Desc_RetrieverSelector
 
 ## Spatial elements collectors
 from spatialelements import SpatialElementsCollection, Locations

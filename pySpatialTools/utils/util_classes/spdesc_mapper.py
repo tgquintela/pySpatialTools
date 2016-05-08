@@ -14,92 +14,6 @@ data.
 import numpy as np
 
 
-#class Sp_DescriptorMapper:
-#    """Spatial descriptor mapper to indicate the path of possible options to
-#    compute spatial descriptors.
-#    """
-#    _mapper = lambda s, idx: (0, 0, 0, 0, 0, 0, 0, 0)
-#    __name__ = "pst.Sp_DescriptorMapper"
-#
-#    def __init__(self, staticneighs=None, mapretinput=None, mapretout=None,
-#                 mapfeatinput=None, mapfeatoutput=None):
-#
-#        dummymapper = lambda idx: 0
-#
-#        if staticneighs is None:
-#            if type(staticneighs) == np.ndarray:
-#                staticneighs = lambda idx: staticneighs[idx]
-#            if type(staticneighs).__name__ == 'function':
-#                pass
-#            else:
-#                staticneighs = dummymapper
-#
-#        if mapretinput is None:
-#            if type(mapretinput) == np.ndarray:
-#                mapretinput = lambda idx: mapretinput[idx]
-#            if type(mapretinput).__name__ == 'function':
-#                pass
-#            else:
-#                mapretinput = dummymapper
-#
-#        if mapretout is None:
-#            if type(mapretout) == np.ndarray:
-#                mapretout = lambda idx: mapretout[idx]
-#            if type(mapretout).__name__ == 'function':
-#                pass
-#            else:
-#                mapretout = dummymapper
-#
-#        if mapfeatinput is None:
-#            if type(mapfeatinput) == np.ndarray:
-#                mapfeatinput = lambda idx: mapfeatinput[idx]
-#            if type(mapfeatinput).__name__ == 'function':
-#                pass
-#            else:
-#                mapfeatinput = dummymapper
-#
-#        if mapfeatoutput is None:
-#            if type(mapfeatoutput) == np.ndarray:
-#                mapfeatoutput = lambda idx: mapfeatoutput[idx]
-#            if type(mapfeatoutput).__name__ == 'function':
-#                pass
-#            else:
-#                mapfeatoutput = dummymapper
-#
-#        self._mapper = lambda i: (staticneighs(i), mapretinput(i),
-#                                  mapretout(i), mapfeatinput(i),
-#                                  mapfeatoutput(i))
-#
-#    def __getitem__(self, keys):
-#        if type(keys) == int:
-#            istatic, iret, irout, ifeat, ifout = self._mapper(keys)
-#        else:
-#            raise TypeError("Not correct input for spatial descriptor mapper.")
-#        return istatic, iret, irout, ifeat, ifout
-#
-#    def set_from_array(self, array_mapper):
-#        "Set mapper from array."
-#        if array_mapper.shape[1] != 5:
-#            msg = "Not correct shape of array to be a spatial mapper."
-#            raise TypeError(msg)
-#        self._mapper = lambda idx: tuple(array_mapper[idx])
-#
-#    def set_from_function(self, function_mapper):
-#        try:
-#            a, b, c, d, e = function_mapper(0)
-#            self._mapper = function_mapper
-#        except:
-#            raise TypeError("Incorrect function mapper.")
-#
-#    def checker(self, constraints):
-#        "TODO: checker functions if this mapper selector fits the constraints."
-#        pass
-#
-#    def set_default_with_constraints(self, constraints):
-#        "TODO: default builder of the but with constraints."
-#        pass
-
-
 class GeneralSelector:
     """General selector."""
 
@@ -137,7 +51,7 @@ class GeneralSelector:
         """Set mapper from array."""
         assert(len(array_mapper.shape) == 2)
         if array_mapper.shape[1] != _n_vars_out:
-            msg = "Not correct shape of array to be a spatial mapper."
+            msg = "Not correct shape of array to be a selector mapper."
             raise TypeError(msg)
         self._array_mapper = array_mapper
         self._mapper = lambda idx: tuple(self._array_mapper[idx])
@@ -188,6 +102,12 @@ class GeneralCollectionSelectors:
             self.n_out += selectors[i].n_out
             self._pos_out += selectors[i]._pos_out
         self.selectors = selectors
+
+    def __getitem__(self, idx):
+        res = []
+        for i in range(len(self.selectors)):
+            res.append(self.selectors[i][idx])
+        return res
 
     def assert_correctness(self, object2manageselection):
         for i in range(len(self.selectors)):
@@ -243,11 +163,11 @@ class Spatial_RetrieverSelector(GeneralSelector):
         """Preformat input maps."""
         if mapper_out is not None:
             assert(type(_mapper_ret) == type(mapper_out))
-            assert(len(_mapper_ret) == len(mapper_out))
             if type(mapper_out) == np.ndarray:
+                assert(len(_mapper_ret) == len(mapper_out))
                 mapper = np.vstack([_mapper_ret, mapper_out]).T
             else:
-                mapper = lambda idx: (_mapper_ret[idx], mapper_out[idx])
+                mapper = lambda idx: (_mapper_ret(idx), mapper_out(idx))
         else:
             mapper = _mapper_ret
         return mapper
@@ -286,11 +206,11 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         """Preformat input maps."""
         if mapper_inp is not None:
             assert(type(_mapper_feats) == type(mapper_inp))
-            assert(len(_mapper_feats) == len(mapper_inp))
             if type(mapper_inp) == np.ndarray:
+                assert(len(_mapper_feats) == len(mapper_inp))
                 mapper = np.vstack([_mapper_feats, mapper_inp]).T
             else:
-                mapper = lambda idx: (_mapper_feats[idx], mapper_inp[idx])
+                mapper = lambda idx: (_mapper_feats(idx), mapper_inp(idx))
         else:
             mapper = _mapper_feats
         return mapper
@@ -327,9 +247,10 @@ class Desc_RetrieverSelector(GeneralSelector):
         if mapper_inp is not None:
             assert(type(_mapper_feats) == type(mapper_inp))
             if type(mapper_inp) == np.ndarray:
-                mapper = np.hstack([_mapper_feats, mapper_inp]).T
+                assert(len(mapper_inp) == len(_mapper_feats))
+                mapper = np.vstack([_mapper_feats, mapper_inp]).T
             else:
-                mapper = lambda idx: (_mapper_feats[idx], mapper_inp[idx])
+                mapper = lambda idx: (_mapper_feats(idx), mapper_inp(idx))
         else:
             mapper = _mapper_feats
         return mapper
@@ -339,9 +260,7 @@ class Desc_RetrieverSelector(GeneralSelector):
         assert(len(manager.features) == self.n_out[1])
 
 
-
-
-class Feat_RetrieverSelector(GeneralSelector):
+class Feat_RetrieverSelector(GeneralCollectionSelectors):
     """Features retriever mapper to indicate the path of possible options to
     interact with features.
     """
@@ -351,29 +270,29 @@ class Feat_RetrieverSelector(GeneralSelector):
     def _inititizalization(self):
         self._default_map_values = (0, 0)
         self._n_vars_out = 2
-        self.n_out = [1, 1]
-        self._pos_out[[0], [0]]
+        self.n_out = []
+        self._pos_out = []
         self.n_in = 0
-        self._open_n = (False, False)
+        self._open_n = False
 
-    def __init__(self, _mapper_ret, mapper_out=None):
-        ## Filter mappings
-        if mapper_out is None:
-            pass
+    def __init__(self, mapper_featin, mapper_featout, mapper_desc):
+        ## Assert correct inputs
+        self._assert_inputs(mapper_featin, mapper_featout, mapper_desc)
+        ## Set informative parameters
+        self._set_feat_selector(mapper_featin, mapper_featout, mapper_desc)
 
-    def assert_correctness(self, manager):
-        assert(len(manager.retrievers) == self.n_out[0])
+    def _assert_inputs(self, mapper_featin, mapper_featout, mapper_desc):
+        assert(mapper_featin.__name__ == "pst.FeatInd_RetrieverMapper")
+        assert(mapper_featout.__name__ == "pst.FeatInd_RetrieverMapper")
+        assert(mapper_desc.__name__ == "pst.Desc_RetrieverMapper")
+        if mapper_featin.n_in is not None and mapper_featin.n_in != 0:
+            assert(type(mapper_featin.n_in) == int)
+            assert(mapper_featin.n_in == mapper_featout.n_in)
+            assert(mapper_featin.n_in == mapper_desc.n_in)
 
-#        feat_manager
-#        t_feat_in, t_feat_out, t_feat_des
-#
-#        for i
-#        if self.close_output:
-#            len(feat_manager._maps_input) == 
-#            len(feat_manager.features)
-#
-#            len(feat_manager._maps_input)
-#            len(feat_manager.features)
-#
-#            len(feat_manager.features)
-#            len(feat_manager.descriptormodels)
+    def _set_feat_selector(self, mapper_featin, mapper_featout, mapper_desc):
+        self.n_in = mapper_featin.n_in
+        self.n_out = mapper_featin.n_out+mapper_featout.n_out+mapper_desc.n_out
+        self._pos_out =\
+            mapper_featin._pos_out+mapper_featout._pos_out+mapper_desc._pos_out
+        self.selectors = mapper_featin, mapper_featout, mapper_desc
