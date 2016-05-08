@@ -228,11 +228,19 @@ class Spatial_RetrieverSelector(GeneralSelector):
         self._n_vars_out = 2
         self.n_in = 0
         self.n_out = [1, 1]
-        self._pos_out[[0], [0]]
+        self._pos_out = [[0], [0]]
         self._open_n = (False, False)
 
     def __init__(self, _mapper_ret, mapper_out=None, n_in=None, n_out=None):
+        ## Initialization
+        self._inititizalization()
         ## Filter mappings
+        mapper = self._preformat_maps(_mapper_ret, mapper_out)
+        ## Creation of the mapper
+        self._format_maps(mapper, n_in, n_out, compute=False)
+
+    def _preformat_maps(self, _mapper_ret, mapper_out):
+        """Preformat input maps."""
         if mapper_out is not None:
             assert(type(_mapper_ret) == type(mapper_out))
             if type(mapper_out) == np.ndarray:
@@ -241,8 +249,7 @@ class Spatial_RetrieverSelector(GeneralSelector):
                 mapper = lambda idx: (_mapper_ret[idx], mapper_out[idx])
         else:
             mapper = _mapper_ret
-        ## Creation of the mapper
-        self._format_maps(mapper, n_in, n_out, compute=False)
+        return mapper
 
     def assert_correctness(self, manager):
         assert(len(manager.retrievers) == self.n_out[0])
@@ -250,6 +257,48 @@ class Spatial_RetrieverSelector(GeneralSelector):
             if self.array_mapper is not None:
                 for i in self._pos_out[0]:
                     [np.where(self.array_mapper[:, 0] == i)]
+
+
+class FeatInd_RetrieverSelector(GeneralSelector):
+    """Computation of features of the element we want to study."""
+
+    _mapper = lambda self, idx: (0, 0)
+    __name__ = "pst.FeatInd_RetrieverMapper"
+
+    def _inititizalization(self):
+        self._default_map_values = (0, 0)
+        self._n_vars_out = 2
+        self.n_out = [1, 1]
+        self._pos_out = [[0], [0]]
+        self.n_in = 0
+        self._open_n = (False, False)
+
+    def __init__(self, _mapper_feats, mapper_inp=None, n_in=None, n_out=None):
+        ## Initialization
+        self._inititizalization()
+        ## Filter mappings
+        mapper = self._preformat_maps(_mapper_feats, mapper_inp)
+        ## Creation of the mapper
+        self._format_maps(mapper, n_in, n_out, compute=False)
+
+    def _preformat_maps(self, _mapper_feats, mapper_inp):
+        """Preformat input maps."""
+        if mapper_inp is not None:
+            assert(type(_mapper_feats) == type(mapper_inp))
+            if type(mapper_inp) == np.ndarray:
+                mapper = np.hstack([_mapper_feats, mapper_inp]).T
+            else:
+                mapper = lambda idx: (_mapper_feats[idx], mapper_inp[idx])
+        else:
+            mapper = _mapper_feats
+        return mapper
+
+    def assert_correctness(self, manager):
+        assert(len(manager._maps_input) == self.n_out[0])
+        assert(len(manager.features) == self.n_out[1])
+
+
+
 
 
 class Feat_RetrieverSelector(GeneralSelector):

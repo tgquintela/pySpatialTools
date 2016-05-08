@@ -34,7 +34,7 @@ from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 from pySpatialTools.utils.util_classes import DummySelector,\
     GeneralCollectionSelectors, Spatial_RetrieverSelector,\
-    Feat_RetrieverSelector
+    Feat_RetrieverSelector, FeatInd_RetrieverSelector
 
 
 def test():
@@ -569,6 +569,23 @@ def test():
     except:
         if boolean:
             raise Exception("The test has to halt here.")
+
+    # FeatureInd retriever selector
+    FeatInd_RetrieverSelector(mapper_array)
+    FeatInd_RetrieverSelector(mapper_array, mapper_array)
+    try:
+        ## Different types of core mappers
+        boolean = False
+        FeatInd_RetrieverSelector(mapper_array, mapper_function)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
+
+
+
+
 
 #    # Feature retriever selector
 #    Feat_RetrieverSelector(mapper_array)

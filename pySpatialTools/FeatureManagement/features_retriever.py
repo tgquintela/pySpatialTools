@@ -314,7 +314,8 @@ class FeaturesManager:
         sh = neighs_info.shape
         assert(len(i_input) == sh[0] and len(ks) == sh[2])
         ## 1. Prepare selectors
-        t_feat_in, t_feat_out, t_feat_des = self._get_typefeats(feat_selectors)
+        t_feat_in, t_feat_out, t_feat_des =\
+            self._get_typefeats(i_input, feat_selectors)
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
