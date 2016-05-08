@@ -159,7 +159,7 @@ class GeneralSelector:
             self.close_output = True
             if type(n_in) == int:
                 for i in range(n_in):
-                    out = self._mapper[i]
+                    out = self._mapper(i)
                     for j in range(len(out)):
                         if out[j] not in out_uniques[j]:
                             out_uniques[j].append(out[j])
@@ -167,7 +167,7 @@ class GeneralSelector:
             self.n_out = [len(e) for e in self._pos_out]
 
     def _define_lack_parameters(self, mapper):
-        if '' not in dir(self):
+        if '_n_vars_out' not in dir(self):
             if type(mapper) == np.ndarray:
                 out = mapper[0]
             else:
@@ -208,8 +208,8 @@ class DummySelector(GeneralSelector):
         if n_out is not None:
             n_out = [n_out] if type(n_out) == int else n_out
             assert(len(n_out) == self._n_vars_out)
-            self._open_n = [range(n_out[i]) for i in range(self._n_vars_out)]
-        self(self._mapper, n_out=n_out)
+            self._pos_out = [range(n_out[i]) for i in range(self._n_vars_out)]
+        self.__init__(self._mapper, n_out=n_out)
 
 
 class Spatial_RetrieverSelector(GeneralSelector):
@@ -243,8 +243,9 @@ class Spatial_RetrieverSelector(GeneralSelector):
         """Preformat input maps."""
         if mapper_out is not None:
             assert(type(_mapper_ret) == type(mapper_out))
+            assert(len(_mapper_ret) == len(mapper_out))
             if type(mapper_out) == np.ndarray:
-                mapper = np.hstack([_mapper_ret, mapper_out]).T
+                mapper = np.vstack([_mapper_ret, mapper_out]).T
             else:
                 mapper = lambda idx: (_mapper_ret[idx], mapper_out[idx])
         else:
@@ -285,6 +286,46 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         """Preformat input maps."""
         if mapper_inp is not None:
             assert(type(_mapper_feats) == type(mapper_inp))
+            assert(len(_mapper_feats) == len(mapper_inp))
+            if type(mapper_inp) == np.ndarray:
+                mapper = np.vstack([_mapper_feats, mapper_inp]).T
+            else:
+                mapper = lambda idx: (_mapper_feats[idx], mapper_inp[idx])
+        else:
+            mapper = _mapper_feats
+        return mapper
+
+    def assert_correctness(self, manager):
+        assert(len(manager._maps_input) == self.n_out[0])
+        assert(len(manager.features) == self.n_out[1])
+
+
+class Desc_RetrieverSelector(GeneralSelector):
+    """Selection of descriptor computation after pointfeatures and
+    neighbourhood features."""
+
+    __name__ = "pst.Desc_RetrieverMapper"
+
+    def _inititizalization(self):
+        self._default_map_values = (0, 0)
+        self._n_vars_out = 2
+        self.n_out = [1, 1]
+        self._pos_out = [[0], [0]]
+        self.n_in = 0
+        self._open_n = (False, False)
+
+    def __init__(self, _mapper_feats, mapper_inp=None, n_in=None, n_out=None):
+        ## Initialization
+        self._inititizalization()
+        ## Filter mappings
+        mapper = self._preformat_maps(_mapper_feats, mapper_inp)
+        ## Creation of the mapper
+        self._format_maps(mapper, n_in, n_out, compute=False)
+
+    def _preformat_maps(self, _mapper_feats, mapper_inp):
+        """Preformat input maps."""
+        if mapper_inp is not None:
+            assert(type(_mapper_feats) == type(mapper_inp))
             if type(mapper_inp) == np.ndarray:
                 mapper = np.hstack([_mapper_feats, mapper_inp]).T
             else:
@@ -296,7 +337,6 @@ class FeatInd_RetrieverSelector(GeneralSelector):
     def assert_correctness(self, manager):
         assert(len(manager._maps_input) == self.n_out[0])
         assert(len(manager.features) == self.n_out[1])
-
 
 
 

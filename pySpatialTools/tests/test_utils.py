@@ -534,7 +534,8 @@ def test():
     pos_mappers = [{'mapper': mapper_array}, {'mapper': mapper_function},
                    {'mapper': mapper_function, 'compute': True},
                    {'mapper': mapper_function, 'n_in': 5, 'n_out': 6},
-                   {'mapper': mapper_function1, 'n_in': 5, 'n_out': [3, 4]}]
+                   {'mapper': mapper_function1, 'n_in': 5, 'n_out': [3, 4]},
+                   {'mapper': mapper_function1, 'n_in': 5, 'compute': True}]
 
     for p in pos_mappers:
         comb_selector = DummySelector(**p)
@@ -552,13 +553,16 @@ def test():
             if boolean:
                 raise Exception("The test has to halt here.")
 
+        ## Functions
+        comb_selector.set_pars(2, lambda x: (0, 0), n_out=[1, 1])
+
     selector1 = DummySelector(mapper_array)
     selector2 = DummySelector(lambda idx: mapper_array[idx], n_in=100, n_out=3)
     selector3 = DummySelector(lambda idx: [mapper_array[idx]]*3, n_in=100)
     sl = GeneralCollectionSelectors([selector1, selector2, selector3])
 
     # Spatial retriever selector
-    Spatial_RetrieverSelector(mapper_array)
+    Spatial_RetrieverSelector(np.array([mapper_array]*2).T)
     Spatial_RetrieverSelector(mapper_array, mapper_array)
     try:
         ## Different types of core mappers
@@ -569,14 +573,32 @@ def test():
     except:
         if boolean:
             raise Exception("The test has to halt here.")
+    try:
+        ## Not correct shape
+        boolean = False
+        Spatial_RetrieverSelector(mapper_array)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
 
     # FeatureInd retriever selector
-    FeatInd_RetrieverSelector(mapper_array)
+    FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
     FeatInd_RetrieverSelector(mapper_array, mapper_array)
     try:
         ## Different types of core mappers
         boolean = False
         FeatInd_RetrieverSelector(mapper_array, mapper_function)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("The test has to halt here.")
+    try:
+        ## Different types of core mappers
+        boolean = False
+        FeatInd_RetrieverSelector(np.array([mapper_array]*10).T)
         boolean = True
         raise Exception("It has to halt here.")
     except:
