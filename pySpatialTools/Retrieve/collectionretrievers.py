@@ -62,8 +62,9 @@ class RetrieverManager:
     def retrieve_neighs(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
         interior parameters."""
-        typeret_i, out_ret = self.get_type_ret(typeret_i, i)
-        neighs_info = self.retrievers[typeret_i].retrieve_neighs(i, out_ret)
+        typeret_i, out_ret = self.get_type_ret(i, typeret_i)
+        neighs_info =\
+            self.retrievers[typeret_i].retrieve_neighs(i, output=out_ret)
         return neighs_info
 
     def compute_nets(self, kret=None):
@@ -124,13 +125,14 @@ class RetrieverManager:
         """Programable get_type_ret."""
         if selector is None:
             self.get_type_ret = self._general_get_type_ret
+            self.selector.assert_correctness(self)
         elif type(selector) == tuple:
             self.selector = selector
             self.get_type_ret = self._static_get_type_ret
         else:
             self.selector = Spatial_RetrieverSelector(selector)
             self.get_type_ret = self._selector_get_type_ret
-        self.selector.assert_correctness(self)
+            self.selector.assert_correctness(self)
 
     ################################# Type_ret ################################
     ###########################################################################

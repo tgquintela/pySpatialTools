@@ -298,6 +298,7 @@ class FeaturesManager:
         """Programable get_type_feat."""
         if selector1 is None:
             self.get_type_feat = self._general_get_type_feat
+            self.selector.assert_correctness(self)
         else:
             typ = type(selector1)
             assert((type(selector2) == typ) and (type(selector2) == typ))
@@ -308,7 +309,7 @@ class FeaturesManager:
                 self.selector =\
                     Feat_RetrieverSelector(selector1, selector2, selector3)
                 self.get_type_feat = self._selector_get_type_feat
-        self.selector.assert_correctness(self)
+                self.selector.assert_correctness(self)
 
     ################################# Setters #################################
     ###########################################################################

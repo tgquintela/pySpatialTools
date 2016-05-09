@@ -1106,9 +1106,6 @@ def test():
 #    for iss, nei in ret:
 #        pass
 
-
-
-
     ###########################################################################
     #### Retriever Manager
     ######################
@@ -1120,49 +1117,82 @@ def test():
     ret2 = KRetriever(data_input, info_ret=4)
     ret3 = CircRetriever(data2, info_ret=0.1, autolocs=data_input)
 
-    mapper = np.array([np.random.randint(0, 3, 100), np.zeros(100)]).T
-    gret1 = RetrieverManager([ret1, ret2, ret3])
-    gret2 = RetrieverManager([ret1, ret2, ret3], mapper)
+    mapper0 = None
+    mapper1 = (0, 0)
+    mapper2 = np.array([np.random.randint(0, 3, 100), np.zeros(100)]).T
+    mapper3 = lambda idx: (np.random.randint(0, 3), 0)
+    pos_mappers = [mapper0, mapper1, mapper2, mapper3]
 
-    len(gret1)
-    len(gret2)
-    gret1[0]
-    gret2[0]
+    for mapper in pos_mappers:
+        gret = RetrieverManager([ret1, ret2, ret3], mapper)
+        ## Test functions
+        len(gret)
+        gret[0]
+        for neighs_info in gret:
+            pass
+        gret.add_retrievers(ret3)
+        gret.add_perturbations(perturbation4)
+        gret.set_selector(mapper)
+        gret.retrieve_neighs(10)
 
-    for neighs_info in gret1:
-        pass
-    for neighs_info in gret2:
-        pass
+        ## Impossible cases
+        try:
+            boolean = False
+            gret[-1]
+            boolean = True
+            raise Exception("It has to halt here.")
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
+        try:
+            boolean = False
+            gret.add_retrievers(type(None))
+            boolean = True
+            raise Exception("It has to halt here.")
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
 
-    gret1.add_retrievers(ret3)
-    gret1.set_neighs_info(True)
-    gret2.set_neighs_info(True)
-    gret1.add_perturbations(perturbation4)
-    gret2.add_perturbations(perturbation4)
-
-    gret1.set_selector(mapper)
-    gret2.set_selector(lambda idx: (np.random.randint(0, 3), 1))
+#    ## Simple test
+#    gret1 = RetrieverManager([ret1, ret2, ret3])
+#    gret2 = RetrieverManager([ret1, ret2, ret3], mapper)
+#    len(gret1)
+#    len(gret2)
+#    gret1[0]
+#    gret2[0]
+#    for neighs_info in gret1:
+#        pass
+#    for neighs_info in gret2:
+#        pass
+#    gret1.add_retrievers(ret3)
+#    gret1.set_neighs_info(True)
+#    gret2.set_neighs_info(True)
+#    gret1.add_perturbations(perturbation4)
+#    gret2.add_perturbations(perturbation4)
+#
+#    gret1.set_selector(mapper)
+#    gret2.set_selector(mapper)
 
 #    gret1.retrieve_neighs(10)
 #    gret2.retrieve_neighs(10)
 
-    ## Impossible cases
-    try:
-        boolean = False
-        gret1[-1]
-        boolean = True
-        raise Exception("It has to halt here.")
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    try:
-        boolean = False
-        gret1.add_retrievers(type(None))
-        boolean = True
-        raise Exception("It has to halt here.")
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
+#    ## Impossible cases
+#    try:
+#        boolean = False
+#        gret[-1]
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#    try:
+#        boolean = False
+#        gret.add_retrievers(type(None))
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
 
 
 #    try:
@@ -1185,9 +1215,6 @@ def test():
 #    except:
 #        if boolean:
 #            raise Exception("It has to halt here.")
-
-
-
 
 ##info_ret=None, autolocs=None, pars_ret=None,
 ##                 autoexclude=True, ifdistance=False, info_f=None,

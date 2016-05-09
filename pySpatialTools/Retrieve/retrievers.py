@@ -101,7 +101,7 @@ class Retriever:
             yield iss, neighs
 
     ##################### Retrieve candidates functions #######################
-    def _retrieve_neighs_static(self, i_loc):
+    def _retrieve_neighs_static(self, i_loc, output=0):
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
         This function is composed by mutable functions in order to take profit
@@ -111,7 +111,7 @@ class Retriever:
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
         ## 2. Format output
 #        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
-        neighs_info = self._format_output(i_loc, neighs, dists)
+        neighs_info = self._format_output(i_loc, neighs, dists, output)
         ## 3. Format neighs_info
 #        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, self.get_indice_i(i_loc))
@@ -119,7 +119,7 @@ class Retriever:
         neighs_info = self.neighs_info
         return neighs_info
 
-    def _retrieve_neighs_dynamic(self, i_loc):
+    def _retrieve_neighs_dynamic(self, i_loc, output=0):
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
         This function is composed by mutable functions in order to take profit
@@ -133,7 +133,7 @@ class Retriever:
             _, k_r = self._map_perturb(k)
             ## 2. Retrieve neighs
             neighs, dists = self._retrieve_neighs_spec(i_loc, {}, kr=k_r)
-            nei_k = self._format_output(i_loc, neighs, dists, kr=k_r)
+            nei_k = self._format_output(i_loc, neighs, dists, output, kr=k_r)
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
 #        print neighs_info, '1'*50, self.neighs_info.format_set_info

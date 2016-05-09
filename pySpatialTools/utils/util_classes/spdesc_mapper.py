@@ -67,6 +67,7 @@ class GeneralSelector:
         if array_mapper.shape[1] != _n_vars_out:
             msg = "Not correct shape of array to be a selector mapper."
             raise TypeError(msg)
+        array_mapper = array_mapper.astype(int)
         self._array_mapper = array_mapper
         self._mapper = lambda idx: tuple(self._array_mapper[idx])
         self._pos_out = []
@@ -195,10 +196,12 @@ class Spatial_RetrieverSelector(GeneralSelector):
 
     def assert_correctness(self, manager):
         assert(len(manager.retrievers) >= self.n_out[0])
-        if 'array_mapper' in dir(self):
-            if self.array_mapper is not None:
+        if '_array_mapper' in dir(self):
+            if self._array_mapper is not None:
                 for i in self._pos_out[0]:
-                    [np.where(self.array_mapper[:, 0] == i)]
+                    idxs = np.where(self._array_mapper[:, 0] == i)
+                    max_out = np.max(self._array_mapper[idxs, 1])
+                    assert(len(manager.retrievers[i]._output_map) > max_out)
 
 
 class FeatInd_RetrieverSelector(GeneralSelector):
