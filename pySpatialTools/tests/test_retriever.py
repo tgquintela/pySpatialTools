@@ -1134,6 +1134,10 @@ def test():
         gret.add_perturbations(perturbation4)
         gret.set_selector(mapper)
         gret.retrieve_neighs(10)
+        gret.retrieve_neighs(10, typeret_i=(0, 0))
+
+        #gret.compute_nets()
+        gret.set_neighs_info(bool_input_idx=True)
 
         ## Impossible cases
         try:

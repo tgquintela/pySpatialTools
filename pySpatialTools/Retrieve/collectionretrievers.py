@@ -78,7 +78,7 @@ class RetrieverManager:
         ## Compute
         nets = []
         for r in kret:
-            nets.append(self.retrievers[r].compute_neighnets())
+            nets.append(self.retrievers[r].compute_neighnets(self.selector))
         return nets
 
     ######################### Auxiliar administrative #########################
