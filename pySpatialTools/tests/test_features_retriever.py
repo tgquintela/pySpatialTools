@@ -357,6 +357,10 @@ def test():
     ###########################################################################
     ##########################
     #### FeatureRetriever testing
+    reindices0 = np.arange(n)
+    reindices = np.vstack([reindices0]+[np.random.permutation(n)
+                                        for i in range(rei-1)]).T
+    perturbation = PermutationPerturbation(reindices)
 
     ## Impossible instantiation cases
     try:
@@ -420,8 +424,9 @@ def test():
     feats0 = np.random.random(100)
     feats1 = np.random.random((100, 1))
     feats2 = np.random.random((100, 1, 1))
+    feats3 = np.random.random((100, 2))
     Feat_imp = ImplicitFeatures(feats1)
-    Feat_imp2 = ImplicitFeatures(np.random.random((100, 2)), names=[3, 4])
+    Feat_imp2 = ImplicitFeatures(feats3, names=[3, 4])
     Feat_exp = ExplicitFeatures(aggcatfeats_dict)
     avgdesc = AvgDescriptor()
 
@@ -471,11 +476,35 @@ def test():
         fm.set_map_vals_i(m_vals_i)
         # Strange cases
         if mode is None:
-            FeaturesManager([Feat_imp2, Feat_imp], mode=mode)
+            FeaturesManager([ImplicitFeatures(feats1),
+                             ImplicitFeatures(feats3, names=[3, 4])],
+                            mode=mode)
         fm.get_type_feat(0, [(0, 0)]*3)
         fm.get_type_feat(50, [(0, 0)]*3)
+        fm.get_type_feat(50)
+        fm.set_descriptormodels(desc)
+
+    feats = [ImplicitFeatures(feats1), ImplicitFeatures(feats1)]
+    fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
+                         maps_vals_i=m_vals_i, mode=mode,
+                         descriptormodels=desc, selectors=selectors)
+    if all([fea.typefeat == 'implicit' for fea in fm.features]):
+        fm.add_perturbations(perturbation)
 
     ## Impossible function cases
+    feats = [ImplicitFeatures(feats1), ImplicitFeatures(feats3, names=[3, 4])]
+    try:
+        ## Different variablesnames
+        boolean = False
+        fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
+                             maps_vals_i=m_vals_i, mode=mode,
+                             descriptormodels=desc, selectors=selectors)
+        boolean = True
+        raise Exception("It has to halt here.")
+    except:
+        if boolean:
+            raise Exception("It has to halt here.")
+
     try:
         boolean = False
         fm[-1]
