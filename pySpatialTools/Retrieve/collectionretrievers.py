@@ -40,8 +40,9 @@ class RetrieverManager:
         self.selector = Spatial_RetrieverSelector(sel_f)
 
     def __init__(self, retrievers, selector_retriever=None):
+        self._initialization()
         self._format_retrievers(retrievers)
-        self._format_map_retriever(selector_retriever)
+        self._format_selector(selector_retriever)
 
     def __len__(self):
         return len(self.retrievers)
@@ -61,7 +62,7 @@ class RetrieverManager:
     def retrieve_neighs(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
         interior parameters."""
-        typeret_i, out_ret = self._get_type_ret(typeret_i, i)
+        typeret_i, out_ret = self.get_type_ret(typeret_i, i)
         neighs_info = self.retrievers[typeret_i].retrieve_neighs(i, out_ret)
         return neighs_info
 
@@ -94,32 +95,22 @@ class RetrieverManager:
         """Set a common selector in order to not depend on continous external
         orders.
         """
-        self.selector = Spatial_RetrieverSelector(selector)
-
-    def _get_type_ret(self, typeret_i, i):
-        """Interaction with the selector. Using upside information of selection
-        or the own selector the manager owns."""
-        if typeret_i is None:
-            typeret_i, out_ret = self.selector[i]
-        else:
-            typeret_i, out_ret = typeret_i
-        return typeret_i, out_ret
+        self._format_selector(selector)
 
     ################################ Formatters ###############################
     ###########################################################################
-    def _format_map_retriever(self, selector_retriever):
-        if not selector_retriever is None:
-            self._selector_retriever = selector_retriever
-
     def _format_retrievers(self, retrievers):
         if type(retrievers) == list:
-            self.retrievers = retrievers
+            self.retrievers += retrievers
         elif retrievers.__name__ == 'pySpatialTools.Retriever':
             self.retrievers.append(retrievers)
         elif not(type(retrievers) == list):
             raise TypeError("Incorrect type. Not retrievers list.")
         ## WARNING: By default it is determined by the first retriever
+        ret_n_inputs = [len(self.retrievers[i]) for i in range(len(self))]
+        assert(all([len(self.retrievers[0]) == r for r in ret_n_inputs]))
         self.n_inputs = len(self.retrievers[0])
+        self._format_staticneighs()
 
     def _format_staticneighs(self):
         """Format staticneighs."""
@@ -128,6 +119,46 @@ class RetrieverManager:
         self.staticneighs = self[0].staticneighs
         aux = [self[i].staticneighs == self.staticneighs for i in range(n_ret)]
         assert(aux)
+
+    def _format_selector(self, selector):
+        """Programable get_type_ret."""
+        if selector is None:
+            self.get_type_ret = self._general_get_type_ret
+        elif type(selector) == tuple:
+            self.selector = selector
+            self.get_type_ret = self._static_get_type_ret
+        else:
+            self.selector = Spatial_RetrieverSelector(selector)
+            self.get_type_ret = self._selector_get_type_ret
+        self.selector.assert_correctness(self)
+
+    ################################# Type_ret ################################
+    ###########################################################################
+    ## Formatting the selection of path from i information.
+    ##
+    ## See also:
+    ## ---------
+    ## pst.FeaturesManager
+    #########################
+    def _general_get_type_ret(self, i, typeret_i=None):
+        """Interaction with the selector. Using upside information of selection
+        or the own selector the manager owns."""
+        if typeret_i is None:
+            typeret_i, out_ret = self.selector[i]
+        else:
+            typeret_i, out_ret = typeret_i
+        return typeret_i, out_ret
+
+    def _static_get_type_ret(self, i, typeret_i=None):
+        """Interaction with the selector. Using upside information of selection
+        or the own selector the manager owns."""
+        typeret_i, out_ret = self.selector
+        return typeret_i, out_ret
+
+    def _selector_get_type_ret(self, i, typeret_i=None):
+        """Get information only from selector."""
+        typeret_i, out_ret = self.selector[i]
+        return typeret_i, out_ret
 
     ######################## Perturbation management ##########################
     ###########################################################################

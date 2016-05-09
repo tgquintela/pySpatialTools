@@ -66,7 +66,8 @@ class FeaturesManager:
         self._maps_vals_i = None
 
     def __init__(self, features_objects, mode=None, maps_input=None,
-                 maps_output=None, maps_vals_i=None, descriptormodels=None):
+                 maps_output=None, maps_vals_i=None, descriptormodels=None,
+                 selectors=[None]*3):
         self._initialization()
 #        out = out if out in ['ndarray', 'dict'] else None
 #        self._out = self._out if out is None else out
@@ -76,6 +77,7 @@ class FeaturesManager:
         self._format_outfeatures()
         self._format_result_building()
         self._format_descriptormodel(descriptormodels)
+        self.set_selector(*selectors)
 
     def __getitem__(self, i_feat):
         if i_feat < 0 or i_feat >= len(self.features):
@@ -291,6 +293,23 @@ class FeaturesManager:
                 assert(all(logi))
                 self.out_features = outs
 
+    ############################# Format selectors ############################
+    def _format_selector(self, selector1, selector2, selector3):
+        """Programable get_type_feat."""
+        if selector1 is None:
+            self.get_type_feat = self._general_get_type_feat
+        else:
+            typ = type(selector1)
+            assert((type(selector2) == typ) and (type(selector2) == typ))
+            if typ == tuple:
+                self.selector = (selector1, selector2, selector3)
+                self.get_type_feat = self._static_get_type_feat
+            else:
+                self.selector =\
+                    Feat_RetrieverSelector(selector1, selector2, selector3)
+                self.get_type_feat = self._selector_get_type_feat
+        self.selector.assert_correctness(self)
+
     ################################# Setters #################################
     ###########################################################################
     def set_map_vals_i(self, _maps_vals_i):
@@ -305,13 +324,9 @@ class FeaturesManager:
         """Set descriptormodels."""
         self._format_descriptormodel(descriptormodels)
 
-    def set_selector(self, selector1, selector2=None, selector3=None):
-        if selector3 is None or selector2 is None:
-            assert(selector2 is None and selector3 is None)
-            self.selector = Feat_RetrieverSelector(*selector1)
-        else:
-            self.selector =\
-                Feat_RetrieverSelector(selector1, selector2, selector3)
+    def set_selector(self, selector1, selector2, selector3):
+        """Set selectors."""
+        self._format_selector(selector1, selector2, selector3)
 
     ################################# Getters #################################
     ###########################################################################
@@ -407,15 +422,32 @@ class FeaturesManager:
                 complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
         return descriptors
 
-    def _get_typefeats(self, typefeats):
+    ################################# Type_feat ###############################
+    ###########################################################################
+    ## Formatting the selection of path from i information for features
+    ## retrieving.
+    ##
+    ## See also:
+    ## ---------
+    ## pst.RetrieverManager
+    #########################
+    def _general_get_type_feat(self, i, typefeats_i=None):
+        """Format properly general typefeats selector information."""
+        if typefeats_i is None or type(typefeats_i) != tuple:
+            typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+        else:
+            typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
+        return typefeats_i, typefeats_nei, typefeats_desc
+
+    def _static_get_type_feat(self, i, typefeats_i=None):
         """Format properly typefeats selector information."""
-        if typefeats is None or type(typefeats) != tuple:
-            typefeats = (0, 0, 0, 0, 0, 0)
-        elif '__len__' not in dir(typefeats):
-            typefeats = (0, 0, 0, 0, 0, 0)
-        elif len(typefeats) != 6:
-            typefeats = (0, 0, 0, 0, 0, 0)
-        return typefeats[:2], typefeats[2:4], typefeats[4:]
+        typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+        return typefeats_i, typefeats_nei, typefeats_desc
+
+    def _selector_get_type_feat(self, i, typeret_i=None):
+        """Get information only from selector."""
+        typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+        return typefeats_i, typefeats_nei, typefeats_desc
 
     ######################## Perturbation management ##########################
     ###########################################################################

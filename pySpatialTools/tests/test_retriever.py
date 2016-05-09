@@ -1120,8 +1120,9 @@ def test():
     ret2 = KRetriever(data_input, info_ret=4)
     ret3 = CircRetriever(data2, info_ret=0.1, autolocs=data_input)
 
+    mapper = np.array([np.random.randint(0, 3, 100), np.zeros(100)]).T
     gret1 = RetrieverManager([ret1, ret2, ret3])
-    gret2 = RetrieverManager([ret1, ret2, ret3], np.random.randint(0, 3, 100))
+    gret2 = RetrieverManager([ret1, ret2, ret3], mapper)
 
     len(gret1)
     len(gret2)
@@ -1139,7 +1140,11 @@ def test():
     gret1.add_perturbations(perturbation4)
     gret2.add_perturbations(perturbation4)
 
+    gret1.set_selector(mapper)
+    gret2.set_selector(lambda idx: (np.random.randint(0, 3), 1))
+
 #    gret1.retrieve_neighs(10)
+#    gret2.retrieve_neighs(10)
 
     ## Impossible cases
     try:

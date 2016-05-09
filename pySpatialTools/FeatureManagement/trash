@@ -2,6 +2,17 @@
 
 ###### 2016-05-04 FeatureManager
 ################################
+    def _general_get_typefeats(self, typefeats):
+        """Format properly typefeats selector information."""
+        if typefeats is None or type(typefeats) != tuple:
+            typefeats = (0, 0, 0, 0, 0, 0)
+        elif '__len__' not in dir(typefeats):
+            typefeats = (0, 0, 0, 0, 0, 0)
+        elif len(typefeats) != 6:
+            typefeats = (0, 0, 0, 0, 0, 0)
+        return typefeats[:2], typefeats[2:4], typefeats[4:]
+
+
     def _format_descriptormodel(self, descriptormodel):
         """Formatter of the descriptormodel."""
 #        ## Check descriptormodel

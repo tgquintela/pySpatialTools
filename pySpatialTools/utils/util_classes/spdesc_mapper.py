@@ -194,7 +194,7 @@ class Spatial_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
-        assert(len(manager.retrievers) == self.n_out[0])
+        assert(len(manager.retrievers) >= self.n_out[0])
         if 'array_mapper' in dir(self):
             if self.array_mapper is not None:
                 for i in self._pos_out[0]:
@@ -239,8 +239,8 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
-        assert(len(manager._maps_input) == self.n_out[0])
-        assert(len(manager.features) == self.n_out[1])
+        assert(len(manager._maps_input) >= self.n_out[0])
+        assert(len(manager.features) >= self.n_out[1])
 
 
 class Desc_RetrieverSelector(GeneralSelector):
@@ -281,8 +281,8 @@ class Desc_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
-        assert(len(manager._maps_input) == self.n_out[0])
-        assert(len(manager.features) == self.n_out[1])
+        assert(len(manager._maps_input) >= self.n_out[0])
+        assert(len(manager.features) >= self.n_out[1])
 
 
 class Feat_RetrieverSelector(GeneralCollectionSelectors):
@@ -301,6 +301,8 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
         self._open_n = False
 
     def __init__(self, mapper_featin, mapper_featout, mapper_desc):
+        ## Initialization
+        self._inititizalization()
         ## Instantiation
         mapper_featin = FeatInd_RetrieverSelector(mapper_featin)
         mapper_featout = FeatInd_RetrieverSelector(mapper_featout)
