@@ -436,6 +436,13 @@ def test():
     possibilities = [pos_feats, pos_map_in, pos_map_out, pos_mapvals_i,
                      pos_mode, pos_desc]
 
+    ## Random parameter space exploration
+    mapper0 = [None]*3
+    mapper1 = [(0, 0)]*3
+    mapper2 = [np.array([np.zeros(100), np.zeros(100)]).T]*3
+    mapper3 = [lambda idx: (0, 0)]*3
+    pos_mappers = [mapper0, mapper1, mapper2, mapper3]
+
     ## Combinations
     for p in product(*possibilities):
 #        ## Random exploration of parameters
@@ -446,11 +453,12 @@ def test():
 #        mode = pos_mode[np.random.randint(0, len(pos_mode))]
 #        desc = pos_desc[np.random.randint(0, len(pos_desc))]
         ## Exhaustive exploration of parameters
+        selectors = pos_mappers[np.random.randint(0, len(pos_mappers))]
         feats, m_input, m_out, m_vals_i, mode, desc = p
         ## Instantiation
         fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
                              maps_vals_i=m_vals_i, mode=mode,
-                             descriptormodels=desc)
+                             descriptormodels=desc, selectors=selectors)
         # Check basic functions
         fm[0]
         fm.shape
@@ -464,6 +472,8 @@ def test():
         # Strange cases
         if mode is None:
             FeaturesManager([Feat_imp2, Feat_imp], mode=mode)
+        fm.get_type_feat(0, [(0, 0)]*3)
+        fm.get_type_feat(50, [(0, 0)]*3)
 
     ## Impossible function cases
     try:

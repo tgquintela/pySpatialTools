@@ -442,7 +442,7 @@ class FeaturesManager:
 
     def _static_get_type_feat(self, i, typefeats_i=None):
         """Format properly typefeats selector information."""
-        typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+        typefeats_i, typefeats_nei, typefeats_desc = self.selector
         return typefeats_i, typefeats_nei, typefeats_desc
 
     def _selector_get_type_feat(self, i, typeret_i=None):
