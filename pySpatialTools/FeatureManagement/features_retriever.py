@@ -25,7 +25,9 @@ TODO
 
 import numpy as np
 ## Check initialization of map vals i
-from ..utils.util_classes import create_mapper_vals_i, Neighs_Info
+from ..utils.util_classes import create_mapper_vals_i, Neighs_Info,\
+    Feat_RetrieverSelector
+
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
     sparse_dict_completer_unknown, sum_addresult_function
@@ -51,6 +53,7 @@ class FeaturesManager:
         self.descriptormodels = []
         self.features = []
         self.mode = None
+        self.selector = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
         ## IO information
         self._variables = {}       ## TO CHANGE
         self.featuresnames = []    ## TO CHANGE
@@ -301,6 +304,14 @@ class FeaturesManager:
     def set_descriptormodels(self, descriptormodels):
         """Set descriptormodels."""
         self._format_descriptormodel(descriptormodels)
+
+    def set_selector(self, selector1, selector2=None, selector3=None):
+        if selector3 is None or selector2 is None:
+            assert(selector2 is None and selector3 is None)
+            self.selector = Feat_RetrieverSelector(*selector1)
+        else:
+            self.selector =\
+                Feat_RetrieverSelector(selector1, selector2, selector3)
 
     ################################# Getters #################################
     ###########################################################################

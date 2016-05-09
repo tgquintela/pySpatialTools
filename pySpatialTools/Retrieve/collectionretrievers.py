@@ -12,6 +12,7 @@ this manager, but in this case it is not the output, it is the input.
 """
 
 from tools_retriever import create_aggretriever
+from pySpatialTools.utils.util_classes import Spatial_RetrieverSelector
 
 
 class RetrieverManager:
@@ -33,11 +34,12 @@ class RetrieverManager:
         self.k_perturb = 0
         self.retrievers = []
         self.n_inputs = 0
-        self._selector_retriever = lambda s, typeret_i: (0, 0)
         self.staticneighs = True
+        ## TODO:
+        sel_f = lambda i: (0, 0)
+        self.selector = Spatial_RetrieverSelector(sel_f)
 
     def __init__(self, retrievers, selector_retriever=None):
-        self._initialization()
         self._format_retrievers(retrievers)
         self._format_map_retriever(selector_retriever)
 
@@ -56,19 +58,26 @@ class RetrieverManager:
             yield neighs_info
         ## If mapper active (TODO)
 
-    def retrieve_neighs(self, i, info_i=None, ifdistance=None,
-                        typeret_i=None, k=None):
-        typeret_i, out_ret = self._get_type_ret(typeret_i, i, k)
-        neighs_info = self.retrievers[typeret_i].retrieve_neighs(i, info_i,
-                                                                 ifdistance,
-                                                                 k, out_ret)
+    def retrieve_neighs(self, i, typeret_i=None):
+        """Retrieve neighbourhood under conditions of ifdistance or others
+        interior parameters."""
+        typeret_i, out_ret = self._get_type_ret(typeret_i, i)
+        neighs_info = self.retrievers[typeret_i].retrieve_neighs(i, out_ret)
         return neighs_info
 
-    def compute_nets(self):
+    def compute_nets(self, kret=None):
         """Compute all the possible relations if there is a common
         (homogeneous) ouput.
         """
-        pass
+        ## Check that match conditions (TODO)
+        ## Format kret
+        kret = range(len(self.retrievers)) if kret is None else kret
+        kret = [kret] if type(kret) == int else kret
+        ## Compute
+        nets = []
+        for r in kret:
+            nets.append(self.retrievers[r].compute_neighnets())
+        return nets
 
     ######################### Auxiliar administrative #########################
     ###########################################################################
@@ -76,21 +85,22 @@ class RetrieverManager:
         """Add new retrievers."""
         self._format_retrievers(retrievers)
 
-    def set_typeret(self, typeret):
-        """Set a common typeret in order to not depend on continous external
-        orders.
-        """
-        pass
-
     def set_neighs_info(self, bool_input_idx):
         """Setting the neighs info of the retrievers."""
         for i in range(len(self)):
             self.retrievers[i]._format_neighs_info(bool_input_idx)
 
-    def _get_type_ret(self, typeret_i, i, k=0):
-        k = 0 if k is None else k
+    def set_selector(self, selector):
+        """Set a common selector in order to not depend on continous external
+        orders.
+        """
+        self.selector = Spatial_RetrieverSelector(selector)
+
+    def _get_type_ret(self, typeret_i, i):
+        """Interaction with the selector. Using upside information of selection
+        or the own selector the manager owns."""
         if typeret_i is None:
-            typeret_i, out_ret = self._selector_retriever(i, k)
+            typeret_i, out_ret = self.selector[i]
         else:
             typeret_i, out_ret = typeret_i
         return typeret_i, out_ret

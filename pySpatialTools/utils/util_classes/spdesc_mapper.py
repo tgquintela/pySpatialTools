@@ -12,6 +12,7 @@ data.
 """
 
 import numpy as np
+from copy import copy
 
 
 class GeneralSelector:
@@ -29,6 +30,9 @@ class GeneralSelector:
                 mapper = mapper.reshape((len(mapper), 1))
         self._define_lack_parameters(mapper)
         ## Formatting and storing parameters
+        if type(mapper) == tuple:
+            assert(len(mapper) == self._n_vars_out)
+            mapper = lambda idx: mapper
         if type(mapper) == np.ndarray:
             self.set_from_array(mapper, self._n_vars_out)
         elif type(mapper).__name__ == 'function':
@@ -39,6 +43,16 @@ class GeneralSelector:
             assert(len(n_out) == self._n_vars_out)
             self.set_from_function(mapper, n_in, n_out, self._n_vars_out,
                                    compute)
+        else:
+            assert(self.__name__ == mapper.__name__)
+            assert('_mapper' in dir(mapper))
+            self._n_vars_out = mapper._n_vars_out
+            if '_array_mapper' in dir(mapper):
+                self._format_maps(mapper._array_mapper, mapper.n_in,
+                                  mapper.n_out, compute)
+            else:
+                self._format_maps(mapper._mapper, mapper.n_in, mapper.n_out,
+                                  compute)
 
     def __getitem__(self, keys):
         if type(keys) == int:
@@ -79,13 +93,16 @@ class GeneralSelector:
                             out_uniques[j].append(out[j])
             self._pos_out = out_uniques
             self.n_out = [len(e) for e in self._pos_out]
+        else:
+            self._pos_out = [[0] for i in range(_n_vars_out)]
+            self.n_out = [len(e) for e in self._pos_out]
 
     def _define_lack_parameters(self, mapper):
         if '_n_vars_out' not in dir(self):
-            if type(mapper) == np.ndarray:
-                out = mapper[0]
-            else:
+            if type(mapper).__name__ == 'function':
                 out = mapper(0)
+            else:
+                out = mapper[0]
             out = np.array([out]).ravel()
             self._n_vars_out = len(out)
 
@@ -116,6 +133,8 @@ class GeneralCollectionSelectors:
 
 class DummySelector(GeneralSelector):
     """Dummy selector for testing and example purposes."""
+    __name__ = "pst.DummySelector"
+
     def _inititizalization(self):
         self.n_in = 0
         self.n_out = [1]
@@ -140,8 +159,8 @@ class Spatial_RetrieverSelector(GeneralSelector):
         - Retriever selection
         - Outputmap selection
     """
-    _mapper = lambda s, idx: (0, 0)
-    __name__ = "pst.Sp_RetrieverMapper"
+#    _mapper = lambda s, idx: (0, 0)
+    __name__ = "pst.Spatial_RetrieverSelector"
 
     def _inititizalization(self):
         self._default_map_values = (0, 0)
@@ -166,6 +185,8 @@ class Spatial_RetrieverSelector(GeneralSelector):
             if type(mapper_out) == np.ndarray:
                 assert(len(_mapper_ret) == len(mapper_out))
                 mapper = np.vstack([_mapper_ret, mapper_out]).T
+            elif type(mapper_out) == int:
+                mapper = (_mapper_ret, mapper_out)
             else:
                 mapper = lambda idx: (_mapper_ret(idx), mapper_out(idx))
         else:
@@ -183,8 +204,8 @@ class Spatial_RetrieverSelector(GeneralSelector):
 class FeatInd_RetrieverSelector(GeneralSelector):
     """Computation of features of the element we want to study."""
 
-    _mapper = lambda self, idx: (0, 0)
-    __name__ = "pst.FeatInd_RetrieverMapper"
+#    _mapper = lambda self, idx: (0, 0)
+    __name__ = "pst.FeatInd_RetrieverSelector"
 
     def _inititizalization(self):
         self._default_map_values = (0, 0)
@@ -209,6 +230,8 @@ class FeatInd_RetrieverSelector(GeneralSelector):
             if type(mapper_inp) == np.ndarray:
                 assert(len(_mapper_feats) == len(mapper_inp))
                 mapper = np.vstack([_mapper_feats, mapper_inp]).T
+            elif type(mapper_inp) == int:
+                mapper = (_mapper_feats, mapper_inp)
             else:
                 mapper = lambda idx: (_mapper_feats(idx), mapper_inp(idx))
         else:
@@ -224,7 +247,7 @@ class Desc_RetrieverSelector(GeneralSelector):
     """Selection of descriptor computation after pointfeatures and
     neighbourhood features."""
 
-    __name__ = "pst.Desc_RetrieverMapper"
+    __name__ = "pst.Desc_RetrieverSelector"
 
     def _inititizalization(self):
         self._default_map_values = (0, 0)
@@ -249,6 +272,8 @@ class Desc_RetrieverSelector(GeneralSelector):
             if type(mapper_inp) == np.ndarray:
                 assert(len(mapper_inp) == len(_mapper_feats))
                 mapper = np.vstack([_mapper_feats, mapper_inp]).T
+            elif type(mapper_inp) == int:
+                mapper = (_mapper_feats, mapper_inp)
             else:
                 mapper = lambda idx: (_mapper_feats(idx), mapper_inp(idx))
         else:
@@ -265,7 +290,7 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
     interact with features.
     """
     _mapper = lambda s, idx: (0, 0)
-    __name__ = "pst.Feat_RetrieverMapper"
+    __name__ = "pst.Feat_RetrieverSelector"
 
     def _inititizalization(self):
         self._default_map_values = (0, 0)
@@ -276,15 +301,19 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
         self._open_n = False
 
     def __init__(self, mapper_featin, mapper_featout, mapper_desc):
+        ## Instantiation
+        mapper_featin = FeatInd_RetrieverSelector(mapper_featin)
+        mapper_featout = FeatInd_RetrieverSelector(mapper_featout)
+        mapper_desc = Desc_RetrieverSelector(mapper_desc)
         ## Assert correct inputs
         self._assert_inputs(mapper_featin, mapper_featout, mapper_desc)
         ## Set informative parameters
         self._set_feat_selector(mapper_featin, mapper_featout, mapper_desc)
 
     def _assert_inputs(self, mapper_featin, mapper_featout, mapper_desc):
-        assert(mapper_featin.__name__ == "pst.FeatInd_RetrieverMapper")
-        assert(mapper_featout.__name__ == "pst.FeatInd_RetrieverMapper")
-        assert(mapper_desc.__name__ == "pst.Desc_RetrieverMapper")
+        assert(mapper_featin.__name__ == "pst.FeatInd_RetrieverSelector")
+        assert(mapper_featout.__name__ == "pst.FeatInd_RetrieverSelector")
+        assert(mapper_desc.__name__ == "pst.Desc_RetrieverSelector")
         if mapper_featin.n_in is not None and mapper_featin.n_in != 0:
             assert(type(mapper_featin.n_in) == int)
             assert(mapper_featin.n_in == mapper_featout.n_in)

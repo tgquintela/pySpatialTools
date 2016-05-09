@@ -544,7 +544,7 @@ def test():
 
         # Impossible cases
         try:
-            ## Non-integer inputs
+            ## Non-integer key getitem
             boolean = False
             map_vals_i = comb_selector[.2]
             boolean = True
@@ -554,7 +554,10 @@ def test():
                 raise Exception("The test has to halt here.")
 
         ## Functions
+        DummySelector(comb_selector)
+        comb_selector[0]
         comb_selector.set_pars(2, lambda x: (0, 0), n_out=[1, 1])
+        comb_selector[0]
 
     selector1 = DummySelector(mapper_array)
     selector2 = DummySelector(lambda idx: mapper_array[idx], n_in=100, n_out=3)
@@ -562,10 +565,20 @@ def test():
     sl = GeneralCollectionSelectors([selector1, selector2, selector3])
 
     # Spatial retriever selector
-    Spatial_RetrieverSelector(np.array([mapper_array]*2).T)
-    Spatial_RetrieverSelector(mapper_array, mapper_array)
-    Spatial_RetrieverSelector(mapper_function1)
-    Spatial_RetrieverSelector(mapper_function, mapper_function)
+    sel = Spatial_RetrieverSelector(np.array([mapper_array]*2).T)
+    sel[0]
+    sel = Spatial_RetrieverSelector(mapper_array, mapper_array)
+    sel[0]
+    sel = Spatial_RetrieverSelector(mapper_function1)
+    sel[0]
+    sel = Spatial_RetrieverSelector(mapper_function, mapper_function)
+    sel[0]
+    sel = Spatial_RetrieverSelector(sel)
+    sel[0]
+    sel = Spatial_RetrieverSelector((0, 0))
+    sel[0]
+    sel = Spatial_RetrieverSelector(0, 0)
+    sel[0]
     try:
         ## Different types of core mappers
         boolean = False
@@ -586,10 +599,20 @@ def test():
             raise Exception("The test has to halt here.")
 
     # FeatureInd retriever selector
-    FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
-    FeatInd_RetrieverSelector(mapper_array, mapper_array)
-    FeatInd_RetrieverSelector(mapper_function1)
-    FeatInd_RetrieverSelector(mapper_function, mapper_function)
+    sel = FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
+    sel[0]
+    sel = FeatInd_RetrieverSelector(mapper_array, mapper_array)
+    sel[0]
+    sel = FeatInd_RetrieverSelector(mapper_function1)
+    sel[0]
+    sel = FeatInd_RetrieverSelector(mapper_function, mapper_function)
+    sel[0]
+    sel = FeatInd_RetrieverSelector(sel)
+    sel[0]
+    sel = FeatInd_RetrieverSelector((0, 0))
+    sel[0]
+    sel = FeatInd_RetrieverSelector(0, 0)
+    sel[0]
     try:
         ## Different types of core mappers
         boolean = False
@@ -610,10 +633,20 @@ def test():
             raise Exception("The test has to halt here.")
 
     # FeatureInd retriever selector
-    Desc_RetrieverSelector(np.array([mapper_array]*2).T)
-    Desc_RetrieverSelector(mapper_array, mapper_array)
-    Desc_RetrieverSelector(mapper_function1)
-    Desc_RetrieverSelector(mapper_function, mapper_function)
+    sel = Desc_RetrieverSelector(np.array([mapper_array]*2).T)
+    sel[0]
+    sel = Desc_RetrieverSelector(mapper_array, mapper_array)
+    sel[0]
+    sel = Desc_RetrieverSelector(mapper_function1)
+    sel[0]
+    sel = Desc_RetrieverSelector(mapper_function, mapper_function)
+    sel[0]
+    sel = Desc_RetrieverSelector(sel)
+    sel[0]
+    sel = Desc_RetrieverSelector((0, 0))
+    sel[0]
+    sel = Desc_RetrieverSelector(0, 0)
+    sel[0]
     try:
         ## Different types of core mappers
         boolean = False
@@ -639,52 +672,26 @@ def test():
     sel3 = Desc_RetrieverSelector(np.array([mapper_array]*2).T)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
     selfeat[0]
+    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+    selfeat[0]
     sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
     sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
     sel3 = Desc_RetrieverSelector(mapper_array, mapper_array)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0]
+    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
     selfeat[0]
     sel1 = FeatInd_RetrieverSelector(mapper_function1)
     sel2 = FeatInd_RetrieverSelector(mapper_function1)
     sel3 = Desc_RetrieverSelector(mapper_function1)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
     selfeat[0]
+    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+    selfeat[0]
     sel1 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
     sel2 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
     sel3 = Desc_RetrieverSelector(mapper_function, mapper_function)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
     selfeat[0]
-
-
-#    try:
-#        ## Different types of core mappers
-#        boolean = False
-#        Desc_RetrieverSelector(mapper_array, mapper_function)
-#        boolean = True
-#        raise Exception("It has to halt here.")
-#    except:
-#        if boolean:
-#            raise Exception("The test has to halt here.")
-#    try:
-#        ## Different types of core mappers
-#        boolean = False
-#        Desc_RetrieverSelector(np.array([mapper_array]*10).T)
-#        boolean = True
-#        raise Exception("It has to halt here.")
-#    except:
-#        if boolean:
-#            raise Exception("The test has to halt here.")
-
-
-#    # Feature retriever selector
-#    Feat_RetrieverSelector(mapper_array)
-#    Feat_RetrieverSelector(mapper_array, mapper_array)
-#    try:
-#        ## Different types of core mappers
-#        boolean = False
-#        Feat_RetrieverSelector(mapper_array, mapper_function)
-#        boolean = True
-#        raise Exception("It has to halt here.")
-#    except:
-#        if boolean:
-#            raise Exception("The test has to halt here.")
+    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+    selfeat[0]
