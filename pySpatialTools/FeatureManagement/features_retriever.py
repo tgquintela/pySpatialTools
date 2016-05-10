@@ -53,7 +53,7 @@ class FeaturesManager:
         self.descriptormodels = []
         self.features = []
         self.mode = None
-        self.selector = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+        self.selector = (0, 0), (0, 0), (0, 0)
         ## IO information
         self._variables = {}       ## TO CHANGE
         self.featuresnames = []    ## TO CHANGE
@@ -232,7 +232,7 @@ class FeaturesManager:
             self._maps_output = lambda self, feats: feats
         else:
             if type(maps_output).__name__ == 'function':
-                self._maps_output = lambda feats: maps_output(self, feats)
+                self._maps_output = lambda s, feats: maps_output(s, feats)
 #            else:
 #                self._maps_output = maps_output
         self._format_map_vals_i(maps_vals_i)
@@ -295,20 +295,19 @@ class FeaturesManager:
 
     ############################# Format selectors ############################
     def _format_selector(self, selector1, selector2, selector3):
-        """Programable get_type_feat."""
+        """Programable get_type_feats."""
         if selector1 is None:
-            self.get_type_feat = self._general_get_type_feat
-            self.selector.assert_correctness(self)
+            self.get_type_feats = self._general_get_type_feat
         else:
             typ = type(selector1)
             assert((type(selector2) == typ) and (type(selector2) == typ))
             if typ == tuple:
                 self.selector = (selector1, selector2, selector3)
-                self.get_type_feat = self._static_get_type_feat
+                self.get_type_feats = self._static_get_type_feat
             else:
                 self.selector =\
                     Feat_RetrieverSelector(selector1, selector2, selector3)
-                self.get_type_feat = self._selector_get_type_feat
+                self.get_type_feats = self._selector_get_type_feat
                 self.selector.assert_correctness(self)
 
     ################################# Setters #################################
@@ -342,7 +341,7 @@ class FeaturesManager:
         assert(len(i_input) == sh[0] and len(ks) == sh[2])
         ## 1. Prepare selectors
         t_feat_in, t_feat_out, t_feat_des =\
-            self._get_typefeats(i_input, feat_selectors)
+            self.get_type_feats(i_input, feat_selectors)
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
@@ -367,14 +366,14 @@ class FeaturesManager:
         want to study their neighbourhood.
         """
         ## iss as an object
-        if type(i).__name__ != 'instance':
-            i_input = Neighs_Info(format_structure='tuple_tuple',
-                                  staticneighs=True)
-            i_input.set(((i,), k))
-        else:
-            i_input = i
+#        if type(i).__name__ != 'instance':
+#            i_input = Neighs_Info(format_structure='tuple_tuple',
+#                                  staticneighs=True)
+#            i_input.set(((i,), k))
+#        else:
+#            i_input = i
         ## Input mapping
-        i_input = self._maps_input[typefeats[0]](i_input)
+        i_input = self._maps_input[typefeats[0]](i)
         ## Retrieve features
         feats_i = self.features[typefeats[1]][i_input, k]
         ## Outformat
@@ -435,7 +434,7 @@ class FeaturesManager:
     def _general_get_type_feat(self, i, typefeats_i=None):
         """Format properly general typefeats selector information."""
         if typefeats_i is None or type(typefeats_i) != tuple:
-            typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+            typefeats_i, typefeats_nei, typefeats_desc = self.selector
         else:
             typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
         return typefeats_i, typefeats_nei, typefeats_desc

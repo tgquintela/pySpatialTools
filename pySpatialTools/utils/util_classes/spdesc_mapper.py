@@ -57,6 +57,9 @@ class GeneralSelector:
     def __getitem__(self, keys):
         if type(keys) == int:
             outs = self._mapper(keys)
+        elif type(keys) in [list, tuple]:
+            assert(all([type(k) == int for k in keys]))
+            outs = [self._mapper(k) for k in keys]
         else:
             raise TypeError("Not correct input for spatial descriptor mapper.")
         return outs

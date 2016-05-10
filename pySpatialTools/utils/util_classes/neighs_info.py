@@ -437,6 +437,9 @@ class Neighs_Info:
         if self.sp_relative_pos is None:
             self.set_sp_rel_pos = self._null_set_rel_pos
             self.get_sp_rel_pos = self._null_get_rel_pos
+        ## Ensure correct k_ret
+        if np.max(self.ks) > self._kret:
+            self._kret = np.max(self.ks)
 
 #    def _array_ele_postformat(self, ele):
 #        return np.array(ele)

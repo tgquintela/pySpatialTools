@@ -105,6 +105,7 @@ def test():
         #Feat._get_feats_k(list(idxs), k)
         #Feat[[]]
         Feat[0]
+        Feat[range(5), [0]]
         Feat[(0, 0)]
         Feat[([0], [0])]
         Feat[([0], [0.])]
@@ -112,6 +113,7 @@ def test():
         Feat[:]
         Feat[((0, 0), 0)]
         Feat[(([0], [0]), [0])]
+        Feat[[[[]]], [0]]
         if Feat.k_perturb:
 #            print 'x'*100, Feat.k_perturb, Feat.shape
             Feat[(([[0], [0]], [[0], [0]]), [0, 1])]
@@ -143,6 +145,14 @@ def test():
         try:
             boolean = False
             Feat[len(Feat)]
+            boolean = True
+            raise Exception("It has to halt here.")
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
+        try:
+            boolean = False
+            Feat[range(4), range(Feat.k_perturb+3)]
             boolean = True
             raise Exception("It has to halt here.")
         except:
@@ -362,6 +372,7 @@ def test():
                                         for i in range(rei-1)]).T
     perturbation = PermutationPerturbation(reindices)
 
+    aggcatfeats_dict = categorical_agg_dict_features(n, n_feats, ks)
     ## Impossible instantiation cases
     try:
         # Not valid oject as a feature
@@ -448,6 +459,13 @@ def test():
     mapper3 = [lambda idx: (0, 0)]*3
     pos_mappers = [mapper0, mapper1, mapper2, mapper3]
 
+    ## Information of indices
+    nei_i = Neighs_Info()
+#    nei_i.set(np.random.randint(0, 100, 5).reshape((5, 1, 1)))
+    nei_i.set(np.random.randint(0, 100))
+    nei_info = Neighs_Info()
+    nei_info.set(np.random.randint(0, 100, 20).reshape((5, 2, 2)))
+
     ## Combinations
     for p in product(*possibilities):
 #        ## Random exploration of parameters
@@ -458,7 +476,9 @@ def test():
 #        mode = pos_mode[np.random.randint(0, len(pos_mode))]
 #        desc = pos_desc[np.random.randint(0, len(pos_desc))]
         ## Exhaustive exploration of parameters
-        selectors = pos_mappers[np.random.randint(0, len(pos_mappers))]
+        i_selector = np.random.randint(0, len(pos_mappers))
+        selectors = pos_mappers[i_selector]
+        #print i_selector
         feats, m_input, m_out, m_vals_i, mode, desc = p
         ## Instantiation
         fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
@@ -474,16 +494,25 @@ def test():
         fm.initialization_output()
         fm.set_map_vals_i(100)
         fm.set_map_vals_i(m_vals_i)
+        fm.get_type_feats(0, [(0, 0)]*3)
+        fm.get_type_feats(50, [(0, 0)]*3)
+        t_feat_in, t_feat_out, t_feat_des = fm.get_type_feats(50)
+        fm.set_descriptormodels(desc)
+        k_p = fm.k_perturb+1
+        nei_info = Neighs_Info()
+        nei_info.set(np.random.randint(0, 100, 4*k_p).reshape((k_p, 2, 2)))
+
+        fm._get_input_features(50, k=range(k_p), typefeats=t_feat_in)
+        fm._get_input_features(range(3), k=range(k_p), typefeats=t_feat_in)
+        fm._get_output_features(nei_info, k=range(k_p), typefeats=t_feat_out)
+
         # Strange cases
         if mode is None:
             FeaturesManager([ImplicitFeatures(feats1),
                              ImplicitFeatures(feats3, names=[3, 4])],
                             mode=mode)
-        fm.get_type_feat(0, [(0, 0)]*3)
-        fm.get_type_feat(50, [(0, 0)]*3)
-        fm.get_type_feat(50)
-        fm.set_descriptormodels(desc)
 
+    ## Cases
     feats = [ImplicitFeatures(feats1), ImplicitFeatures(feats1)]
     fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
                          maps_vals_i=m_vals_i, mode=mode,
@@ -494,10 +523,10 @@ def test():
     ## Impossible function cases
     feats = [ImplicitFeatures(feats1), ImplicitFeatures(feats3, names=[3, 4])]
     try:
-        ## Different variablesnames
+        ## Different variablesnames for sequential mode
         boolean = False
         fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
-                             maps_vals_i=m_vals_i, mode=mode,
+                             maps_vals_i=m_vals_i, mode='sequential',
                              descriptormodels=desc, selectors=selectors)
         boolean = True
         raise Exception("It has to halt here.")
