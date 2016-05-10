@@ -64,6 +64,8 @@ class Features:
                 empty = key[0].empty()
                 i, d, k, _ = key[0].get_information(key[1])
             else:
+                key_i = [key[0]] if type(key[0]) == int else key[0]
+                key = key_i, key[1]
                 neighs_info = Neighs_Info()
                 neighs_info.set_information(self.k_perturb, len(self.features))
                 neighs_info.set(key)

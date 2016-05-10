@@ -484,7 +484,13 @@ def test():
         fm = FeaturesManager(feats, maps_input=m_input, maps_output=m_out,
                              maps_vals_i=m_vals_i, mode=mode,
                              descriptormodels=desc, selectors=selectors)
-        # Check basic functions
+        ## Basic parameters
+        i0, i1 = 0, range(4)
+        k_p = fm.k_perturb+1
+        nei_info = Neighs_Info()
+        neis = np.random.randint(0, 100, 4*k_p).reshape((k_p, 2, 2))
+        nei_info.set(neis)
+        ## Check basic functions
         fm[0]
         fm.shape
         len(fm)
@@ -494,29 +500,52 @@ def test():
         fm.initialization_output()
         fm.set_map_vals_i(100)
         fm.set_map_vals_i(m_vals_i)
+        fm.set_descriptormodels(desc)
+        ## Check basic functions
+        fm.get_type_feats(0)
+        fm.get_type_feats(50)
         fm.get_type_feats(0, tuple([(0, 0)]*3))
         fm.get_type_feats(50, tuple([(0, 0)]*3))
+        # fm.get_type_feats(i0)
+        # fm.get_type_feats(i1)
+
         t_feat_in, t_feat_out, t_feat_des = fm.get_type_feats(50)
-        fm.set_descriptormodels(desc)
-        k_p = fm.k_perturb+1
-        nei_info = Neighs_Info()
-        neis = np.random.randint(0, 100, 4*k_p).reshape((k_p, 2, 2))
-        nei_info.set(neis)
-
-        ## Interaction with features
+        ## Interaction with featuresObjects
+        # Input
         fm._get_input_features(50, k=range(k_p), typefeats=t_feat_in)
-        fm._get_input_features(range(3), k=range(k_p), typefeats=t_feat_in)
-#        fm._get_output_features(range(10), k=range(k_p), typefeats=t_feat_out)
-#        fm._get_output_features(neis[0], k=range(k_p), typefeats=t_feat_out)
-        fm._get_output_features(nei_info, k=range(k_p), typefeats=t_feat_out)
+        desc_i0 = fm._get_input_features(i0, k=range(k_p), typefeats=t_feat_in)
+        desc_i1 = fm._get_input_features(i1, k=range(k_p), typefeats=t_feat_in)
+        # Output
+        fm._get_output_features(range(10), k=range(k_p), typefeats=t_feat_out)
+        fm._get_output_features(neis[0], k=range(k_p), typefeats=t_feat_out)
+        fm._get_output_features(neis, k=range(k_p), typefeats=t_feat_out)
+        desc_nei = fm._get_output_features(nei_info, range(k_p), t_feat_out)
+#        print desc_i0, desc_i1, desc_nei
+#        print type(desc_i0), type(desc_i1), type(desc_nei)
+#        print len(desc_i0), len(desc_i1), len(desc_nei)
         ## Interaction with map_vals_i
-#        fm._get_vals_i(0)
-#        fm._get_vals_i(0, k_p-1)
-#        fm._get_vals_i(20)
-#        fm._get_vals_i(20, k_p-1)
-#        fm._get_vals_i(range(20))
-#        fm._get_vals_i(range(20), k_p-1)
+        fm._get_vals_i(20, range(k_p))
+        fm._get_vals_i(range(20), range(k_p))
+        vals_i0 = fm._get_vals_i(i0, range(k_p))
+        vals_i1 = fm._get_vals_i(i1, range(k_p))
 
+        ## Completing features
+        fm.complete_desc_i(i0, nei_info, desc_i0, desc_nei, vals_i0,
+                           t_feat_des)
+        fm.complete_desc_i(i1, nei_info, desc_i1, desc_nei, vals_i1,
+                           t_feat_des)
+
+        ## Computing altogether
+#        fm.compute_descriptors(i0, nei_info)
+#        fm.compute_descriptors(i1, nei_info)
+#        fm.compute_descriptors(i0, nei_info, range(k_p))
+#        fm.compute_descriptors(i1, nei_info, range(k_p))
+#        fm.compute_descriptors(i0, range(10))
+#        fm.compute_descriptors(i1, range(10))
+#        fm.compute_descriptors(i0, neis[0])
+#        fm.compute_descriptors(i1, neis[0])
+#        fm.compute_descriptors(i0, neis)
+#        fm.compute_descriptors(i1, neis)
 
         # Strange cases
         if mode is None:

@@ -453,6 +453,9 @@ def test():
     neighs_info.set((neighs, sp_relative_pos), iss)
     neighs_info.check_output_standards(neighs, sp_relative_pos, ks, iss)
 
+    neighs_info2 = Neighs_Info()
+    neighs_info2.set(neighs_info)
+
     # Check wrong cases
     try:
         boolean = False
@@ -516,3 +519,7 @@ def test():
     inspect_raw_neighs(neis, 4)
     inspect_raw_neighs(neis[0], 4)
     inspect_raw_neighs(range(10), 2)
+    inspect_raw_neighs(0, 2)
+    inspect_raw_neighs([], 2)
+    inspect_raw_neighs([[]], 2)
+    inspect_raw_neighs([[[]]]*2, 2)

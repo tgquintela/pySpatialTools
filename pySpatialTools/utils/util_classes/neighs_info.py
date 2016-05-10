@@ -557,6 +557,23 @@ class Neighs_Info:
         # If tuple there are more information than neighs
         elif type(neighs_info) == tuple:
             self._set_structure_tuple(neighs_info)
+        else:
+            assert(type(neighs_info).__name__ == 'instance')
+            ## Substitution main information
+            self.idxs = neighs_info.idxs
+            self.ks = neighs_info.ks
+            self.iss = neighs_info.iss
+            ## Copying class information
+            self._constant_neighs = neighs_info._constant_neighs
+            self._kret = neighs_info._kret
+            self._n = neighs_info._n
+            self.format_set_info = neighs_info.format_set_info
+            self.format_get_info = neighs_info.format_get_info
+            self._format_globalpars(neighs_info.staticneighs,
+                                    neighs_info.ifdistance, neighs_info.level)
+            self._format_setters(*neighs_info.format_set_info)
+            self._format_getters(*neighs_info.format_get_info)
+            self._format_joining_functions()
 
     ############################## Set Structure ##############################
     ###########################################################################
@@ -1846,10 +1863,11 @@ def inspect_raw_neighs(neighs_info, k=0):
     parameters = {'format_structure': 'raw'}
     parameters['format_level'] = deep
     if deep == 3:
-        assert(np.max(k) < len(neighs_info))
+        assert(np.max(k) <= len(neighs_info))
         parameters['kret'] = len(neighs_info)
-    elif deep == 2:
+    else:
         parameters['staticneighs'] = True
+        parameters['kret'] = np.max(k)
     return parameters
 
 

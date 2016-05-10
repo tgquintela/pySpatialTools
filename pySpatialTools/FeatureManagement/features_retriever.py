@@ -143,7 +143,7 @@ class FeaturesManager:
     def _format_descriptormodel(self, descriptormodels=None):
         """Formatter of the descriptormodels."""
         if descriptormodels is None:
-            self.descriptormodels = [DummyDescriptor]
+            self.descriptormodels = [DummyDescriptor()]
         else:
             if type(descriptormodels) != list:
                 descriptormodels = [descriptormodels]
@@ -386,8 +386,9 @@ class FeaturesManager:
         ## Neighs info as an object
         if not type(neighs_info).__name__ == 'instance':
             parameters = inspect_raw_neighs(neighs_info, k=k)
-            neighs_info = Neighs_Info(**parameters)
-            neighs_info.set(neighs_info)
+            neighs_info_object = Neighs_Info(**parameters)
+            neighs_info_object.set(neighs_info)
+            neighs_info = neighs_info_object
         ## Input mapping
         neighs_info = self._maps_input[typefeats[0]](neighs_info)
         ## Features retrieve
@@ -406,7 +407,7 @@ class FeaturesManager:
             vals_i.append(self._maps_vals_i.apply(self, i, k))
         ## WARNING: TOTEST
         vals_i = np.array(vals_i)
-        print vals_i
+#        print vals_i
         assert(len(vals_i.shape) == 2)
         assert(len(vals_i) == len(ks))
         assert(len(np.array([i]).ravel()) == vals_i.shape[1])
