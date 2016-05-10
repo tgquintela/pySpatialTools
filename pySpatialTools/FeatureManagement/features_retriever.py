@@ -26,7 +26,7 @@ TODO
 import numpy as np
 ## Check initialization of map vals i
 from ..utils.util_classes import create_mapper_vals_i, Neighs_Info,\
-    Feat_RetrieverSelector
+    Feat_RetrieverSelector, inspect_raw_neighs
 
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
@@ -385,7 +385,9 @@ class FeaturesManager:
         neighbourhood of the elements we want to study."""
         ## Neighs info as an object
         if not type(neighs_info).__name__ == 'instance':
-            neighs_info = Neighs_Info(neighs_info, k)
+            parameters = inspect_raw_neighs(neighs_info, k=k)
+            neighs_info = Neighs_Info(**parameters)
+            neighs_info.set(neighs_info)
         ## Input mapping
         neighs_info = self._maps_input[typefeats[0]](neighs_info)
         ## Features retrieve

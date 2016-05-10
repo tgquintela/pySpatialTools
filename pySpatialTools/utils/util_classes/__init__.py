@@ -22,4 +22,4 @@ from Membership import Membership
 from mapper_vals_i import Map_Vals_i, create_mapper_vals_i
 
 ## Neighbourhood information
-from neighs_info import Neighs_Info
+from neighs_info import Neighs_Info, inspect_raw_neighs

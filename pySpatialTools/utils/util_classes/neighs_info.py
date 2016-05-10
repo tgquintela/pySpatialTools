@@ -1399,7 +1399,7 @@ class Neighs_Info:
 
 
 ###############################################################################
-############################# Auxiliar functions ##############################
+########################### Auxiliar join functions ###########################
 ###############################################################################
 ######################### Auxiliar general functions ##########################
 def check_compatibility_neighs(neighs_info0, neighs_info1):
@@ -1833,3 +1833,40 @@ def join_neighs_XOR_notrelpos(idxs0_ki, idxs1_ki):
         if idxs1_ki[i] not in idxs0_ki:
             neighs.append(idxs1_ki[i])
     return neighs
+
+
+###############################################################################
+######################### Auxiliar inspect functions ##########################
+###############################################################################
+def inspect_raw_neighs(neighs_info, k=0):
+    """Useful class to inspect a raw structure neighs, in order to set
+    some parts of the class in order to a proper settting adaptation."""
+    deep = find_deep(neighs_info)
+    k = [k] if type(k) == int else k
+    parameters = {'format_structure': 'raw'}
+    parameters['format_level'] = deep
+    if deep == 3:
+        assert(np.max(k) < len(neighs_info))
+        parameters['kret'] = len(neighs_info)
+    elif deep == 2:
+        parameters['staticneighs'] = True
+    return parameters
+
+
+def find_deep(neighs_info):
+    """Find deep from a raw structure."""
+    if '__len__' not in dir(neighs_info):
+        deep = 0
+    else:
+        if len(neighs_info) == 0:
+            deep = 1
+        elif '__len__' not in dir(neighs_info[0]):
+            deep = 1
+        else:
+            if all([len(neighs_info[i]) == 0 for i in range(len(neighs_info))]):
+                deep = 2
+            elif '__len__' not in dir(neighs_info[0][0]):
+                deep = 2
+            else:
+                deep = 3
+    return deep

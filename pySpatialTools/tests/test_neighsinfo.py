@@ -508,3 +508,11 @@ def test():
 #    except:
 #        if boolean:
 #            raise Exception("It has to halt here.")
+
+    ## Testing auxiliar functions
+    ###############################
+
+    neis = np.random.randint(0, 100, 4*5).reshape((5, 2, 2))
+    inspect_raw_neighs(neis, 4)
+    inspect_raw_neighs(neis[0], 4)
+    inspect_raw_neighs(range(10), 2)

@@ -494,17 +494,29 @@ def test():
         fm.initialization_output()
         fm.set_map_vals_i(100)
         fm.set_map_vals_i(m_vals_i)
-        fm.get_type_feats(0, [(0, 0)]*3)
-        fm.get_type_feats(50, [(0, 0)]*3)
+        fm.get_type_feats(0, tuple([(0, 0)]*3))
+        fm.get_type_feats(50, tuple([(0, 0)]*3))
         t_feat_in, t_feat_out, t_feat_des = fm.get_type_feats(50)
         fm.set_descriptormodels(desc)
         k_p = fm.k_perturb+1
         nei_info = Neighs_Info()
-        nei_info.set(np.random.randint(0, 100, 4*k_p).reshape((k_p, 2, 2)))
+        neis = np.random.randint(0, 100, 4*k_p).reshape((k_p, 2, 2))
+        nei_info.set(neis)
 
+        ## Interaction with features
         fm._get_input_features(50, k=range(k_p), typefeats=t_feat_in)
         fm._get_input_features(range(3), k=range(k_p), typefeats=t_feat_in)
+#        fm._get_output_features(range(10), k=range(k_p), typefeats=t_feat_out)
+#        fm._get_output_features(neis[0], k=range(k_p), typefeats=t_feat_out)
         fm._get_output_features(nei_info, k=range(k_p), typefeats=t_feat_out)
+        ## Interaction with map_vals_i
+#        fm._get_vals_i(0)
+#        fm._get_vals_i(0, k_p-1)
+#        fm._get_vals_i(20)
+#        fm._get_vals_i(20, k_p-1)
+#        fm._get_vals_i(range(20))
+#        fm._get_vals_i(range(20), k_p-1)
+
 
         # Strange cases
         if mode is None:
