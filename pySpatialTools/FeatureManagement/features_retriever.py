@@ -298,16 +298,25 @@ class FeaturesManager:
         """Programable get_type_feats."""
         if selector1 is None:
             self.get_type_feats = self._general_get_type_feat
+            self._get_input_features = self._get_input_features_general
+            self._get_output_features = self._get_output_features_general
+            self._complete_desc_i = self._complete_desc_i_general
         else:
             typ = type(selector1)
             assert((type(selector2) == typ) and (type(selector2) == typ))
             if typ == tuple:
                 self.selector = (selector1, selector2, selector3)
                 self.get_type_feats = self._static_get_type_feat
+                self._get_input_features = self._get_input_features_constant
+                self._get_output_features = self._get_output_features_constant
+                self._complete_desc_i = self._complete_desc_i_constant
             else:
                 self.selector =\
                     Feat_RetrieverSelector(selector1, selector2, selector3)
                 self.get_type_feats = self._selector_get_type_feat
+                self._get_input_features = self._get_input_features_variable
+                self._get_output_features = self._get_output_features_variable
+                self._complete_desc_i = self._complete_desc_i_variable
                 self.selector.assert_correctness(self)
 
     ################################# Setters #################################
@@ -337,8 +346,10 @@ class FeaturesManager:
         ks = list(range(self.k_perturb+1)) if k is None else k
         ks = [ks] if type(ks) == int else ks
         i_input = [i] if type(i) == int else i
-        sh = neighs_info.shape
-        assert(len(i_input) == sh[0] and len(ks) == sh[2])
+#        sh = neighs_info.shape
+#        print sh, len(i_input), len(ks), ks, i_input
+#        assert(len(i_input) == sh[1])
+#        assert(len(ks) == sh[0])
         ## 1. Prepare selectors
         t_feat_in, t_feat_out, t_feat_des =\
             self.get_type_feats(i_input, feat_selectors)
@@ -351,8 +362,8 @@ class FeaturesManager:
         print '+'*10, vals_i, desc_neigh, desc_i
 
         ## 4. Complete descriptors (TODO)
-        descriptors = self.complete_desc_i(i, neighs_info, desc_i, desc_neigh,
-                                           vals_i, t_feat_des)
+        descriptors = self._complete_desc_i(i, neighs_info, desc_i, desc_neigh,
+                                            vals_i, t_feat_des)
 #        descriptors =\
 #            self.descriptormodel.complete_desc_i(i, neighs_info, desc_i,
 #                                                 desc_neigh, vals_i)
@@ -361,26 +372,63 @@ class FeaturesManager:
 
         return descriptors, vals_i
 
-    def _get_input_features(self, i, k, typefeats=(0, 0)):
+    ######################## Interaction with features ########################
+    ############################# Input features ##############################
+    def _get_input_features_constant(self, i, k, typefeats=(0, 0)):
         """Get 'input' features. Get the features of the elements of which we
-        want to study their neighbourhood.
+        want to study their neighbourhood. We consider constant typefeats.
         """
-        ## iss as an object
-#        if type(i).__name__ != 'instance':
-#            i_input = Neighs_Info(format_structure='tuple_tuple',
-#                                  staticneighs=True)
-#            i_input.set(((i,), k))
-#        else:
-#            i_input = i
         ## Input mapping
         i_input = self._maps_input[typefeats[0]](i)
         ## Retrieve features
+        print i_input, k
         feats_i = self.features[typefeats[1]][i_input, k]
+        print feats_i
         ## Outformat
         feats_i = self._maps_output(self, feats_i)
         return feats_i
 
-    def _get_output_features(self, neighs_info, k, typefeats=(0, 0)):
+    def _get_input_features_variable(self, i, k, typefeats=(0, 0)):
+        """Get 'input' features. Get the features of the elements of which we
+        want to study their neighbourhood. We consider constant typefeats.
+        """
+        ## Preparing input
+        i = [[i]] if type(i) == int else i
+        i_l = len(i)
+        k_l = 1 if type(k) == int else len(k)
+        typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
+        feats_i = [[] for kl in range(k_l)]
+        print 'jue', i_l, k_l, i, k
+        for j in range(i_l):
+            ## Input mapping
+            i_j = [i[j]] if type(i[j]) == int else i[j]
+            i_input = self._maps_input[typefeats[j][0]](i_j)
+            print i_input
+            ## Retrieve features
+            feats_ij = self.features[typefeats[j][1]][i_input, k]
+            ## Outformat
+            feats_ij = self._maps_output(self, feats_ij)
+            print feats_ij
+            for k_j in range(len(feats_ij)):
+                print len(feats_ij[k_j][0])
+                feats_i[k_j].append(feats_ij[k_j][0])
+        print feats_i, k_l, i_l, len(feats_i), len(feats_i[0])
+        assert(len(feats_i) == k_l)
+        assert(len(feats_i[0]) == i_l)
+        return feats_i
+
+    def _get_input_features_general(self, i, k, typefeats=(0, 0)):
+        """Get 'input' features. Get the features of the elements of which we
+        want to study their neighbourhood. We dont consider anything.
+        """
+        if type(typefeats) == list:
+            feats_i = self._get_input_features_variable(i, k, typefeats)
+        else:
+            feats_i = self._get_input_features_constant(i, k, typefeats)
+        return feats_i
+
+    ############################# Output features #############################
+    def _get_output_features_constant(self, neighs_info, k, typefeats=(0, 0)):
         """Get 'output' features. Get the features of the elements in the
         neighbourhood of the elements we want to study."""
         ## Neighs info as an object
@@ -397,6 +445,106 @@ class FeaturesManager:
         feats_neighs = self._maps_output(self, feats_neighs)
         return feats_neighs
 
+    def _get_output_features_variable(self, neighs_info, k, typefeats=(0, 0)):
+        """Get 'output' features. Get the features of the elements in the
+        neighbourhood of the elements we want to study."""
+        ## Neighs info as an object
+        if not type(neighs_info).__name__ == 'instance':
+            parameters = inspect_raw_neighs(neighs_info, k=k)
+            neighs_info_object = Neighs_Info(**parameters)
+            neighs_info_object.set(neighs_info)
+            neighs_info = neighs_info_object
+        ## Loop for all typefeats
+        i_l = len(neighs_info.iss)
+        print i_l, neighs_info.iss, neighs_info.idxs
+        k_l = 1 if type(k) == int else len(k)
+        typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
+        feats_neighs = [[] for kl in range(k_l)]
+        for j in range(i_l):
+            ## Input mapping
+            neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
+            neighs_info_j = self._maps_input[typefeats[j][0]](neighs_info_j)
+            ## Features retrieve
+            feats_neighs_j = self.features[typefeats[j][1]][neighs_info_j, k]
+            ## Outformat
+            feats_neighs_j = self._maps_output(self, feats_neighs_j)
+            ## Store
+            for k_j in range(len(feats_neighs_j)):
+                feats_neighs[k_j].append(feats_neighs_j[k_j][0])
+        assert(len(feats_neighs) == k_l)
+        assert(len(feats_neighs[0]) == i_l)
+        return feats_neighs
+
+    def _get_output_features_general(self, neighs_info, k, typefeats=(0, 0)):
+        """Get 'output' features. Get the features of the elements in the
+        neighbourhood of the elements we want to study."""
+        if type(typefeats) == list:
+            feats_neighs =\
+                self._get_output_features_variable(neighs_info, k, typefeats)
+        else:
+            feats_neighs =\
+                self._get_output_features_constant(neighs_info, k, typefeats)
+        return feats_neighs
+
+    ########################### Descriptor features ###########################
+    def _complete_desc_i_constant(self, i, neighs_info, desc_i, desc_neigh,
+                                  vals_i, t_feat_desc):
+        """Complete descriptors by interaction of point features and
+        neighbourhood features."""
+        if t_feat_desc[0]:
+            descriptors = self.features[t_feat_desc[1]].\
+                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
+        else:
+            descriptors = self.descriptormodels[t_feat_desc[1]].\
+                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
+        return descriptors
+
+    def _complete_desc_i_variable(self, i, neighs_info, desc_i, desc_neigh,
+                                  vals_i, t_feat_desc):
+        """Complete descriptors by interaction of point features and
+        neighbourhood features. Assumption of variable t_feat_desc."""
+        ## Preparing input
+        i_l = 1 if type(i) == int else len(i)
+        i = [i]*i_l if type(i) == int else i
+        k_l = len(desc_i)
+        if type(t_feat_desc) != list:
+            t_feat_desc = [t_feat_desc]*i_l
+        ## Sequential computation
+        descriptors = [[] for kl in range(k_l)]
+        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
+        for j in range(i_l):
+            neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
+            vals_ij = [vals_i[k][j] for k in range(len(vals_i))]
+            desc_ij = [desc_i[k][j] for k in range(len(desc_i))]
+            desc_neighj = [desc_neigh[k][j] for k in range(len(desc_neigh))]
+
+            if t_feat_desc[j][0]:
+                descriptors_j = self.features[t_feat_desc[j][1]].\
+                    complete_desc_i(i[j], neighs_info_j,
+                                    desc_ij, desc_neighj, vals_ij)
+            else:
+                descriptors_j = self.descriptormodels[t_feat_desc[j][1]].\
+                    complete_desc_i(i[j], neighs_info_j,
+                                    desc_ij, desc_neighj, vals_ij)
+            for k_j in range(k_l):
+                descriptors[k_j].append(descriptors_j[k_j])
+        return descriptors
+
+    def _complete_desc_i_general(self, i, neighs_info, desc_i, desc_neigh,
+                                 vals_i, t_feat_desc):
+        """Complete descriptors by interaction of point features and
+        neighbourhood features. No assumptions about iss and t_feat_desc."""
+        if type(t_feat_desc) == list:
+            descriptors =\
+                self._complete_desc_i_variable(i, neighs_info, desc_i,
+                                               desc_neigh, vals_i, t_feat_desc)
+        else:
+            descriptors =\
+                self._complete_desc_i_constant(i, neighs_info, desc_i,
+                                               desc_neigh, vals_i, t_feat_desc)
+        return descriptors
+
+    ############################### Map_vals_i  ###############################
     def _get_vals_i(self, i, ks):
         """Get indice to store the final result."""
         #### TODO: extend
@@ -412,18 +560,6 @@ class FeaturesManager:
         assert(len(vals_i) == len(ks))
         assert(len(np.array([i]).ravel()) == vals_i.shape[1])
         return vals_i
-
-    def complete_desc_i(self, i, neighs_info, desc_i, desc_neigh, vals_i,
-                        t_feat_desc):
-        """Complete descriptors by interaction of point features and
-        neighbourhood features."""
-        if t_feat_desc[0]:
-            descriptors = self.features[t_feat_desc[1]].\
-                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
-        else:
-            descriptors = self.descriptormodels[t_feat_desc[1]].\
-                complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
-        return descriptors
 
     ################################# Type_feat ###############################
     ###########################################################################
@@ -447,7 +583,7 @@ class FeaturesManager:
         typefeats_i, typefeats_nei, typefeats_desc = self.selector
         return typefeats_i, typefeats_nei, typefeats_desc
 
-    def _selector_get_type_feat(self, i, typeret_i=None):
+    def _selector_get_type_feat(self, i, typefeats_i=None):
         """Get information only from selector."""
         typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
         return typefeats_i, typefeats_nei, typefeats_desc

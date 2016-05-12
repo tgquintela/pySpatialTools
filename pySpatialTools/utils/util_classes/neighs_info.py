@@ -291,6 +291,8 @@ class Neighs_Info:
             self.get_sp_rel_pos = self._null_get_rel_pos
         elif format_structure == 'tuple_only':
             self._set_info = self._set_tuple_only_structure
+        elif format_structure == 'tuple_k':
+            self._set_info = self._set_tuple_k_structure
         elif format_structure == 'tuple_tuple':
             self._set_info = self._set_tuple_tuple_structure
         elif format_structure == 'list_tuple_only':
@@ -389,6 +391,14 @@ class Neighs_Info:
             self.get_information = self._default_get_information
         elif format_get_info == "general":
             self.get_information = self._general_get_information
+        ## Other getters
+        if self.staticneighs:
+            self.get_copy_iss = self._staticneighs_get_copy_iss
+            self.get_copy_iss_by_ind = self._staticneighs_get_copy_iss_by_ind
+        else:
+            self.get_copy_iss = self._notstaticneighs_get_copy_iss
+            self.get_copy_iss_by_ind =\
+                self._notstaticneighs_get_copy_iss_by_ind
 
     def _postformat(self):
         """Format properly."""
@@ -500,6 +510,17 @@ class Neighs_Info:
                 self.get_neighs = self._get_neighs_list_static
             else:
                 self.get_neighs = self._get_neighs_list_dynamic
+        ## Format coreget by iss
+        if type(self.idxs) == slice:
+            self._staticneighs_get_corestored_by_inds =\
+                self._staticneighs_get_corestored_by_inds_slice
+            self._notstaticneighs_get_corestored_by_inds =\
+                self._notstaticneighs_get_corestored_by_inds_slice
+        else:
+            self._staticneighs_get_corestored_by_inds =\
+                self._staticneighs_get_corestored_by_inds_notslice
+            self._notstaticneighs_get_corestored_by_inds =\
+                self._notstaticneighs_get_corestored_by_inds_notslice
 
     def _set_init(self):
         """Reset variables to default."""
@@ -641,6 +662,13 @@ class Neighs_Info:
 #        """
 #        self.ks = list(np.array(key[1]))
 #        self._set_list_tuple_only_structure(key[0])
+
+    def _set_tuple_k_structure(self, key):
+        """Tuple structure:
+        * idxs, ks
+        """
+        self.ks = [key[1]] if type(key[1]) == int else key[1]
+        self.set_neighs(key[0])
 
     def _set_structure_list(self, key):
         """General list structure.
@@ -1197,6 +1225,7 @@ class Neighs_Info:
         """For the unset instances."""
         raise Exception("Information not set in pst.Neighs_Info.")
 
+    ################################ Get neighs ###############################
     def _get_neighs_general(self, k_is=[0]):
         """General getting neighs."""
         if type(self.idxs) == slice:
@@ -1248,6 +1277,96 @@ class Neighs_Info:
     def _default_get_neighs(self, k_i=0):
         """Default get neighs (when it is not set)"""
         raise Exception("Information not set in pst.Neighs_Info.")
+
+    ########################## Get by coreinfo by iss #########################
+    ## Get the neighs_info copy object with same information but iss reduced.
+    ## Format into get_copy_iss and get_copy_iss_by_ind
+    def _staticneighs_get_copy_iss(self, iss):
+        inds = self._get_indices_from_iss(iss)
+        return self._staticneighs_get_copy_iss_by_ind(inds)
+
+    def _notstaticneighs_get_copy_iss(self, iss):
+        inds = self._get_indices_from_iss(iss)
+        return self._notstaticneighs_get_copy_iss_by_ind(inds)
+
+    def _staticneighs_get_copy_iss_by_ind(self, indices):
+        indices = [indices] if type(indices) == int else indices
+        iss = [self.iss[i] for i in indices]
+        idxs, sp_relpos = self._staticneighs_get_corestored_by_inds(indices)
+        ## Copy of information in new container
+        neighs_info = self.copy()
+        neighs_info.idxs = idxs
+        neighs_info.sp_relative_pos = sp_relpos
+        neighs_info.iss = iss
+        return neighs_info
+
+    def _notstaticneighs_get_copy_iss_by_ind(self, indices):
+        indices = [indices] if type(indices) == int else indices
+        iss = [self.iss[i] for i in indices]
+        idxs, sp_relpos = self._notstaticneighs_get_corestored_by_inds(indices)
+        ## Copy of information in new container
+        neighs_info = self.copy()
+        neighs_info.idxs = idxs
+        neighs_info.sp_relative_pos = sp_relpos
+        neighs_info.iss = iss
+        return neighs_info
+
+    ## Auxiliar functions
+    def _staticneighs_get_corestored_by_inds_notslice(self, inds):
+        inds = [inds] if type(inds) == int else inds
+        idxs = [self.idxs[i] for i in inds]
+        idxs = np.array(idxs) if type(self.idxs) == np.ndarray else idxs
+        if self.sp_relative_pos is not None:
+            sp_relative_pos = [self.sp_relative_pos[i] for i in inds]
+        else:
+            sp_relative_pos = None
+        return idxs, sp_relative_pos
+
+    def _notstaticneighs_get_corestored_by_inds_notslice(self, inds):
+        inds = [inds] if type(inds) == int else inds
+        idxs = []
+        for k in range(len(self.idxs)):
+            idxs.append([self.idxs[k][i] for i in inds])
+        idxs = np.array(idxs) if type(self.idxs) == np.ndarray else idxs
+
+        if self.sp_relative_pos is not None:
+            sp_relative_pos = []
+            for k in range(len(self.sp_relative_pos)):
+                sp_relative_pos += [[self.sp_relative_pos[k][i] for i in inds]]
+        else:
+            sp_relative_pos = None
+        return idxs, sp_relative_pos
+
+    def _staticneighs_get_corestored_by_inds_slice(self, inds):
+        inds = [inds] if type(inds) == int else inds
+        idxs = self.idxs
+        if self.sp_relative_pos is not None:
+            sp_relative_pos = [self.sp_relative_pos[i] for i in inds]
+        else:
+            sp_relative_pos = None
+        return idxs, sp_relative_pos
+
+    def _notstaticneighs_get_corestored_by_inds_slice(self, inds):
+        inds = [inds] if type(inds) == int else inds
+        idxs = self.idxs
+        if self.sp_relative_pos is not None:
+            sp_relative_pos = []
+            for k in range(len(self.sp_relative_pos)):
+                sp_relative_pos += [[self.sp_relative_pos[k][i] for i in inds]]
+        else:
+            sp_relative_pos = None
+        return idxs, sp_relative_pos
+
+    def _get_indices_from_iss(self, iss):
+        """Indices of iss from self.iss."""
+        iss = [iss] if type(iss) not in [np.ndarray, list] else iss
+        if self.iss is not None:
+            inds = []
+            for i in iss:
+                inds.append(list(self.iss).index(i))
+#        else:
+#            inds = iss
+        return inds
 
     ###########################################################################
     ################################ CHECKERS #################################
@@ -1865,6 +1984,7 @@ def inspect_raw_neighs(neighs_info, k=0):
     if deep == 3:
         assert(np.max(k) <= len(neighs_info))
         parameters['kret'] = len(neighs_info)
+        parameters['staticneighs'] = False
     else:
         parameters['staticneighs'] = True
         parameters['kret'] = np.max(k)
@@ -1881,10 +2001,35 @@ def find_deep(neighs_info):
         elif '__len__' not in dir(neighs_info[0]):
             deep = 1
         else:
-            if all([len(neighs_info[i]) == 0 for i in range(len(neighs_info))]):
+            logi = [len(neighs_info[i]) == 0 for i in range(len(neighs_info))]
+            if all(logi):
                 deep = 2
             elif '__len__' not in dir(neighs_info[0][0]):
                 deep = 2
             else:
                 deep = 3
     return deep
+
+
+def neighsinfo_features_preformatting_tuple(key, k_perturb):
+    """Assumed that tuple input:
+        * idxs, ks
+    """
+    deep = find_deep(key[0])
+    if deep == 1:
+        ks = [key[1]] if type(key[1]) == int else key[1]
+        i, k, d = neighsinfo_features_preformatting_list(key[0], ks)
+    else:
+        neighs_info = Neighs_Info()
+        neighs_info.set_information(k_perturb)
+        neighs_info.set(key)
+        # Get information
+        i, d, k, _ = neighs_info.get_information()
+    return i, k, d
+
+
+def neighsinfo_features_preformatting_list(key, k_perturb):
+    kn = range(k_perturb+1) if type(k_perturb) == int else k_perturb
+    key = [[idx] for idx in key]
+    i, k, d = np.array([key]*len(kn)), kn, [[None]*len(key)]*len(kn)
+    return i, k, d

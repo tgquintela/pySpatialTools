@@ -287,7 +287,7 @@ class Desc_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
-        assert(len(manager._maps_input) >= self.n_out[0])
+        assert(2 >= self.n_out[0])  # It is a boolean variable
         assert(len(manager.features) >= self.n_out[1])
 
 

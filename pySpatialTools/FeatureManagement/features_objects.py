@@ -19,6 +19,8 @@ import warnings
 warnings.filterwarnings("always")
 from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
 from pySpatialTools.utils.util_classes import Neighs_Info
+from pySpatialTools.utils.util_classes.neighs_info import\
+    neighsinfo_features_preformatting_tuple
 
 
 class Features:
@@ -63,26 +65,41 @@ class Features:
             if type(key[0]).__name__ == 'instance':
                 empty = key[0].empty()
                 i, d, k, _ = key[0].get_information(key[1])
+            elif type(key[0]) in [list, np.ndarray]:
+                kn = self.k_perturb+1
+                i, k, d = neighsinfo_features_preformatting_tuple(key, kn)
+                empty = not np.array(i).size
             else:
+                # Preformatting
                 key_i = [key[0]] if type(key[0]) == int else key[0]
                 key = key_i, key[1]
+                # Instantiation
                 neighs_info = Neighs_Info()
                 neighs_info.set_information(self.k_perturb, len(self.features))
                 neighs_info.set(key)
                 empty = neighs_info.empty()
+                # Get information
                 i, d, k, _ = neighs_info.get_information()
         elif type(key) == int:
             kn = self.k_perturb+1
             i, k, d = np.array([[[key]]]*kn), range(kn), [[None]]*kn
-        elif type(key) == list:
+        elif type(key) in [list, np.ndarray]:
             ## Assumption only deep=1
             kn = self.k_perturb+1
-            i, k, d = np.array([[key]]*kn), range(kn), [[None]]*kn
+            key = [[idx] for idx in key]
+            i, k, d = np.array([key]*kn), range(kn), [[None]*len(key)]*kn
         elif type(key) == slice:
-            neighs_info = Neighs_Info()
-            neighs_info.set_information(self.k_perturb, self.shape[0])
-            neighs_info.set(key)
-            i, d, k, _ = neighs_info.get_information()
+            len_f, kn = len(self), self.k_perturb+1
+            start = 0 if key.start is None else key.start
+            stop = len_f if key.stop >= len_f else key.stop
+            step = 1 if key.step is None else key.step
+            i = [[[j] for j in range(start, stop, step)]]*kn
+            d, k = [[None]*len(i[0])]*kn, range(kn)
+#            neighs_info = Neighs_Info()
+#            neighs_info.set_information(self.k_perturb, self.shape[0])
+#            neighs_info.set(key)
+#            i, d, k, _ = neighs_info.get_information()
+#            print i
         else:
             i, d, k, _ = key.get_information()
             empty = key.empty()
@@ -151,8 +168,8 @@ class Features:
 
             ## Adding to global result
             feats.append(feats_k)
-
         if self._out == 'ndarray':
+            ## TODO: Assert not dict types
             feats = np.array(feats)
 #        if np.all([type(fea) == np.ndarray for fea in feats]):
 #            if feats:
@@ -204,7 +221,10 @@ class Features:
 
         if not (characterizer is None or out_formatter is None):
             ## Test
-            self[([0], [0.]), 0]
+            out = self[([0], [0.]), 0]
+            if type(out[0][0]) == dict and self._out == 'ndarray':
+                warnings.warn("Change in output type because incoherence.")
+                self._out = 'dict'
             ## Redundant
 #            try:
 #                self[([0], [0.]), 0]
@@ -351,7 +371,6 @@ class ImplicitFeatures(Features):
         """
         nfeats = self.features.shape[1]
         sh = idxs.shape
-#        print idxs, sh
         # Compute new indices by perturbating them
         new_idxs = self._perturbators[k_p].apply2indice(idxs[k], k_i)
         # Get rid of the non correct indices
@@ -361,9 +380,9 @@ class ImplicitFeatures(Features):
         feats_k = np.ones((len(new_idxs), sh[2], nfeats))*self._nullvalue
         feats_k[yes_idxs] =\
             self._perturbators[k_p].apply2features_ind(self.features,
-                                                       new_idxs, k_i)
-        # Reshaping
-        feats_k = feats_k.reshape((sh[1], sh[2], nfeats))
+                                                       new_idxs.ravel(), k_i)
+#        # Reshaping
+#        feats_k = feats_k.reshape((sh[1], sh[2], nfeats))
         return feats_k
 
     def _real_data_array_list(self, idxs, k, k_i=0, k_p=0):
@@ -617,12 +636,17 @@ class ExplicitFeatures(Features):
         * idxs: (ks, iss_i, nei)
         * feats_k: [iss_i][nei]{features}
         """
+        print ':'*25, len(idxs), len(idxs[0]), k
+        print idxs
         feats_k = []
         for i in range(len(idxs[k])):
             feats_ki = []
             for nei in range(len(idxs[k][i])):
+                print k, i, nei, idxs[k, i, nei]
                 feats_ki.append(self.features[k][idxs[k, i, nei]])
+            print len(feats_ki)
             feats_k.append(feats_ki)
+        print feats_k, len(feats_k), len(idxs[k])
         return feats_k
 
     def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
@@ -630,6 +654,8 @@ class ExplicitFeatures(Features):
         * idxs: [ks][iss_i][nei]
         * feats_k: [iss_i][nei]{features}
         """
+        print ';'*25
+        print idxs, k
         feats_k = []
         for i in range(len(idxs[k])):
             feats_ki = []
