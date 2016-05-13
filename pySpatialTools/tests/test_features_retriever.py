@@ -197,6 +197,8 @@ def test():
         fm._get_output_features(range(10), k=range(k_p), typefeats=t_feat_out)
         fm._get_output_features(neis[0], k=range(k_p), typefeats=t_feat_out)
         fm._get_output_features(neis, k=range(k_p), typefeats=t_feat_out)
+        if i_selector == 0:
+            fm._get_output_features([50], k=range(k_p), typefeats=[(0, 0)])
         desc_nei0 = fm._get_output_features(nei_info0, range(k_p), tf_out0)
         desc_nei1 = fm._get_output_features(nei_info1, range(k_p), tf_out1)
 #        print fm._get_output_features
@@ -239,7 +241,9 @@ def test():
         fm.compute_descriptors(i1, neis[0], range(k_p))
         fm.compute_descriptors(i0, neis0, range(k_p))
         fm.compute_descriptors(i1, neis, range(k_p))
-
+        if i_selector == 0:
+            fm.compute_descriptors([50], neis0[0], k=range(k_p),
+                                   feat_selectors=[(0, 0)])
         # Strange cases
         if mode is None:
             FeaturesManager([ImplicitFeatures(feats1),

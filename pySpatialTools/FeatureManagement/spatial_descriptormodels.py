@@ -14,7 +14,8 @@ TODO
 import numpy as np
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import RetrieverManager
-#from pySpatialTools.utils.util_classes import Sp_DescriptorMapper
+from features_retriever import FeaturesManager
+from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
 from ..utils import sp_general_filter_perturbations
 
 
@@ -72,8 +73,10 @@ class SpatialDescriptorModel:
         "Formatter for retrievers."
         if type(retrievers) == list:
             self.retrievers = RetrieverManager(retrievers)
-        else:
+        elif isinstance(retrievers, RetrieverManager):
             self.retrievers = retrievers
+        else:
+            self.retrievers = RetrieverManager(retrievers)
         self.retrievers.set_neighs_info(True)
 
     def _format_perturbations(self, perturbations):
@@ -109,21 +112,26 @@ class SpatialDescriptorModel:
             self.featurers.add_aggregations(*aggregations)
 
     def _format_featurers(self, featurers):
-        self.featurers = featurers
+        if isinstance(featurers, FeaturesManager):
+            self.featurers = featurers
+        else:
+            self.featurers = FeaturesManager(featurers)
 
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
         if _mapselector_spdescriptor is None:
-            _mapselector_spdescriptor = Sp_DescriptorMapper()
+            mapret = lambda idx: (0, 0)
+            mapfeats = [lambda idx: (0, 0)]*3
+            _mapselector_spdescriptor = Sp_DescriptorSelector(mapret, mapfeats)
         if type(_mapselector_spdescriptor) == np.ndarray:
-            mapperselector = Sp_DescriptorMapper()
+            mapperselector = Sp_DescriptorSelector()
             mapperselector.set_from_array(_mapselector_spdescriptor)
             self._mapselector_spdescriptor = mapperselector
         elif type(_mapselector_spdescriptor).__name__ == 'function':
-            mapperselector = Sp_DescriptorMapper()
+            mapperselector = Sp_DescriptorSelector()
             mapperselector.set_from_function(_mapselector_spdescriptor)
             self._mapselector_spdescriptor = mapperselector
-        elif _mapselector_spdescriptor.__name__ == 'pst.Sp_DescriptorMapper':
+        elif _mapselector_spdescriptor.__name__ == 'pst.Sp_DescriptorSelector':
             try:
                 _mapselector_spdescriptor[0]
             except:
@@ -174,7 +182,7 @@ class SpatialDescriptorModel:
     def _format_identifiers(self, name_desc):
         """Format information of the method applied."""
         if name_desc is None or type(name_desc) != str:
-            self.name_desc = self.featurers.descriptormodel.name_desc
+            self.name_desc = self.featurers.descriptormodels[0].name_desc
         else:
             self.name_desc = name_desc
 

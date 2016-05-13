@@ -6,10 +6,10 @@ testing spatial descriptor models utilities.
 
 """
 
-
 import numpy as np
-import os
+#import os
 import copy
+from itertools import product
 
 ## Retrieve
 from pySpatialTools.Discretization import GridSpatialDisc
@@ -22,7 +22,7 @@ from pySpatialTools.utils.artificial_data import generate_randint_relations
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
-from pySpatialTools.FeatureManagement.features_objects import Features,\
+from pySpatialTools.FeatureManagement.features_objects import\
     ImplicitFeatures, ExplicitFeatures
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation
@@ -33,43 +33,117 @@ from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor, NBinsHistogramDesc, SparseCounter
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
-from ..utils.artificial_data import create_random_image
+#from ..utils.artificial_data import create_random_image
 from ..utils.util_external.Logger import Logger
 from ..io.io_images import create_locs_features_from_image
 
 
 def test():
     n, nx, ny = 100, 100, 100
+    m, rei = 3, 5
     locs = np.random.random((n, 2))*10
     ## Retrievers management
     ret0 = KRetriever(locs, 3, ifdistance=True)
     ret1 = CircRetriever(locs, .3, ifdistance=True)
     #countdesc = Countdescriptor()
 
+    ## Possible feats
+    aggfeats = np.random.random((n/2, m, rei))
+    featsarr0 = np.random.random((n, m))
+    featsarr1 = np.random.random((n, m))
+    featsarr2 = np.vstack([np.random.randint(0, 10, n) for i in range(m)]).T
+    reindices0 = np.arange(n)
+    reindices = np.vstack([reindices0]+[np.random.permutation(n)
+                                        for i in range(rei-1)]).T
+    perturbation = PermutationPerturbation(reindices)
+
+    feats0 = ExplicitFeatures(aggfeats)
+    feats1 = ImplicitFeatures(featsarr0)
+
+    ## Random exploration functions
+    def random_pos_space_exploration(pos_possibles):
+        selected, indices = [], []
+        for i in range(len(pos_possibles)):
+            sel, ind = random_pos_exploration(pos_possibles[i])
+            selected.append(sel)
+            indices.append(ind)
+        return selected, indices
+
+    def random_pos_exploration(possibles):
+        ## Selection
+        i_pos = np.random.randint(0, len(possibles))
+        return possibles[i_pos], i_pos
+
     ###########################################################################
     ###########################################################################
-    ######## Testing aggregation
-    # Creation of retriever of regions
-    griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
-    regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
-    
-    
+    ######## Testing instantiation spdesc
+    # Locs and retrievers
+    locs_input = np.random.random((100, 2))
+    locs1 = np.random.random((50, 2))
+    locs2 = np.random.random((70, 2))
+    ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3)
+    ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input)]
+    ret2 = RetrieverManager(ret0)
+    pos_rets = [ret0, ret1, ret2]
+    # Feats and manager
+
+    arrayselector = None
+    functselector = None
+    listselector = None
+    selobj = None
+    pos_selectors = [None]
+    pos_agg = [None]
+
+    ## Perturbations
+    pos_pert = [None]
+
+    ## Random exploration
+    pos_loop_ind = [None]
+    pos_loop_mapin = [None]
+    pos_name_desc = [None, '', 'random_desc']
+    # Possible feats
+    pos_feats = [feats0, feats1]
+    # Random exploration possibilities
+    pos_random = [pos_loop_ind, pos_loop_mapin, pos_name_desc, pos_feats]
+
+    possibilities = [pos_rets, pos_selectors, pos_agg, pos_pert]
+
+    for p in product(*possibilities):
+        ret, sel, agg, pert = p
+        ## Random exploration of parameters
+        selected, indices = random_pos_space_exploration(pos_random)
+#        print p, selected
+        p_ind, m_ind, n_desc, feat = selected
+        ## Testing instantiation
+        spdesc = SpatialDescriptorModel(retrievers=ret, featurers=feat,
+                                        mapselector_spdescriptor=sel,
+                                        pos_inputs=p_ind, map_indices=m_ind,
+                                        perturbations=pert, aggregations=agg,
+                                        name_desc=n_desc)
+        ## Function testing
+
+
+#    ###########################################################################
+#    ###########################################################################
+#    ######## Testing aggregation
+#    # Creation of retriever of regions
+#    griddisc = GridSpatialDisc((nx, ny), (0, 10), (0, 10))
+#    regdists = generate_randint_relations(0.01, (nx, ny), p0=0., maxvalue=1)
+#
 #    regret = SameEleNeigh(regdists, bool_input_idx=False)
 #    m_in, m_out = create_retriever_input_output(griddisc.discretize(locs))
 #    regret._output_map = [m_out]
 #    gret = RetrieverManager([ret0, ret1, regret])
-#    regret = SameEleNeigh(regdists, bool_input_idx=False)
-
-    ## Features management
-    feat_arr0 = np.random.randint(0, 20, (n, 1))
-
-    features = ImplicitFeatures(feat_arr0)
-    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
-    perturbation = PermutationPerturbation(reindices.T)
-
-    features.add_perturbations(perturbation)
-
-
+##    regret = SameEleNeigh(regdists, bool_input_idx=False)
+#
+#    ## Features management
+#    feat_arr0 = np.random.randint(0, 20, (n, 1))
+#
+#    features = ImplicitFeatures(feat_arr0)
+#    reindices = np.vstack([np.random.permutation(n) for i in range(5)])
+#    perturbation = PermutationPerturbation(reindices.T)
+#
+#    features.add_perturbations(perturbation)
 #
 #    ## Create MAP VALS (indices)
 #    corr_arr = -1*np.ones(n)
@@ -84,11 +158,14 @@ def test():
 #    map_vals_i = create_mapper_vals_i(map_vals_i_t, feat_arr0)
 #
 #    countdesc = Countdescriptor()
-#    feats_ret = FeaturesManager([features], countdesc, maps_vals_i=map_vals_i)
-#    feats_ret.add_aggregations((locs, griddisc), regret)
+#    feats_ret = FeaturesManager([features], descriptormodels=countdesc,
+#                                maps_vals_i=map_vals_i)
+##    feats_ret.add_aggregations((locs, griddisc), regret)
+##
+##    ## Descriptor
+#    #avgdesc = AvgDescriptor()
 #
-#    ## Descriptor
-#    #avgdesc = AvgDescriptor(feats_ret)
+#    ## External testing for looping
 #    spdesc = SpatialDescriptorModel(gret, feats_ret)
 #    nets = spdesc.compute()
 #    spdescs = []
@@ -99,6 +176,8 @@ def test():
 #        aux_spdesc.set_loop(idxs[i])
 #        spdescs.append(aux_spdesc)
 #    netss = [spdescs[i].compute() for i in range(4)]
+
+############# TO Input in exhaustive testing    
 #
 #    try:
 #        logfile = Logger('logfile.log')
@@ -107,6 +186,10 @@ def test():
 #    except:
 #        raise Exception("Not usable compute_process.")
 #
+
+
+
+
 #    ## Grid descriptors
 #    im_example = create_random_image((20, 20))[:, :, 0]
 #    shape = im_example.shape

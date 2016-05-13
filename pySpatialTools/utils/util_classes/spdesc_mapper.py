@@ -295,7 +295,7 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
     """Features retriever mapper to indicate the path of possible options to
     interact with features.
     """
-    _mapper = lambda s, idx: (0, 0)
+    _mapper = lambda s, idx: [(0, 0)]*3
     __name__ = "pst.Feat_RetrieverSelector"
 
     def _inititizalization(self):
@@ -333,3 +333,30 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
         self._pos_out =\
             mapper_featin._pos_out+mapper_featout._pos_out+mapper_desc._pos_out
         self.selectors = mapper_featin, mapper_featout, mapper_desc
+
+
+class Sp_DescriptorSelector(GeneralCollectionSelectors):
+    """Spatial descriptor mapper to indicate the path of possible options to
+    compute spatial descriptors.
+    """
+    _mapper = lambda s, idx: (0, 0, 0, 0, 0, 0, 0, 0)
+    __name__ = "pst.Sp_DescriptorSelector"
+
+    def __init__(self, map_ret=None, map_feat=None):
+        map_ret = self._preprocess_selector(map_ret, Spatial_RetrieverSelector)
+        map_feat = self._preprocess_selector(map_feat, Feat_RetrieverSelector)
+        self.selectors = map_ret, map_feat
+
+    def _preprocess_selector(self, map_sel, map_sel_type):
+        if map_sel is None:
+            map_sel = map_sel_type(map_sel)
+        elif isinstance(map_sel, map_sel_type):
+            pass
+        elif type(map_sel) == list:
+            map_sel = map_sel_type(*map_sel)
+        else:
+            map_sel = map_sel_type(map_sel)
+        return map_sel
+#
+#    def __init__(self, staticneighs=None, mapretinput=None, mapretout=None,
+#                 mapfeatinput=None, mapfeatoutput=None):
