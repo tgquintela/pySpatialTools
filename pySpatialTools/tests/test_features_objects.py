@@ -122,7 +122,7 @@ def test():
         assert(len(feat[0]) == 3)
         assert(len(feat) == Feat.k_perturb+1)
         feat = Feat[:]
-        print len(feat[0]),  len(Feat)
+#        print len(feat[0]),  len(Feat)
         assert(len(feat[0]) == len(Feat))
         assert(len(feat) == Feat.k_perturb+1)
         feat = Feat[((0, 0), 0)]

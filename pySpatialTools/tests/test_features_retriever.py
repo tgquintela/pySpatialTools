@@ -119,7 +119,8 @@ def test():
     mapper1 = [(0, 0)]*3
     mapper2 = [np.array([np.zeros(100), np.zeros(100)]).T]*3
     mapper3 = [lambda idx: (0, 0)]*3
-    pos_mappers = [mapper0, mapper1, mapper2, mapper3]
+    mapper4 = [(0, 0), (0, 0), (1, 0)]
+    pos_mappers = [mapper0, mapper1, mapper2, mapper3, mapper4]
 
     ## Information of indices
     nei_i = Neighs_Info()
@@ -140,6 +141,8 @@ def test():
         ## Exhaustive exploration of parameters
         i_selector = np.random.randint(0, len(pos_mappers))
         selectors = pos_mappers[i_selector]
+        if i_selector == 4:
+            continue
         #print i_selector
         feats, m_input, m_out, m_vals_i, mode, desc = p
         ## Instantiation
@@ -180,10 +183,12 @@ def test():
         ## Interaction with featuresObjects
         # Input
         fm._get_input_features(50, k=range(k_p), typefeats=t_feat_in)
+        if i_selector == 0:
+            fm._get_input_features([50], k=range(k_p), typefeats=[(0, 0)])
         desc_i0 = fm._get_input_features(i0, k=range(k_p), typefeats=tf_in0)
         desc_i1 = fm._get_input_features(i1, k=range(k_p), typefeats=tf_in1)
 #        print feats, len(desc_i0), k_p
-        print fm._get_input_features, desc_i0, desc_i1
+#        print fm._get_input_features, desc_i0, desc_i1
         assert(len(desc_i0) == k_p)
         assert(len(desc_i1) == k_p)
         assert(len(desc_i0[0]) == 1)
@@ -194,7 +199,7 @@ def test():
         fm._get_output_features(neis, k=range(k_p), typefeats=t_feat_out)
         desc_nei0 = fm._get_output_features(nei_info0, range(k_p), tf_out0)
         desc_nei1 = fm._get_output_features(nei_info1, range(k_p), tf_out1)
-        print fm._get_output_features
+#        print fm._get_output_features
         assert(len(desc_nei0) == k_p)
         assert(len(desc_nei1) == k_p)
         assert(len(desc_nei0[0]) == 1)
@@ -207,7 +212,7 @@ def test():
         fm._get_vals_i(range(20), range(k_p))
         vals_i0 = fm._get_vals_i(i0, range(k_p))
         vals_i1 = fm._get_vals_i(i1, range(k_p))
-        print fm._get_vals_i, vals_i0, vals_i1
+#        print fm._get_vals_i, vals_i0, vals_i1
         assert(len(vals_i0) == k_p)
         assert(len(vals_i1) == k_p)
         assert(len(vals_i0[0]) == 1)
@@ -218,19 +223,22 @@ def test():
                             tf_desc0)
         fm._complete_desc_i(i1, nei_info1, desc_i1, desc_nei1, vals_i1,
                             tf_desc1)
-        print '-'*100
+        fm._complete_desc_i(i0, nei_info0, desc_i0, desc_nei0, vals_i0,
+                            (1, 0))
+        fm._complete_desc_i(i1, nei_info1, desc_i1, desc_nei1, vals_i1,
+                            (1, 0))
 
         ## Computing altogether
         fm.compute_descriptors(i0, nei_info0)
         fm.compute_descriptors(i1, nei_info1)
         fm.compute_descriptors(i0, nei_info0, range(k_p))
         fm.compute_descriptors(i1, nei_info1, range(k_p))
-#        fm.compute_descriptors(i0, range(10))
-#        fm.compute_descriptors(i1, range(10))
-#        fm.compute_descriptors(i0, neis[0])
-#        fm.compute_descriptors(i1, neis[0])
-#        fm.compute_descriptors(i0, neis)
-#        fm.compute_descriptors(i1, neis)
+#        fm.compute_descriptors(i0, range(10), range(k_p))
+#        fm.compute_descriptors(i1, range(10), range(k_p))
+        fm.compute_descriptors(i0, neis0[0], range(k_p))
+        fm.compute_descriptors(i1, neis[0], range(k_p))
+        fm.compute_descriptors(i0, neis0, range(k_p))
+        fm.compute_descriptors(i1, neis, range(k_p))
 
         # Strange cases
         if mode is None:

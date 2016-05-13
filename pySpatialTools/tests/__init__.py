@@ -25,6 +25,7 @@ import test_preprocess
 import test_spatial_discretizer
 import test_retriever
 import test_spatial_relations
+import test_features_objects
 import test_features_retriever
 import test_perturbation
 import test_descriptormodels
@@ -67,6 +68,7 @@ def test():
 #        test_preprocess.test()
         test_spatial_discretizer.test()
         test_descriptormodels.test()
+        test_features_objects.test()
         test_features_retriever.test()
 #        test_perturbation.test()
         test_spatial_relations.test()

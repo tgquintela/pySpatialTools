@@ -30,7 +30,7 @@ class DescriptorModel:
 #            assert(len(desc_neighs.shape) == 3)
 #        elif type(desc_neighs) == list:
 #            assert(type(desc_neighs[0][0]) == dict)
-        print len(desc_i), len(desc_neighs), len(vals_i)
+#        print len(desc_i), len(desc_neighs), len(vals_i)
         assert(len(desc_i) == len(desc_neighs))
         assert(len(vals_i) == len(desc_neighs))
         desc = []

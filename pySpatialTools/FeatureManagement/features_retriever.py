@@ -25,8 +25,8 @@ TODO
 
 import numpy as np
 ## Check initialization of map vals i
-from ..utils.util_classes import create_mapper_vals_i, Neighs_Info,\
-    Feat_RetrieverSelector, inspect_raw_neighs
+from ..utils.util_classes import create_mapper_vals_i,\
+    Feat_RetrieverSelector, ensuring_neighs_info
 
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
@@ -346,6 +346,7 @@ class FeaturesManager:
         ks = list(range(self.k_perturb+1)) if k is None else k
         ks = [ks] if type(ks) == int else ks
         i_input = [i] if type(i) == int else i
+        neighs_info = ensuring_neighs_info(neighs_info, k)
 #        sh = neighs_info.shape
 #        print sh, len(i_input), len(ks), ks, i_input
 #        assert(len(i_input) == sh[1])
@@ -356,10 +357,10 @@ class FeaturesManager:
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
-        print i, ks, i_input, neighs_info, neighs_info.ks, neighs_info.idxs
+#        print i, ks, i_input, neighs_info, neighs_info.ks, neighs_info.idxs
         ## 3. Map vals_i
         vals_i = self._get_vals_i(i, ks)
-        print '+'*10, vals_i, desc_neigh, desc_i
+#        print '+'*10, vals_i, desc_neigh, desc_i
 
         ## 4. Complete descriptors (TODO)
         descriptors = self._complete_desc_i(i, neighs_info, desc_i, desc_neigh,
@@ -381,9 +382,7 @@ class FeaturesManager:
         ## Input mapping
         i_input = self._maps_input[typefeats[0]](i)
         ## Retrieve features
-        print i_input, k
         feats_i = self.features[typefeats[1]][i_input, k]
-        print feats_i
         ## Outformat
         feats_i = self._maps_output(self, feats_i)
         return feats_i
@@ -398,21 +397,16 @@ class FeaturesManager:
         k_l = 1 if type(k) == int else len(k)
         typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
         feats_i = [[] for kl in range(k_l)]
-        print 'jue', i_l, k_l, i, k
         for j in range(i_l):
             ## Input mapping
             i_j = [i[j]] if type(i[j]) == int else i[j]
             i_input = self._maps_input[typefeats[j][0]](i_j)
-            print i_input
             ## Retrieve features
             feats_ij = self.features[typefeats[j][1]][i_input, k]
             ## Outformat
             feats_ij = self._maps_output(self, feats_ij)
-            print feats_ij
             for k_j in range(len(feats_ij)):
-                print len(feats_ij[k_j][0])
                 feats_i[k_j].append(feats_ij[k_j][0])
-        print feats_i, k_l, i_l, len(feats_i), len(feats_i[0])
         assert(len(feats_i) == k_l)
         assert(len(feats_i[0]) == i_l)
         return feats_i
@@ -432,11 +426,7 @@ class FeaturesManager:
         """Get 'output' features. Get the features of the elements in the
         neighbourhood of the elements we want to study."""
         ## Neighs info as an object
-        if not type(neighs_info).__name__ == 'instance':
-            parameters = inspect_raw_neighs(neighs_info, k=k)
-            neighs_info_object = Neighs_Info(**parameters)
-            neighs_info_object.set(neighs_info)
-            neighs_info = neighs_info_object
+        neighs_info = ensuring_neighs_info(neighs_info, k)
         ## Input mapping
         neighs_info = self._maps_input[typefeats[0]](neighs_info)
         ## Features retrieve
@@ -449,14 +439,10 @@ class FeaturesManager:
         """Get 'output' features. Get the features of the elements in the
         neighbourhood of the elements we want to study."""
         ## Neighs info as an object
-        if not type(neighs_info).__name__ == 'instance':
-            parameters = inspect_raw_neighs(neighs_info, k=k)
-            neighs_info_object = Neighs_Info(**parameters)
-            neighs_info_object.set(neighs_info)
-            neighs_info = neighs_info_object
+        neighs_info = ensuring_neighs_info(neighs_info, k)
         ## Loop for all typefeats
         i_l = len(neighs_info.iss)
-        print i_l, neighs_info.iss, neighs_info.idxs
+#        print i_l, neighs_info.iss, neighs_info.idxs
         k_l = 1 if type(k) == int else len(k)
         typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
         feats_neighs = [[] for kl in range(k_l)]
@@ -511,7 +497,7 @@ class FeaturesManager:
             t_feat_desc = [t_feat_desc]*i_l
         ## Sequential computation
         descriptors = [[] for kl in range(k_l)]
-        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
+#        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
         for j in range(i_l):
             neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
             vals_ij = [vals_i[k][j] for k in range(len(vals_i))]

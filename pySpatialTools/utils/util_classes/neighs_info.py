@@ -1974,6 +1974,17 @@ def join_neighs_XOR_notrelpos(idxs0_ki, idxs1_ki):
 ###############################################################################
 ######################### Auxiliar inspect functions ##########################
 ###############################################################################
+def ensuring_neighs_info(neighs_info, k):
+    """Ensuring that the neighs_info is in Neighs_Info object container."""
+    if not type(neighs_info).__name__ == 'instance':
+        parameters = inspect_raw_neighs(neighs_info, k=k)
+        parameters['format_structure'] = 'tuple_k'
+        neighs_info_object = Neighs_Info(**parameters)
+        neighs_info_object.set((neighs_info, k))
+        neighs_info = neighs_info_object
+    return neighs_info
+
+
 def inspect_raw_neighs(neighs_info, k=0):
     """Useful class to inspect a raw structure neighs, in order to set
     some parts of the class in order to a proper settting adaptation."""

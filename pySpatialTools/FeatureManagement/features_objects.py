@@ -21,6 +21,7 @@ from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
 from pySpatialTools.utils.util_classes import Neighs_Info
 from pySpatialTools.utils.util_classes.neighs_info import\
     neighsinfo_features_preformatting_tuple
+from descriptormodel import DummyDescriptor
 
 
 class Features:
@@ -41,6 +42,7 @@ class Features:
         self._dim_perturb = [1]
         ## Function to homogenize output respect aggfeatures
         # Reduction of dimensionality (dummy getting first neigh feats)
+        self.descriptormodel = DummyDescriptor()
         self._characterizer = lambda x, d: np.array([e[0] for e in x])
         self._format_out_k = lambda x, y1, y2, y3: x
         self._out = 'ndarray'
@@ -310,6 +312,13 @@ class Features:
     def _get_relpos_k(self, k, d):
         k_p, k_i = self._map_perturb(k)
         return d[k_i]
+
+    def complete_desc_i(self, i, neighs_info, desc_i, desc_neighs, vals_i):
+        """Complete measure. Calling descriptormodel."""
+        descriptors =\
+            self.descriptormodel.complete_desc_i(i, neighs_info, desc_i,
+                                                 desc_neighs, vals_i)
+        return descriptors
 
 
 class ImplicitFeatures(Features):
@@ -636,17 +645,12 @@ class ExplicitFeatures(Features):
         * idxs: (ks, iss_i, nei)
         * feats_k: [iss_i][nei]{features}
         """
-        print ':'*25, len(idxs), len(idxs[0]), k
-        print idxs
         feats_k = []
         for i in range(len(idxs[k])):
             feats_ki = []
             for nei in range(len(idxs[k][i])):
-                print k, i, nei, idxs[k, i, nei]
                 feats_ki.append(self.features[k][idxs[k, i, nei]])
-            print len(feats_ki)
             feats_k.append(feats_ki)
-        print feats_k, len(feats_k), len(idxs[k])
         return feats_k
 
     def _real_data_dict_list(self, idxs, k, k_i=0, k_p=0):
@@ -654,8 +658,6 @@ class ExplicitFeatures(Features):
         * idxs: [ks][iss_i][nei]
         * feats_k: [iss_i][nei]{features}
         """
-        print ';'*25
-        print idxs, k
         feats_k = []
         for i in range(len(idxs[k])):
             feats_ki = []
