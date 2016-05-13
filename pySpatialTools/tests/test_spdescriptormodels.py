@@ -61,6 +61,13 @@ def test():
     feats1 = ImplicitFeatures(featsarr0)
     feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
 
+    ## Other functions
+    def map_indices(s, i):
+        if s._pos_inputs is not None:
+            return s._pos_inputs.start + s._pos_inputs.step*i
+        else:
+            return i
+
     ## Random exploration functions
     def random_pos_space_exploration(pos_possibles):
         selected, indices = [], []
@@ -101,8 +108,6 @@ def test():
         p_ind, m_ind, n_desc, feat = selected
         checker = False
 
-
-
         ## Compulsary failing instantiation
         if not checker:
             return
@@ -142,8 +147,8 @@ def test():
     pos_pert = [None, perturbation]
 
     ## Random exploration
-    pos_loop_ind = [None]
-    pos_loop_mapin = [None]
+    pos_loop_ind = [None, 20, (0, 100, 1), slice(0, 100, 1)]
+    pos_loop_mapin = [None, map_indices]
     pos_name_desc = [None, '', 'random_desc']
     # Possible feats
     pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
@@ -170,6 +175,8 @@ def test():
                                         perturbations=pert, aggregations=agg,
                                         name_desc=n_desc)
         ## Function testing
+        spdesc.add_perturbations(pert)
+        spdesc.set_loop(p_ind, m_ind)
 
 
 #    ###########################################################################
