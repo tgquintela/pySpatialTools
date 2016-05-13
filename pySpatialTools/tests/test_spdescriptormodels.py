@@ -59,6 +59,7 @@ def test():
 
     feats0 = ExplicitFeatures(aggfeats)
     feats1 = ImplicitFeatures(featsarr0)
+    feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
 
     ## Random exploration functions
     def random_pos_space_exploration(pos_possibles):
@@ -73,6 +74,49 @@ def test():
         ## Selection
         i_pos = np.random.randint(0, len(possibles))
         return possibles[i_pos], i_pos
+
+    ## Impossibles
+    def impossible_instantiation(selected, p):
+        ret, sel, agg, pert = p
+        p_ind, m_ind, n_desc, feat = selected
+        checker = False
+
+        ## Not implemented perturbation over explicit features
+        if pert is not None:
+            if type(feat) == np.ndarray:
+                if len(feat.shape) == 3:
+                    checker = True
+            elif isinstance(feat, ExplicitFeatures):
+                checker = True
+            elif isinstance(feat, FeaturesManager):
+                check_aux = []
+                for i in range(len(feat.features)):
+                    check_aux.append(isinstance(feat.features[i],
+                                                ExplicitFeatures))
+                checker = any(check_aux)
+        return checker
+
+    def compulsary_instantiation_errors(selected, p):
+        ret, sel, agg, pert = p
+        p_ind, m_ind, n_desc, feat = selected
+        checker = False
+
+
+
+        ## Compulsary failing instantiation
+        if not checker:
+            return
+        try:
+            boolean = False
+            SpatialDescriptorModel(retrievers=ret, featurers=feat,
+                                   mapselector_spdescriptor=sel,
+                                   pos_inputs=p_ind, map_indices=m_ind,
+                                   perturbations=pert, aggregations=agg,
+                                   name_desc=n_desc)
+            boolean = True
+        except:
+            if boolean:
+                raise Exception("It has to halt here.")
 
     ###########################################################################
     ###########################################################################
@@ -95,14 +139,14 @@ def test():
     pos_agg = [None]
 
     ## Perturbations
-    pos_pert = [None]
+    pos_pert = [None, perturbation]
 
     ## Random exploration
     pos_loop_ind = [None]
     pos_loop_mapin = [None]
     pos_name_desc = [None, '', 'random_desc']
     # Possible feats
-    pos_feats = [feats0, feats1]
+    pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
     # Random exploration possibilities
     pos_random = [pos_loop_ind, pos_loop_mapin, pos_name_desc, pos_feats]
 
@@ -112,8 +156,13 @@ def test():
         ret, sel, agg, pert = p
         ## Random exploration of parameters
         selected, indices = random_pos_space_exploration(pos_random)
+        print indices
 #        print p, selected
         p_ind, m_ind, n_desc, feat = selected
+        ## Impossible cases
+        checker = impossible_instantiation(selected, p)
+        if checker:
+            continue
         ## Testing instantiation
         spdesc = SpatialDescriptorModel(retrievers=ret, featurers=feat,
                                         mapselector_spdescriptor=sel,

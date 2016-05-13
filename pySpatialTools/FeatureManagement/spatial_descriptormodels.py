@@ -120,6 +120,7 @@ class SpatialDescriptorModel:
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
         if _mapselector_spdescriptor is None:
+            ## Probably is better to omit
             mapret = lambda idx: (0, 0)
             mapfeats = [lambda idx: (0, 0)]*3
             _mapselector_spdescriptor = Sp_DescriptorSelector(mapret, mapfeats)
