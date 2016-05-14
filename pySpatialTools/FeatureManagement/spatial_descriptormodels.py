@@ -81,15 +81,15 @@ class SpatialDescriptorModel:
 
     def _format_perturbations(self, perturbations):
         """Format perturbations. TODO"""
-        ## 0. Perturbations
+        ## 0. Perturbations processing
         if perturbations is None:
             return
         ret_perturbs, feat_perturbs =\
             sp_general_filter_perturbations(perturbations)
-        ## 1. Static neighbourhood (same neighs output for all k)
-        aux = len(ret_perturbs) == 1 and ret_perturbs[0]._perturbtype == 'none'
-        self._staticneighs = aux
-        ## 2. Apply perturbations
+#        ## 1. Static neighbourhood (same neighs output for all k)
+#        aux = len(ret_perturbs) == 1 and ret_perturbs[0]._perturbtype == 'none'
+#        self._staticneighs = aux
+        ## 1. Apply perturbations
         self.retrievers.add_perturbations(ret_perturbs)
         self.featurers.add_perturbations(feat_perturbs)
 
@@ -120,27 +120,64 @@ class SpatialDescriptorModel:
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
         if _mapselector_spdescriptor is None:
-            ## Probably is better to omit
-            mapret = lambda idx: (0, 0)
-            mapfeats = [lambda idx: (0, 0)]*3
-            _mapselector_spdescriptor = Sp_DescriptorSelector(mapret, mapfeats)
+            self.selectors = (0, 0), (0, 0, 0, 0, 0, 0)
+            self._mapselector_spdescriptor =\
+                self._mapselector_spdescriptor_constant
+
         if type(_mapselector_spdescriptor) == np.ndarray:
-            mapperselector = Sp_DescriptorSelector()
-            mapperselector.set_from_array(_mapselector_spdescriptor)
-            self._mapselector_spdescriptor = mapperselector
-        elif type(_mapselector_spdescriptor).__name__ == 'function':
-            mapperselector = Sp_DescriptorSelector()
-            mapperselector.set_from_function(_mapselector_spdescriptor)
-            self._mapselector_spdescriptor = mapperselector
-        elif _mapselector_spdescriptor.__name__ == 'pst.Sp_DescriptorSelector':
-            try:
-                _mapselector_spdescriptor[0]
-            except:
-                msg = "Incorrect input for spatial descriptor mapperselector."
-                raise TypeError(msg)
+            assert(len(_mapselector_spdescriptor.shape) == 2)
+            assert(_mapselector_spdescriptor.shape[1] == 8)
+            sels = (_mapselector_spdescriptor[:, :2],
+                    _mapselector_spdescriptor[:, 2:])
+            self.selectors = Sp_DescriptorSelector(*sels)
+            self._mapselector_spdescriptor =\
+                self._mapselector_spdescriptor_selector
+        elif type(_mapselector_spdescriptor) == tuple:
+            if type(_mapselector_spdescriptor[0]) == int:
+                assert(len(_mapselector_spdescriptor) == 8)
+                ## TODO
+                _mapselector_spdescriptor[:2], _mapselector_spdescriptor[2:]
+            elif type(_mapselector_spdescriptor[0]) == tuple:
+                assert(len(_mapselector_spdescriptor) == 2)
+                assert(len(_mapselector_spdescriptor[0]) == 2)
+                assert(len(_mapselector_spdescriptor[1]) == 6)
+                self.selectors = _mapselector_spdescriptor
+                ## TODO
+            elif type(_mapselector_spdescriptor[0]) == np.ndarray:
+                assert(len(_mapselector_spdescriptor) == 2)
+                assert(len(_mapselector_spdescriptor[0].shape) == 2)
+                assert(len(_mapselector_spdescriptor[1].shape) == 2)
+                assert(_mapselector_spdescriptor[0].shape[1] == 2)
+                assert(_mapselector_spdescriptor[1].shape[1] == 6)
+                self.retrievers.set_selector(_mapselector_spdescriptor[0])
+                self.featurers.set_selector(_mapselector_spdescriptor[1])
+                self._mapselector_spdescriptor =\
+                    self._mapselector_spdescriptor_constant
+#                self.selectors =\
+#                    Sp_DescriptorSelector(*_mapselector_spdescriptor)
+            elif type(_mapselector_spdescriptor[0]).__name__ == 'function':
+                assert(len(_mapselector_spdescriptor) == 2)
+                self.retrievers.set_selector(_mapselector_spdescriptor[0])
+                self.featurers.set_selector(_mapselector_spdescriptor[1])
+                self._mapselector_spdescriptor =\
+                    self._mapselector_spdescriptor_constant
+#                self.selectors =\
+#                    Sp_DescriptorSelector(*_mapselector_spdescriptor)
+#        elif type(_mapselector_spdescriptor).__name__ == 'function':
+#            mapperselector = Sp_DescriptorSelector()
+#            mapperselector.set_from_function(_mapselector_spdescriptor)
+#            self._mapselector_spdescriptor = mapperselector
+        elif isinstance(_mapselector_spdescriptor, Sp_DescriptorSelector):
             self._mapselector_spdescriptor = _mapselector_spdescriptor
-        ##### TEMPORAL
-        self._mapselector_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0)
+            self._mapselector_spdescriptor =\
+                self._mapselector_spdescriptor_selector
+#            try:
+#                _mapselector_spdescriptor[0]
+#            except:
+#                msg = "Incorrect input for spatial descriptor mapperselector."
+#                raise TypeError(msg)
+#        ##### TEMPORAL
+#        self._mapselector_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0)
 
     def _format_loop(self, pos_inputs, map_indices):
         "Format the possible loop to go through."
@@ -169,14 +206,6 @@ class SpatialDescriptorModel:
                 else:
                     return i
         self._map_indices = map_indices
-
-        ## Create iterator
-        def iter_indices(self):
-            start, stop = self._pos_inputs.start, self._pos_inputs.stop
-            step = self._pos_inputs.step
-            for idx in xrange(start, stop, step):
-                yield idx
-        self.iter_indices = iter_indices
         ## Notice to featurer
         self.featurers.set_map_vals_i(pos_inputs)
 
@@ -191,11 +220,28 @@ class SpatialDescriptorModel:
     ###########################################################################
     def _get_methods(self, i):
         "Obtain the possible mappers we have to use in the process."
-        methods = self._mapselector_spdescriptor(i)
         staticneighs = self.retrievers.staticneighs
-        typeret = methods[:2]
-        typefeats = methods[2:]
+        methods = self._mapselector_spdescriptor(i)
+        typeret, typefeats = methods
         return staticneighs, typeret, typefeats
+
+    def _mapselector_spdescriptor_constant(self, i):
+        i_len = 1 if type(i) == int else len(i)
+        logi = type(i) == int
+        if logi:
+            return self.selectors
+        else:
+            return [self.selectors[0]]*i_len, [self.selectors[1]]*i_len
+
+    def _mapselector_spdescriptor_selector(self, i):
+        return self.selectors[i]
+
+    def iter_indices(self):
+        """Get indices in iteration of indices."""
+        start, stop = self._pos_inputs.start, self._pos_inputs.stop
+        step = self._pos_inputs.step
+        for idx in xrange(start, stop, step):
+            yield idx
 
     ################################# Setters #################################
     ###########################################################################

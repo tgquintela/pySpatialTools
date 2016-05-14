@@ -130,9 +130,78 @@ class GeneralCollectionSelectors:
             res.append(self.selectors[i][idx])
         return res
 
+    def _formatting_unique_collective_mapper(self, mapper):
+        """Is a collection of mappers categorize by a only mapper."""
+        self.assert_correctness = self.assert_correctness_mapper
+        if type(mapper).__name__ == 'instance':
+            self._mapper = self._mapper_setting(mapper._mapper)
+        elif type(mapper) == tuple:
+            if type(mapper[0]) == int:
+                assert(len(mapper) == sum(self._n_vars_out))
+                self._mapper_setting(mapper)
+                self.__getitem__ = self._getitem_constant
+            else:
+                assert(type(mapper[1]) == dict)
+                assert(type(mapper[0]).__name__ == 'function')
+                self._mapper_setting(mapper[0])
+                self._initialize_variables(**mapper[1])
+                self.__getitem__ = self._getitem_mapper
+        elif type(mapper) == np.ndarray:
+            self.__getitem__ = self._getitem_mapper
+        elif type(mapper).__name__ == 'function':
+            self._mapper_setting(mapper)
+            self.__getitem__ = self._getitem_mapper
+
     def assert_correctness(self, object2manageselection):
         for i in range(len(self.selectors)):
             self.selectors[i].assert_correctness(object2manageselection)
+
+    def assert_correctness_mapper(self, obj):
+        pass
+
+    def _preprocess_selector(self, map_sel, map_sel_type):
+        if map_sel is None:
+            map_sel = map_sel_type(map_sel)
+        elif isinstance(map_sel, map_sel_type):
+            pass
+        elif type(map_sel) == list:
+            map_sel = map_sel_type(*map_sel)
+        else:
+            map_sel = map_sel_type(map_sel)
+        return map_sel
+
+    def _getitem_mapper(self, keys):
+        if type(keys) == int:
+            outs = self._mapper(keys)
+        elif type(keys) in [list, tuple]:
+            assert(all([type(k) == int for k in keys]))
+            outs = [self._mapper(k) for k in keys]
+        else:
+            msg = "Not correct input for %s selector." % self.__name__
+            raise TypeError(msg)
+        outs = self._outformat_mapper(outs)
+        return outs
+
+    def _outformat_mapper(self, out):
+        assert(len(out) == sum(self._n_vars_out))
+        out_format = []
+        for i in range(len(self._n_vars_out)-1):
+            out_format.append(out[self._n_vars_out[i]:self._n_vars_out[i+1]])
+        return out_format
+
+    def _initialize_variables(self, n_in=None, n_out=None):
+        if n_in is not None:
+            if self._array_mapper is not None:
+                assert(len(self._array_mapper) >= n_in)
+            self.n_in = n_in
+
+    def _mapper_setting(self, mapper):
+        if type(mapper) == np.ndarray:
+            self._array_mapper = mapper
+            self._mapper = lambda idx: self._array_mapper[idx]
+        else:
+            assert(type(mapper).__name__ == 'function')
+            self._mapper = mapper
 
 
 class DummySelector(GeneralSelector):
@@ -299,24 +368,27 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
     __name__ = "pst.Feat_RetrieverSelector"
 
     def _inititizalization(self):
-        self._default_map_values = (0, 0)
-        self._n_vars_out = 2
+        self._default_map_values = [(0, 0)]*3
+        self._n_vars_out = [2, 2, 2]
         self.n_out = []
         self._pos_out = []
         self.n_in = 0
         self._open_n = False
 
-    def __init__(self, mapper_featin, mapper_featout, mapper_desc):
+    def __init__(self, mapper_featin, mapper_featout=None, mapper_desc=None):
         ## Initialization
         self._inititizalization()
-        ## Instantiation
-        mapper_featin = FeatInd_RetrieverSelector(mapper_featin)
-        mapper_featout = FeatInd_RetrieverSelector(mapper_featout)
-        mapper_desc = Desc_RetrieverSelector(mapper_desc)
-        ## Assert correct inputs
-        self._assert_inputs(mapper_featin, mapper_featout, mapper_desc)
-        ## Set informative parameters
-        self._set_feat_selector(mapper_featin, mapper_featout, mapper_desc)
+        if mapper_featout is None:
+            self._formatting_unique_collective_mapper(mapper_featin)
+        else:
+            ## Instantiation
+            mapper_featin = FeatInd_RetrieverSelector(mapper_featin)
+            mapper_featout = FeatInd_RetrieverSelector(mapper_featout)
+            mapper_desc = Desc_RetrieverSelector(mapper_desc)
+            ## Assert correct inputs
+            self._assert_inputs(mapper_featin, mapper_featout, mapper_desc)
+            ## Set informative parameters
+            self._set_feat_selector(mapper_featin, mapper_featout, mapper_desc)
 
     def _assert_inputs(self, mapper_featin, mapper_featout, mapper_desc):
         assert(mapper_featin.__name__ == "pst.FeatInd_RetrieverSelector")
@@ -342,21 +414,17 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
     _mapper = lambda s, idx: (0, 0, 0, 0, 0, 0, 0, 0)
     __name__ = "pst.Sp_DescriptorSelector"
 
-    def __init__(self, map_ret=None, map_feat=None):
-        map_ret = self._preprocess_selector(map_ret, Spatial_RetrieverSelector)
-        map_feat = self._preprocess_selector(map_feat, Feat_RetrieverSelector)
-        self.selectors = map_ret, map_feat
+    def _initialization(self):
+        self._n_vars_out = [2, 6]
+        self._array_mapper = None
 
-    def _preprocess_selector(self, map_sel, map_sel_type):
-        if map_sel is None:
-            map_sel = map_sel_type(map_sel)
-        elif isinstance(map_sel, map_sel_type):
-            pass
-        elif type(map_sel) == list:
-            map_sel = map_sel_type(*map_sel)
+    def __init__(self, map_ret=None, map_feat=None):
+        self._initialization()
+        if map_feat is None:
+            self._formatting_unique_collective_mapper(map_ret)
         else:
-            map_sel = map_sel_type(map_sel)
-        return map_sel
-#
-#    def __init__(self, staticneighs=None, mapretinput=None, mapretout=None,
-#                 mapfeatinput=None, mapfeatoutput=None):
+            map_ret =\
+                self._preprocess_selector(map_ret, Spatial_RetrieverSelector)
+            map_feat =\
+                self._preprocess_selector(map_feat, Feat_RetrieverSelector)
+            self.selectors = map_ret, map_feat

@@ -63,7 +63,7 @@ def test():
 ##        test_pythonUtils.test()
 ##        test_io.test()
 ##        test_transformations.test()
-#        test_utils.test()
+        test_utils.test()
 #        test_neighsinfo.test()
 ##        test_preprocess.test()
 #        test_spatial_discretizer.test()

@@ -294,7 +294,7 @@ class FeaturesManager:
                 self.out_features = outs
 
     ############################# Format selectors ############################
-    def _format_selector(self, selector1, selector2, selector3):
+    def _format_selector(self, selector1, selector2=None, selector3=None):
         """Programable get_type_feats."""
         if selector1 is None:
             self.get_type_feats = self._general_get_type_feat
@@ -303,7 +303,8 @@ class FeaturesManager:
             self._complete_desc_i = self._complete_desc_i_general
         else:
             typ = type(selector1)
-            assert((type(selector2) == typ) and (type(selector2) == typ))
+            if selector2 is not None:
+                assert((type(selector2) == typ) and (type(selector2) == typ))
             if typ == tuple:
                 self.selector = (selector1, selector2, selector3)
                 self.get_type_feats = self._static_get_type_feat
@@ -333,7 +334,7 @@ class FeaturesManager:
         """Set descriptormodels."""
         self._format_descriptormodel(descriptormodels)
 
-    def set_selector(self, selector1, selector2, selector3):
+    def set_selector(self, selector1, selector2=None, selector3=None):
         """Set selectors."""
         self._format_selector(selector1, selector2, selector3)
 

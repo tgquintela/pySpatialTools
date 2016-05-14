@@ -10,6 +10,7 @@ import numpy as np
 #import os
 import copy
 from itertools import product
+import signal
 
 ## Retrieve
 from pySpatialTools.Discretization import GridSpatialDisc
@@ -18,6 +19,9 @@ from pySpatialTools.Retrieve import create_retriever_input_output,\
     WindowsRetriever
 # Artificial data
 from pySpatialTools.utils.artificial_data import generate_randint_relations
+
+## Utilities
+from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
 
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
@@ -68,6 +72,9 @@ def test():
         else:
             return i
 
+    def halting_f(signum, frame):
+        raise Exception()
+
     ## Random exploration functions
     def random_pos_space_exploration(pos_possibles):
         selected, indices = [], []
@@ -108,6 +115,10 @@ def test():
         p_ind, m_ind, n_desc, feat = selected
         checker = False
 
+        ## Cases
+        if p_ind == []:
+            checker = True
+
         ## Compulsary failing instantiation
         if not checker:
             return
@@ -122,6 +133,7 @@ def test():
         except:
             if boolean:
                 raise Exception("It has to halt here.")
+        return checker
 
     ###########################################################################
     ###########################################################################
@@ -134,20 +146,25 @@ def test():
     ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input)]
     ret2 = RetrieverManager(ret0)
     pos_rets = [ret0, ret1, ret2]
-    # Feats and manager
+    # Selectors
+    arrayselector0 = np.zeros((100, 8))
+    arrayselector1 = np.zeros((100, 2)), np.zeros((100, 6))
+    functselector = lambda idx: (0, 0), lambda idx: (0, 0, 0, 0, 0, 0)
+    tupleselector0 = (0, 0), (0, 0, 0, 0, 0, 0)
+    tupleselector1 = (0, 0, 0, 0, 0, 0, 0, 0)
 
-    arrayselector = None
-    functselector = None
+
     listselector = None
-    selobj = None
-    pos_selectors = [None]
+    selobj = Sp_DescriptorSelector(*arrayselector1)
+    pos_selectors = [None, arrayselector0, arrayselector1, functselector,
+                     tupleselector0, tupleselector1]
     pos_agg = [None]
 
     ## Perturbations
     pos_pert = [None, perturbation]
 
     ## Random exploration
-    pos_loop_ind = [None, 20, (0, 100, 1), slice(0, 100, 1)]
+    pos_loop_ind = [None, 20, (0, 100, 1), slice(0, 100, 1), []]
     pos_loop_mapin = [None, map_indices]
     pos_name_desc = [None, '', 'random_desc']
     # Possible feats
@@ -155,7 +172,7 @@ def test():
     # Random exploration possibilities
     pos_random = [pos_loop_ind, pos_loop_mapin, pos_name_desc, pos_feats]
 
-    possibilities = [pos_rets, pos_selectors, pos_agg, pos_pert]
+    possibilities = [pos_rets*10, pos_selectors, pos_agg, pos_pert]
 
     for p in product(*possibilities):
         ret, sel, agg, pert = p
@@ -165,8 +182,9 @@ def test():
 #        print p, selected
         p_ind, m_ind, n_desc, feat = selected
         ## Impossible cases
-        checker = impossible_instantiation(selected, p)
-        if checker:
+        checker1 = impossible_instantiation(selected, p)
+        checker2 = compulsary_instantiation_errors(selected, p)
+        if checker1 or checker2:
             continue
         ## Testing instantiation
         spdesc = SpatialDescriptorModel(retrievers=ret, featurers=feat,
@@ -174,10 +192,57 @@ def test():
                                         pos_inputs=p_ind, map_indices=m_ind,
                                         perturbations=pert, aggregations=agg,
                                         name_desc=n_desc)
-        ## Function testing
+        #### Function testing
+        ## Auxiliar functions
         spdesc.add_perturbations(pert)
         spdesc.set_loop(p_ind, m_ind)
+        spdesc._map_indices(spdesc, 0)
 
+        ## Individual computations
+        #spdesc.compute(0)
+        #spdesc._compute_descriptors(0)
+
+
+        ## Loops
+#        for idx in spdesc.iter_indices():
+#            break
+#        for vals_ik, desc_ik in spdesc.compute_net_ik():
+#            #assert(vals_ik)
+#            #assert(desc_ik)
+#            break
+#        for desc_i, vals_i in spdesc.compute_net_i():
+#            #assert(vals_ik)
+#            #assert(desc_ik)
+#            break
+
+        ## Global computations
+        try:
+            signal.signal(signal.SIGALRM, halting_f)
+            signal.alarm(0.01)   # 0.01 seconds
+#            spdesc.compute()
+        except:
+            pass
+        try:
+            signal.signal(signal.SIGALRM, halting_f)
+            signal.alarm(0.01)   # 0.01 seconds
+#            spdesc._compute_nets()
+        except:
+            pass
+        try:
+            signal.signal(signal.SIGALRM, halting_f)
+            signal.alarm(0.01)   # 0.01 seconds
+#            spdesc._compute_retdriven()
+        except:
+            pass
+        try:
+#            logfile = Logger('logfile.log')
+            signal.signal(signal.SIGALRM, halting_f)
+            signal.alarm(0.01)   # 0.01 seconds
+#            spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
+#            os.remove('logfile.log')
+        except:
+#            os.remove('logfile.log')
+            pass
 
 #    ###########################################################################
 #    ###########################################################################
@@ -233,7 +298,7 @@ def test():
 #        spdescs.append(aux_spdesc)
 #    netss = [spdescs[i].compute() for i in range(4)]
 
-############# TO Input in exhaustive testing    
+############# TO Input in exhaustive testing
 #
 #    try:
 #        logfile = Logger('logfile.log')
@@ -242,8 +307,6 @@ def test():
 #    except:
 #        raise Exception("Not usable compute_process.")
 #
-
-
 
 
 #    ## Grid descriptors
