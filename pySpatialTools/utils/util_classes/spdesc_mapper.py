@@ -134,12 +134,13 @@ class GeneralCollectionSelectors:
         """Is a collection of mappers categorize by a only mapper."""
         self.assert_correctness = self.assert_correctness_mapper
         if type(mapper).__name__ == 'instance':
-            self._mapper = self._mapper_setting(mapper._mapper)
+            self._mapper_setting(mapper)
+            self.__getitem__ = self._getitem_mapper
         elif type(mapper) == tuple:
             if type(mapper[0]) == int:
                 assert(len(mapper) == sum(self._n_vars_out))
                 self._mapper_setting(mapper)
-                self.__getitem__ = self._getitem_constant
+                self.__getitem__ = self._getitem_mapper
             else:
                 assert(type(mapper[1]) == dict)
                 assert(type(mapper[0]).__name__ == 'function')
@@ -173,20 +174,30 @@ class GeneralCollectionSelectors:
     def _getitem_mapper(self, keys):
         if type(keys) == int:
             outs = self._mapper(keys)
+            outs = self._outformat_mapper(outs)
         elif type(keys) in [list, tuple]:
             assert(all([type(k) == int for k in keys]))
-            outs = [self._mapper(k) for k in keys]
+            outs = []
+            for k in keys:
+                outs.append(self._outformat_mapper(self._mapper(k)))
         else:
             msg = "Not correct input for %s selector." % self.__name__
             raise TypeError(msg)
-        outs = self._outformat_mapper(outs)
         return outs
 
     def _outformat_mapper(self, out):
-        assert(len(out) == sum(self._n_vars_out))
-        out_format = []
-        for i in range(len(self._n_vars_out)-1):
-            out_format.append(out[self._n_vars_out[i]:self._n_vars_out[i+1]])
+        if type(out) == tuple:
+            assert(len(out) == sum(self._n_vars_out))
+            out_format = []
+            for i in range(len(self._n_vars_out)-1):
+                aux_out = out[self._n_vars_out[i]:self._n_vars_out[i+1]]
+                out_format.append(aux_out)
+        else:
+            assert(type(out) == list)
+            assert(len(out) == len(self._n_vars_out))
+            assert(all([len(out[i]) == self._n_vars_out[i]
+                        for i in range(len(out))]))
+            out_format = out
         return out_format
 
     def _initialize_variables(self, n_in=None, n_out=None):
@@ -199,9 +210,18 @@ class GeneralCollectionSelectors:
         if type(mapper) == np.ndarray:
             self._array_mapper = mapper
             self._mapper = lambda idx: self._array_mapper[idx]
-        else:
-            assert(type(mapper).__name__ == 'function')
+        elif type(mapper).__name__ == 'function':
             self._mapper = mapper
+        elif type(mapper) == tuple:
+            self._mapper = lambda idx: mapper
+        else:
+            assert(type(mapper).__name__ == 'instance')
+            if '_array_mapper' in dir(mapper):
+                self._array_mapper = mapper._array_mapper
+                self._mapper = lambda idx: tuple(self._array_mapper[idx])
+            else:
+                self._mapper = mapper._mapper
+            self.n_in = mapper.n_in
 
 
 class DummySelector(GeneralSelector):

@@ -672,12 +672,18 @@ def test():
     sel3 = Desc_RetrieverSelector(np.array([mapper_array]*2).T)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+    selfeat = Feat_RetrieverSelector(selfeat, None, None)
+    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+    selfeat = Feat_RetrieverSelector((0, 0, 0, 0, 0, 0))
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
     sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
     sel3 = Desc_RetrieverSelector(mapper_array, mapper_array)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+    selfeat = Feat_RetrieverSelector(selfeat, None, None)
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
@@ -686,12 +692,16 @@ def test():
     sel3 = Desc_RetrieverSelector(mapper_function1)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+    selfeat = Feat_RetrieverSelector(selfeat, None, None)
+    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     sel1 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
     sel2 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
     sel3 = Desc_RetrieverSelector(mapper_function, mapper_function)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+    selfeat = Feat_RetrieverSelector(selfeat, None, None)
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
     selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
     selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
