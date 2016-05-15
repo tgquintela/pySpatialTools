@@ -719,6 +719,10 @@ def test():
     sel2 = FeatInd_RetrieverSelector(sel2)
     sel3 = Desc_RetrieverSelector(sel3)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+    selfeat = Feat_RetrieverSelector(np.zeros((100, 6)))
+
+    selfeat = Feat_RetrieverSelector((lambda idx: (0, 0, 0, 0, 0, 0),
+                                     {'n_in': 200}))
 
 #    sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
 #    sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
