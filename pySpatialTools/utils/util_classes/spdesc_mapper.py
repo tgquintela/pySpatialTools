@@ -128,6 +128,7 @@ class GeneralCollectionSelectors:
         res = []
         for i in range(len(self.selectors)):
             res.append(self.selectors[i][idx])
+        res = tuple(res)
         return res
 
     def _formatting_unique_collective_mapper(self, mapper):
@@ -190,28 +191,31 @@ class GeneralCollectionSelectors:
         if type(out) == tuple:
             assert(len(out) == sum(self._n_vars_out))
             out_format = []
-            for i in range(len(self._n_vars_out)-1):
-                aux_out = out[self._n_vars_out[i]:self._n_vars_out[i+1]]
+            limits = [0] + list(np.cumsum(self._n_vars_out))
+            for i in range(len(self._n_vars_out)):
+                aux_out = out[limits[i]:limits[i+1]]
                 out_format.append(aux_out)
+            out_format = tuple(out_format)
         else:
             assert(type(out) == list)
             assert(len(out) == len(self._n_vars_out))
             assert(all([len(out[i]) == self._n_vars_out[i]
                         for i in range(len(out))]))
-            out_format = out
+            out_format = tuple(out)
         return out_format
 
     def _initialize_variables(self, n_in=None, n_out=None):
         if n_in is not None:
+            self.n_in = n_in
 #            if '_array_mapper' in dir(self):
 #                if self._array_mapper is not None:
 #                    assert(len(self._array_mapper) >= n_in)
-            self.n_in = n_in
 
     def _mapper_setting(self, mapper):
         if type(mapper) == np.ndarray:
             self._array_mapper = mapper
-            self._mapper = lambda idx: self._array_mapper[idx]
+            self._mapper =\
+                lambda idx: tuple(self._array_mapper[idx].astype(int))
         elif type(mapper).__name__ == 'function':
             self._mapper = mapper
         elif type(mapper) == tuple:

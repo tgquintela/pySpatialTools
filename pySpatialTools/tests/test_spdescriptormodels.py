@@ -197,6 +197,8 @@ def test():
         spdesc.add_perturbations(pert)
         spdesc.set_loop(p_ind, m_ind)
         spdesc._map_indices(spdesc, 0)
+        for i in spdesc.iter_indices():
+            spdesc._get_methods(i)
 
         ## Individual computations
         #spdesc.compute(0)

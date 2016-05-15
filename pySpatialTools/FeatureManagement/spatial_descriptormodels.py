@@ -42,7 +42,8 @@ class SpatialDescriptorModel:
         self.retrievers = None
         self.featurers = None
         ## Mapper
-        self._map_spdescriptor = 0
+        self.selectors = None
+        self._default_selectors = (0, 0), (0, 0, 0, 0, 0, 0)
         ## Parameters useful
         self.n_inputs = 0
         self._pos_inputs = slice(0, 0, 1)
@@ -120,10 +121,9 @@ class SpatialDescriptorModel:
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
         if _mapselector_spdescriptor is None:
-            self.selectors = (0, 0), (0, 0, 0, 0, 0, 0)
+            self.selectors = self._default_selectors
             self._mapselector_spdescriptor =\
                 self._mapselector_spdescriptor_constant
-
         if type(_mapselector_spdescriptor) == np.ndarray:
             assert(len(_mapselector_spdescriptor.shape) == 2)
             assert(_mapselector_spdescriptor.shape[1] == 8)
@@ -135,14 +135,17 @@ class SpatialDescriptorModel:
         elif type(_mapselector_spdescriptor) == tuple:
             if type(_mapselector_spdescriptor[0]) == int:
                 assert(len(_mapselector_spdescriptor) == 8)
-                ## TODO
-                _mapselector_spdescriptor[:2], _mapselector_spdescriptor[2:]
+                self.selectors = (_mapselector_spdescriptor[:2],
+                                  _mapselector_spdescriptor[2:])
+                self._mapselector_spdescriptor =\
+                    self._mapselector_spdescriptor_constant
             elif type(_mapselector_spdescriptor[0]) == tuple:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0]) == 2)
                 assert(len(_mapselector_spdescriptor[1]) == 6)
                 self.selectors = _mapselector_spdescriptor
-                ## TODO
+                self._mapselector_spdescriptor =\
+                    self._mapselector_spdescriptor_constant
             elif type(_mapselector_spdescriptor[0]) == np.ndarray:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0].shape) == 2)
@@ -153,22 +156,20 @@ class SpatialDescriptorModel:
                 self.featurers.set_selector(_mapselector_spdescriptor[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
-#                self.selectors =\
-#                    Sp_DescriptorSelector(*_mapselector_spdescriptor)
+                self.selectors = self._default_selectors
             elif type(_mapselector_spdescriptor[0]).__name__ == 'function':
                 assert(len(_mapselector_spdescriptor) == 2)
                 self.retrievers.set_selector(_mapselector_spdescriptor[0])
                 self.featurers.set_selector(_mapselector_spdescriptor[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
-#                self.selectors =\
-#                    Sp_DescriptorSelector(*_mapselector_spdescriptor)
+                self.selectors = self._default_selectors
 #        elif type(_mapselector_spdescriptor).__name__ == 'function':
 #            mapperselector = Sp_DescriptorSelector()
 #            mapperselector.set_from_function(_mapselector_spdescriptor)
 #            self._mapselector_spdescriptor = mapperselector
         elif isinstance(_mapselector_spdescriptor, Sp_DescriptorSelector):
-            self._mapselector_spdescriptor = _mapselector_spdescriptor
+            self.selectors = _mapselector_spdescriptor
             self._mapselector_spdescriptor =\
                 self._mapselector_spdescriptor_selector
 #            try:
@@ -201,10 +202,11 @@ class SpatialDescriptorModel:
         ## Create map_indices
         if map_indices is None:
             def map_indices(s, i):
-                if s._pos_inputs is not None:
-                    return s._pos_inputs.start + s._pos_inputs.step*i
-                else:
-                    return i
+                return s._pos_inputs.start + s._pos_inputs.step*i
+#                if s._pos_inputs is not None:
+#                    return s._pos_inputs.start + s._pos_inputs.step*i
+#                else:
+#                    return i
         self._map_indices = map_indices
         ## Notice to featurer
         self.featurers.set_map_vals_i(pos_inputs)
@@ -222,7 +224,16 @@ class SpatialDescriptorModel:
         "Obtain the possible mappers we have to use in the process."
         staticneighs = self.retrievers.staticneighs
         methods = self._mapselector_spdescriptor(i)
-        typeret, typefeats = methods
+        if type(methods) == list:
+            print methods
+            typeret, typefeats = [], []
+            for e in methods:
+                print e
+                e1, e2 = e
+                typeret.append(e1)
+                typefeats.append(e2)
+        else:
+            typeret, typefeats = methods
         return staticneighs, typeret, typefeats
 
     def _mapselector_spdescriptor_constant(self, i):
