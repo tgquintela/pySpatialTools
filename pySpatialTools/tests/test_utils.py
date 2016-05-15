@@ -34,7 +34,8 @@ from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 from pySpatialTools.utils.util_classes import DummySelector,\
     GeneralCollectionSelectors, Spatial_RetrieverSelector,\
-    Feat_RetrieverSelector, FeatInd_RetrieverSelector, Desc_RetrieverSelector
+    Feat_RetrieverSelector, FeatInd_RetrieverSelector, Desc_RetrieverSelector,\
+    Sp_DescriptorSelector
 
 
 def test():
@@ -667,41 +668,95 @@ def test():
             raise Exception("The test has to halt here.")
 
     # FeatureInd retriever selector
-    sel1 = FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
-    sel2 = FeatInd_RetrieverSelector(np.array([mapper_array]*2).T)
-    sel3 = Desc_RetrieverSelector(np.array([mapper_array]*2).T)
+    pos_selt = [(np.array([mapper_array]*2).T, ), (mapper_array, mapper_array),
+                (mapper_function1, ), (mapper_function, mapper_function)]
+
+    for i in range(len(pos_selt)):
+        ## Instantiation
+        sel0 = Spatial_RetrieverSelector(*pos_selt[i])
+        sel1 = FeatInd_RetrieverSelector(*pos_selt[i])
+        sel2 = FeatInd_RetrieverSelector(*pos_selt[i])
+        sel3 = Desc_RetrieverSelector(*pos_selt[i])
+        selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+        # Getitem
+        selfeat[0]
+        selfeat[0, 1]
+        selfeat[[0, 1]]
+        ## Partial information instantiation
+        selfeat = Feat_RetrieverSelector(selfeat, None, None)
+        ### Testing Sp_DescriptorSelector
+        sel = Sp_DescriptorSelector(sel0, selfeat)
+        # Getitem
+        selfeat[0]
+        selfeat[0, 1]
+        selfeat[[0, 1]]
+        ### Testing Sp_DescriptorSelector with partial instantiation
+        sel = Sp_DescriptorSelector(sel)
+        # Getitem
+        selfeat[0]
+        selfeat[0, 1]
+        selfeat[[0, 1]]
+
+    #### Individual tests
+    # Getitem
+    selfeat[0]
+    selfeat[0, 1]
+    selfeat[[0, 1]]
+    ## Partial information instantiation
+    selfeat = Feat_RetrieverSelector((0, 0, 0, 0, 0, 0), None, None)
+    # Getitem
+    selfeat[0]
+    selfeat[0, 1]
+    selfeat[[0, 1]]
+#    ## Partial information instantiation
+#    selfeat = Feat_RetrieverSelector(((0, 0), (0, 0), (0, 0)), None, None)
+#    # Getitem
+#    selfeat[0]
+#    selfeat[0, 1]
+#    selfeat[[0, 1]]
+    ## Instantiation
+    sel1 = FeatInd_RetrieverSelector(sel1)
+    sel2 = FeatInd_RetrieverSelector(sel2)
+    sel3 = Desc_RetrieverSelector(sel3)
     selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector(selfeat, None, None)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector((0, 0, 0, 0, 0, 0))
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
-    sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
-    sel3 = Desc_RetrieverSelector(mapper_array, mapper_array)
-    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector(selfeat, None, None)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    sel1 = FeatInd_RetrieverSelector(mapper_function1)
-    sel2 = FeatInd_RetrieverSelector(mapper_function1)
-    sel3 = Desc_RetrieverSelector(mapper_function1)
-    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector(selfeat, None, None)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    sel1 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
-    sel2 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
-    sel3 = Desc_RetrieverSelector(mapper_function, mapper_function)
-    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector(selfeat, None, None)
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
-    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
-    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+
+#    sel1 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
+#    sel2 = FeatInd_RetrieverSelector(mapper_array, mapper_array)
+#    sel3 = Desc_RetrieverSelector(mapper_array, mapper_array)
+#
+#
+#    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector(selfeat, None, None)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#
+#
+#    sel1 = FeatInd_RetrieverSelector(mapper_function1)
+#    sel2 = FeatInd_RetrieverSelector(mapper_function1)
+#    sel3 = Desc_RetrieverSelector(mapper_function1)
+#
+#
+#    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector(selfeat, None, None)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#
+#
+#    sel1 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
+#    sel2 = FeatInd_RetrieverSelector(mapper_function, mapper_function)
+#    sel3 = Desc_RetrieverSelector(mapper_function, mapper_function)
+#
+#
+#    selfeat = Feat_RetrieverSelector(sel1, sel2, sel3)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector(selfeat, None, None)
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+#    selfeat = Feat_RetrieverSelector((0, 0), (0, 0), (0, 0))
+#    selfeat[0], selfeat[0, 1], selfeat[[0, 1]]
+
+    ##### Sp_DescriptorSelector
+    

@@ -437,6 +437,7 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
     def _initialization(self):
         self._n_vars_out = [2, 6]
         self._array_mapper = None
+        self.n_in = 0
 
     def __init__(self, map_ret=None, map_feat=None):
         self._initialization()
