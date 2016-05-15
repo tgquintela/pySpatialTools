@@ -153,11 +153,11 @@ def test():
     tupleselector0 = (0, 0), (0, 0, 0, 0, 0, 0)
     tupleselector1 = (0, 0, 0, 0, 0, 0, 0, 0)
 
-
     listselector = None
     selobj = Sp_DescriptorSelector(*arrayselector1)
     pos_selectors = [None, arrayselector0, arrayselector1, functselector,
-                     tupleselector0, tupleselector1]
+                     tupleselector0, tupleselector1,
+                     Sp_DescriptorSelector(arrayselector0)]
     pos_agg = [None]
 
     ## Perturbations
@@ -201,8 +201,6 @@ def test():
         ## Individual computations
         #spdesc.compute(0)
         #spdesc._compute_descriptors(0)
-
-
         ## Loops
 #        for idx in spdesc.iter_indices():
 #            break

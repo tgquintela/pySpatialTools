@@ -203,9 +203,9 @@ class GeneralCollectionSelectors:
 
     def _initialize_variables(self, n_in=None, n_out=None):
         if n_in is not None:
-            if '_array_mapper' in dir(self):
-                if self._array_mapper is not None:
-                    assert(len(self._array_mapper) >= n_in)
+#            if '_array_mapper' in dir(self):
+#                if self._array_mapper is not None:
+#                    assert(len(self._array_mapper) >= n_in)
             self.n_in = n_in
 
     def _mapper_setting(self, mapper):
@@ -219,10 +219,10 @@ class GeneralCollectionSelectors:
         else:
             assert(type(mapper).__name__ == 'instance')
             self._mapper = mapper._mapper
-            if '_array_mapper' in dir(mapper):
-                if mapper._array_mapper is not None:
-                    self._array_mapper = mapper._array_mapper
-                    self._mapper = lambda idx: tuple(self._array_mapper[idx])
+#            if '_array_mapper' in dir(mapper):
+#                if mapper._array_mapper is not None:
+#                    self._array_mapper = mapper._array_mapper
+#                    self._mapper = lambda idx: tuple(self._array_mapper[idx])
             self.n_in = mapper.n_in
 
 
