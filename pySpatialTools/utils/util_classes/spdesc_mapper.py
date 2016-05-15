@@ -148,6 +148,7 @@ class GeneralCollectionSelectors:
                 self._initialize_variables(**mapper[1])
                 self.__getitem__ = self._getitem_mapper
         elif type(mapper) == np.ndarray:
+            self._mapper_setting(mapper)
             self.__getitem__ = self._getitem_mapper
         elif type(mapper).__name__ == 'function':
             self._mapper_setting(mapper)
@@ -217,11 +218,11 @@ class GeneralCollectionSelectors:
             self._mapper = lambda idx: mapper
         else:
             assert(type(mapper).__name__ == 'instance')
+            self._mapper = mapper._mapper
             if '_array_mapper' in dir(mapper):
-                self._array_mapper = mapper._array_mapper
-                self._mapper = lambda idx: tuple(self._array_mapper[idx])
-            else:
-                self._mapper = mapper._mapper
+                if mapper._array_mapper is not None:
+                    self._array_mapper = mapper._array_mapper
+                    self._mapper = lambda idx: tuple(self._array_mapper[idx])
             self.n_in = mapper.n_in
 
 
