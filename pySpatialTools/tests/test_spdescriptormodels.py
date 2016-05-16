@@ -200,7 +200,7 @@ def test():
         for i in spdesc.iter_indices():
             spdesc._get_methods(i)
         spdesc._get_methods([0, 1, 2])
-        spdesc._compute_descriptors_beta(0)
+#        spdesc._compute_descriptors_beta(0)
 
         ## Individual computations
         #spdesc.compute(0)
