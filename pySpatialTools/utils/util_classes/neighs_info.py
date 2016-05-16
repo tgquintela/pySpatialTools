@@ -155,6 +155,15 @@ class Neighs_Info:
         self._n = n
         self._kret = k_perturb
 
+    def _set_ks_static(self, ks):
+        """External set ks for staticneighs."""
+        self.ks = ks
+
+    def _set_ks_dynamic(self, ks):
+        """External set ks for non-staticneighs."""
+        assert(len(ks) == len(self.idxs))
+        self.ks = ks
+
     def direct_set(self, neighs, sp_relative_pos=None):
         """Direct set of neighs_info."""
         self.idxs = neighs
@@ -357,7 +366,13 @@ class Neighs_Info:
         ## 4. Format iss
         self._format_set_iss(format_set_iss)
 
-        ## 5. General set
+        ## 5. Format set ks
+        if self.staticneighs:
+            self.set_ks = self._set_ks_static
+        else:
+            self.set_ks = self._set_ks_dynamic
+
+        ## 6. General set
         self.set = self._general_set
 
     def _format_set_iss(self, format_set_iss=None):

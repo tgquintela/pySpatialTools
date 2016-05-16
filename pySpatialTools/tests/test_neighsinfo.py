@@ -168,6 +168,8 @@ def test():
                       'tuple_list_tuple']
         if p[6] == 'slice' and p[4] in tupletypes:
             continue
+        if not p[8] and p[6] == 'slice':
+            continue
         ## TESTING:
         if p[3] == 'integer':
             continue
@@ -252,6 +254,11 @@ def test():
                 join_neighsinfo_AND_general(neighs_info, neighs_info2, joinpos)
                 join_neighsinfo_OR_general(neighs_info, neighs_info2, joinpos)
                 join_neighsinfo_XOR_general(neighs_info, neighs_info2, joinpos)
+        ## Set ks
+        if neighs_info.staticneighs:
+            neighs_info.set_ks(range(10))
+        else:
+            neighs_info.set_ks(range(neighs_info.shape[2]))
 
         k += 1
 #        print '-'*20, k

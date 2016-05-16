@@ -177,8 +177,6 @@ class SpatialDescriptorModel:
 #            except:
 #                msg = "Incorrect input for spatial descriptor mapperselector."
 #                raise TypeError(msg)
-#        ##### TEMPORAL
-#        self._mapselector_spdescriptor = lambda idx: (0, 0, 0, 0, 0, 0, 0)
 
     def _format_loop(self, pos_inputs, map_indices):
         "Format the possible loop to go through."
@@ -225,10 +223,8 @@ class SpatialDescriptorModel:
         staticneighs = self.retrievers.staticneighs
         methods = self._mapselector_spdescriptor(i)
         if type(methods) == list:
-            print methods
             typeret, typefeats = [], []
             for e in methods:
-                print e
                 e1, e2 = e
                 typeret.append(e1)
                 typefeats.append(e2)
@@ -310,6 +306,24 @@ class SpatialDescriptorModel:
 
         return characs, vals_i
 
+    def _compute_descriptors_beta(self, i):
+        "Compute the descriptors assigned to element i."
+        staticneighs, typeret, typefeats = self._get_methods(i)
+        k_pert = self.featurers.k_perturb+1
+        ks = list(range(k_pert))
+        neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
+        neighs_info.set_ks(ks)
+        ## TESTING ASSERTIONS
+        assert(staticneighs == neighs_info.staticneighs)
+        i_len = 1 if type(i) == int else len(i)
+        assert(len(neighs_info.iss) == i_len)
+        if not staticneighs:
+            assert(len(neighs_info.ks) == len(ks))
+        #####################
+        characs, vals_i =\
+            self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
+        return characs, vals_i
+
     def _compute_descriptors_seq0(self, i, typeret, typefeats):
         "Computation descriptors for non-aggregated data."
         ## Model1
@@ -317,7 +331,7 @@ class SpatialDescriptorModel:
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
         neighs_info =\
-            self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=ks)
+            self.retrievers.retrieve_neighs(i, typeret_i=typeret)  #, k=ks)
         assert(staticneighs == neighs_info.staticneighs)
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
