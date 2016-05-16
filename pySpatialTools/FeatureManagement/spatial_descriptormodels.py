@@ -43,7 +43,8 @@ class SpatialDescriptorModel:
         self.featurers = None
         ## Mapper
         self.selectors = None
-        self._default_selectors = (0, 0), (0, 0, 0, 0, 0, 0)
+#        self._default_selectors = (0, 0), (0, 0, 0, 0, 0, 0)
+        self._default_selectors = None, None
         ## Parameters useful
         self.n_inputs = 0
         self._pos_inputs = slice(0, 0, 1)
@@ -120,54 +121,82 @@ class SpatialDescriptorModel:
 
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
+        print _mapselector_spdescriptor
+        print '='*20
+        self.selectors = self._default_selectors
         if _mapselector_spdescriptor is None:
-            self.selectors = self._default_selectors
             self._mapselector_spdescriptor =\
                 self._mapselector_spdescriptor_constant
         if type(_mapselector_spdescriptor) == np.ndarray:
             assert(len(_mapselector_spdescriptor.shape) == 2)
             assert(_mapselector_spdescriptor.shape[1] == 8)
-            sels = (_mapselector_spdescriptor[:, :2],
-                    _mapselector_spdescriptor[:, 2:])
-            self.selectors = Sp_DescriptorSelector(*sels)
+            sels = (_mapselector_spdescriptor[:, 0:2].astype(int),
+                    [_mapselector_spdescriptor[:, 2:4].astype(int),
+                     _mapselector_spdescriptor[:, 4:6].astype(int),
+                     _mapselector_spdescriptor[:, 6:8].astype(int)])
+            self.retrievers.set_selector(sels[0])
+            self.featurers.set_selector(*sels[1])
             self._mapselector_spdescriptor =\
-                self._mapselector_spdescriptor_selector
+                self._mapselector_spdescriptor_constant
         elif type(_mapselector_spdescriptor) == tuple:
             if type(_mapselector_spdescriptor[0]) == int:
                 assert(len(_mapselector_spdescriptor) == 8)
-                self.selectors = (_mapselector_spdescriptor[:2],
-                                  _mapselector_spdescriptor[2:])
+                sels = (_mapselector_spdescriptor[:2],
+                        [_mapselector_spdescriptor[2:4],
+                         _mapselector_spdescriptor[4:6],
+                         _mapselector_spdescriptor[6:8]])
+                self.retrievers.set_selector(sels[0])
+                self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
             elif type(_mapselector_spdescriptor[0]) == tuple:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0]) == 2)
-                assert(len(_mapselector_spdescriptor[1]) == 6)
-                self.selectors = _mapselector_spdescriptor
+                if len(_mapselector_spdescriptor[1]) == 6:
+                    sels = (_mapselector_spdescriptor[0],
+                            [_mapselector_spdescriptor[1][:2],
+                             _mapselector_spdescriptor[1][2:4],
+                             _mapselector_spdescriptor[1][4:]])
+                else:
+                    assert(len(_mapselector_spdescriptor[1]) == 3)
+                    logi = [len(e) == 2 for e in _mapselector_spdescriptor[1]]
+                    assert(all(logi))
+                    sels = _mapselector_spdescriptor
+                self.retrievers.set_selector(sels[0])
+                self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
             elif type(_mapselector_spdescriptor[0]) == np.ndarray:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0].shape) == 2)
-                assert(len(_mapselector_spdescriptor[1].shape) == 2)
                 assert(_mapselector_spdescriptor[0].shape[1] == 2)
-                assert(_mapselector_spdescriptor[1].shape[1] == 6)
-                self.retrievers.set_selector(_mapselector_spdescriptor[0])
-                self.featurers.set_selector(_mapselector_spdescriptor[1])
+                if type(_mapselector_spdescriptor[1]) == tuple:
+                    logi = [e.shape[1] == 2
+                            for e in _mapselector_spdescriptor[1]]
+                    assert(all(logi))
+                    sels = _mapselector_spdescriptor
+                else:
+                    assert(_mapselector_spdescriptor[1].shape[1] == 6)
+                    assert(len(_mapselector_spdescriptor[1].shape) == 2)
+                    sels = (_mapselector_spdescriptor[0].astype(int),
+                            [_mapselector_spdescriptor[1][:, :2].astype(int),
+                             _mapselector_spdescriptor[1][:, 2:4].astype(int),
+                             _mapselector_spdescriptor[1][:, 4:].astype(int)])
+                self.retrievers.set_selector(sels[0])
+                self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
-                self.selectors = self._default_selectors
             elif type(_mapselector_spdescriptor[0]).__name__ == 'function':
                 assert(len(_mapselector_spdescriptor) == 2)
                 self.retrievers.set_selector(_mapselector_spdescriptor[0])
                 self.featurers.set_selector(_mapselector_spdescriptor[1])
                 self._mapselector_spdescriptor =\
                     self._mapselector_spdescriptor_constant
-                self.selectors = self._default_selectors
-#        elif type(_mapselector_spdescriptor).__name__ == 'function':
-#            mapperselector = Sp_DescriptorSelector()
+        elif type(_mapselector_spdescriptor).__name__ == 'function':
+            self.selectors = Sp_DescriptorSelector(_mapselector_spdescriptor)
 #            mapperselector.set_from_function(_mapselector_spdescriptor)
-#            self._mapselector_spdescriptor = mapperselector
+            self._mapselector_spdescriptor =\
+                self._mapselector_spdescriptor_selector
         elif isinstance(_mapselector_spdescriptor, Sp_DescriptorSelector):
             self.selectors = _mapselector_spdescriptor
             self._mapselector_spdescriptor =\
@@ -319,6 +348,7 @@ class SpatialDescriptorModel:
         assert(len(neighs_info.iss) == i_len)
         if not staticneighs:
             assert(len(neighs_info.ks) == len(ks))
+        print 'a'*25, typefeats
         #####################
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)

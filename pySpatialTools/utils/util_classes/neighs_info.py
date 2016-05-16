@@ -158,11 +158,15 @@ class Neighs_Info:
     def _set_ks_static(self, ks):
         """External set ks for staticneighs."""
         self.ks = ks
+        if np.max(self.ks) > self._kret:
+            self._kret = np.max(self.ks)
 
     def _set_ks_dynamic(self, ks):
         """External set ks for non-staticneighs."""
         assert(len(ks) == len(self.idxs))
         self.ks = ks
+        if np.max(self.ks) > self._kret:
+            self._kret = np.max(self.ks)
 
     def direct_set(self, neighs, sp_relative_pos=None):
         """Direct set of neighs_info."""

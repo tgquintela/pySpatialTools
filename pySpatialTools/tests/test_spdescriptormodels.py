@@ -149,14 +149,18 @@ def test():
     # Selectors
     arrayselector0 = np.zeros((100, 8))
     arrayselector1 = np.zeros((100, 2)), np.zeros((100, 6))
-    functselector = lambda idx: (0, 0), lambda idx: (0, 0, 0, 0, 0, 0)
+    arrayselector2 = np.zeros((100, 2)), tuple([np.zeros((100, 2))]*3)
+    functselector0 = lambda idx: ((0, 0), ((0, 0), (0, 0), (0, 0)))
+    functselector1 = lambda idx: (0, 0), lambda idx: ((0, 0), (0, 0), (0, 0))
     tupleselector0 = (0, 0), (0, 0, 0, 0, 0, 0)
     tupleselector1 = (0, 0, 0, 0, 0, 0, 0, 0)
+    tupleselector2 = (0, 0), ((0, 0), (0, 0), (0, 0))
 
     listselector = None
     selobj = Sp_DescriptorSelector(*arrayselector1)
-    pos_selectors = [None, arrayselector0, arrayselector1, functselector,
-                     tupleselector0, tupleselector1,
+    pos_selectors = [None, arrayselector0, arrayselector1, arrayselector2,
+                     functselector0, functselector1,
+                     tupleselector0, tupleselector1, tupleselector2,
                      Sp_DescriptorSelector(arrayselector0)]
     pos_agg = [None]
 

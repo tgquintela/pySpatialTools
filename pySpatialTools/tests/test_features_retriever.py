@@ -243,7 +243,7 @@ def test():
         fm.compute_descriptors(i1, neis, range(k_p))
         if i_selector == 0:
             fm.compute_descriptors([50], neis0[0], k=range(k_p),
-                                   feat_selectors=[(0, 0)])
+                                   feat_selectors=[(0, 0)]*3)
         # Strange cases
         if mode is None:
             FeaturesManager([ImplicitFeatures(feats1),

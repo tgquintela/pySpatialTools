@@ -347,6 +347,8 @@ class FeaturesManager:
         ks = list(range(self.k_perturb+1)) if k is None else k
         ks = [ks] if type(ks) == int else ks
         i_input = [i] if type(i) == int else i
+        if type(feat_selectors) == tuple:
+            feat_selectors = [feat_selectors]
         neighs_info = ensuring_neighs_info(neighs_info, k)
 #        sh = neighs_info.shape
 #        print sh, len(i_input), len(ks), ks, i_input
@@ -355,6 +357,7 @@ class FeaturesManager:
         ## 1. Prepare selectors
         t_feat_in, t_feat_out, t_feat_des =\
             self.get_type_feats(i_input, feat_selectors)
+        print t_feat_in, t_feat_out, t_feat_des
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
@@ -559,20 +562,49 @@ class FeaturesManager:
     #########################
     def _general_get_type_feat(self, i, typefeats_i=None):
         """Format properly general typefeats selector information."""
-        if typefeats_i is None or type(typefeats_i) != tuple:
+        if typefeats_i is None:
             typefeats_i, typefeats_nei, typefeats_desc = self.selector
+            if type(i) == list:
+                typefeats_i = [typefeats_i]*len(i)
+                typefeats_nei = [typefeats_nei]*len(i)
+                typefeats_desc = [typefeats_desc]*len(i)
         else:
+            print typefeats_i
             typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
+#            if type(i) == int:
+#                typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
+#            else:
+#                typefeat = typefeats_i
+#                typefeats_i, typefeats_nei, typefeats_desc = [], [], []
+#                for j in range(len(i)):
+#                    typefeats_i.append(typefeat[j][0])
+#                    typefeats_nei.append(typefeat[j][1])
+#                    typefeats_desc.append(typefeat[j][2])
         return typefeats_i, typefeats_nei, typefeats_desc
 
     def _static_get_type_feat(self, i, typefeats_i=None):
         """Format properly typefeats selector information."""
         typefeats_i, typefeats_nei, typefeats_desc = self.selector
+#        if type(i) == list:
+#            typefeats_i = [typefeats_i]*len(i)
+#            typefeats_nei = [typefeats_nei]*len(i)
+#            typefeats_desc = [typefeats_desc]*len(i)
         return typefeats_i, typefeats_nei, typefeats_desc
 
     def _selector_get_type_feat(self, i, typefeats_i=None):
         """Get information only from selector."""
+        print self.selector[i]
         typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+#        if type(i) == int:
+#            typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+#        else:
+#            typefeats_i, typefeats_nei, typefeats_desc = [], [], []
+#            selectors_i = self.selector[i]
+#            print selectors_i
+#            for j in range(len(i)):
+#                typefeats_i.append(selectors_i[j][0])
+#                typefeats_nei.append(selectors_i[j][1])
+#                typefeats_desc.append(selectors_i[j][2])
         return typefeats_i, typefeats_nei, typefeats_desc
 
     ######################## Perturbation management ##########################

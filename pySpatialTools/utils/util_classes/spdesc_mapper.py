@@ -14,6 +14,8 @@ data.
 import numpy as np
 from copy import copy
 
+inttypes = [int, np.int32, np.int64]
+
 
 class GeneralSelector:
     """General selector."""
@@ -188,20 +190,21 @@ class GeneralCollectionSelectors:
         return outs
 
     def _outformat_mapper(self, out):
-        if type(out) == tuple:
-            assert(len(out) == sum(self._n_vars_out))
-            out_format = []
-            limits = [0] + list(np.cumsum(self._n_vars_out))
-            for i in range(len(self._n_vars_out)):
-                aux_out = out[limits[i]:limits[i+1]]
-                out_format.append(aux_out)
-            out_format = tuple(out_format)
-        else:
-            assert(type(out) == list)
-            assert(len(out) == len(self._n_vars_out))
-            assert(all([len(out[i]) == self._n_vars_out[i]
-                        for i in range(len(out))]))
-            out_format = tuple(out)
+        out_format = _outformat_mapper(out, self._n_vars_out)
+#        if type(out) == tuple:
+#            assert(len(out) == sum(self._n_vars_out))
+#            out_format = []
+#            limits = [0] + list(np.cumsum(self._n_vars_out))
+#            for i in range(len(self._n_vars_out)):
+#                aux_out = out[limits[i]:limits[i+1]]
+#                out_format.append(aux_out)
+#            out_format = tuple(out_format)
+#        else:
+#            assert(type(out) == list)
+#            assert(len(out) == len(self._n_vars_out))
+#            assert(all([len(out[i]) == self._n_vars_out[i]
+#                        for i in range(len(out))]))
+#            out_format = tuple(out)
         return out_format
 
     def _initialize_variables(self, n_in=None, n_out=None):
@@ -404,6 +407,10 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
     def __init__(self, mapper_featin, mapper_featout=None, mapper_desc=None):
         ## Initialization
         self._inititizalization()
+#        print '-'*50
+#        print mapper_featin, mapper_featout, mapper_desc
+#        if type(mapper_featin) == np.ndarray and mapper_featout is None:
+#            raise Exception("Quieto parau")
         if mapper_featout is None:
             self._formatting_unique_collective_mapper(mapper_featin)
         else:
@@ -441,12 +448,15 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
     __name__ = "pst.Sp_DescriptorSelector"
 
     def _initialization(self):
-        self._n_vars_out = [2, 6]
+        self._n_vars_out = [2, [2, 2, 2]]
         self._array_mapper = None
         self.n_in = 0
 
     def __init__(self, map_ret=None, map_feat=None):
         self._initialization()
+#        print '.'*50
+#        print map_ret, map_feat
+#        print '.'*50
         if map_feat is None:
             self._formatting_unique_collective_mapper(map_ret)
         else:
@@ -455,3 +465,28 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
             map_feat =\
                 self._preprocess_selector(map_feat, Feat_RetrieverSelector)
             self.selectors = map_ret, map_feat
+
+
+def _outformat_mapper(out, _n_vars_out):
+    """Outformat mapper."""
+    if type(out) == list:
+        outs = []
+        for i in range(len(out)):
+            outs.append(_outformat_mapper(out[i], _n_vars_out))
+    elif type(out) == tuple:
+        if all([type(o) in inttypes for o in out]):
+            init, outs = 0, []
+            for i in range(len(_n_vars_out)):
+                if type(_n_vars_out[i]) in inttypes:
+                    aux_out = out[init:(init+_n_vars_out[i])]
+                    outs.append(aux_out)
+                    init += _n_vars_out[i]
+                else:
+                    aux_out = out[init:(init+sum(_n_vars_out[i]))]
+                    outs.append(_outformat_mapper(aux_out, _n_vars_out[i]))
+                    init += sum(_n_vars_out[i])
+            outs = tuple(outs)
+        else:
+            assert(len(_n_vars_out) == len(out))
+            outs = out
+    return outs
