@@ -57,7 +57,7 @@ n: maximum number of id of elements retrieved.
 """
 
 import numpy as np
-from copy import copy
+from copy import deepcopy
 import warnings
 warnings.filterwarnings("always")
 
@@ -125,7 +125,7 @@ class Neighs_Info:
         self._set_init()
 
     def copy(self):
-        return copy(self)
+        return deepcopy(self)
 
     @property
     def shape(self):
@@ -158,6 +158,8 @@ class Neighs_Info:
     def _set_ks_static(self, ks):
         """External set ks for staticneighs."""
         self.ks = ks
+        print np.max(self.ks), self._kret
+        print self.ks
         if np.max(self.ks) > self._kret:
             self._kret = np.max(self.ks)
 
@@ -746,7 +748,8 @@ class Neighs_Info:
         * (neighs_info{list of typle only}, ks)
         """
         self.ks = [key[1]] if type(key[1]) == int else key[1]
-        assert(len(key[0]) == len(self.ks))
+        if not self.staticneighs:
+            assert(len(key[0]) == len(self.ks))
         self._set_list_tuple_only_structure(key[0])
 
     ############################### Set Neighs ################################
