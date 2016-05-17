@@ -454,7 +454,8 @@ class Retriever:
             else:
                 self._retrieve_neighs_spec =\
                     self._retrieve_neighs_constant_distance
-            if self.k_perturb == 0 or self.staticneighs:
+#            if self.k_perturb == 0 or self.staticneighs:
+            if self.staticneighs:
                 self.retrieve_neighs = self._retrieve_neighs_static
             else:
                 self.retrieve_neighs = self._retrieve_neighs_dynamic
@@ -615,6 +616,9 @@ class Retriever:
         to_exclude_elements = self._build_excluded_elements(i_loc, kr)
         ## 1. Excluding task
 #        print 'point of pre debug', neighs, dists, to_exclude_elements
+#        print self._build_excluded_elements
+#        print i_loc, neighs, dists, to_exclude_elements, self.get_indice_i(i_loc)
+#        print self._prepare_input(i_loc)
         neighs, dists =\
             self._exclude_elements(to_exclude_elements, neighs, dists)
 #        print 'point of shit debug', neighs, dists, self._exclude_elements
@@ -671,7 +675,7 @@ class Retriever:
             the locations we want to retrieve their neighbourhood.
         """
         ## 0. Preparing input
-        i_loc = [i_loc] if type(i_loc) not in arraytypes else i_loc
+        i_loc = [i_loc] if type(i_loc) != list else i_loc
         ## 1. Building indices to exclude
         to_exclude_elements = []
         for i in range(len(i_loc)):

@@ -181,7 +181,7 @@ class KRetriever(KDTreeBasedRetriever):
     ## Basic information of the core retriever
     constant_neighs = True
     preferable_input_idx = False
-    auto_excluded = True
+    auto_excluded = False
     ## Interaction with the stored data
     bool_listind = False
 
@@ -259,7 +259,7 @@ class CircRetriever(KDTreeBasedRetriever):
     ## Basic information of the core retriever
     constant_neighs = None
     preferable_input_idx = False
-    auto_excluded = True
+    auto_excluded = False
     ## Interaction with the stored data
     bool_listind = False
 

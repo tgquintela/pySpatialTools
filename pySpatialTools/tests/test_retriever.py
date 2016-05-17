@@ -588,13 +588,18 @@ def test():
     pos_inforet = [2, 5, 10]
     pos_outmap = [None, _output_map]
     pos_autoexclude = [False, True]
+    pos_pars_ret = [None, 1000]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
            pos_constantinfo, pos_boolinidx, pos_perturbations, pos_autoexclude]
     for p in product(*pos):
+        ## Random
+        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
+        ## Instantiation
         ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
                          output_map=p[3], constant_info=p[4], autoexclude=p[7],
-                         bool_input_idx=p[5], perturbations=p[6])
+                         bool_input_idx=p[5], perturbations=p[6],
+                         pars_ret=pret)
 #        print p
         ## Selecting point_i
         if p[5] is False:
@@ -691,13 +696,20 @@ def test():
     pos_inforet = [2., 5., 10.]
     pos_outmap = [None, _output_map]
     pos_autoexclude = [False, True]
+    pos_pars_ret = [None, 1000]
+    pos_ifdistance = [True, False]
+    pos_constantinfo = [True, False, None]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
            pos_constantinfo, pos_boolinidx, pos_autoexclude]
     for p in product(*pos):
+        ## Random
+        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
+
+        ## Instantiation
         ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
                          output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5], autoexclude=p[6])
+                         bool_input_idx=p[5], autoexclude=p[6], pars_ret=pret)
 #        print p
         ## Selecting point_i
         if p[5] is False:
