@@ -566,6 +566,22 @@ def test():
     pos_constantinfo = [True, False, None]
     pos_boolinidx = [True, False]
 
+    def assert_correctneighs(neighs_info, ifdistance, constant, staticneighs,
+                             ks, iss):
+        iss = [iss] if type(iss) == int else iss
+#        assert(type(neighs_info.iss) == list)
+#        assert(neighs_info.staticneighs == staticneighs)
+#        if not staticneighs:
+#            print neighs_info.ks, ks
+#            assert(type(neighs_info.ks) == list)
+#            assert(neighs_info.ks == ks)
+#        if ifdistance:
+#            assert(neighs_info.sp_relative_pos is not None)
+#        else:
+#            assert(neighs_info.sp_relative_pos is None)
+#        print neighs_info.iss, iss, neighs_info.staticneighs
+#        assert(neighs_info.iss == iss)
+
     ###########################################################################
     #### KRetriever
     ##################
@@ -635,16 +651,28 @@ def test():
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
             neighs_info.get_information()
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 1])
             neighs_info.get_information()
             neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 1])
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 1])
             neighs_info.get_information()
 
         ## Testing other functions and parameters
@@ -1135,6 +1163,8 @@ def test():
         gret.set_selector(mapper)
         gret.retrieve_neighs(10)
         gret.retrieve_neighs(10, typeret_i=(0, 0))
+        gret.retrieve_neighs([0])
+#        gret.retrieve_neighs([0, 1, 2])
 
         #gret.compute_nets()
         gret.set_neighs_info(bool_input_idx=True)

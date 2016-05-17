@@ -450,12 +450,16 @@ class Neighs_Info:
     def _assert_ks_postformat(self):
         if type(self.idxs) in [list, np.ndarray]:
             if self.ks is None:
-                self.ks = range(len(self.idxs))
+                if self.staticneighs:
+                    pass
+                else:
+                    self.ks = range(len(self.idxs))
             if self.staticneighs:
                 pass
             else:
 #                print self.ks, self.idxs, self.set_neighs, self.set_sp_rel_pos
                 assert(len(self.ks) == len(self.idxs))
+        ## Defining functions
         if self.sp_relative_pos is not None and self.staticneighs:
             self.get_sp_rel_pos = self._static_get_rel_pos
         elif not self.staticneighs:
@@ -1419,7 +1423,6 @@ class Neighs_Info:
 #                # it is needed or possible this situation?
 #                pass
             assert(type(self.sp_relative_pos) in [list, np.ndarray])
-            assert(self.ks is not None)
 #            if self.ks is None:
 #                assert(self.staticneighs)
 #                assert(len(self.sp_relative_pos) == len(self.iss))
@@ -1429,6 +1432,7 @@ class Neighs_Info:
                 if len(self.iss):
                     assert(type(self.sp_relative_pos[0]) in array_types)
             else:
+                assert(self.ks is not None)
                 assert(len(self.sp_relative_pos) == len(self.ks))
             if type(self.sp_relative_pos[0]) in array_types:
                 if not self.staticneighs:
@@ -2072,11 +2076,16 @@ def join_by_iss(list_neighs_info):
     """Joinning by iss.
     It is not able to join by """
     ## Computation
+    if len(list_neighs_info) == 1:
+        return list_neighs_info[0]
     static = list_neighs_info[0].staticneighs
     ifdistance = list_neighs_info[0].sp_relative_pos is not None
     assert([nei.sp_relative_pos == ifdistance for nei in list_neighs_info])
     assert([nei.staticneighs == static for nei in list_neighs_info])
     ks = list_neighs_info[0].ks
+    print ks
+    print [nei.ks for nei in list_neighs_info]
+    assert(all([len(nei.ks) == len(ks) for nei in list_neighs_info]))
     assert(all([nei.ks == ks for nei in list_neighs_info]))
     if static:
         sp_relative_pos = None if not ifdistance else []

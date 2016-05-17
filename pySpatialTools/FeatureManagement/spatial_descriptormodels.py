@@ -348,6 +348,7 @@ class SpatialDescriptorModel:
         ## TESTING ASSERTIONS
         assert(staticneighs == neighs_info.staticneighs)
         i_len = 1 if type(i) == int else len(i)
+        print i_len, ks, neighs_info.iss, neighs_info.ks
         assert(len(neighs_info.iss) == i_len)
         if not staticneighs:
             assert(len(neighs_info.ks) == len(ks))

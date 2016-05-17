@@ -79,9 +79,12 @@ class RetrieverManager:
         typeret_i = [typeret_i] if type(typeret_i) != list else typeret_i
         out_ret = [out_ret] if type(out_ret) != list else out_ret
         neighs = []
+        print typeret_i, out_ret
         for j in range(len(typeret_i)):
             neighs_info = self.retrievers[typeret_i[j]].\
                 retrieve_neighs(i[j], output=out_ret[j])
+            print len(neighs_info.ks) <= self.k_perturb+1
+            print self.retrievers[typeret_i[j]].retrieve_neighs
             neighs.append(neighs_info)
         neighs_info = join_by_iss(neighs)
         return neighs_info

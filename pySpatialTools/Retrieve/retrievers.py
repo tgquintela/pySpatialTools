@@ -113,10 +113,13 @@ class Retriever:
 #        print 'setting000:', i_loc, neighs, dists, self._retrieve_neighs_spec
         neighs_info = self._format_output(i_loc, neighs, dists, output)
         ## 3. Format neighs_info
+        self.neighs_info._reset_stored()
 #        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
-        neighs_info = self.neighs_info
+        assert(self.staticneighs)
+        neighs_info = self.neighs_info.copy()
+        neighs_info.set_ks(range(self.k_perturb+1))
         return neighs_info
 
     def _retrieve_neighs_dynamic(self, i_loc, output=0):
@@ -136,11 +139,12 @@ class Retriever:
             nei_k = self._format_output(i_loc, neighs, dists, output, kr=k_r)
             neighs_info.append(nei_k)
         ## 3. Format neighs_info
+        self.neighs_info._reset_stored()
 #        print neighs_info, '1'*50, self.neighs_info.format_set_info
         self.neighs_info.set((neighs_info, ks), self.get_indice_i(i_loc))
 #        print self.staticneighs, self.neighs_info.staticneighs
         assert(self.staticneighs == self.neighs_info.staticneighs)
-        neighs_info = self.neighs_info
+        neighs_info = self.neighs_info.copy()
         return neighs_info
 
     def _retrieve_neighs_general(self, i_loc, info_i={}, ifdistance=None,
@@ -179,9 +183,12 @@ class Retriever:
 #        print self.staticneighs, ks == 0, self.get_indice_i(i_loc)
 #        print self.neighs_info.staticneighs, self.neighs_info._set_iss
 #        print self.neighs_info._set_info, self.neighs_info.set_neighs
+        self.neighs_info._reset_stored()
         self.neighs_info.set((neighs_info, ks), self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
-        neighs_info = self.neighs_info
+        neighs_info = self.neighs_info.copy()
+        if self.staticneighs:
+            neighs_info.set_ks(range(self.k_perturb+1))
         return neighs_info
 
     def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):

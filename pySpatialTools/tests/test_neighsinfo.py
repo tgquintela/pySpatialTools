@@ -270,6 +270,8 @@ def test():
             assert(len(new_neis.iss) == ilen)
             assert(neighs_info.staticneighs == new_neis.staticneighs)
             assert(neighs_info.ks == new_neis.ks)
+        join_by_iss([neighs_info])
+
         k += 1
 #        print '-'*20, k
 
