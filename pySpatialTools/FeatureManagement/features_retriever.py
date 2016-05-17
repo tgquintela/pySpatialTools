@@ -26,7 +26,7 @@ TODO
 import numpy as np
 ## Check initialization of map vals i
 from ..utils.util_classes import create_mapper_vals_i,\
-    Feat_RetrieverSelector, ensuring_neighs_info
+    Feat_RetrieverSelector, ensuring_neighs_info, format_selection
 
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
@@ -304,8 +304,10 @@ class FeaturesManager:
         else:
             typ = type(selector1)
             if selector2 is not None:
-                assert((type(selector2) == typ) and (type(selector2) == typ))
+                assert((type(selector2) == typ) and (type(selector3) == typ))
             if typ == tuple:
+                if selector2 is None:
+                    selector1, selector2, selector3 = selector1
                 self.selector = (selector1, selector2, selector3)
                 self.get_type_feats = self._static_get_type_feat
                 self._get_input_features = self._get_input_features_constant
@@ -347,8 +349,8 @@ class FeaturesManager:
         ks = list(range(self.k_perturb+1)) if k is None else k
         ks = [ks] if type(ks) == int else ks
         i_input = [i] if type(i) == int else i
-        if type(feat_selectors) == tuple:
-            feat_selectors = [feat_selectors]
+#        if type(feat_selectors) == tuple:
+#            feat_selectors = [feat_selectors]
         neighs_info = ensuring_neighs_info(neighs_info, k)
 #        sh = neighs_info.shape
 #        print sh, len(i_input), len(ks), ks, i_input
@@ -594,7 +596,8 @@ class FeaturesManager:
     def _selector_get_type_feat(self, i, typefeats_i=None):
         """Get information only from selector."""
         print self.selector[i]
-        typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
+        selector_i = format_selection(self.selector[i])
+        typefeats_i, typefeats_nei, typefeats_desc = selector_i
 #        if type(i) == int:
 #            typefeats_i, typefeats_nei, typefeats_desc = self.selector[i]
 #        else:

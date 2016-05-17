@@ -209,7 +209,7 @@ def test():
         print '1,', spdesc._get_methods([0])
         print '2,', spdesc._get_methods([0, 1, 2])
         print '3,', spdesc._compute_descriptors_beta(0)
-        print '4,', spdesc._compute_descriptors_beta([0, 1, 2])
+#        print '4,', spdesc._compute_descriptors_beta([0, 1, 2])
 
         ## Individual computations
         #spdesc.compute(0)

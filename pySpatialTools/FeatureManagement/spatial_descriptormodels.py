@@ -126,7 +126,7 @@ class SpatialDescriptorModel:
         self.selectors = self._default_selectors
         if _mapselector_spdescriptor is None:
             self._mapselector_spdescriptor =\
-                self._mapselector_spdescriptor_constant
+                self._mapselector_spdescriptor_null
         if type(_mapselector_spdescriptor) == np.ndarray:
             assert(len(_mapselector_spdescriptor.shape) == 2)
             assert(_mapselector_spdescriptor.shape[1] == 8)
@@ -137,7 +137,7 @@ class SpatialDescriptorModel:
             self.retrievers.set_selector(sels[0])
             self.featurers.set_selector(*sels[1])
             self._mapselector_spdescriptor =\
-                self._mapselector_spdescriptor_constant
+                self._mapselector_spdescriptor_null
         elif type(_mapselector_spdescriptor) == tuple:
             if type(_mapselector_spdescriptor[0]) == int:
                 assert(len(_mapselector_spdescriptor) == 8)
@@ -148,7 +148,7 @@ class SpatialDescriptorModel:
                 self.retrievers.set_selector(sels[0])
                 self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
-                    self._mapselector_spdescriptor_constant
+                    self._mapselector_spdescriptor_null
             elif type(_mapselector_spdescriptor[0]) == tuple:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0]) == 2)
@@ -165,7 +165,7 @@ class SpatialDescriptorModel:
                 self.retrievers.set_selector(sels[0])
                 self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
-                    self._mapselector_spdescriptor_constant
+                    self._mapselector_spdescriptor_null
             elif type(_mapselector_spdescriptor[0]) == np.ndarray:
                 assert(len(_mapselector_spdescriptor) == 2)
                 assert(len(_mapselector_spdescriptor[0].shape) == 2)
@@ -185,13 +185,13 @@ class SpatialDescriptorModel:
                 self.retrievers.set_selector(sels[0])
                 self.featurers.set_selector(*sels[1])
                 self._mapselector_spdescriptor =\
-                    self._mapselector_spdescriptor_constant
+                    self._mapselector_spdescriptor_null
             elif type(_mapselector_spdescriptor[0]).__name__ == 'function':
                 assert(len(_mapselector_spdescriptor) == 2)
                 self.retrievers.set_selector(_mapselector_spdescriptor[0])
                 self.featurers.set_selector(_mapselector_spdescriptor[1])
                 self._mapselector_spdescriptor =\
-                    self._mapselector_spdescriptor_constant
+                    self._mapselector_spdescriptor_null
         elif type(_mapselector_spdescriptor).__name__ == 'function':
             self.selectors = Sp_DescriptorSelector(_mapselector_spdescriptor)
 #            mapperselector.set_from_function(_mapselector_spdescriptor)
@@ -260,6 +260,9 @@ class SpatialDescriptorModel:
         else:
             typeret, typefeats = methods
         return staticneighs, typeret, typefeats
+
+    def _mapselector_spdescriptor_null(self, i):
+        return self._default_selectors
 
     def _mapselector_spdescriptor_constant(self, i):
         i_len = 1 if type(i) == int else len(i)

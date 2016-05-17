@@ -11,8 +11,13 @@ this manager, but in this case it is not the output, it is the input.
 
 """
 
+import numpy as np
 from tools_retriever import create_aggretriever
-from pySpatialTools.utils.util_classes import Spatial_RetrieverSelector
+from pySpatialTools.utils.util_classes import Spatial_RetrieverSelector,\
+    format_selection
+from pySpatialTools.utils.util_classes.neighs_info import join_by_iss
+
+inttypes = [int, np.int32, np.int64]
 
 
 class RetrieverManager:
@@ -36,8 +41,7 @@ class RetrieverManager:
         self.n_inputs = 0
         self.staticneighs = True
         ## TODO:
-        sel_f = lambda i: (0, 0)
-        self.selector = Spatial_RetrieverSelector(sel_f)
+        self.selector = (0, 0)
 
     def __init__(self, retrievers, selector_retriever=None):
         self._initialization()
@@ -59,12 +63,44 @@ class RetrieverManager:
             yield neighs_info
         ## If mapper active (TODO)
 
-    def retrieve_neighs(self, i, typeret_i=None):
+    def _retrieve_neighs_constant(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
-        interior parameters."""
+        interior parameters. Constant typeret_i assumption."""
         typeret_i, out_ret = self.get_type_ret(i, typeret_i)
         neighs_info =\
             self.retrievers[typeret_i].retrieve_neighs(i, output=out_ret)
+        return neighs_info
+
+    def _retrieve_neighs_variable(self, i, typeret_i=None):
+        """Retrieve neighbourhood under conditions of ifdistance or others
+        interior parameters. Variable typeret_i assumption."""
+        typeret_i, out_ret = self.get_type_ret(i, typeret_i)
+        i = [i] if type(i) in inttypes else i
+        typeret_i = [typeret_i] if type(typeret_i) != list else typeret_i
+        out_ret = [out_ret] if type(out_ret) != list else out_ret
+        neighs = []
+        for j in range(len(typeret_i)):
+            neighs_info = self.retrievers[typeret_i[j]].\
+                retrieve_neighs(i[j], output=out_ret[j])
+            neighs.append(neighs_info)
+        neighs_info = join_by_iss(neighs)
+        return neighs_info
+
+    def _retrieve_neighs_general(self, i, typeret_i=None):
+        """Retrieve neighbourhood under conditions of ifdistance or others
+        interior parameters. No typeret_i assumption."""
+        typeret_i, out_ret = self.get_type_ret(i, typeret_i)
+        if type(typeret_i) == list:
+            i = [i] if type(i) in inttypes else i
+            neighs = []
+            for j in range(len(typeret_i)):
+                neighs_info = self.retrievers[typeret_i[j]].\
+                    retrieve_neighs(i[j], output=out_ret[j])
+                neighs.append(neighs_info)
+            neighs_info = join_by_iss(neighs)
+        else:
+            neighs_info =\
+                self.retrievers[typeret_i].retrieve_neighs(i, output=out_ret)
         return neighs_info
 
     def compute_nets(self, kret=None):
@@ -125,13 +161,15 @@ class RetrieverManager:
         """Programable get_type_ret."""
         if selector is None:
             self.get_type_ret = self._general_get_type_ret
-            self.selector.assert_correctness(self)
+            self.retrieve_neighs = self._retrieve_neighs_general
         elif type(selector) == tuple:
             self.selector = selector
             self.get_type_ret = self._static_get_type_ret
+            self.retrieve_neighs = self._retrieve_neighs_constant
         else:
             self.selector = Spatial_RetrieverSelector(selector)
             self.get_type_ret = self._selector_get_type_ret
+            self.retrieve_neighs = self._retrieve_neighs_variable
             self.selector.assert_correctness(self)
 
     ################################# Type_ret ################################
@@ -146,7 +184,7 @@ class RetrieverManager:
         """Interaction with the selector. Using upside information of selection
         or the own selector the manager owns."""
         if typeret_i is None:
-            typeret_i, out_ret = self.selector[i]
+            typeret_i, out_ret = self.selector
         else:
             typeret_i, out_ret = typeret_i
         return typeret_i, out_ret
@@ -159,7 +197,8 @@ class RetrieverManager:
 
     def _selector_get_type_ret(self, i, typeret_i=None):
         """Get information only from selector."""
-        typeret_i, out_ret = self.selector[i]
+        selection = format_selection(self.selector[i])
+        typeret_i, out_ret = selection
         return typeret_i, out_ret
 
     ######################## Perturbation management ##########################
