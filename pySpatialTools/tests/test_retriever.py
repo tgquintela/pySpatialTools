@@ -572,7 +572,7 @@ def test():
         assert(type(neighs_info.iss) == list)
         assert(neighs_info.staticneighs == staticneighs)
         if not staticneighs:
-            print neighs_info.ks, ks
+#            print neighs_info.ks, ks
             assert(type(neighs_info.ks) == list)
             assert(neighs_info.ks == ks)
         if ifdistance:
@@ -587,12 +587,13 @@ def test():
     ##################
     pos_inforet = [2, 5, 10]
     pos_outmap = [None, _output_map]
+    pos_autoexclude = [False, True]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_perturbations]
+           pos_constantinfo, pos_boolinidx, pos_perturbations, pos_autoexclude]
     for p in product(*pos):
         ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-                         output_map=p[3], constant_info=p[4],
+                         output_map=p[3], constant_info=p[4], autoexclude=p[7],
                          bool_input_idx=p[5], perturbations=p[6])
 #        print p
         ## Selecting point_i
@@ -684,19 +685,19 @@ def test():
             assert(list(nei.iss) == list(iss))
             break
 
-
     ###########################################################################
     #### CircRetriever
     ##################
     pos_inforet = [2., 5., 10.]
     pos_outmap = [None, _output_map]
+    pos_autoexclude = [False, True]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
+           pos_constantinfo, pos_boolinidx, pos_autoexclude]
     for p in product(*pos):
         ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
                          output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5])
+                         bool_input_idx=p[5], autoexclude=p[6])
 #        print p
         ## Selecting point_i
         if p[5] is False:
@@ -750,12 +751,20 @@ def test():
 
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 1])
             neighs_info.get_information()
             neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 1])
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
@@ -846,17 +855,29 @@ def test():
 
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
             neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
 
         ## Iterations
@@ -894,6 +915,7 @@ def test():
         else:
             i = 0
             j = [0, 3]
+        print '+'*50, j
 
         ## Get Information
         ################
@@ -935,17 +957,29 @@ def test():
 
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
             neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
 
         ## Iterations
@@ -1029,17 +1063,29 @@ def test():
 #        print i, p
         if p[4]:
             neighs_info = ret.retrieve_neighs(i)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
             neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
         else:
             neighs_info = ret.retrieve_neighs(i, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), 0)
             neighs_info.get_information()
             neighs_info = ret.retrieve_neighs(j, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), [0, 3])
             neighs_info.get_information()
 
         ## Iterations
