@@ -119,9 +119,9 @@ class Retriever:
         assert(self.staticneighs == self.neighs_info.staticneighs)
         assert(self.staticneighs)
         neighs_info = self.neighs_info.copy()
-        print neighs_info.set_ks, neighs_info.ks, range(self.k_perturb+1), self.neighs_info.ks
+#        print neighs_info.set_ks, neighs_info.ks, range(self.k_perturb+1), self.neighs_info.ks
         neighs_info.set_ks(range(self.k_perturb+1))
-        print neighs_info.ks, range(self.k_perturb+1), self.neighs_info.ks
+#        print neighs_info.ks, range(self.k_perturb+1), self.neighs_info.ks
         assert(neighs_info.ks == range(self.k_perturb+1))
         return neighs_info
 
@@ -163,12 +163,12 @@ class Retriever:
         ## 1. Retrieve neighs
         if self.staticneighs:
             assert(self.staticneighs == self.neighs_info.staticneighs)
-
+            # Get neighs info
             neighs, dists = self._retrieve_neighs_spec(i_loc, info_i,
                                                        ifdistance)
             ## 2. Format output
             neighs_info = self._format_output(i_loc, neighs, dists, output)
-            ## Store
+            # Store
             self.neighs_info._reset_stored()
             self.neighs_info.set(([neighs_info], ks), self.get_indice_i(i_loc))
             neighs_info = self.neighs_info.copy()
@@ -193,21 +193,23 @@ class Retriever:
                 # Format output
                 nei_k = self._format_output(i_loc, neighs, dists, output, k_r)
                 neighs_info.append(nei_k)
+
         ## 3. Format neighs_info
 #        print 'a'*100, i_loc, self.k_perturb, neighs_info, type(neighs_info[0])
 #        print self.staticneighs, ks == 0, self.get_indice_i(i_loc)
 #        print self.neighs_info.staticneighs, self.neighs_info._set_iss
 #        print self.neighs_info._set_info, self.neighs_info.set_neighs
+            # Store
             self.neighs_info._reset_stored()
             self.neighs_info.set((neighs_info, ks), self.get_indice_i(i_loc))
-            assert(self.staticneighs == self.neighs_info.staticneighs)
             neighs_info = self.neighs_info.copy()
-            if self.staticneighs:
-                neighs_info.set_ks(range(self.k_perturb+1))
-                assert(neighs_info.ks == range(self.k_perturb+1))
-            else:
-                print neighs_info.ks, range(self.k_perturb+1), ks
-                assert(neighs_info.ks == ks)
+            neighs_info.set_ks(ks)
+#            if self.staticneighs:
+#                neighs_info.set_ks(range(self.k_perturb+1))
+#                assert(neighs_info.ks == range(self.k_perturb+1))
+#            else:
+#                print neighs_info.ks, range(self.k_perturb+1), ks
+#                assert(neighs_info.ks == ks)
         return neighs_info
 
     def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):

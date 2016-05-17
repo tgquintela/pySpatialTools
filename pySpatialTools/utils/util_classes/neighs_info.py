@@ -158,8 +158,6 @@ class Neighs_Info:
     def _set_ks_static(self, ks):
         """External set ks for staticneighs."""
         self.ks = ks
-        print np.max(self.ks), self._kret
-        print self.ks
         if np.max(self.ks) > self._kret:
             self._kret = np.max(self.ks)
 
@@ -850,8 +848,8 @@ class Neighs_Info:
         self.ks = range(len(self.idxs)) if self.ks is None else self.ks
         if self.staticneighs:
             self.idxs = np.array(key[0])
-#             if len(self.idxs) != len(self.iss):
-#                self.iss = list(range(len(self.idxs)))
+            if len(self.idxs) != len(self.iss):
+                self.iss = list(range(len(self.idxs)))
         else:
             if len(self.idxs[0]) != len(self.iss):
                 self.iss = list(range(len(self.idxs[0])))
@@ -929,7 +927,8 @@ class Neighs_Info:
             if type(key) == np.ndarray:
                 self.idxs = np.array(self.idxs)
         if len(self.iss) != len(key):
-            self.iss = range(len(key))
+            if len(self.iss) != len(key):
+                self.iss = range(len(key))
 #        if len(self.idxs[0]) > 0:
 #            self.iss = list(range(len(self.idxs)))
         self._setted = True
@@ -943,7 +942,7 @@ class Neighs_Info:
             self.idxs = np.array(key)
         else:
             self.idxs = key
-        if len(self.idxs[0]):
+        if len(self.idxs[0]) != len(self.iss):
             self.iss = list(range(len(self.idxs[0])))
         if self.staticneighs:
             self.idxs = self.idxs[0]
@@ -1119,9 +1118,10 @@ class Neighs_Info:
         else:
             if type(self.idxs) in [list, np.ndarray]:
                 if self.staticneighs:
-                    self.iss = range(len(self.idxs))
+                    if len(self.iss) != len(self.idxs):
+                        self.iss = range(len(self.idxs))
                 else:
-                    if len(self.idxs[0]):
+                    if len(self.iss) != len(self.idxs[0]):
                         self.iss = range(len(self.idxs[0]))
 
     def _int_set_iss(self, iss):
@@ -2086,8 +2086,8 @@ def join_by_iss(list_neighs_info):
     assert([nei.sp_relative_pos == ifdistance for nei in list_neighs_info])
     assert([nei.staticneighs == static for nei in list_neighs_info])
     ks = list_neighs_info[0].ks
-    print ks
-    print [nei.ks for nei in list_neighs_info]
+#    print ks
+#    print [nei.ks for nei in list_neighs_info]
     assert(all([len(nei.ks) == len(ks) for nei in list_neighs_info]))
     assert(all([nei.ks == ks for nei in list_neighs_info]))
     if static:

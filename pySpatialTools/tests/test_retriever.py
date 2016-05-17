@@ -569,18 +569,18 @@ def test():
     def assert_correctneighs(neighs_info, ifdistance, constant, staticneighs,
                              ks, iss):
         iss = [iss] if type(iss) == int else iss
-#        assert(type(neighs_info.iss) == list)
-#        assert(neighs_info.staticneighs == staticneighs)
-#        if not staticneighs:
-#            print neighs_info.ks, ks
-#            assert(type(neighs_info.ks) == list)
-#            assert(neighs_info.ks == ks)
-#        if ifdistance:
-#            assert(neighs_info.sp_relative_pos is not None)
-#        else:
-#            assert(neighs_info.sp_relative_pos is None)
-#        print neighs_info.iss, iss, neighs_info.staticneighs
-#        assert(neighs_info.iss == iss)
+        assert(type(neighs_info.iss) == list)
+        assert(neighs_info.staticneighs == staticneighs)
+        if not staticneighs:
+            print neighs_info.ks, ks
+            assert(type(neighs_info.ks) == list)
+            assert(neighs_info.ks == ks)
+        if ifdistance:
+            assert(neighs_info.sp_relative_pos is not None)
+        else:
+            assert(neighs_info.sp_relative_pos is None)
+        print neighs_info.iss, iss, neighs_info.staticneighs
+        assert(neighs_info.iss == iss)
 
     ###########################################################################
     #### KRetriever
@@ -681,7 +681,9 @@ def test():
         ## Iterations
         ret.set_iter()
         for iss, nei in ret:
+            assert(list(nei.iss) == list(iss))
             break
+
 
     ###########################################################################
     #### CircRetriever
@@ -764,6 +766,7 @@ def test():
         ## Iterations
         ret.set_iter()
         for iss, nei in ret:
+            assert(list(nei.iss) == list(iss))
             break
 
     ###########################################################################
@@ -859,7 +862,8 @@ def test():
         ## Iterations
         ret.set_iter()
         for iss, nei in ret:
-            pass
+            assert(list(nei.iss) == list(iss))
+            break
 
     try:
         boolean = False
@@ -947,6 +951,7 @@ def test():
         ## Iterations
         ret.set_iter()
         for iss, nei in ret:
+            assert(list(nei.iss) == list(iss))
             break
 
     ###########################################################################
@@ -1040,6 +1045,7 @@ def test():
         ## Iterations
         ret.set_iter()
         for iss, nei in ret:
+            assert(list(nei.iss) == list(iss))
             break
 
     ###########################################################################

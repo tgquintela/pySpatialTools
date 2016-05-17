@@ -357,7 +357,9 @@ class WindowsRetriever(SpaceRetriever):
         for inds, neighs, rel_pos in windows_iteration(*pars):
             ### Set neighs_info
             neighs_info = self.neighs_creation_iter(neighs, rel_pos)
+            self.neighs_info._reset_stored()
             self.neighs_info.set(neighs_info, inds)
+            neighs_info = self.neighs_info.copy()
             yield inds, self.neighs_info
 
     def neighs_creation_iter(self, neighs, rel_pos):
