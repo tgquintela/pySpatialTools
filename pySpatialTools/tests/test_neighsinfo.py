@@ -260,6 +260,16 @@ def test():
         else:
             neighs_info.set_ks(range(neighs_info.shape[2]))
 
+        ## Testing joinning
+        if p[6] != 'slice':
+            neis = [neighs_info.copy() for s in range(5)]
+            ilen = 0
+            for s in range(5):
+                ilen += len(neis[s].iss)
+            new_neis = join_by_iss(neis)
+            assert(len(new_neis.iss) == ilen)
+            assert(neighs_info.staticneighs == new_neis.staticneighs)
+            assert(neighs_info.ks == new_neis.ks)
         k += 1
 #        print '-'*20, k
 

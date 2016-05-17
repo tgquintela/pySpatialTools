@@ -2063,3 +2063,63 @@ def neighsinfo_features_preformatting_list(key, k_perturb):
     key = [[idx] for idx in key]
     i, k, d = np.array([key]*len(kn)), kn, [[None]*len(key)]*len(kn)
     return i, k, d
+
+
+###############################################################################
+######################### Auxiliar joinning functions #########################
+###############################################################################
+def join_by_iss(list_neighs_info):
+    """Joinning by iss.
+    It is not able to join by """
+    ## Computation
+    static = list_neighs_info[0].staticneighs
+    ifdistance = list_neighs_info[0].sp_relative_pos is not None
+    assert([nei.sp_relative_pos == ifdistance for nei in list_neighs_info])
+    assert([nei.staticneighs == static for nei in list_neighs_info])
+    ks = list_neighs_info[0].ks
+    assert(all([nei.ks == ks for nei in list_neighs_info]))
+    if static:
+        sp_relative_pos = None if not ifdistance else []
+        iss, idxs = [], []
+        for nei in list_neighs_info:
+            if type(nei.idxs) != slice:
+                idxs += list(nei.idxs)
+            else:
+                idxs.append(nei.idxs)
+            iss += nei.iss
+            if ifdistance:
+                sp_relative_pos += list(nei.sp_relative_pos)
+    else:
+        sp_relative_pos = None if not ifdistance else []
+        iss = list(np.hstack([nei.iss for nei in list_neighs_info]))
+        idxs = []
+        for k in range(len(ks)):
+            idxs_k = []
+            sp_relative_pos_k = None if not ifdistance else []
+            for nei in list_neighs_info:
+                idxs_k += list(nei.idxs[k])
+                if ifdistance:
+                    sp_relative_pos_k += list(nei.sp_relative_pos[k])
+            idxs.append(idxs_k)
+            if ifdistance:
+                sp_relative_pos.append(sp_relative_pos_k)
+    constant = list_neighs_info[0]._constant_neighs
+    assert([nei._constant_neighs == constant for nei in list_neighs_info])
+    if constant:
+        idxs = np.array(idxs)
+
+    ## Formatting
+    level = 2 if static else 3
+    _, type_neighs, type_sp_rel_pos, _ = list_neighs_info[0].format_set_info
+    format_get_info, format_get_k_info = list_neighs_info[0].format_get_info
+    type_neighs = 'array' if constant else 'list'
+
+    nei = Neighs_Info(constant_neighs=constant, format_structure='tuple_only',
+                      format_get_info=None, format_get_k_info=None,
+                      format_set_iss='list', staticneighs=static,
+                      ifdistance=ifdistance, type_neighs=type_neighs,
+                      format_level=level)
+    neighs_nfo = (idxs, sp_relative_pos) if ifdistance else (idxs,)
+    nei.set(neighs_nfo, iss)
+    nei.set_ks(ks)
+    return nei

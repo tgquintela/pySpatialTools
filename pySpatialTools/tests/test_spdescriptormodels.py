@@ -178,6 +178,7 @@ def test():
 
     possibilities = [pos_rets*10, pos_selectors, pos_agg, pos_pert]
 
+    s = 0
     for p in product(*possibilities):
         ret, sel, agg, pert = p
         ## Random exploration of parameters
@@ -196,6 +197,7 @@ def test():
                                         pos_inputs=p_ind, map_indices=m_ind,
                                         perturbations=pert, aggregations=agg,
                                         name_desc=n_desc)
+        print s
         #### Function testing
         ## Auxiliar functions
         spdesc.add_perturbations(pert)
@@ -203,8 +205,11 @@ def test():
         spdesc._map_indices(spdesc, 0)
         for i in spdesc.iter_indices():
             spdesc._get_methods(i)
-        spdesc._get_methods([0, 1, 2])
-#        spdesc._compute_descriptors_beta(0)
+        print '0,', spdesc._get_methods(0)
+        print '1,', spdesc._get_methods([0])
+        print '2,', spdesc._get_methods([0, 1, 2])
+        print '3,', spdesc._compute_descriptors_beta(0)
+        print '4,', spdesc._compute_descriptors_beta([0, 1, 2])
 
         ## Individual computations
         #spdesc.compute(0)
@@ -249,6 +254,7 @@ def test():
         except:
 #            os.remove('logfile.log')
             pass
+        s += 1
 
 #    ###########################################################################
 #    ###########################################################################

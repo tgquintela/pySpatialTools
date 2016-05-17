@@ -490,3 +490,39 @@ def _outformat_mapper(out, _n_vars_out):
             assert(len(_n_vars_out) == len(out))
             outs = out
     return outs
+
+
+def format_selection(selection):
+    if type(selection) == list:
+        i_len = len(selection[0])
+        selection_list = [[] for i in range(i_len)]
+        for i in range(len(selection)):
+            selection_i = selection[i]
+            for j in range(i_len):
+                selection_list[j].append(selection_i[j])
+        selection = selection_list
+    return selection
+
+#def _outformat_mapper(out, _n_vars_out):
+#    """Outformat mapper."""
+#    if type(out) == list:
+#        outs = []
+#        for i in range(len(out)):
+#            outs.append(_outformat_mapper(out[i], _n_vars_out))
+#    elif type(out) == tuple:
+#        if all([type(o) in inttypes for o in out]):
+#            init, outs = 0, []
+#            for i in range(len(_n_vars_out)):
+#                if type(_n_vars_out[i]) in inttypes:
+#                    aux_out = out[init:(init+_n_vars_out[i])]
+#                    outs.append(aux_out)
+#                    init += _n_vars_out[i]
+#                else:
+#                    aux_out = out[init:(init+sum(_n_vars_out[i]))]
+#                    outs.append(_outformat_mapper(aux_out, _n_vars_out[i]))
+#                    init += sum(_n_vars_out[i])
+#            outs = tuple(outs)
+#        else:
+#            assert(len(_n_vars_out) == len(out))
+#            outs = out
+#    return outs
