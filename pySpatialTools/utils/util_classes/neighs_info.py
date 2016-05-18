@@ -236,11 +236,11 @@ class Neighs_Info:
                 elif self.level == 0:
                     self.set_sp_rel_pos = self._set_rel_pos_dim
                 elif self.level == 1:
-                    self.set_sp_rel_pos = self._array_only_set_rel_pos
+                    self.set_sp_rel_pos = self._list_only_set_rel_pos
                 elif self.level == 2:
-                    self.set_sp_rel_pos = self._array_array_set_rel_pos
+                    self.set_sp_rel_pos = self._list_list_only_set_rel_pos
                 elif self.level == 3:
-                    self.set_sp_rel_pos = self._array_array_array_set_rel_pos
+                    self.set_sp_rel_pos = self._list_list_set_rel_pos
 
         ## 2. Set set_neighs
         if type_neighs is None or type_neighs == 'general':
@@ -1171,7 +1171,7 @@ class Neighs_Info:
 #        return rel_pos
 
     def _static_get_rel_pos(self, k_is=[0]):
-        return np.array([self.sp_relative_pos for k in k_is])
+        return [self.sp_relative_pos for k in k_is]
 
 #    def _static_rel_pos_list(self, k_is=[0]):
 #        return self.sp_relative_pos*len(k_is)
@@ -1185,7 +1185,7 @@ class Neighs_Info:
 
     def _dynamic_rel_pos_array(self, k_is=[0]):
 #        [[e[k_i] for e in self.sp_relative_pos] for k_i in k_is]
-        return np.array([self.sp_relative_pos[i] for i in k_is])
+        return [self.sp_relative_pos[i] for i in k_is]
 
     ################################ Getters k ################################
     ###########################################################################

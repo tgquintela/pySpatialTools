@@ -508,7 +508,7 @@ class Retriever:
 #            format_set_iss = 'null'
         format_set_iss = 'list'
 
-#        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs, self.neighs_info.staticneighs
+#        print 'poi'*20, type_neighs, type_sp_rel_pos, self.staticneighs
         ## Neighs info setting
         self.neighs_info = Neighs_Info(format_set_iss=format_set_iss,
                                        format_structure=format_structure,
@@ -997,7 +997,7 @@ class Retriever:
             i_locs = self._get_idxs_from_locs(loc_i, kr)
         elif type(loc_i) == np.ndarray:
             i_locs = self._get_idxs_from_locs(loc_i, kr)
-#            print '+'*5, i_locs, self._get_idxs_from_locs
+#            print '*'*5, i_locs, self._get_idxs_from_locs
         else:
             loc_i = [loc_i]
             i_locs = self._get_idxs_from_locs(loc_i, kr)

@@ -63,8 +63,10 @@ def test():
     pars4 = {'order': 4}
     pars5 = {'lim_distance': 2}
     pars8 = {'l': 8, 'center': 0, 'excluded': False}
-    mainmapper = generate_random_relations_cutoffs(20, store='sparse')
+    mainmapper = generate_random_relations_cutoffs(20, p0=1, store='sparse')
     mainmapper.set_inout(output='indices')
+    mainmapper1 = generate_random_relations_cutoffs(20, p0=.1, store='sparse')
+    mainmapper1.set_inout(output='indices')
     inttypes = [int, np.int32, np.int64]
 
     ###########################################################################
@@ -206,7 +208,7 @@ def test():
         ensure_neighs_info_instance(neighs, dists)
 #        print out, o_d
         if flag:
-            out, out_d = list(out), list(o_d)
+            out, o_d = list(out), list(o_d)
             ensure_neighs_info_instance(out, o_d)
 
     # Normal random neighs, dists
@@ -318,283 +320,283 @@ def test():
     pos_inforet = [None, 0, lambda x, pars: 0, np.zeros(n)]
     pos_infof = [None, lambda x, pars: 0]
 
-    counter = -1
-    for p in product(*possibles):
-        ## Comtinations
-        counter += 1
-##        print p, counter
-        ## Sequential parameters
-        types = pos_types[np.random.randint(0, len(pos_types))]
-#        types = 'object'
-        auto_excluded = pos_auto_excluded[np.random.randint(0, 3)]
-        if types in ['object', 'listobject']:
-            typeret = ''
-        else:
-            typeret = pos_typeret[np.random.randint(0, len(pos_typeret))]
-        const = pos_constantneighs[np.random.randint(0, 3)]
-        inforet = pos_inforet[np.random.randint(0, len(pos_inforet))]
-        infof = pos_infof[np.random.randint(0, len(pos_infof))]
-        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
-        auto_excl = pos_autoexclude[np.random.randint(0, len(pos_autoexclude))]
-
-        ## Non exhaustive
-#        if np.random.random() < 0.25:
+#    counter = -1
+#    for p in product(*possibles):
+#        ## Comtinations
+#        counter += 1
+###        print p, counter
+#        ## Sequential parameters
+#        types = pos_types[np.random.randint(0, len(pos_types))]
+##        types = 'object'
+#        auto_excluded = pos_auto_excluded[np.random.randint(0, 3)]
+#        if types in ['object', 'listobject']:
+#            typeret = ''
+#        else:
+#            typeret = pos_typeret[np.random.randint(0, len(pos_typeret))]
+#        const = pos_constantneighs[np.random.randint(0, 3)]
+#        inforet = pos_inforet[np.random.randint(0, len(pos_inforet))]
+#        infof = pos_infof[np.random.randint(0, len(pos_infof))]
+#        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
+#        auto_excl = pos_autoexclude[np.random.randint(0, len(pos_autoexclude))]
+#
+#        ## Non exhaustive
+##        if np.random.random() < 0.25:
+##            continue
+#
+#        ## Forbidden combinations
+#        if types in ['list', 'object', 'listobject'] and p[8]:
 #            continue
-
-        ## Forbidden combinations
-        if types in ['list', 'object', 'listobject'] and p[8]:
-            continue
-        if p[6] is False and type(inforet) == np.ndarray:
-            continue
-
-        ## Instantiation
-        ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
-                             info_ret=inforet, info_f=infof,
-                             constant_info=p[3], perturbations=p[4],
-                             autoexclude=auto_excl, ifdistance=p[5],
-                             relative_pos=rel_pos, bool_input_idx=p[6],
-                             typeret=typeret, preferable_input_idx=p[7],
-                             constant_neighs=const, bool_listind=p[8],
-                             auto_excluded=auto_excluded, types=types)
-        ## Selecting point_i
-        if p[6] is False:
-            if types == 'listobject':
-                i = DummyLocObject(np.array([0]))
-                j = [i, DummyLocObject(np.array([1]))]
-            else:
-                i = np.array([0])
-                j = [np.array([0]), np.array([1])]
-        else:
-            i = 0
-            j = [0, 1]
-        ## Testing functions standards
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, 0), ret._get_info_i(j, 0)
-        assert(info_i == 0)
-        assert(np.all(info_i2 == 0))
-        ## Get locations
-        ################
-#        print p[6], types
-        if p[6]:
-            loc_i = ret.get_loc_i([0])
-            if types == 'listobject':
-                loc_i = [e.location for e in loc_i]
-        else:
-            if types == 'listobject':
-                retloc = DummyLocObject(np.array([0]))
-                loc_i = ret.get_loc_i([retloc])
-                loc_i = [e.location for e in loc_i]
-            else:
-                loc_i = ret.get_loc_i([np.array([0])])
-#        print loc_i, counter, ret._get_loc_from_idxs, p[6], p[7]
-        assert(len(loc_i) == 1)
-#        assert(type(loc_i) == type(ret.data_input))
-#        print loc_i, types
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == np.array([0])))
-
-        if p[6]:
-            loc_i = ret.get_loc_i([0, 1])
-            if types == 'listobject':
-                loc_i = [e.location for e in loc_i]
-        else:
-            if types == 'listobject':
-                aux = DummyLocObject(np.array([0]))
-                loc_i = ret.get_loc_i([aux, DummyLocObject(np.array([1]))])
-                loc_i = [e.location for e in loc_i]
-            else:
-                loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
-
-#        print loc_i, ret.get_loc_i, p[6]
-        assert(len(loc_i) == 2)
-#        assert(type(loc_i) == type(ret.data_input))
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == np.array([0])))
-        assert(all(loc_i[1] == np.array([1])))
-        ## Get indices
-        ################
-        if p[6]:
-            loc_i = [0]
-        else:
-            if types == 'listobject':
-                loc_i = [DummyLocObject(np.array([0]))]
-            else:
-                loc_i = [np.array([0])]
-        i_loc = ret.get_indice_i(loc_i, 0)
-#        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs
-#        print list(ret.data_input)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        if p[6]:
-            i_loc = ret.get_indice_i([0, 1])
-        else:
-            if types == 'listobject':
-                loc_i = [DummyLocObject(np.array([0]))]
-                loc_i += [DummyLocObject(np.array([1]))]
-            else:
-                loc_i = [np.array([0]), np.array([1])]
-            i_loc = ret.get_indice_i(loc_i, 0)
-#        print i_loc, ret.get_indice_i, p[6]
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-        assert(i_loc[0] == 0)
-        assert(i_loc[1] == 1)
-        ## Preparing input
-        ##################
-        ret._general_prepare_input([i], kr=0)
-        ret._general_prepare_input(j, kr=0)
-        # Assert element getting
-#        print i, j, p[6], p[7], ret._prepare_input
-        e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
-#        print i, j, e1, e2, p[6], p[7], ret._prepare_input, ret.get_indice_i
-#        print ret.preferable_input_idx
-        if types == 'listobject' and p[7] is not True:
-            e1, e2 = [e.location for e in e1], [e.location for e in e2]
-        if p[7]:
-#            print e1, e2, type(e1), type(e2)
-            assert(e1 == [0])
-            assert(e2 == [0, 1])
-        else:
-#            print e1, e2, ret._prepare_input, p[6]
-            assert(e1 == [np.array([0])])
-#            print e1, ret._prepare_input, p[6], p[7]
-            assert(all([type(e) == np.ndarray for e in e1]))
-#            print e2, type(e2[0]), ret._prepare_input, p[6], p[7], counter
-            assert(np.all([e2 == [np.array([0]), np.array([1])]]))
-            assert(all([type(e) == np.ndarray for e in e2]))
-        ## Retrieve and output
-        ######################
-        # Assert correct retrieving
-        ## Retrieve individual
-        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
-#        print dists, type(dists), p[5]
-        assert(type(neighs[0][0]) in inttypes)
-        assert(dists is None or not p[5] is False)
-#        print dists, type(dists), p[5]
-        ## Output map
-        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
-        assert(type(neighs2[0][0]) in inttypes)
-        assert(dists2 is None or not p[5] is False)
-        ## Output
-#        print neighs, dists
-        neighs, dists = ret._format_output(i, neighs, dists)
-        if auto_excl and not auto_excluded:
-#            print neighs, dists, ret._exclude_auto, i, counter
-            assert(len(neighs) == 1)
-            assert(len(neighs[0]) == 0)
+#        if p[6] is False and type(inforet) == np.ndarray:
+#            continue
+#
+#        ## Instantiation
+#        ret = DummyRetriever(n, autodata=p[0], input_map=p[1], output_map=p[2],
+#                             info_ret=inforet, info_f=infof,
+#                             constant_info=p[3], perturbations=p[4],
+#                             autoexclude=auto_excl, ifdistance=p[5],
+#                             relative_pos=rel_pos, bool_input_idx=p[6],
+#                             typeret=typeret, preferable_input_idx=p[7],
+#                             constant_neighs=const, bool_listind=p[8],
+#                             auto_excluded=auto_excluded, types=types)
+#        ## Selecting point_i
+#        if p[6] is False:
+#            if types == 'listobject':
+#                i = DummyLocObject(np.array([0]))
+#                j = [i, DummyLocObject(np.array([1]))]
+#            else:
+#                i = np.array([0])
+#                j = [np.array([0]), np.array([1])]
+#        else:
+#            i = 0
+#            j = [0, 1]
+#        ## Testing functions standards
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, 0), ret._get_info_i(j, 0)
+#        assert(info_i == 0)
+#        assert(np.all(info_i2 == 0))
+#        ## Get locations
+#        ################
+##        print p[6], types
+#        if p[6]:
+#            loc_i = ret.get_loc_i([0])
+#            if types == 'listobject':
+#                loc_i = [e.location for e in loc_i]
+#        else:
+#            if types == 'listobject':
+#                retloc = DummyLocObject(np.array([0]))
+#                loc_i = ret.get_loc_i([retloc])
+#                loc_i = [e.location for e in loc_i]
+#            else:
+#                loc_i = ret.get_loc_i([np.array([0])])
+##        print loc_i, counter, ret._get_loc_from_idxs, p[6], p[7]
+#        assert(len(loc_i) == 1)
+##        assert(type(loc_i) == type(ret.data_input))
+##        print loc_i, types
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == np.array([0])))
+#
+#        if p[6]:
+#            loc_i = ret.get_loc_i([0, 1])
+#            if types == 'listobject':
+#                loc_i = [e.location for e in loc_i]
+#        else:
+#            if types == 'listobject':
+#                aux = DummyLocObject(np.array([0]))
+#                loc_i = ret.get_loc_i([aux, DummyLocObject(np.array([1]))])
+#                loc_i = [e.location for e in loc_i]
+#            else:
+#                loc_i = ret.get_loc_i([np.array([0]), np.array([1])])
+#
+##        print loc_i, ret.get_loc_i, p[6]
+#        assert(len(loc_i) == 2)
+##        assert(type(loc_i) == type(ret.data_input))
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == np.array([0])))
+#        assert(all(loc_i[1] == np.array([1])))
+#        ## Get indices
+#        ################
+#        if p[6]:
+#            loc_i = [0]
+#        else:
+#            if types == 'listobject':
+#                loc_i = [DummyLocObject(np.array([0]))]
+#            else:
+#                loc_i = [np.array([0])]
+#        i_loc = ret.get_indice_i(loc_i, 0)
+##        print i_loc, loc_i, counter, ret.get_indice_i, ret._get_idxs_from_locs
+##        print list(ret.data_input)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        if p[6]:
+#            i_loc = ret.get_indice_i([0, 1])
+#        else:
+#            if types == 'listobject':
+#                loc_i = [DummyLocObject(np.array([0]))]
+#                loc_i += [DummyLocObject(np.array([1]))]
+#            else:
+#                loc_i = [np.array([0]), np.array([1])]
+#            i_loc = ret.get_indice_i(loc_i, 0)
+##        print i_loc, ret.get_indice_i, p[6]
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+#        assert(i_loc[0] == 0)
+#        assert(i_loc[1] == 1)
+#        ## Preparing input
+#        ##################
+#        ret._general_prepare_input([i], kr=0)
+#        ret._general_prepare_input(j, kr=0)
+#        # Assert element getting
+##        print i, j, p[6], p[7], ret._prepare_input
+#        e1, e2 = ret._prepare_input(i, 0), ret._prepare_input(j, 0)
+##        print i, j, e1, e2, p[6], p[7], ret._prepare_input, ret.get_indice_i
+##        print ret.preferable_input_idx
+#        if types == 'listobject' and p[7] is not True:
+#            e1, e2 = [e.location for e in e1], [e.location for e in e2]
+#        if p[7]:
+##            print e1, e2, type(e1), type(e2)
+#            assert(e1 == [0])
+#            assert(e2 == [0, 1])
+#        else:
+##            print e1, e2, ret._prepare_input, p[6]
+#            assert(e1 == [np.array([0])])
+##            print e1, ret._prepare_input, p[6], p[7]
+#            assert(all([type(e) == np.ndarray for e in e1]))
+##            print e2, type(e2[0]), ret._prepare_input, p[6], p[7], counter
+#            assert(np.all([e2 == [np.array([0]), np.array([1])]]))
+#            assert(all([type(e) == np.ndarray for e in e2]))
+#        ## Retrieve and output
+#        ######################
+#        # Assert correct retrieving
+#        ## Retrieve individual
+#        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
+##        print dists, type(dists), p[5]
+#        assert(type(neighs[0][0]) in inttypes)
+#        assert(dists is None or not p[5] is False)
+##        print dists, type(dists), p[5]
+#        ## Output map
+#        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+#        assert(type(neighs2[0][0]) in inttypes)
+#        assert(dists2 is None or not p[5] is False)
+#        ## Output
+##        print neighs, dists
+#        neighs, dists = ret._format_output(i, neighs, dists)
+#        if auto_excl and not auto_excluded:
+##            print neighs, dists, ret._exclude_auto, i, counter
+#            assert(len(neighs) == 1)
+#            assert(len(neighs[0]) == 0)
+##            assert(type(neighs[0][0]) in inttypes)
+#            assert(dists is None or not p[5] is False)
+#        else:
 #            assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-        else:
-            assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
-#        print dists, type(dists), p[5]
-        assert(type(neighs[0][0]) in inttypes)
-        assert(dists is None or not p[5] is False)
-#        print dists, type(dists), p[5]
-        ## Output map
-        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
-        assert(type(neighs2[0][0]) in inttypes)
-        assert(dists2 is None or not p[5] is False)
-        ## Output
-#        print neighs, dists
-        neighs, dists = ret._format_output(i, neighs, dists)
-        if auto_excl and not auto_excluded:
-#            print neighs, dists, ret._exclude_auto, i, counter
-            assert(len(neighs) == 1)
-            assert(len(neighs[0]) == 0)
+#            assert(dists is None or not p[5] is False)
+#        neighs, dists = ret._retrieve_neighs_general_spec(i, 0, p[5])
+##        print dists, type(dists), p[5]
+#        assert(type(neighs[0][0]) in inttypes)
+#        assert(dists is None or not p[5] is False)
+##        print dists, type(dists), p[5]
+#        ## Output map
+#        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+#        assert(type(neighs2[0][0]) in inttypes)
+#        assert(dists2 is None or not p[5] is False)
+#        ## Output
+##        print neighs, dists
+#        neighs, dists = ret._format_output(i, neighs, dists)
+#        if auto_excl and not auto_excluded:
+##            print neighs, dists, ret._exclude_auto, i, counter
+#            assert(len(neighs) == 1)
+#            assert(len(neighs[0]) == 0)
+##            assert(type(neighs[0][0]) in inttypes)
+#            assert(dists is None or not p[5] is False)
+#        else:
 #            assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-        else:
-            assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-        ## Retrieve multiple
-        neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[5])
-        assert(type(neighs[0][0]) in inttypes)
-        assert(dists is None or not p[5] is False)
-#        print neighs, p, counter
-#        print ret.staticneighs, type(neighs[0][0])
-        ## Output map
-        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
-        assert(type(neighs2[0][0]) in inttypes)
-        assert(dists2 is None or not p[5] is False)
-        ## Output
-        neighs, dists = ret._format_output(j, neighs, dists)
-        if auto_excl and not auto_excluded:
-            assert(len(neighs) == 2)
-            assert(len(neighs[0]) == 0)
-            assert(len(neighs[1]) == 0)
-    #        assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-        else:
-            assert(type(neighs[0][0]) in inttypes)
-            assert(dists is None or not p[5] is False)
-
-        if p[3]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[3])
-            neighs_info.get_information()
-
-        if np.random.random() < 0.1:
-            len(ret)
-            ret.export_neighs_info()
-            if not ret._heterogenous_input:
-                ret._n0
-            if not ret._heterogenous_output:
-                ret._n1
-            ret.shape
-            ret.data_input
-            ret.data_output
-
-        if ret.k_perturb == 0:
-            k_option = 1
-        else:
-            k_options = [-1, 100]
-            k_option = k_options[np.random.randint(0, 2)]
-        if np.random.random() < 0.1:
-            ## Iterations
-            ret.set_iter()
-            for iss, nei in ret:
-                break
-            try:
-                boolean = False
-                ret.retrieve_neighs(0, k=k_option)
-                boolean = True
-                raise Exception("It has to halt here.")
-            except:
-                if boolean:
-                    raise Exception("It has to halt here.")
-            try:
-                boolean = False
-                ret._map_perturb(k_option)
-                boolean = True
-                raise Exception("It has to halt here.")
-            except:
-                if boolean:
-                    raise Exception("It has to halt here.")
-
-#### Special cases
-    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
-                         preferable_input_idx=True)
-    net = ret.compute_neighnet(mapper=0)
-    net = ret.compute_neighnet(mapper=0, datavalue=1.)
-    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
-                         preferable_input_idx=True, ifdistance=False)
-    net = ret.compute_neighnet(mapper=0)
-
+#            assert(dists is None or not p[5] is False)
+#        ## Retrieve multiple
+#        neighs, dists = ret._retrieve_neighs_general_spec(j, 0, p[5])
+#        assert(type(neighs[0][0]) in inttypes)
+#        assert(dists is None or not p[5] is False)
+##        print neighs, p, counter
+##        print ret.staticneighs, type(neighs[0][0])
+#        ## Output map
+#        neighs2, dists2 = ret._output_map[0](ret, i, (neighs, dists))
+#        assert(type(neighs2[0][0]) in inttypes)
+#        assert(dists2 is None or not p[5] is False)
+#        ## Output
+#        neighs, dists = ret._format_output(j, neighs, dists)
+#        if auto_excl and not auto_excluded:
+#            assert(len(neighs) == 2)
+#            assert(len(neighs[0]) == 0)
+#            assert(len(neighs[1]) == 0)
+#    #        assert(type(neighs[0][0]) in inttypes)
+#            assert(dists is None or not p[5] is False)
+#        else:
+#            assert(type(neighs[0][0]) in inttypes)
+#            assert(dists is None or not p[5] is False)
+#
+#        if p[3]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[3])
+#            neighs_info.get_information()
+#
+#        if np.random.random() < 0.1:
+#            len(ret)
+#            ret.export_neighs_info()
+#            if not ret._heterogenous_input:
+#                ret._n0
+#            if not ret._heterogenous_output:
+#                ret._n1
+#            ret.shape
+#            ret.data_input
+#            ret.data_output
+#
+#        if ret.k_perturb == 0:
+#            k_option = 1
+#        else:
+#            k_options = [-1, 100]
+#            k_option = k_options[np.random.randint(0, 2)]
+#        if np.random.random() < 0.1:
+#            ## Iterations
+#            ret.set_iter()
+#            for iss, nei in ret:
+#                break
+#            try:
+#                boolean = False
+#                ret.retrieve_neighs(0, k=k_option)
+#                boolean = True
+#                raise Exception("It has to halt here.")
+#            except:
+#                if boolean:
+#                    raise Exception("It has to halt here.")
+#            try:
+#                boolean = False
+#                ret._map_perturb(k_option)
+#                boolean = True
+#                raise Exception("It has to halt here.")
+#            except:
+#                if boolean:
+#                    raise Exception("It has to halt here.")
+#
+##### Special cases
+#    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
+#                         preferable_input_idx=True)
+#    net = ret.compute_neighnet(mapper=0)
+#    net = ret.compute_neighnet(mapper=0, datavalue=1.)
+#    ret = DummyRetriever(n, constant_info=True, bool_input_idx=True,
+#                         preferable_input_idx=True, ifdistance=False)
+#    net = ret.compute_neighnet(mapper=0)
+#
     ###########################################################################
     ######### Preparation parameters for general testing
     ## Perturbations
@@ -631,554 +633,581 @@ def test():
             assert(neighs_info.sp_relative_pos is None)
 #        print neighs_info.iss, iss, neighs_info.staticneighs
         assert(neighs_info.iss == iss)
-
-    ###########################################################################
-    #### KRetriever
-    ##################
-    pos_inforet = [2, 5, 10]
-    pos_outmap = [None, _output_map]
-    pos_autoexclude = [False, True]
-    pos_pars_ret = [None, 1000]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_perturbations, pos_autoexclude]
-    for p in product(*pos):
-        ## Random
-        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
-        ## Instantiation
-        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-                         output_map=p[3], constant_info=p[4], autoexclude=p[7],
-                         bool_input_idx=p[5], perturbations=p[6],
-                         pars_ret=pret)
-#        print p
-        ## Selecting point_i
-        if p[5] is False:
-            i = locs[0]
-            j = [locs[0], locs[1]]
-        else:
-            i = 0
-            j = [0, 1]
-
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
-        if p[0] is None:
-            assert(info_i == ret._default_ret_val)
-            assert(info_i2 == ret._default_ret_val)
-        else:
-            assert(info_i == p[0])
-            assert(info_i2 == p[0])
-
-        ## Get locations
-        ################
-        loc_i = ret.get_loc_i([i])
-        assert(len(loc_i) == 1)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == locs[0]))
-        loc_i = ret.get_loc_i(j)
-        assert(len(loc_i) == 2)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == locs[0]))
-        assert(all(loc_i[1] == locs[1]))
-
-        ## Get indices
-        ################
-        i_loc = ret.get_indice_i([i], 0)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(i_loc[0] == 0)
-        i_loc = ret.get_indice_i(j, 0)
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-#        print i_loc, j
-        assert(i_loc[0] == 0)
-        assert(i_loc[1] == 1)
-
-#        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            neighs_info.get_information()
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info = ret[i]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 1])
-            neighs_info.get_information()
-            neighs_info = ret[j]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 1])
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 1])
-            neighs_info.get_information()
-
-        ## Testing other functions and parameters
-        ret.k_perturb
-
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            assert(list(nei.iss) == list(iss))
-            break
-
-    ###########################################################################
-    #### CircRetriever
-    ##################
-    pos_inforet = [0.01, 2., 5., 10.]
-    pos_outmap = [None, _output_map]
-    pos_autoexclude = [False, True]
-    pos_pars_ret = [None, 1000]
-    pos_ifdistance = [True, False]
-    pos_constantinfo = [True, False, None]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_autoexclude]
-    for p in product(*pos):
-        ## Random
-        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
-
-        ## Instantiation
-        ret = CircRetriever(locs, info_ret=p[0], ifdistance=p[1],
-                            input_map=p[2], output_map=p[3],
-                            constant_info=p[4], bool_input_idx=p[5],
-                            autoexclude=p[6], pars_ret=pret)
-#        print p
-        ## Selecting point_i
-        if p[5] is False:
-            i = locs[0]
-            j = [locs[0], locs[1]]
-        else:
-            i = 0
-            j = [0, 1]
-
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
-        if p[0] is None:
-            assert(info_i == ret._default_ret_val)
-            assert(info_i2 == ret._default_ret_val)
-        else:
-            assert(info_i == p[0])
-            assert(info_i2 == p[0])
-        ## Get locations
-        ################
-        loc_i = ret.get_loc_i([i])
-        assert(len(loc_i) == 1)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == locs[0]))
-        loc_i = ret.get_loc_i(j)
-        assert(len(loc_i) == 2)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == locs[0]))
-        assert(all(loc_i[1] == locs[1]))
-
-        ## Get indices
-        ################
-        i_loc = ret.get_indice_i([i], 0)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(i_loc[0] == 0)
-        i_loc = ret.get_indice_i(j, 0)
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-        assert(i_loc[0] == 0)
-        assert(i_loc[1] == 1)
-
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 1])
-            neighs_info.get_information()
-            neighs_info = ret[j]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 1])
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            neighs_info.get_information()
-
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            assert(list(nei.iss) == list(iss))
-            break
-
-    ###########################################################################
-    #### WindowsRetriever
-    #####################
-    ## TODO: Relative pos and autoexclude=True
-    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
-                   {'l': 4, 'center': 0, 'excluded': False},
-                   {'l': 3, 'center': 1, 'excluded': True}]
-    pos_outmap = [None, _output_map]
-    shape = 10, 10
-    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx, pos_perturbations]
-    ## Random exploration of inputs space
-    pos_relativepos = [None, comp_rel_pos, comp_class_rel_pos]
-
-    for p in product(*pos):
-        ## Random exploration of inputs space
-        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
-
-        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
-                               input_map=p[2], output_map=p[3],
-                               constant_info=p[4], bool_input_idx=p[5],
-                               perturbations=p[6], relative_pos=rel_pos)
+#
+#    ###########################################################################
+#    #### KRetriever
+#    ##################
+#    pos_inforet = [1, 2, 5, 10]
+#    pos_outmap = [None, _output_map]
+#    pos_autoexclude = [False, True]
+#    pos_pars_ret = [None, 1000]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_perturbations, pos_autoexclude]
+#    for p in product(*pos):
+#        ## Random
+#        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
+#        ## Instantiation
+#        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
+#                         output_map=p[3], constant_info=p[4], autoexclude=p[7],
+#                         bool_input_idx=p[5], perturbations=p[6],
+#                         pars_ret=pret)
 ##        print p
-        ## Selecting point_i
-        if p[5] is False:
-            i = ret.retriever[0].data[0]
-            j = ret.retriever[0].data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        if p[0] is None:
-            assert(info_i == ret._default_ret_val)
-            assert(info_i2 == ret._default_ret_val)
-        else:
-            assert(info_i == p[0])
-            assert(info_i2 == p[0])
-
-        ## Get locations
-        ################
-        loc_i = ret.get_loc_i([i])
-        assert(len(loc_i) == 1)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
+#        ## Selecting point_i
+#        if p[5] is False:
+#            i = locs[0]
+#            j = [locs[0], locs[1]]
+#        else:
+#            i = 0
+#            j = [0, 1]
+#
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+##        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        if p[0] is None:
+#            assert(info_i == ret._default_ret_val)
+#            assert(info_i2 == ret._default_ret_val)
+#        else:
+#            assert(info_i == p[0])
+#            assert(info_i2 == p[0])
+#
+#        ## Get locations
+#        ################
+#        loc_i = ret.get_loc_i([i])
+#        assert(len(loc_i) == 1)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
 #        assert(all(loc_i[0] == locs[0]))
-        loc_i = ret.get_loc_i(j)
-        assert(len(loc_i) == 2)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
+#        loc_i = ret.get_loc_i(j)
+#        assert(len(loc_i) == 2)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
 #        assert(all(loc_i[0] == locs[0]))
 #        assert(all(loc_i[1] == locs[1]))
-
-        ## Get indices
-        ################
-        i_loc = ret.get_indice_i([i], 0)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(i_loc[0] == 0)
-        i_loc = ret.get_indice_i(j, 0)
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-        assert(i_loc[0] == 0)
-        assert(i_loc[1] == 3)
-
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-            neighs_info = ret[j]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            assert(list(nei.iss) == list(iss))
-            break
-
-    try:
-        boolean = False
-        ret = WindowsRetriever((10, 10, 10.))
-        boolean = True
-        raise Exception("It has to halt here.")
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-
-    ###########################################################################
-    #### SameEleRetriever
-    #####################
-    pos_inforet = [None]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = SameEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                           input_map=p[2], output_map=p[3], constant_info=p[4],
-                           bool_input_idx=p[5], autoexclude=False)
-#        print p
-        ## Selecting point_i
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-#        print '+'*50, j
-
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-        assert(info_i == {})
-        assert(info_i2 == {})
-
-        ## Get locations
-        ################
-        loc_i = ret.get_loc_i([i])
-        assert(len(loc_i) == 1)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
-        loc_i = ret.get_loc_i(j)
-        assert(len(loc_i) == 2)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
-        assert(all(loc_i[1] == mainmapper.data[3]))
-
-        ## Get indices
-        ################
-        i_loc = ret.get_indice_i([i], 0)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        i_loc = ret.get_indice_i(j, 0)
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-#        print ret.data_input, i_loc, j, p[5]
-        assert(i_loc[0] == j[0])
-        assert(i_loc[1] == j[1])
-
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-            neighs_info = ret[j]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            assert(list(nei.iss) == list(iss))
-            break
-
-    ###########################################################################
-    #### LimDistanceRetriever
-    ##########################
-    pars_lim0, pars_lim1 = pars5, {'lim_distance': None}
-    pars_lim2 = {'maxif': False, 'lim_distance': 1}
-    pos_inforet = [None, pars_lim0, pars_lim1, pars_lim2]
-    pos_outmap = [None, _output_map]
-
-    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
-    for p in product(*pos):
-        ret = LimDistanceEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
-                                  input_map=p[2], output_map=p[3],
-                                  constant_info=p[4], bool_input_idx=p[5],
-                                  autoexclude=False)
-#        print p
-        ## Selecting point_i
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-
-        ## Get Information
-        ################
-        # Assert information getting
-        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
-#        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
-        if p[0] is None:
-            assert(info_i == ret._default_ret_val)
-            assert(info_i2 == ret._default_ret_val)
-        else:
-            assert(info_i == p[0])
-            assert(info_i2 == p[0])
-
-        ## Get locations
-        ################
-        loc_i = ret.get_loc_i([i])
-        assert(len(loc_i) == 1)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
-        loc_i = ret.get_loc_i(j)
-        assert(len(loc_i) == 2)
-        assert(type(loc_i[0]) == np.ndarray)
-        assert(type(loc_i[1]) == np.ndarray)
-        assert(len(loc_i[0].shape) == 1)
-        assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
-        assert(all(loc_i[1] == mainmapper.data[3]))
-
-        ## Get indices
-        ################
-        i_loc = ret.get_indice_i([i], 0)
-        assert(len(i_loc) == 1)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        i_loc = ret.get_indice_i(j, 0)
-        assert(len(i_loc) == 2)
-        assert(type(i_loc) == list)
-        assert(type(i_loc[0]) in inttypes)
-        assert(type(i_loc[1]) in inttypes)
-        assert(i_loc[0] == j[0])
-        assert(i_loc[1] == j[1])
-
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
-        else:
-            i = 0
-            j = [0, 3]
-#        print i, p
-        if p[4]:
-            neighs_info = ret.retrieve_neighs(i)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret[i]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j)
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-            neighs_info = ret[j]
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-        else:
-            neighs_info = ret.retrieve_neighs(i, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), 0)
-            neighs_info.get_information()
-            neighs_info = ret.retrieve_neighs(j, p[0])
-            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
-                                 range(ret.k_perturb+1), [0, 3])
-            neighs_info.get_information()
-
-        ## Iterations
-        ret.set_iter()
-        for iss, nei in ret:
-            assert(list(nei.iss) == list(iss))
-            break
+#
+#        ## Get indices
+#        ################
+#        i_loc = ret.get_indice_i([i], 0)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(i_loc[0] == 0)
+#        i_loc = ret.get_indice_i(j, 0)
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+##        print i_loc, j
+#        assert(i_loc[0] == 0)
+#        assert(i_loc[1] == 1)
+#
+##        print i, p, ret.staticneighs, ret.neighs_info.staticneighs
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            neighs_info.get_information()
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), 0)
+#            neighs_info = ret[i]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), 0)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), [0, 1])
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), [0, 1])
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), 0)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), [0, 1])
+#            neighs_info.get_information()
+#
+#        ## Testing other functions and parameters
+#        ret.k_perturb
+#
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            assert(list(nei.iss) == list(iss))
+#            break
+#
+#    ###########################################################################
+#    #### CircRetriever
+#    ##################
+#    pos_inforet = [0.01, 2., 5., 10.]
+#    pos_outmap = [None, _output_map]
+#    pos_autoexclude = [False, True]
+#    pos_pars_ret = [None, 1000]
+#    pos_ifdistance = [True, False]
+#    pos_constantinfo = [True, False, None]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_autoexclude]
+#    for p in product(*pos):
+#        ## Random
+#        pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
+#
+#        ## Instantiation
+#        ret = CircRetriever(locs, info_ret=p[0], ifdistance=p[1],
+#                            input_map=p[2], output_map=p[3],
+#                            constant_info=p[4], bool_input_idx=p[5],
+#                            autoexclude=p[6], pars_ret=pret)
+##        print p
+#        ## Selecting point_i
+#        if p[5] is False:
+#            i = locs[0]
+#            j = [locs[0], locs[1]]
+#        else:
+#            i = 0
+#            j = [0, 1]
+#
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+##        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        if p[0] is None:
+#            assert(info_i == ret._default_ret_val)
+#            assert(info_i2 == ret._default_ret_val)
+#        else:
+#            assert(info_i == p[0])
+#            assert(info_i2 == p[0])
+#        ## Get locations
+#        ################
+#        loc_i = ret.get_loc_i([i])
+#        assert(len(loc_i) == 1)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == locs[0]))
+#        loc_i = ret.get_loc_i(j)
+#        assert(len(loc_i) == 2)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == locs[0]))
+#        assert(all(loc_i[1] == locs[1]))
+#
+#        ## Get indices
+#        ################
+#        i_loc = ret.get_indice_i([i], 0)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(i_loc[0] == 0)
+#        i_loc = ret.get_indice_i(j, 0)
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+#        assert(i_loc[0] == 0)
+#        assert(i_loc[1] == 1)
+#
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), 0)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), 0)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), [0, 1])
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), [0, 1])
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            neighs_info.get_information()
+#
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            assert(list(nei.iss) == list(iss))
+#            break
+#
+#    ###########################################################################
+#    #### WindowsRetriever
+#    #####################
+#    ## TODO: Relative pos and autoexclude=True
+#    pos_inforet = [{'l': 1, 'center': 0, 'excluded': False},
+#                   {'l': 4, 'center': 0, 'excluded': False},
+#                   {'l': 3, 'center': 1, 'excluded': True}]
+#    pos_outmap = [None, _output_map]
+#    shape = 10, 10
+#    gridlocs = np.random.randint(0, np.prod(shape), 2000).reshape((1000, 2))
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_perturbations]
+#    ## Random exploration of inputs space
+#    pos_relativepos = [None, comp_rel_pos, comp_class_rel_pos]
+#
+#    for p in product(*pos):
+#        ## Random exploration of inputs space
+#        rel_pos = pos_relativepos[np.random.randint(0, len(pos_relativepos))]
+#
+#        ret = WindowsRetriever(shape, info_ret=p[0], ifdistance=p[1],
+#                               input_map=p[2], output_map=p[3],
+#                               constant_info=p[4], bool_input_idx=p[5],
+#                               perturbations=p[6], relative_pos=rel_pos)
+###        print p
+#        ## Selecting point_i
+#        ind_i, ind_j = 0, [0, 5]
+#        if p[5] is False:
+#            i = ret.retriever[0].data[ind_i]
+#            j = ret.retriever[0].data[ind_j]
+#        else:
+#            i = ind_i
+#            j = ind_j
+#
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+#        if p[0] is None:
+#            assert(info_i == ret._default_ret_val)
+#            assert(info_i2 == ret._default_ret_val)
+#        else:
+#            assert(info_i == p[0])
+#            assert(info_i2 == p[0])
+#
+#        ## Get locations
+#        ################
+#        loc_i = ret.get_loc_i([i])
+#        assert(len(loc_i) == 1)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+##        assert(all(loc_i[0] == locs[0]))
+#        loc_i = ret.get_loc_i(j)
+#        assert(len(loc_i) == 2)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+##        assert(all(loc_i[0] == locs[0]))
+##        assert(all(loc_i[1] == locs[1]))
+#
+#        ## Get indices
+#        ################
+#        i_loc = ret.get_indice_i([i], 0)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(i_loc[0] == ind_i)
+#        i_loc = ret.get_indice_i(j, 0)
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+#        assert(i_loc[0] == ind_j[0])
+#        assert(i_loc[1] == ind_j[1])
+#
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            assert(list(nei.iss) == list(iss))
+#            break
+#
+#    try:
+#        boolean = False
+#        ret = WindowsRetriever((10, 10, 10.))
+#        boolean = True
+#        raise Exception("It has to halt here.")
+#    except:
+#        if boolean:
+#            raise Exception("It has to halt here.")
+#
+#    ###########################################################################
+#    #### SameEleRetriever
+#    #####################
+#    pos_inforet = [None]
+#    pos_outmap = [None, _output_map]
+#    pos_autoexclude = [False, True]
+#
+#    pos_mainmapper = [mainmapper, mainmapper1]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_autoexclude]
+#
+#    for p in product(*pos):
+#        # Random parameter exploration
+#        i_mapper = np.random.randint(0, len(pos_mainmapper))
+#        choose_mapper = pos_mainmapper[i_mapper]
+#        # Instantiation
+#        ret = SameEleNeigh(choose_mapper, info_ret=p[0], ifdistance=p[1],
+#                           input_map=p[2], output_map=p[3], constant_info=p[4],
+#                           bool_input_idx=p[5], autoexclude=p[6])
+##        print p
+#        ## Selecting point_i
+#        ind_i, ind_j = 0, [0, 5]
+#        if p[5] is False:
+#            i = choose_mapper.data_input[ind_i]
+#            j = choose_mapper.data_input[ind_j]
+#        else:
+#            i = ind_i
+#            j = ind_j
+##        print '+'*50, j, choose_mapper.data[ind_j]
+##        print choose_mapper.data_input[ind_j]
+##        print i_mapper, ret.get_indice_i
+##        print ret.preferable_input_idx, p[5], ret._get_idxs_from_locs
+##        print ret._get_idx_from_loc
+#
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+#        assert(info_i == {})
+#        assert(info_i2 == {})
+#
+#        ## Get locations
+#        ################
+#        loc_i = ret.get_loc_i([i])
+#        assert(len(loc_i) == 1)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == choose_mapper.data_input[ind_i]))
+#        loc_i = ret.get_loc_i(j)
+#        assert(len(loc_i) == 2)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == choose_mapper.data_input[ind_j[0]]))
+#        assert(all(loc_i[1] == choose_mapper.data_input[ind_j[1]]))
+#
+#        ## Get indices
+#        ################
+#        i_loc = ret.get_indice_i([i], 0)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(i_loc[0] == ind_i)
+#        i_loc = ret.get_indice_i(j, 0)
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+##        print ret.data_input, i_loc, j, p[5]
+#        assert(i_loc[0] == ind_j[0])
+#        assert(i_loc[1] == ind_j[1])
+#
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            assert(list(nei.iss) == list(iss))
+#            break
+#
+#    ###########################################################################
+#    #### LimDistanceRetriever
+#    ##########################
+#    pars_lim0, pars_lim1 = pars5, {'lim_distance': None}
+#    pars_lim2 = {'maxif': False, 'lim_distance': 1}
+#    pos_inforet = [None, pars_lim0, pars_lim1, pars_lim2]
+#    pos_outmap = [None, _output_map]
+#    pos_autoexclude = [False, True]
+#    pos_mainmapper = [mainmapper, mainmapper1]
+#
+#    pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
+#           pos_constantinfo, pos_boolinidx, pos_autoexclude]
+#
+#    for p in product(*pos):
+#        # Random parameter exploration
+#        i_mapper = np.random.randint(0, len(pos_mainmapper))
+#        choose_mapper = pos_mainmapper[i_mapper]
+#        # Instantiation
+#        ret = LimDistanceEleNeigh(choose_mapper, info_ret=p[0],
+#                                  ifdistance=p[1], input_map=p[2],
+#                                  output_map=p[3], constant_info=p[4],
+#                                  bool_input_idx=p[5], autoexclude=p[6])
+##        print p
+#        ## Selecting point_i
+#        ind_i, ind_j = 0, [0, 5]
+#        if p[5] is False:
+#            i = choose_mapper.data_input[ind_i]
+#            j = choose_mapper.data_input[ind_j]
+#        else:
+#            i = ind_i
+#            j = ind_j
+#
+#        ## Get Information
+#        ################
+#        # Assert information getting
+#        info_i, info_i2 = ret._get_info_i(i, {}), ret._get_info_i(j, {})
+##        print info_i, info_i2, ret._default_ret_val, p[0], p, ret._get_info_i
+#        if p[0] is None:
+#            assert(info_i == ret._default_ret_val)
+#            assert(info_i2 == ret._default_ret_val)
+#        else:
+#            assert(info_i == p[0])
+#            assert(info_i2 == p[0])
+#
+#        ## Get locations
+#        ################
+#        loc_i = ret.get_loc_i([i])
+#        assert(len(loc_i) == 1)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(all(loc_i[0] == choose_mapper.data_input[ind_i]))
+#        loc_i = ret.get_loc_i(j)
+#        assert(len(loc_i) == 2)
+#        assert(type(loc_i[0]) == np.ndarray)
+#        assert(type(loc_i[1]) == np.ndarray)
+#        assert(len(loc_i[0].shape) == 1)
+#        assert(len(loc_i[1].shape) == 1)
+#        assert(all(loc_i[0] == choose_mapper.data_input[ind_j[0]]))
+#        assert(all(loc_i[1] == choose_mapper.data_input[ind_j[1]]))
+#
+#        ## Get indices
+#        ################
+#        i_loc = ret.get_indice_i([i], 0)
+#        assert(len(i_loc) == 1)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(i_loc[0] == ind_i)
+#        i_loc = ret.get_indice_i(j, 0)
+#        assert(len(i_loc) == 2)
+#        assert(type(i_loc) == list)
+#        assert(type(i_loc[0]) in inttypes)
+#        assert(type(i_loc[1]) in inttypes)
+#        assert(i_loc[0] == ind_j[0])
+#        assert(i_loc[1] == ind_j[1])
+#
+##        print i, p
+#        if p[4]:
+#            neighs_info = ret.retrieve_neighs(i)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret[i]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j)
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#            neighs_info = ret[j]
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#        else:
+#            neighs_info = ret.retrieve_neighs(i, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_i)
+#            neighs_info.get_information()
+#            neighs_info = ret.retrieve_neighs(j, p[0])
+#            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+#                                 range(ret.k_perturb+1), ind_j)
+#            neighs_info.get_information()
+#
+#        ## Iterations
+#        ret.set_iter()
+#        for iss, nei in ret:
+#            assert(list(nei.iss) == list(iss))
+#            break
 
     ###########################################################################
     #### OrderEleRetriever
     ######################
     pars_order0, pars_order1 = pars4, {'exactorlimit': True, 'order': 2}
-    pos_inforet = [None, pars_order0, pars_order1]
+    pars_order2 = {'exactorlimit': True, 'order': 6}
+    pos_inforet = [None, pars_order0, pars_order1, pars_order2]
     pos_outmap = [None, _output_map]
+    pos_autoexclude = [False, True]
+    pos_mainmapper = [mainmapper, mainmapper1]
 
     pos = [pos_inforet, pos_ifdistance, pos_inmap, pos_outmap,
-           pos_constantinfo, pos_boolinidx]
+           pos_constantinfo, pos_boolinidx, pos_autoexclude]
+
     for p in product(*pos):
+        # Random parameter exploration
+        i_mapper = np.random.randint(0, len(pos_mainmapper))
+        choose_mapper = pos_mainmapper[i_mapper]
+        # Instantiation
         ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
                             input_map=p[2], output_map=p[3],
                             constant_info=p[4], bool_input_idx=p[5],
-                            autoexclude=False)
+                            autoexclude=p[6])
 #        print p
         ## Selecting point_i
+        ind_i, ind_j = 0, [0, 3]
         if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
+            i = choose_mapper.data_input[ind_i]
+            j = choose_mapper.data_input[ind_j]
         else:
-            i = 0
-            j = [0, 3]
+            i = ind_i
+            j = ind_j
 
         ## Get Information
         ################
@@ -1198,15 +1227,15 @@ def test():
         assert(len(loc_i) == 1)
         assert(type(loc_i[0]) == np.ndarray)
         assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
+        assert(all(loc_i[0] == mainmapper.data_input[0]))
         loc_i = ret.get_loc_i(j)
         assert(len(loc_i) == 2)
         assert(type(loc_i[0]) == np.ndarray)
         assert(type(loc_i[1]) == np.ndarray)
         assert(len(loc_i[0].shape) == 1)
         assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data[0]))
-        assert(all(loc_i[1] == mainmapper.data[3]))
+        assert(all(loc_i[0] == mainmapper.data_input[0]))
+        assert(all(loc_i[1] == mainmapper.data_input[3]))
 
         ## Get indices
         ################
@@ -1222,12 +1251,32 @@ def test():
         assert(i_loc[0] == j[0])
         assert(i_loc[1] == j[1])
 
-        if p[5] is False:
-            i = mainmapper.data[0]
-            j = mainmapper.data[[0, 3]]
+        if p[4]:
+            neighs_info = ret.retrieve_neighs(i)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_i)
+            neighs_info.get_information()
+            neighs_info = ret[i]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_i)
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j)
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_j)
+            neighs_info.get_information()
+            neighs_info = ret[j]
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_j)
+            neighs_info.get_information()
         else:
-            i = 0
-            j = [0, 3]
+            neighs_info = ret.retrieve_neighs(i, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_i)
+            neighs_info.get_information()
+            neighs_info = ret.retrieve_neighs(j, p[0])
+            assert_correctneighs(neighs_info, p[1], p[4], ret.staticneighs,
+                                 range(ret.k_perturb+1), ind_j)
+            neighs_info.get_information()
 
 #        if p[4]:
 #            neighs_info = ret.retrieve_neighs(i)

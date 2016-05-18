@@ -97,8 +97,7 @@ class NetworkRetriever(Retriever):
     ###########################################################################
     def _get_loc_from_idx(self, i, kr=0):
         """Not list indexable interaction with data."""
-#        print i, kr
-        loc_i = np.array(self.retriever[kr].data[i])
+        loc_i = np.array(self.retriever[kr].data_input[i])
         return loc_i
 
     def _get_idx_from_loc(self, loc_i, kr=0):
@@ -114,11 +113,14 @@ class NetworkRetriever(Retriever):
         ## TODO: Ensure correct class
         self.retriever.append(main_mapper)
         ## TODO: Compute constant neighs
+        assert(main_mapper._input in ['indices', 'elements_id'])
         self.constant_neighs = False
         if main_mapper._input == 'indices':
             self.preferable_input_idx = True
         elif main_mapper._input == 'elements_id':
             self.preferable_input_idx = False
+        ## Assert input output
+        assert(main_mapper._out == 'indices')
 #        else:
 #            raise Exception("Not possible option.")
 #            self.preferable_input_idx = None
@@ -190,8 +192,6 @@ class SameEleNeigh(NetworkRetriever):
 
         """
 #        print 'k'*50, self.neighs_info.set_neighs, elem_i
-        elem_i = self._prepare_input(elem_i, kr)
-#        print elem_i
         neighs, dists = self.retriever[kr][elem_i]
 #        print 'o'*50, neighs, type(neighs), dists
         assert(len(neighs) == len(elem_i))
