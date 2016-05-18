@@ -1,6 +1,192 @@
 
 """
 """
+######## 2016-05-18 retrievers
+
+class OrderEleNeigh(NetworkRetriever):
+    """Network retriever based on the order it is away from element
+    direct neighbours in a network.
+    """
+    _default_ret_val = {'order': 0, 'exactorlimit': False}
+    ## Basic information of the core retriever
+#    preferable_input_idx = True
+#    constant_neighs = False
+    auto_excluded = False
+    ## Interaction with the stored data
+    bool_listind = False
+
+    def _retrieve_neighs_spec2(self, elem_i, order=0, exactorlimit=False,
+                               kr=0):
+        """Retrieve the elements which are defined by the parameters of the
+        inputs and the nature of this object method.
+
+        Parameters
+        ----------
+        elem_i: int or np.ndarray
+            the element we want to get its neighsbour elements.
+        order: int
+            the order we want to retrieve the object.
+        exactorlimit: boolean
+            if True we retrieve the neighs in this exact order, if False we
+            retrieve the neighs up to this order (included).
+
+        Returns
+        -------
+        neighs: numpy.ndarray
+            the ids of the neighbourhood elements.
+        dists: numpy.ndarray
+            the distances between elements.
+
+        """
+        order = 2
+        ## 0. Needed variables
+        neighs, dists = [[]]*len(elem_i), [[]]*len(elem_i)
+        if self.retriever[kr]._distanceorweighs:
+            nullvalue = self.retriever[kr]._null_value
+        else:
+            nullvalue = 0
+        ## Searching extensively (storing repeated results)
+        extensive = exactorlimit or self.retriever[kr]._distanceorweighs
+        # Crawling in net variables
+        to_reg = [elem_i]
+        to_dists = [[nullvalue]]*len(elem_i)
+
+        # Order 0
+        print '0'+'.'*50
+        print elem_i, neighs, dists, to_reg, to_dists
+        neighs_oi, dists_oi = self.retriever[kr][elem_i]
+        assert(len(neighs_oi) == len(dists_oi))
+        assert(len(elem_i) == len(neighs_oi))
+        print '1'+'.'*50
+        print dists_oi, type(dists_oi), len(dists_oi), neighs_oi
+        assert(all([len(d.shape) == 2 for d in dists_oi]))
+        assert(all([len(dists_oi[i]) == len(neighs_oi[i])
+                    for i in range(len(dists_oi))]))
+
+        if order > 0:
+            to_reg = list(neighs_oi)
+            for iss_i in range(len(elem_i)):
+                if len(neighs_oi[iss_i]) != 0:
+                    neighs[iss_i].extend(neighs_oi[iss_i])
+                    dists[iss_i].extend(dists_oi[iss_i])
+                    to_dists[iss_i] += dists_oi[iss_i]
+            print '2'+'.'*50
+            print to_reg, to_dists, dists, neighs
+            assert(len(to_dists) == len(to_reg))
+            assert(len(to_reg) == len(elem_i))
+            assert(len(neighs) == len(dists))
+            assert(all([len(neighs[i]) == len(dists[i])
+                        for i in range(len(neighs))]))
+
+        ## 1. Crawling in network
+        for o in range(2, order+1):
+            for iss_i in range(len(elem_i)):
+                if not np.any(to_reg[iss_i]):
+                    continue
+                ## Get neighbours from to_reg[iss_i]
+                neighs_oi, dists_oi = self.retriever[kr][to_reg[iss_i]]
+                assert(len(neighs_oi) == len(dists_oi))
+                print neighs_oi, dists_oi
+                raise Exception()
+#                print '9'*15, len(to_reg), len(dists_oi), len(neighs_oi)
+#                print iss_i, to_reg, dists_oi, neighs_oi
+
+                ## If exact
+                if o == order and exactorlimit:
+                    neighs[iss_i] = neighs_oi
+                    if self.retriever[kr]._distanceorweighs:
+                        # Dists aggregation
+                        for j in range(len(neighs_oi)):
+                            dists_oi[j] += dists[iss_i][j]
+                    else:
+                        # Dists aggregation
+                        for j in range(len(neighs_oi)):
+                            dists_oi[j] += 1
+                    dists[iss_i] = dists_oi
+
+                ## Distance or weights (order)
+                if self.retriever[kr]._distanceorweighs:
+                    ## Filter previsited
+                    new_to_reg, new_to_dists = [], []
+                    i_not_visited, i_previsited, j_previsited = [], [], []
+                    for i in range(len(neighs_oi)):
+                        i_not_visited_i, i_previsited_i = [], []
+                        for k in range(len(neighs_oi[i])):
+                            if neighs_oi[i][k] not in neighs[iss_i]:
+                                i_not_visited_i.append(k)
+                            else:
+                                i_previsited_i.append(k)
+                        new_to_reg.append(neighs_oi[i][i_not_visited_i])
+                        new_to_dists.append(dists_oi[i][i_not_visited_i])
+                        i_not_visited.append(i_not_visited_i)
+                        i_previsited.append(i_previsited_i)
+                    ## Aggregate distances
+                    new_dists_oi = []
+                    for i in range(len(dists_oi)):
+                        if len(dists_oi[i].ravel()):
+                            aux_dists = to_dists[iss_i][i] + dists_oi[i]
+                            new_dists_oi.append(aux_dists)
+                    if len(new_dists_oi) == 0:
+                        dists_oi = np.array([[]]).T
+                    else:
+                        dists_oi = np.concatenate(new_dists_oi)
+                    assert(len(dists_oi.shape) == 2)
+#                    dists_oi = np.concatenate(dists_oi)
+#                    dists_oi = np.concatenate([to_dists[iss_i][i] + dists_oi[i]
+#                                               for i in range(len(dists_oi))])
+                    neighs_oi = np.concatenate(neighs_oi)
+                    assert(len(dists_oi) == len(neighs_oi))
+                    ## Internal filtering
+                    u_elements = np.unique(neighs_oi)
+                    new_dists, new_neighs = [], []
+                    for i in range(len(u_elements)):
+                        indices = list(np.where(u_elements[i] == neighs_oi)[0])
+                        j_min = np.argmin(dists_oi[indices])
+                        if u_elements[i] in neighs[iss_i]:
+                            jm = np.where(u_elements[i] == neighs[iss_i])[0][0]
+                            if dists[iss_i][jm] > dists_oi[indices[j_min]]:
+                                dists[iss_i][jm] = dists_oi[indices[j_min]]
+                        else:
+                            new_neighs.append(neighs_oi[indices[j_min]])
+                            new_dists.append(dists_oi[indices[j_min]])
+                    ## Storing globals
+                    neighs_oi = np.array(new_neighs)
+                    if len(new_dists):
+                        dists_oi = np.array(new_dists)
+                    else:
+                        dists_oi = np.array([[]]).T
+#                    print dists_oi, new_dists, dists_oi.shape
+                    assert(len(dists_oi.shape) == 2)
+#                    print neighs[iss_i]
+                    neighs[iss_i] = np.concatenate([neighs[iss_i],
+                                                    neighs_oi]).astype(int)
+#                    print neighs[iss_i], neighs[iss_i].extend(neighs_oi)
+#                    print dists_oi, dists[iss_i], neighs_oi, np.array(dists[iss_i]).shape, dists_oi.shape
+                    dists[iss_i] = np.concatenate([np.array(dists[iss_i]),
+                                                   dists_oi])
+#                    dists[iss_i] = dists[iss_i].reshape((len(dists[iss_i]), 1))
+                    to_reg, to_dists = new_to_reg, new_to_dists
+                else:
+                    ## Dists aggregation
+                    for j in range(len(neighs_oi)):
+                        dists_oi[j] += 1
+                    ## Formatting
+                    neighs_oi = np.concatenate(neighs_oi)
+                    dists_oi = np.concatenate(dists_oi)
+                    ## Filter previsited
+                    neighs_oi, idxs = np.unique(neighs_oi, True)
+                    dists_oi = dists_oi[idxs]
+#                    print neighs_oi, neighs_oi[0], neighs[iss_i], neighs
+                    indices = [i for i in range(len(neighs_oi))
+                               if neighs_oi[i] not in neighs[iss_i]]
+                    ## Storing globals
+                    aux = np.concatenate([neighs[iss_i], neighs_oi[indices]])
+                    neighs[iss_i] = aux
+                    dists[iss_i] = np.concatenate([dists[iss_i],
+                                                   dists_oi[indices]])
+                    to_reg[iss_i] = neighs_oi[indices]
+                    to_dists[iss_i] = dists_oi[indices]
+        return neighs, dists
 
 ######## 2016-05-17 retrievers
 

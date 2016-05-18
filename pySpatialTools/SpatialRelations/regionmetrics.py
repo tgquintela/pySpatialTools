@@ -34,15 +34,7 @@ class RegionDistances:
         self._format_retrieve_interactors()
         self._format_retrieve_filters(input_type, input_)
         ## Type of values
-        self._distanceorweighs = distanceorweighs
-        if not distanceorweighs:
-            self._distanceorweighs = True
-            self._null_value = 0.
-            self._inv_null_value = np.inf
-        else:
-            self._distanceorweighs = False
-            self._null_value = np.inf
-            self._inv_null_value = 0.
+        self.set_distanceorweighs(distanceorweighs)
         self._symmetric = symmetric
         ## IO parameters
         self._input = input_
@@ -61,6 +53,18 @@ class RegionDistances:
             self._format_retrieve_filters(input_type, input_)
         if output is not None:
             self._out = output
+
+    def set_distanceorweighs(self, distanceorweighs):
+        """Setting edges type. Edges can represent similarity or distances."""
+        self._distanceorweighs = distanceorweighs
+        if distanceorweighs:
+            self._distanceorweighs = True
+            self._null_value = 0.
+            self._inv_null_value = np.inf
+        else:
+            self._distanceorweighs = False
+            self._null_value = np.inf
+            self._inv_null_value = 0.
 
     ################################ Formatters ###############################
     ###########################################################################

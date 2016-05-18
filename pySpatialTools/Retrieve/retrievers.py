@@ -342,6 +342,8 @@ class Retriever:
         ## IO methods
         self._input_map = lambda s, i: i
         self._output_map = [lambda s, i, x: x]
+        if 'bool_listind' not in dir(self):
+            self.bool_listind = False
         ## Check
         _check_retriever(self)
 
