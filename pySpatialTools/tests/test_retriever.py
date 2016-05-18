@@ -9,6 +9,10 @@ test for retrievers precoded and framework of retrievers.
 import numpy as np
 from itertools import product
 
+# Auxiliars
+from pySpatialTools.utils.util_classes import Neighs_Info
+
+## Retrievers
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
     DummyRetriever, GeneralRetriever, WindowsRetriever
@@ -179,21 +183,37 @@ def test():
             raise Exception("It has to halt here.")
 
     # Auxiliar exlude functions
-    def ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists):
-        assert(len(to_exclude_elements) == len(neighs))
+    def ensure_neighs_info_instance(neighs, dists):
+        # Neighs info instantiation
+        type_neighs = 'list' if type(neighs) == list else 'array'
+        type_sp_rel_pos = 'list' if type(dists) == np.ndarray else 'array'
+        type_sp_rel_pos = None if dists is None else type_sp_rel_pos
+        nei = Neighs_Info(format_level=2, type_neighs=type_neighs,
+                          type_sp_rel_pos=type_sp_rel_pos, staticneighs=True)
+        iss = range(len(neighs))
+        nei.set((neighs, dists), iss)
 
-        print to_exclude_elements, out, len(to_exclude_elements), len(out)
+    def ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists,
+                              flag=False):
+        assert(len(to_exclude_elements) == len(neighs))
         assert(len(to_exclude_elements) == len(out))
         if dists is not None:
             assert(len(to_exclude_elements) == len(dists))
             assert(len(out) == len(o_d))
             assert(all([len(out[i]) == len(o_d[i]) for i in range(len(out))]))
+#        print to_exclude_elements, out, len(to_exclude_elements), len(out)
+        ## Ensure instantiation
+        ensure_neighs_info_instance(neighs, dists)
+#        print out, o_d
+        if flag:
+            out, out_d = list(out), list(o_d)
+            ensure_neighs_info_instance(out, o_d)
 
     # Normal random neighs, dists
     out, o_d = _list_autoexclude(to_exclude_elements, neighs, dists)
     ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
     out, o_d = _array_autoexclude(to_exclude_elements, neighs, dists)
-    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists, True)
     out, o_d = _general_autoexclude(to_exclude_elements, neighs, dists)
     ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
     out, o_d = _general_autoexclude(to_exclude_elements, list(neighs),
@@ -609,7 +629,7 @@ def test():
             assert(neighs_info.sp_relative_pos is not None)
         else:
             assert(neighs_info.sp_relative_pos is None)
-        print neighs_info.iss, iss, neighs_info.staticneighs
+#        print neighs_info.iss, iss, neighs_info.staticneighs
         assert(neighs_info.iss == iss)
 
     ###########################################################################
@@ -723,7 +743,7 @@ def test():
     ###########################################################################
     #### CircRetriever
     ##################
-    pos_inforet = [2., 5., 10.]
+    pos_inforet = [0.01, 2., 5., 10.]
     pos_outmap = [None, _output_map]
     pos_autoexclude = [False, True]
     pos_pars_ret = [None, 1000]
@@ -737,9 +757,10 @@ def test():
         pret = pos_pars_ret[np.random.randint(0, len(pos_pars_ret))]
 
         ## Instantiation
-        ret = KRetriever(locs, info_ret=p[0], ifdistance=p[1], input_map=p[2],
-                         output_map=p[3], constant_info=p[4],
-                         bool_input_idx=p[5], autoexclude=p[6], pars_ret=pret)
+        ret = CircRetriever(locs, info_ret=p[0], ifdistance=p[1],
+                            input_map=p[2], output_map=p[3],
+                            constant_info=p[4], bool_input_idx=p[5],
+                            autoexclude=p[6], pars_ret=pret)
 #        print p
         ## Selecting point_i
         if p[5] is False:
@@ -957,7 +978,7 @@ def test():
         else:
             i = 0
             j = [0, 3]
-        print '+'*50, j
+#        print '+'*50, j
 
         ## Get Information
         ################

@@ -234,7 +234,10 @@ class KRetriever(KDTreeBasedRetriever):
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
         """Over-writtable function."""
-        format_level, type_neighs, type_sp_rel_pos = 2, 'array', 'array'
+        if self._autoexclude:
+            format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
+        else:
+            format_level, type_neighs, type_sp_rel_pos = 2, 'array', 'array'
         return format_level, type_neighs, type_sp_rel_pos
 
     def _check_proper_retriever(self):

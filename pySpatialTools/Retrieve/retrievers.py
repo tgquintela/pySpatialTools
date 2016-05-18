@@ -410,7 +410,8 @@ class Retriever:
         if excluding:
             self._exclude_auto = self._exclude_auto_general
             if constant_neighs is True:
-                self._exclude_elements = _array_autoexclude
+                #self._exclude_elements = _array_autoexclude
+                self._exclude_elements = _general_autoexclude
             elif constant_neighs is False:
                 self._exclude_elements = _list_autoexclude
             else:
