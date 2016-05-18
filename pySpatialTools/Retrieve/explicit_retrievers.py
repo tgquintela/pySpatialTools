@@ -189,11 +189,11 @@ class SameEleNeigh(NetworkRetriever):
             the distances between elements.
 
         """
-        print 'k'*50, self.neighs_info.set_neighs, elem_i
+#        print 'k'*50, self.neighs_info.set_neighs, elem_i
         elem_i = self._prepare_input(elem_i, kr)
-        print elem_i
+#        print elem_i
         neighs, dists = self.retriever[kr][elem_i]
-        print 'o'*50, neighs, type(neighs), dists
+#        print 'o'*50, neighs, type(neighs), dists
         assert(len(neighs) == len(elem_i))
         assert(all([len(e.shape) == 2 for e in dists]))
         return neighs, dists

@@ -179,14 +179,44 @@ def test():
             raise Exception("It has to halt here.")
 
     # Auxiliar exlude functions
-    _list_autoexclude(to_exclude_elements, neighs, dists)
-    _array_autoexclude(to_exclude_elements, neighs, dists)
-    _general_autoexclude(to_exclude_elements, neighs, dists)
-    _general_autoexclude(to_exclude_elements, list(neighs), list(dists))
-    _list_autoexclude(to_exclude_elements, neighs, None)
-    _array_autoexclude(to_exclude_elements, neighs, None)
-    _general_autoexclude(to_exclude_elements, neighs, None)
-    _general_autoexclude(to_exclude_elements, list(neighs), None)
+    def ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists):
+        assert(len(to_exclude_elements) == len(neighs))
+
+        print to_exclude_elements, out, len(to_exclude_elements), len(out)
+        assert(len(to_exclude_elements) == len(out))
+        if dists is not None:
+            assert(len(to_exclude_elements) == len(dists))
+            assert(len(out) == len(o_d))
+            assert(all([len(out[i]) == len(o_d[i]) for i in range(len(out))]))
+
+    # Normal random neighs, dists
+    out, o_d = _list_autoexclude(to_exclude_elements, neighs, dists)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
+    out, o_d = _array_autoexclude(to_exclude_elements, neighs, dists)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
+    out, o_d = _general_autoexclude(to_exclude_elements, neighs, dists)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
+    out, o_d = _general_autoexclude(to_exclude_elements, list(neighs),
+                                    list(dists))
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, dists)
+    # dists with None
+    out, o_d = _list_autoexclude(to_exclude_elements, neighs, None)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, None)
+    out, o_d = _array_autoexclude(to_exclude_elements, neighs, None)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, None)
+    out, o_d = _general_autoexclude(to_exclude_elements, neighs, None)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, None)
+    out, o_d = _general_autoexclude(to_exclude_elements, list(neighs), None)
+    ensure_proper_exclude(out, o_d, to_exclude_elements, neighs, None)
+    # Empty neighs and dists
+    out, o_d = _list_autoexclude(neighs, neighs, dists)
+    ensure_proper_exclude(out, o_d, neighs, neighs, dists)
+    out, o_d = _array_autoexclude(neighs, neighs, dists)
+    ensure_proper_exclude(out, o_d, neighs, neighs, dists)
+    out, o_d = _general_autoexclude(neighs, neighs, dists)
+    ensure_proper_exclude(out, o_d, neighs, neighs, dists)
+    out, o_d = _general_autoexclude(neighs, list(neighs), list(dists))
+    ensure_proper_exclude(out, o_d, neighs, neighs, dists)
 
     # map regions to points
     mapin_regpoints, mapout_regpoints = create_retriever_input_output(regions)
