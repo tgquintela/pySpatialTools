@@ -293,7 +293,10 @@ class OrderEleNeigh(NetworkRetriever):
         to_dists = [self.retriever[kr]._inv_null_value]*len(elem_i)
 
         # Order 0
+        print '0'+'.'*50
+        print elem_i, neighs, dists, to_reg, to_dists
         neighs_oi, dists_oi = self.retriever[kr][elem_i]
+        print '1'+'.'*50
         print dists_oi, type(dists_oi), len(dists_oi), neighs_oi
         to_reg = neighs_oi
         for iss_i in range(len(elem_i)):
@@ -301,6 +304,7 @@ class OrderEleNeigh(NetworkRetriever):
                 neighs[iss_i].extend(neighs_oi[iss_i])
                 dists[iss_i].extend(dists_oi[iss_i])
                 to_dists[iss_i] += dists_oi[iss_i]
+        print '2'+'.'*50
         print to_dists, dists, neighs
 
         ## 1. Crawling in network

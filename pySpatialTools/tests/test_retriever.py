@@ -1195,7 +1195,7 @@ def test():
         i_mapper = np.random.randint(0, len(pos_mainmapper))
         choose_mapper = pos_mainmapper[i_mapper]
         # Instantiation
-        ret = OrderEleNeigh(mainmapper, info_ret=p[0], ifdistance=p[1],
+        ret = OrderEleNeigh(choose_mapper, info_ret=p[0], ifdistance=p[1],
                             input_map=p[2], output_map=p[3],
                             constant_info=p[4], bool_input_idx=p[5],
                             autoexclude=p[6])
@@ -1227,15 +1227,15 @@ def test():
         assert(len(loc_i) == 1)
         assert(type(loc_i[0]) == np.ndarray)
         assert(len(loc_i[0].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data_input[0]))
+        assert(all(loc_i[0] == choose_mapper.data_input[ind_i]))
         loc_i = ret.get_loc_i(j)
         assert(len(loc_i) == 2)
         assert(type(loc_i[0]) == np.ndarray)
         assert(type(loc_i[1]) == np.ndarray)
         assert(len(loc_i[0].shape) == 1)
         assert(len(loc_i[1].shape) == 1)
-        assert(all(loc_i[0] == mainmapper.data_input[0]))
-        assert(all(loc_i[1] == mainmapper.data_input[3]))
+        assert(all(loc_i[0] == choose_mapper.data_input[ind_j[0]]))
+        assert(all(loc_i[1] == choose_mapper.data_input[ind_j[1]]))
 
         ## Get indices
         ################
