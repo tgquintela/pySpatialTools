@@ -571,7 +571,6 @@ class FeaturesManager:
                 typefeats_nei = [typefeats_nei]*len(i)
                 typefeats_desc = [typefeats_desc]*len(i)
         else:
-            print typefeats_i, i
             if type(i) == list:
                 typefeats_input = typefeats_i
                 typefeats_i, typefeats_nei, typefeats_desc = [], [], []

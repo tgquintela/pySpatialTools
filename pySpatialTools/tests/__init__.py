@@ -70,7 +70,7 @@ def test():
 #        test_spatial_discretizer.test()
 #        test_descriptormodels.test()
 #        test_features_objects.test()
-#        test_features_retriever.test()
+        test_features_retriever.test()
 #        test_perturbation.test()
 #        test_spatial_relations.test()
         test_spdescriptormodels.test()
