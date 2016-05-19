@@ -121,8 +121,8 @@ class SpatialDescriptorModel:
 
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
-        print _mapselector_spdescriptor
-        print '='*20
+#        print _mapselector_spdescriptor
+#        print '='*20
         self.selectors = self._default_selectors
         if _mapselector_spdescriptor is None:
             self._mapselector_spdescriptor =\
@@ -302,35 +302,36 @@ class SpatialDescriptorModel:
         """Function used to compute the total measure.
         """
         desc = self.featurers.initialization_output()
-        print 'x'*20, desc
-        for i in self.iter_indices(self):
+#        print 'x'*20, desc
+        for i in self.iter_indices():
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
-            print 'y'*25, desc_i, vals_i
+#            print 'y'*25, desc_i, vals_i
             desc = self.featurers.add2result(desc, desc_i, vals_i)
-        print desc
+#        print desc
         desc = self.featurers.to_complete_measure(desc)
         return desc
 
     def _compute_retdriven(self):
+        """Compute the whole spatial descriptor measure let the retrievers
+        drive the process."""
+#        _, typeret, typefeats = self._get_methods(i)
+#        self.retrievers.set_typeret(typeret)
         desc = self.featurers.initialization_output()
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
-        _, typeret, typefeats = self._get_methods(i)
-        self.retrievers.set_typeret(typeret)
         for iss, neighs_info in self.retrievers:
             characs_iss, vals_iss =\
-                self.featurers.compute_descriptors(iss, neighs_info,
-                                                   ks, typefeats)
+                self.featurers.compute_descriptors(iss, neighs_info, ks)
             desc = self.featurers.add2result(desc, characs_iss, vals_iss)
         desc = self.featurers.to_complete_measure(desc)
         return desc
 
     def _compute_descriptors(self, i):
         "Compute the descriptors assigned to element i."
-        print 'b'*10, i
+#        print 'b'*10, i
         staticneighs, typeret, typefeats = self._get_methods(i)
-        print 'c', i
+#        print 'c', i
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
         neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
@@ -339,15 +340,15 @@ class SpatialDescriptorModel:
         assert(staticneighs == neighs_info.staticneighs)
         i_len = 1 if type(i) == int else len(i)
         i_list = [i] if type(i) == int else i
-        print 'd', i
-        print i_len, ks, neighs_info.iss, neighs_info.ks
-        print neighs_info.idxs
+#        print 'd', i
+#        print i_len, ks, neighs_info.iss, neighs_info.ks
+#        print neighs_info.idxs
         assert(len(neighs_info.iss) == i_len)
         assert(neighs_info.iss == i_list)
         if not staticneighs:
             assert(len(neighs_info.ks) == len(ks))
             assert(neighs_info.ks == ks)
-        print 'a'*25, typefeats, typeret, i
+#        print 'a'*25, typefeats, typeret, i
         #####################
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)

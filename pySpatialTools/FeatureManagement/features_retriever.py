@@ -359,7 +359,7 @@ class FeaturesManager:
         ## 1. Prepare selectors
         t_feat_in, t_feat_out, t_feat_des =\
             self.get_type_feats(i, feat_selectors)
-        print t_feat_in, t_feat_out, t_feat_des
+#        print t_feat_in, t_feat_out, t_feat_des
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
@@ -602,7 +602,6 @@ class FeaturesManager:
 
     def _selector_get_type_feat(self, i, typefeats_i=None):
         """Get information only from selector."""
-        print self.selector[i]
         selector_i = format_selection(self.selector[i])
         typefeats_i, typefeats_nei, typefeats_desc = selector_i
 #        if type(i) == int:

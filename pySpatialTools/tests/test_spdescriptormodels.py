@@ -7,7 +7,7 @@ testing spatial descriptor models utilities.
 """
 
 import numpy as np
-#import os
+import os
 import copy
 from itertools import product
 import signal
@@ -38,7 +38,7 @@ from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
 
 #from ..utils.artificial_data import create_random_image
-from ..utils.util_external.Logger import Logger
+from ..utils.util_external import Logger
 from ..io.io_images import create_locs_features_from_image
 
 
@@ -51,20 +51,6 @@ def test():
     ret1 = CircRetriever(locs, .3, ifdistance=True)
     #countdesc = Countdescriptor()
 
-    ## Possible feats
-    aggfeats = np.random.random((n/2, m, rei))
-    featsarr0 = np.random.random((n, m))
-    featsarr1 = np.random.random((n, m))
-    featsarr2 = np.vstack([np.random.randint(0, 10, n) for i in range(m)]).T
-    reindices0 = np.arange(n)
-    reindices = np.vstack([reindices0]+[np.random.permutation(n)
-                                        for i in range(rei-1)]).T
-    perturbation = PermutationPerturbation(reindices)
-
-    feats0 = ExplicitFeatures(aggfeats)
-    feats1 = ImplicitFeatures(featsarr0)
-    feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
-
     ## Other functions
     def map_indices(s, i):
         if s._pos_inputs is not None:
@@ -73,7 +59,7 @@ def test():
             return i
 
     def halting_f(signum, frame):
-        raise Exception()
+        raise Exception("Not error time.")
 
     ## Random exploration functions
     def random_pos_space_exploration(pos_possibles):
@@ -167,20 +153,40 @@ def test():
     ###########################################################################
     ###########################################################################
     ######## Testing instantiation spdesc
+    ## TODO: bool_input_idx=False
     # Locs and retrievers
-    locs_input = np.random.random((100, 2))
-    locs1 = np.random.random((50, 2))
-    locs2 = np.random.random((70, 2))
+    n_in, n_out = 50, 50  # TODO: Different sizes and easy manage
+    locs_input = np.random.random((n_in, 2))
+    locs1 = np.random.random((n_out, 2))
+    locs2 = np.random.random((n_out, 2))
+
     ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3,
                       bool_input_idx=True)
     ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input,
                                 bool_input_idx=True)]
     ret2 = RetrieverManager(ret0)
     pos_rets = [ret0, ret1, ret2]
+
+    ## Possible feats
+    aggfeats = np.random.random((n_out, m, rei))
+    featsarr0 = np.random.random((n_out, m))
+    featsarr1 = np.random.random((n_out, m))
+    featsarr2 = np.vstack([np.random.randint(0, 10, n_out)
+                           for i in range(m)]).T
+    reindices0 = np.arange(n_out)
+    reindices = np.vstack([reindices0]+[np.random.permutation(n_out)
+                                        for i in range(rei-1)]).T
+    perturbation = PermutationPerturbation(reindices)
+    feats0 = ExplicitFeatures(aggfeats)
+    feats1 = ImplicitFeatures(featsarr0)
+    feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
+
+    pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
+
     # Selectors
-    arrayselector0 = np.zeros((100, 8))
-    arrayselector1 = np.zeros((100, 2)), np.zeros((100, 6))
-    arrayselector2 = np.zeros((100, 2)), tuple([np.zeros((100, 2))]*3)
+    arrayselector0 = np.zeros((n_in, 8))
+    arrayselector1 = np.zeros((n_in, 2)), np.zeros((n_in, 6))
+    arrayselector2 = np.zeros((n_in, 2)), tuple([np.zeros((n_in, 2))]*3)
     functselector0 = lambda idx: ((0, 0), ((0, 0), (0, 0), (0, 0)))
     functselector1 = lambda idx: (0, 0), lambda idx: ((0, 0), (0, 0), (0, 0))
     tupleselector0 = (0, 0), (0, 0, 0, 0, 0, 0)
@@ -199,11 +205,10 @@ def test():
     pos_pert = [None, perturbation]
 
     ## Random exploration
-    pos_loop_ind = [None, 20, (0, 100, 1), slice(0, 100, 1), []]
+    pos_loop_ind = [None, 20, (0, n_in, 1), slice(0, n_in, 1), []]
     pos_loop_mapin = [None, map_indices]
     pos_name_desc = [None, '', 'random_desc']
     # Possible feats
-    pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
     # Random exploration possibilities
     pos_random = [pos_loop_ind, pos_loop_mapin, pos_name_desc, pos_feats]
 
@@ -237,6 +242,7 @@ def test():
         for i in spdesc.iter_indices():
             methods = spdesc._get_methods(i)
             test_methods(methods, i)
+#        assert(np.max(i) < n_out)
 
         methods = spdesc._get_methods(0)
         test_methods(methods, 0)
@@ -251,11 +257,22 @@ def test():
         desc = spdesc._compute_descriptors([10])
         desc = spdesc._compute_descriptors([0, 1, 2])
 
+        desc = spdesc.compute(10)
+        desc = spdesc.compute([10])
+        desc = spdesc.compute([0, 1, 2])
+
         #Retrieverdriven
+        aux_i = 0
+        print ret
         for desc_i, vals_i in spdesc.compute_nets_i():
-            break
+            aux_i += 1
+            if aux_i == 100:
+                break
+        aux_i = 0
         for desc_i, vals_i in spdesc.compute_net_ik():
-            break
+            aux_i += 1
+            if aux_i == 100:
+                break
 
         ## Individual computations
         #spdesc.compute(0)
@@ -273,34 +290,50 @@ def test():
 #            break
 
         ## Global computations
-        try:
-            signal.signal(signal.SIGALRM, halting_f)
-            signal.alarm(0.01)   # 0.01 seconds
+#        try:
+#            signal.signal(signal.SIGALRM, halting_f)
+#            signal.alarm(0.01)   # 0.01 seconds
 #            spdesc.compute()
-        except:
-            pass
-        try:
-            signal.signal(signal.SIGALRM, halting_f)
-            signal.alarm(0.01)   # 0.01 seconds
+#        except Exception as e:
+#            logi = e == "Not error time."
+#            if not logi:
+#                spdesc.compute()
+#        try:
+#            signal.signal(signal.SIGALRM, halting_f)
+#            signal.alarm(0.01)   # 0.01 seconds
 #            spdesc._compute_nets()
-        except:
-            pass
-        try:
-            signal.signal(signal.SIGALRM, halting_f)
-            signal.alarm(0.01)   # 0.01 seconds
+#        except Exception as e:
+#            logi = e == "Not error time."
+#            if not logi:
+#                spdesc._compute_nets()
+#        try:
+#            ## Testing compute_retdriven
+#            signal.signal(signal.SIGALRM, halting_f)
+#            signal.alarm(0.01)   # 0.01 seconds
 #            spdesc._compute_retdriven()
-        except:
-            pass
-        try:
+#        except Exception as e:
+#            logi = e == "Not error time."
+#            if not logi:
+#                spdesc._compute_retdriven()
+#        try:
 #            logfile = Logger('logfile.log')
-            signal.signal(signal.SIGALRM, halting_f)
-            signal.alarm(0.01)   # 0.01 seconds
+#            signal.signal(signal.SIGALRM, halting_f)
+#            signal.alarm(0.01)   # 0.01 seconds
 #            spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
 #            os.remove('logfile.log')
-        except:
+#        except Exception as e:
 #            os.remove('logfile.log')
-            pass
+#            logi = e == "Not error time."
+#            if not logi:
+#                spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
         s += 1
+
+    ## Complete processes
+    spdesc.compute()
+    spdesc._compute_nets()
+    spdesc._compute_retdriven()
+    spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
+    os.remove('logfile.log')
 
 #    ###########################################################################
 #    ###########################################################################

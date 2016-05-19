@@ -114,12 +114,14 @@ class Features:
             i = [[[i]]]
         elif type(i) in [np.ndarray, list]:
             ## Empty escape
+            print i
             for j_k in range(len(i)):
                 for j_i in range(len(i[j_k])):
                     if len(i[j_k][j_i]) == 0:
                         continue
                     bool_overbound = np.max(i[j_k][j_i]) >= self.shape[0]
                     bool_lowerbound = np.min(i[j_k][j_i]) < 0
+                    print i[j_k][j_i], self.shape[0]
                     if bool_lowerbound or bool_overbound:
                         raise IndexError("Indices out of bounds.")
         ## 2. Format k
