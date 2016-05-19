@@ -123,7 +123,7 @@ def test():
 
     def test_methods(methods, input_):
         """Test proper methods output for selectors indications."""
-        print methods, input_
+#        print methods, input_
         assert(len(methods) == 3)
         assert(methods[0] in [True, False])
 
@@ -233,7 +233,7 @@ def test():
                                         pos_inputs=p_ind, map_indices=m_ind,
                                         perturbations=pert, aggregations=agg,
                                         name_desc=n_desc)
-        print s
+#        print s
         #### Function testing
         ## Auxiliar functions
         spdesc.add_perturbations(pert)
@@ -263,7 +263,6 @@ def test():
 
         #Retrieverdriven
         aux_i = 0
-        print ret
         for desc_i, vals_i in spdesc.compute_nets_i():
             aux_i += 1
             if aux_i == 100:
@@ -329,11 +328,11 @@ def test():
         s += 1
 
     ## Complete processes
-    spdesc.compute()
-    spdesc._compute_nets()
-    spdesc._compute_retdriven()
-    spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
-    os.remove('logfile.log')
+#    spdesc.compute()
+#    spdesc._compute_nets()
+#    spdesc._compute_retdriven()
+#    spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
+#    os.remove('logfile.log')
 
 #    ###########################################################################
 #    ###########################################################################
