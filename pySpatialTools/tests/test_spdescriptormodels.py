@@ -242,7 +242,6 @@ def test():
         for i in spdesc.iter_indices():
             methods = spdesc._get_methods(i)
             test_methods(methods, i)
-#        assert(np.max(i) < n_out)
 
         methods = spdesc._get_methods(0)
         test_methods(methods, 0)
@@ -264,18 +263,17 @@ def test():
         #Retrieverdriven
         aux_i = 0
         for desc_i, vals_i in spdesc.compute_nets_i():
+            assert(len(desc_i) == len(vals_i))
+            assert(len(desc_i) == spdesc.featurers.k_perturb+1)
             aux_i += 1
             if aux_i == 100:
                 break
         aux_i = 0
-        for desc_i, vals_i in spdesc.compute_net_ik():
+        for desc_ik, vals_ik in spdesc.compute_net_ik():
             aux_i += 1
             if aux_i == 100:
                 break
 
-        ## Individual computations
-        #spdesc.compute(0)
-        #spdesc._compute_descriptors(0)
         ## Loops
 #        for idx in spdesc.iter_indices():
 #            break
@@ -327,12 +325,22 @@ def test():
 #                spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
         s += 1
 
+    m_vals_i = np.random.randint(0, 5, 50)
+    ret = CircRetriever(locs1, autolocs=locs_input, info_ret=3,
+                        bool_input_idx=True)
+    feat = FeaturesManager(feats1, maps_vals_i=m_vals_i, mode='sequential',
+                           descriptormodels=None)
+    spdesc = SpatialDescriptorModel(retrievers=ret, featurers=feat,
+                                    mapselector_spdescriptor=None,
+                                    perturbations=perturbation,
+                                    aggregations=None, name_desc=n_desc)
     ## Complete processes
-#    spdesc.compute()
-#    spdesc._compute_nets()
+    spdesc.compute()
+    logfile = Logger('logfile.log')
+    spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
+    os.remove('logfile.log')
+    spdesc._compute_nets()
 #    spdesc._compute_retdriven()
-#    spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
-#    os.remove('logfile.log')
 
 #    ###########################################################################
 #    ###########################################################################
