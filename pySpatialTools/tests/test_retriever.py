@@ -1185,7 +1185,7 @@ def test():
     #### OrderEleRetriever
     ######################
     pars_order0, pars_order1 = pars4, {'exactorlimit': True, 'order': 2}
-    pars_order2 = {'exactorlimit': True, 'order': 6}
+    pars_order2 = {'exactorlimit': True, 'order': 4}
     pos_inforet = [None, pars_order0, pars_order1, pars_order2]
     pos_outmap = [None, _output_map]
     pos_autoexclude = [False, True]

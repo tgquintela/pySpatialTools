@@ -328,19 +328,9 @@ class SpatialDescriptorModel:
 
     def _compute_descriptors(self, i):
         "Compute the descriptors assigned to element i."
+        print 'b'*10, i
         staticneighs, typeret, typefeats = self._get_methods(i)
-        if staticneighs:
-            characs, vals_i = self._compute_descriptors_seq0(i, typeret,
-                                                             typefeats)
-        else:
-            characs, vals_i = self._compute_descriptors_seq1(i, typeret,
-                                                             typefeats)
-
-        return characs, vals_i
-
-    def _compute_descriptors_beta(self, i):
-        "Compute the descriptors assigned to element i."
-        staticneighs, typeret, typefeats = self._get_methods(i)
+        print 'c', i
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
         neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
@@ -348,53 +338,70 @@ class SpatialDescriptorModel:
         ## TESTING ASSERTIONS
         assert(staticneighs == neighs_info.staticneighs)
         i_len = 1 if type(i) == int else len(i)
+        i_list = [i] if type(i) == int else i
+        print 'd', i
         print i_len, ks, neighs_info.iss, neighs_info.ks
+        print neighs_info.idxs
         assert(len(neighs_info.iss) == i_len)
+        assert(neighs_info.iss == i_list)
         if not staticneighs:
             assert(len(neighs_info.ks) == len(ks))
-        print 'a'*25, typefeats
+            assert(neighs_info.ks == ks)
+        print 'a'*25, typefeats, typeret, i
         #####################
         characs, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
         return characs, vals_i
 
-    def _compute_descriptors_seq0(self, i, typeret, typefeats):
-        "Computation descriptors for non-aggregated data."
-        ## Model1
-        staticneighs, _, _ = self._get_methods(i)
-        k_pert = self.featurers.k_perturb+1
-        ks = list(range(k_pert))
-        neighs_info =\
-            self.retrievers.retrieve_neighs(i, typeret_i=typeret)  #, k=ks)
-        assert(staticneighs == neighs_info.staticneighs)
-        characs, vals_i =\
-            self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
-        return characs, vals_i
-
-    def _compute_descriptors_seq1(self, i, typeret, typefeats):
-        "Computation descriptors for aggregated data."
-        k_pert = self.featurers.k_perturb+1
-        characs, vals_i = [], []
-        for k in range(k_pert):
-            neighs_info =\
-                self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=k)
-            assert(len(neighs_info.ks) == 1)
-            assert(neighs_info.ks[0] == k)
-            characs_k, vals_i_k =\
-                self.featurers.compute_descriptors(i, neighs_info,
-                                                   k, typefeats)
-            characs.append(characs_k)
-            vals_i.append(vals_i_k)
-        ## Joining descriptors from different perturbations
-        characs = self.featurers._join_descriptors(characs)
-        vals_i = np.concatenate(vals_i)
-        return characs, vals_i
+#    def _compute_descriptors(self, i):
+#        "Compute the descriptors assigned to element i."
+#        staticneighs, typeret, typefeats = self._get_methods(i)
+#        if staticneighs:
+#            characs, vals_i = self._compute_descriptors_seq0(i, typeret,
+#                                                             typefeats)
+#        else:
+#            characs, vals_i = self._compute_descriptors_seq1(i, typeret,
+#                                                             typefeats)
+#
+#        return characs, vals_i
+#
+#    def _compute_descriptors_seq0(self, i, typeret, typefeats):
+#        "Computation descriptors for non-aggregated data."
+#        ## Model1
+#        staticneighs, _, _ = self._get_methods(i)
+#        k_pert = self.featurers.k_perturb+1
+#        ks = list(range(k_pert))
+#        neighs_info =\
+#            self.retrievers.retrieve_neighs(i, typeret_i=typeret)  #, k=ks)
+#        assert(staticneighs == neighs_info.staticneighs)
+#        characs, vals_i =\
+#            self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
+#        return characs, vals_i
+#
+#    def _compute_descriptors_seq1(self, i, typeret, typefeats):
+#        "Computation descriptors for aggregated data."
+#        k_pert = self.featurers.k_perturb+1
+#        characs, vals_i = [], []
+#        for k in range(k_pert):
+#            neighs_info =\
+#                self.retrievers.retrieve_neighs(i, typeret_i=typeret, k=k)
+#            assert(len(neighs_info.ks) == 1)
+#            assert(neighs_info.ks[0] == k)
+#            characs_k, vals_i_k =\
+#                self.featurers.compute_descriptors(i, neighs_info,
+#                                                   k, typefeats)
+#            characs.append(characs_k)
+#            vals_i.append(vals_i_k)
+#        ## Joining descriptors from different perturbations
+#        characs = self.featurers._join_descriptors(characs)
+#        vals_i = np.concatenate(vals_i)
+#        return characs, vals_i
 
     ################################ ITERATORS ################################
     ###########################################################################
     def compute_nets_i(self):
         """Computation of the associate spatial descriptors for each i."""
-        for i in self.iter_indices(self):
+        for i in self.iter_indices():
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
             yield desc_i, vals_i
@@ -403,8 +410,8 @@ class SpatialDescriptorModel:
         """Function iterator used to get the result of each val_i and corr_i
         result for each combination of element i and permutation k.
         """
-        for i in self.iter_indices(self):
-            for k in range(self.reindices.shape[1]):
+        for i in self.iter_indices():
+            for k in range(self.retrievers.k_perturb+1):
                 # 1. Retrieve local characterizers
                 desc_i, vals_i = self._compute_descriptors(i)
                 for k in range(len(desc_i)):

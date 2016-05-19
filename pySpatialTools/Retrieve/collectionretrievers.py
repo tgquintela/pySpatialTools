@@ -189,7 +189,16 @@ class RetrieverManager:
         if typeret_i is None:
             typeret_i, out_ret = self.selector
         else:
-            typeret_i, out_ret = typeret_i
+            print typeret_i, i
+            if type(i) == list:
+                typeret_input = typeret_i
+                ## TOMOVE to selectors
+                typeret_i, out_ret = [], []
+                for j in range(len(i)):
+                    typeret_i.append(typeret_input[j][0])
+                    out_ret.append(typeret_input[j][1])
+            else:
+                typeret_i, out_ret = typeret_i
         return typeret_i, out_ret
 
     def _static_get_type_ret(self, i, typeret_i=None):

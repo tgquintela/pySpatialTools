@@ -358,7 +358,7 @@ class FeaturesManager:
 #        assert(len(ks) == sh[0])
         ## 1. Prepare selectors
         t_feat_in, t_feat_out, t_feat_des =\
-            self.get_type_feats(i_input, feat_selectors)
+            self.get_type_feats(i, feat_selectors)
         print t_feat_in, t_feat_out, t_feat_des
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
@@ -571,8 +571,16 @@ class FeaturesManager:
                 typefeats_nei = [typefeats_nei]*len(i)
                 typefeats_desc = [typefeats_desc]*len(i)
         else:
-            print typefeats_i
-            typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
+            print typefeats_i, i
+            if type(i) == list:
+                typefeats_input = typefeats_i
+                typefeats_i, typefeats_nei, typefeats_desc = [], [], []
+                for j in range(len(i)):
+                    typefeats_i.append(typefeats_input[j][0])
+                    typefeats_nei.append(typefeats_input[j][1])
+                    typefeats_desc.append(typefeats_input[j][2])
+            else:
+                typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
 #            if type(i) == int:
 #                typefeats_i, typefeats_nei, typefeats_desc = typefeats_i
 #            else:

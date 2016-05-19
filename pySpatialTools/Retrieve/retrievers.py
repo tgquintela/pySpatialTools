@@ -123,6 +123,8 @@ class Retriever:
         neighs_info.set_ks(range(self.k_perturb+1))
 #        print neighs_info.ks, range(self.k_perturb+1), self.neighs_info.ks
         assert(neighs_info.ks == range(self.k_perturb+1))
+        print 'b', i_loc, self.get_indice_i(i_loc), neighs_info.iss
+        print self.data_input[:10]
         return neighs_info
 
     def _retrieve_neighs_dynamic(self, i_loc, output=0):
@@ -149,6 +151,8 @@ class Retriever:
         assert(self.staticneighs == self.neighs_info.staticneighs)
         neighs_info = self.neighs_info.copy()
         assert(neighs_info.ks == range(self.k_perturb+1))
+        print 'b', self.get_indice_i(i_loc), neighs_info.iss
+        print self.data_input[:10]
         return neighs_info
 
     def _retrieve_neighs_general(self, i_loc, info_i={}, ifdistance=None,
@@ -210,6 +214,8 @@ class Retriever:
 #            else:
 #                print neighs_info.ks, range(self.k_perturb+1), ks
 #                assert(neighs_info.ks == ks)
+        print 'b', self.get_indice_i(i_loc), neighs_info.iss
+        print self.data_input[:10]
         return neighs_info
 
     def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):

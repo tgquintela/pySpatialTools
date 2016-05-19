@@ -135,6 +135,35 @@ def test():
                 raise Exception("It has to halt here.")
         return checker
 
+    def test_methods(methods, input_):
+        """Test proper methods output for selectors indications."""
+        print methods, input_
+        assert(len(methods) == 3)
+        assert(methods[0] in [True, False])
+
+        if methods[1] is None:
+            assert(methods[2] is None)
+        elif type(input_) == int:
+            assert(type(methods[1]) == tuple)
+            assert(type(methods[2]) == tuple)
+            assert(len(methods[1]) == 2)
+            assert(len(methods[2]) == 3)
+            assert(all([len(e) == 2 for e in methods[2]]))
+            assert(all([type(e) == tuple for e in methods[2]]))
+        else:
+            assert(type(input_) == list)
+            assert(type(methods[1]) == list)
+            assert(type(methods[2]) == list)
+            assert(len(methods[1]) == len(input_))
+            assert(len(methods[2]) == len(input_))
+            for i in range(len(methods[1])):
+                assert(type(methods[1][i]) == tuple)
+                assert(type(methods[2][i]) == tuple)
+                assert(len(methods[1][i]) == 2)
+                assert(len(methods[2][i]) == 3)
+                assert(all([len(e) == 2 for e in methods[2][i]]))
+                assert(all([type(e) == tuple for e in methods[2][i]]))
+
     ###########################################################################
     ###########################################################################
     ######## Testing instantiation spdesc
@@ -142,8 +171,10 @@ def test():
     locs_input = np.random.random((100, 2))
     locs1 = np.random.random((50, 2))
     locs2 = np.random.random((70, 2))
-    ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3)
-    ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input)]
+    ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3,
+                      bool_input_idx=True)
+    ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input,
+                                bool_input_idx=True)]
     ret2 = RetrieverManager(ret0)
     pos_rets = [ret0, ret1, ret2]
     # Selectors
@@ -176,14 +207,14 @@ def test():
     # Random exploration possibilities
     pos_random = [pos_loop_ind, pos_loop_mapin, pos_name_desc, pos_feats]
 
-    possibilities = [pos_rets*10, pos_selectors, pos_agg, pos_pert]
+    possibilities = [pos_rets, pos_selectors, pos_agg, pos_pert]
 
     s = 0
     for p in product(*possibilities):
         ret, sel, agg, pert = p
         ## Random exploration of parameters
         selected, indices = random_pos_space_exploration(pos_random)
-        print indices
+#        print indices
 #        print p, selected
         p_ind, m_ind, n_desc, feat = selected
         ## Impossible cases
@@ -204,12 +235,27 @@ def test():
         spdesc.set_loop(p_ind, m_ind)
         spdesc._map_indices(spdesc, 0)
         for i in spdesc.iter_indices():
-            spdesc._get_methods(i)
-        print '0,', spdesc._get_methods(0)
-        print '1,', spdesc._get_methods([0])
-        print '2,', spdesc._get_methods([0, 1, 2])
-        print '3,', spdesc._compute_descriptors_beta(0)
-#        print '4,', spdesc._compute_descriptors_beta([0, 1, 2])
+            methods = spdesc._get_methods(i)
+            test_methods(methods, i)
+
+        methods = spdesc._get_methods(0)
+        test_methods(methods, 0)
+        methods = spdesc._get_methods(10)
+        test_methods(methods, 10)
+        methods = spdesc._get_methods([0])
+        test_methods(methods, [0])
+        methods = spdesc._get_methods([0, 1, 2])
+        test_methods(methods, [0, 1, 2])
+
+        desc = spdesc._compute_descriptors(10)
+        desc = spdesc._compute_descriptors([10])
+        desc = spdesc._compute_descriptors([0, 1, 2])
+
+        #Retrieverdriven
+        for desc_i, vals_i in spdesc.compute_nets_i():
+            break
+        for desc_i, vals_i in spdesc.compute_net_ik():
+            break
 
         ## Individual computations
         #spdesc.compute(0)
