@@ -43,5 +43,5 @@ build_script:
   - pip install --pre --no-index --find-links dist/ pySpatialTools
 
 test_script:
-  - if [[ "%COVERAGE" == "true" ]]; then nosetests --with-coverage --cover-package=pySpatialTools || nosetests; fi
+  - if [[ "%COVERAGE" == "true" ]]; then nosetests pySpatialTools/tests/__init__.py --with-coverage --cover-package=pySpatialTools || nosetests; fi
 

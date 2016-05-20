@@ -9,7 +9,7 @@
 set -e
 
 if [[ "$COVERAGE" == "true" ]]; then
-    nosetests --with-coverage --cover-package=pySpatialTools
+    nosetests pySpatialTools/tests/__init__.py --with-coverage --cover-package=pySpatialTools
 else
     nosetests
 fi
