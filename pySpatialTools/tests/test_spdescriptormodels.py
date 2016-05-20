@@ -76,9 +76,9 @@ def test():
         return possibles[i_pos], i_pos
 
     ## Impossibles
-    def impossible_instantiation(selected, p):
-        ret, sel, agg, pert = p
-        p_ind, m_ind, n_desc, feat = selected
+    def impossible_instantiation(selected, p, ret, feat):
+        i_ret, sel, agg, pert = p
+        p_ind, m_ind, n_desc, i_feat = selected
         checker = False
 
         ## Not implemented perturbation over explicit features
@@ -96,9 +96,9 @@ def test():
                 checker = any(check_aux)
         return checker
 
-    def compulsary_instantiation_errors(selected, p):
-        ret, sel, agg, pert = p
-        p_ind, m_ind, n_desc, feat = selected
+    def compulsary_instantiation_errors(selected, p, ret, feat):
+        i_ret, sel, agg, pert = p
+        p_ind, m_ind, n_desc, i_feat = selected
         checker = False
 
         ## Cases
@@ -160,28 +160,34 @@ def test():
     locs1 = np.random.random((n_out, 2))
     locs2 = np.random.random((n_out, 2))
 
-    ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3,
-                      bool_input_idx=True)
-    ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input,
-                                bool_input_idx=True)]
-    ret2 = RetrieverManager(ret0)
-    pos_rets = [ret0, ret1, ret2]
-
-    ## Possible feats
+    # Features
     aggfeats = np.random.random((n_out, m, rei))
     featsarr0 = np.random.random((n_out, m))
     featsarr1 = np.random.random((n_out, m))
     featsarr2 = np.vstack([np.random.randint(0, 10, n_out)
                            for i in range(m)]).T
-    reindices0 = np.arange(n_out)
-    reindices = np.vstack([reindices0]+[np.random.permutation(n_out)
-                                        for i in range(rei-1)]).T
-    perturbation = PermutationPerturbation(reindices)
-    feats0 = ExplicitFeatures(aggfeats)
-    feats1 = ImplicitFeatures(featsarr0)
-    feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
 
-    pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
+    def new_retrievers_creation():
+        ret0 = KRetriever(locs1, autolocs=locs_input, info_ret=3,
+                          bool_input_idx=True)
+        ret1 = [ret0, CircRetriever(locs2, info_ret=0.1, autolocs=locs_input,
+                                    bool_input_idx=True)]
+        ret2 = RetrieverManager(ret0)
+        pos_rets = [ret0, ret1, ret2]
+        return pos_rets
+
+    pos_rets = range(3)
+
+    ## Possible feats
+    def new_features_creation():
+        feats0 = ExplicitFeatures(aggfeats)
+        feats1 = ImplicitFeatures(featsarr0)
+        feats2 = FeaturesManager(ExplicitFeatures(aggfeats))
+
+        pos_feats = [feats0, feats1, aggfeats, featsarr0, feats2]
+        return pos_feats
+
+    pos_feats = range(5)
 
     # Selectors
     arrayselector0 = np.zeros((n_in, 8))
@@ -202,6 +208,10 @@ def test():
     pos_agg = [None]
 
     ## Perturbations
+    reindices0 = np.arange(n_out)
+    reindices = np.vstack([reindices0]+[np.random.permutation(n_out)
+                                        for i in range(rei-1)]).T
+    perturbation = PermutationPerturbation(reindices)
     pos_pert = [None, perturbation]
 
     ## Random exploration
@@ -216,15 +226,22 @@ def test():
 
     s = 0
     for p in product(*possibilities):
-        ret, sel, agg, pert = p
+        i_ret, sel, agg, pert = p
         ## Random exploration of parameters
         selected, indices = random_pos_space_exploration(pos_random)
+        p_ind, m_ind, n_desc, i_feat = selected
+        ## Classes renewal
+        rets_cand = new_retrievers_creation()
+        feats_cand = new_features_creation()
+        # Retrievers
+        ret = rets_cand[i_ret]
+        feat = feats_cand[i_feat]
+
 #        print indices
 #        print p, selected
-        p_ind, m_ind, n_desc, feat = selected
         ## Impossible cases
-        checker1 = impossible_instantiation(selected, p)
-        checker2 = compulsary_instantiation_errors(selected, p)
+        checker1 = impossible_instantiation(selected, p, ret, feat)
+        checker2 = compulsary_instantiation_errors(selected, p, ret, feat)
         if checker1 or checker2:
             continue
         ## Testing instantiation
@@ -325,6 +342,8 @@ def test():
 #                spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
         s += 1
 
+    feats1 = ImplicitFeatures(featsarr0)
+
     m_vals_i = np.random.randint(0, 5, 50)
     ret = CircRetriever(locs1, autolocs=locs_input, info_ret=3,
                         bool_input_idx=True)
@@ -340,7 +359,7 @@ def test():
     spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
     os.remove('logfile.log')
     spdesc._compute_nets()
-#    spdesc._compute_retdriven()
+    spdesc._compute_retdriven()
 
 #    ###########################################################################
 #    ###########################################################################

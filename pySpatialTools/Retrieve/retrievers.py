@@ -492,7 +492,8 @@ class Retriever:
         ## Setting structure
         if self._constant_ret:
             ## If constant and static
-            if self.k_perturb == 0 or self.staticneighs:
+            if self.staticneighs:
+            #if self.k_perturb == 0 or self.staticneighs:
                     format_structure = 'tuple_only'
 #                    format_structure = 'tuple_tuple'
             ## If constant and dynamic

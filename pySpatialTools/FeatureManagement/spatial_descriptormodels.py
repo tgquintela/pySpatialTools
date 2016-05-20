@@ -94,6 +94,7 @@ class SpatialDescriptorModel:
         ## 1. Apply perturbations
         self.retrievers.add_perturbations(ret_perturbs)
         self.featurers.add_perturbations(feat_perturbs)
+        assert(self.retrievers.k_perturb == self.featurers.k_perturb)
 
     def _format_aggregations(self, aggregations):
         """Prepare and add aggregations to retrievers and features."""

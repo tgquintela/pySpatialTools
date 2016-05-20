@@ -146,6 +146,9 @@ class RetrieverManager:
         ## WARNING: By default it is determined by the first retriever
         ret_n_inputs = [len(self.retrievers[i]) for i in range(len(self))]
         assert(all([len(self.retrievers[0]) == r for r in ret_n_inputs]))
+        assert(all([self.retrievers[0].k_perturb == r.k_perturb
+                    for r in self.retrievers]))
+        self.k_perturb = self.retrievers[0].k_perturb
         self.n_inputs = len(self.retrievers[0])
         self._format_staticneighs()
 

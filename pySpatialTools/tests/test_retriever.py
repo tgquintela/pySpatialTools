@@ -1295,10 +1295,6 @@ def test():
     data1 = np.random.random((50, 2))
     data2 = np.random.random((70, 2))
 
-    ret1 = KRetriever(data1, autolocs=data_input, info_ret=3)
-    ret2 = KRetriever(data_input, info_ret=4)
-    ret3 = CircRetriever(data2, info_ret=0.1, autolocs=data_input)
-
     mapper0 = None
     mapper1 = (0, 0)
     mapper2 = np.array([np.random.randint(0, 3, 100), np.zeros(100)]).T
@@ -1306,6 +1302,9 @@ def test():
     pos_mappers = [mapper0, mapper1, mapper2, mapper3]
 
     for mapper in pos_mappers:
+        ret1 = KRetriever(data1, autolocs=data_input, info_ret=3)
+        ret2 = KRetriever(data_input, info_ret=4)
+        ret3 = CircRetriever(data2, info_ret=0.1, autolocs=data_input)
         gret = RetrieverManager([ret1, ret2, ret3], mapper)
         ## Test functions
         len(gret)
