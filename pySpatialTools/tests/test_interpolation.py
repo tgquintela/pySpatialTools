@@ -17,8 +17,9 @@ from pySpatialTools.FeatureManagement.Interpolation_utils import\
 
 from pySpatialTools.FeatureManagement.descriptormodel import Interpolator
 
-#
-#def test():
+
+def test():
+    pass
 #    n = 100
 #    locs = np.random.random((n, 2))*100
 #    locs1 = random_transformed_space_points(n/10, 2, None)*100
