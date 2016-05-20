@@ -71,7 +71,7 @@ class PjensenDescriptor(DescriptorModel):
         information of the individual descriptor of point to its neighbourhood
         descriptor.
         """
-        print i, neighs_info, desc_i, desc_neigh, vals_i
+#        print i, neighs_info, desc_i, desc_neigh, vals_i
         descriptors = []
         for iss_i in range(len(desc_neigh)):
             descriptors.append(compute_loc_M_index(vals_i, desc_neigh[iss_i],

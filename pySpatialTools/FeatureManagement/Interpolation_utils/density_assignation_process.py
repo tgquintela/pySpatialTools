@@ -11,6 +11,8 @@ import numpy as np
 from pySpatialTools.utils.util_external.ProcessTools import Processer
 from density_assignation import general_density_assignation
 
+m = "Assignation of a quantity to a point given spatial density distribution."
+
 
 ###############################################################################
 ################################# ProcessClass ################################
@@ -21,38 +23,38 @@ class DensityAssign_Process(Processer):
     """
 
     ### Class parameters
-    ## Process descriptors
-    time_expended = 0.  # Time expended along the process
-    n_procs = 0  # Number of cpu used in parallelization (0 no parallel)
     proc_name = "Density assignation process"  # Name of the process
-    proc_desc = """Assignation of a quantity to a point given spatial density
-    distribution."""
-    ## Logger info
-    lim_rows = 0  # Lim of rows done in a bunch. For matrix comp or information
-    logfile = None  # Log file
-    ## Bool options
-    bool_inform = False  # Give information of the process
-    bool_matrix = False  # compute matrix
 
-    subproc_desc = []
-    t_expended_subproc = []
+    def _initialization(self):
+        ## Logger info
+        self.lim_rows = 0  # Lim of rows done in a bunch. For matrix comp or information
+        self.logfile = None  # Log file
+        ## Bool options
+        self.bool_inform = False  # Give information of the process
+        self.bool_matrix = False  # compute matrix
+        self.proc_desc = m
+        ## Process descriptors
+        self.time_expended = 0.  # Time expended along the process
+        self.n_procs = 0  # Number of cpu used in parallelization (0 no parallel)
+        self.subproc_desc = []
+        self.t_expended_subproc = []
+        self.proc_desc = "Computation %s with %s"
 
     def __init__(self, logfile, retriever, lim_rows=0, n_procs=0,
                  proc_name=""):
         "Instantiation of a density assignation process class."
-
+        # Initialization
+        self._initialization()
         # Logfile
         self.logfile = logfile
         ## Retriever
         self.retriever = retriever
-
         # Other parameters
         self.lim_rows = lim_rows
         self.bool_inform = True if self.lim_rows != 0 else False
         self.n_procs = n_procs
         if proc_name != "":
             self.proc_name = proc_name
-        self.proc_desc = "Computation %s with %s"
 
     def compute_density(self, locs, data, datavars, info_ret, params):
         """Compute density of the locations locs from a spatial distribution
@@ -74,15 +76,17 @@ def compute_population_data(locs, data, datavars, retriever, info_ret, params):
 
     ## 0. Computation of initial variables
     locs = np.array(locs)
-
-    locs_data = np.array(data[datavars['loc_vars']])
-    pop_data = np.array(data[datavars['feat_vars']])
-
+    if type(data) == np.ndarray:
+        locs_data, pop_data = data, datavars
+    else:
+        locs_data = np.array(data[datavars['loc_vars']])
+        pop_data = np.array(data[datavars['feat_vars']])
     # Defining the retriever
-    retriever = retriever(locs_data)
+    retriever = retriever(locs, ifdistance=True)
 
     ## 1. Computation of assignation to point
-    dens_assignation = general_density_assignation(locs, retriever, info_ret,
-                                                   pop_data, **params)
+    dens_assignation = general_density_assignation(locs_data, retriever,
+                                                   info_ret, pop_data,
+                                                   **params)
 
     return dens_assignation

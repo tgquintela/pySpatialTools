@@ -24,15 +24,16 @@ class DescriptorModel:
 
     def complete_desc_i(self, i, neighs_info, desc_i, desc_neighs, vals_i):
         """Dummy completion for general abstract class."""
-#        print desc_neighs, len(desc_neighs), len(vals_i), vals_i
+#        ## TESTING CODE ########################
+#        # Ensure correct inputs
 #        if type(desc_neighs) == np.ndarray:
 #            print desc_neighs.shape, vals_i, i
 #            assert(len(desc_neighs.shape) == 3)
 #        elif type(desc_neighs) == list:
 #            assert(type(desc_neighs[0][0]) == dict)
-#        print len(desc_i), len(desc_neighs), len(vals_i)
-        assert(len(desc_i) == len(desc_neighs))
-        assert(len(vals_i) == len(desc_neighs))
+#        assert(len(desc_i) == len(desc_neighs))
+#        assert(len(vals_i) == len(desc_neighs))
+#        ########################################
         desc = []
         for k in xrange(len(vals_i)):
             desc.append(self.relative_descriptors(i, neighs_info, desc_i[k],

@@ -66,11 +66,18 @@ def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
     #M = np.zeros(locs.shape[0])
     M = []
     for i in xrange(locs.shape[0]):
-        neighs, dist = retriever.retrieve_neighs(locs[i, :], info_ret[i], True)
+        # Retrieve neighs_info
+        neighs_info = retriever.retrieve_neighs(locs[[i]], info_ret[i], True)
+        # Format neighs and dists
+        neighs, dist, _, _ = neighs_info.get_information(k=0)
+        neighs, dist = neighs[0][0], dist[0][0]
         neighs, dist = np.array(neighs).astype(int).ravel(), np.array(dist)
+        # Get weights
         weights = from_distance_to_weights(dist, f_weighs, params_w)
+        # Compute measure for i
         M_aux = compute_measure_i(weights, values[neighs], f_dens, params_d)
         M.append(M_aux)
+        M = [0]
     M = np.array(M)
     return M
 
@@ -165,7 +172,10 @@ def dist2weights_invers(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
         aux_dist = (1.+tau*dist).astype(float)
         weights = max_w/(1.-floor_f) * (1./aux_dist-floor_f)
     else:
-        weights = max_w/float(1.+tau*dist)
+        division = 1.+tau*dist
+        if '__len__' in dir(division):
+            division = division.astype(float)
+        weights = np.divide(max_w, division)
     return weights
 
 
@@ -273,28 +283,28 @@ def set_scale_sigmoid(max_r, max_w, min_w, r_char):
 ###############################################################################
 ############################# Preparation inputs #############################
 ###############################################################################
-def preparation_parameters(parameters):
-    "Function to put into coherence the selected parameters."
-
-    method = parameters['params']['method']
-    params = parameters['params']['params']
-    if method == 'gaussian':
-        bool_scale = 'S' in params
-        if not bool_scale:
-            scale = set_scale_gauss(params['max_r'], params['max_w'],
-                                    params['min_w'])
-            parameters['params']['params']['S'] = scale
-    elif method == 'surgaussian':
-        bool_scale = 'S' in params
-        if not bool_scale:
-            scale = set_scale_surgauss(params['max_r'], params['max_w'],
-                                       params['min_w'])
-            parameters['params']['params']['S'] = scale
-    elif method == 'sigmoid':
-        bool_scale = 'B' in params
-        if not bool_scale:
-            scale = set_scale_sigmoid(params['max_r'], params['max_w'],
-                                      params['min_w'], params['r_char'])
-            parameters['params']['params']['B'] = scale
-
-    return parameters
+#def preparation_parameters(parameters):
+#    "Function to put into coherence the selected parameters."
+#
+#    method = parameters['params']['method']
+#    params = parameters['params']['params']
+#    if method == 'gaussian':
+#        bool_scale = 'S' in params
+#        if not bool_scale:
+#            scale = set_scale_gauss(params['max_r'], params['max_w'],
+#                                    params['min_w'])
+#            parameters['params']['params']['S'] = scale
+#    elif method == 'surgaussian':
+#        bool_scale = 'S' in params
+#        if not bool_scale:
+#            scale = set_scale_surgauss(params['max_r'], params['max_w'],
+#                                       params['min_w'])
+#            parameters['params']['params']['S'] = scale
+#    elif method == 'sigmoid':
+#        bool_scale = 'B' in params
+#        if not bool_scale:
+#            scale = set_scale_sigmoid(params['max_r'], params['max_w'],
+#                                      params['min_w'], params['r_char'])
+#            parameters['params']['params']['B'] = scale
+#
+#    return parameters

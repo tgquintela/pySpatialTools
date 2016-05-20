@@ -265,13 +265,13 @@ class SpatialDescriptorModel:
     def _mapselector_spdescriptor_null(self, i):
         return self._default_selectors
 
-    def _mapselector_spdescriptor_constant(self, i):
-        i_len = 1 if type(i) == int else len(i)
-        logi = type(i) == int
-        if logi:
-            return self.selectors
-        else:
-            return [self.selectors[0]]*i_len, [self.selectors[1]]*i_len
+#    def _mapselector_spdescriptor_constant(self, i):
+#        i_len = 1 if type(i) == int else len(i)
+#        logi = type(i) == int
+#        if logi:
+#            return self.selectors
+#        else:
+#            return [self.selectors[0]]*i_len, [self.selectors[1]]*i_len
 
     def _mapselector_spdescriptor_selector(self, i):
         return self.selectors[i]
@@ -338,17 +338,17 @@ class SpatialDescriptorModel:
         neighs_info = self.retrievers.retrieve_neighs(i, typeret_i=typeret)
         neighs_info.set_ks(ks)
         ## TESTING ASSERTIONS
-        assert(staticneighs == neighs_info.staticneighs)
-        i_len = 1 if type(i) == int else len(i)
-        i_list = [i] if type(i) == int else i
+#        assert(staticneighs == neighs_info.staticneighs)
+#        i_len = 1 if type(i) == int else len(i)
+#        i_list = [i] if type(i) == int else i
 #        print 'd', i
 #        print i_len, ks, neighs_info.iss, neighs_info.ks
 #        print neighs_info.idxs
-        assert(len(neighs_info.iss) == i_len)
-        assert(neighs_info.iss == i_list)
-        if not staticneighs:
-            assert(len(neighs_info.ks) == len(ks))
-            assert(neighs_info.ks == ks)
+#        assert(len(neighs_info.iss) == i_len)
+#        assert(neighs_info.iss == i_list)
+#        if not staticneighs:
+#            assert(len(neighs_info.ks) == len(ks))
+#            assert(neighs_info.ks == ks)
 #        print 'a'*25, typefeats, typeret, i
         #####################
         characs, vals_i =\

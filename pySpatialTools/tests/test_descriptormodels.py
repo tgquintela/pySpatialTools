@@ -586,28 +586,35 @@ def test():
     countdesc.set_functions(None, None)
     countdesc.set_functions(None, 'dict')
 
-#    #################################
-#    #### Pjensen
-#    pjensen = PjensenDescriptor()
-#    # Specific
-#    features = list(np.arange(20)) + list(np.random.randint(0, 20, 80))
-#    features = np.array(features).reshape((100, 1))
-#    pjensen.set_global_info(features)
-#    feats = categorical_array_features(100, 20)
-#    feats_dict = categorical_dict_features(100, 10)
-#    characs = np.random.randint(0, 10, 50).reshape((10, 5))
-#    point_pos = np.random.random((10, 5))
-#    measure = np.random.randint(0, 50, 20*20).reshape((20, 20, 1))
-#
+    #################################
+    #### Pjensen
+    pjensen = PjensenDescriptor()
+    # Specific
+    features = list(np.arange(20)) + list(np.random.randint(0, 20, 80))
+    features = np.array(features).reshape((100, 1))
+    pjensen.set_global_info(features)
+    feats = categorical_array_features(100, 20)
+    feats_dict = categorical_dict_features(100, 10)
+    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.randint(0, 50, 20*20).reshape((20, 20, 1))
 
-#    pjensen = PjensenDescriptor(pointfeats_arrayarray0)
-#    pjensen.compute_characs(pointfeats_arrayarray0, point_pos)
-#    pjensen = PjensenDescriptor(pointfeats_arrayarray1)
-#    pjensen.compute_characs(pointfeats_arrayarray1, point_pos)
-#    pjensen = PjensenDescriptor(pointfeats_listarray0)
-#    pjensen.compute_characs(pointfeats_listarray0, point_pos)
-#    pjensen = PjensenDescriptor(pointfeats_listarray1)
-#    pjensen.compute_characs(pointfeats_listarray1, point_pos)
+    pjensen = PjensenDescriptor(features)
+    pjensen.compute_characs(features, None)
+    pjensen = PjensenDescriptor(features)
+    pjensen.compute_characs(features, point_pos)
+
+    # Not specific
+    pjensen.to_complete_measure(measure)
+    #pjensen.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
+    pjensen._format_default_functions()
+    pjensen.set_functions(None, None)
+    pjensen.set_functions(None, 'dict')
+
+#    pjensen = PjensenDescriptor(features)
+#    pjensen.compute_characs(features, point_pos)
+#    pjensen = PjensenDescriptor(features)
+#    pjensen.compute_characs(features, point_pos)
 
 #
 #    # Functions
@@ -658,26 +665,26 @@ def test():
 ##
 ##    #spcountdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
 ##
-##    # Not specific
-##    spcountdesc.set_global_info(None)
-##    spcountdesc.set_functions(None, None)
+    # Not specific
+    spcountdesc.set_global_info(None)
+    spcountdesc.set_functions(None, None)
 #
 #    #################################
 #    #### NBinsHistogramDesc
     nbinsdesc = NBinsHistogramDesc(5)
-#    characs = np.random.randint(0, 10, 50).reshape((10, 5))
-#    point_pos = np.random.random((10, 5))
-#    measure = np.random.random((100, 10, 2))
-#    feats = categorical_array_features(100, 20)
+    characs = np.random.randint(0, 10, 50).reshape((10, 5))
+    point_pos = np.random.random((10, 5))
+    measure = np.random.random((100, 10, 2))
+    feats = categorical_array_features(100, 20)
 #    feats_dict = categorical_dict_features(100, 10)
-#
-#    nbinsdesc.compute_characs(characs, point_pos)
-#    nbinsdesc.compute_characs([characs], None)
-#    nbinsdesc.compute_characs(feats, point_pos)
-#    nbinsdesc.compute_characs(feats, None)
+
+    nbinsdesc.compute_characs(characs, point_pos)
+    nbinsdesc.compute_characs([characs], None)
+    nbinsdesc.compute_characs(feats, point_pos)
+    nbinsdesc.compute_characs(feats, None)
 #    nbinsdesc.compute_characs(feats_dict, point_pos)
 #    nbinsdesc.compute_characs(feats_dict, None)
-#
+
 #    nbinsdesc.reducer(characs, point_pos)
 #    nbinsdesc.reducer(characs, None)
 #    nbinsdesc.reducer(feats, point_pos)
@@ -695,10 +702,10 @@ def test():
 #    #nbinsdesc.complete_desc_i(i, neighs_info, desc_i, desc_neighs, vals_i)
 #
     # Specific
-#    nbinsdesc.to_complete_measure(measure)
-#    nbinsdesc._format_default_functions()
-#    nbinsdesc.set_functions(None, None)
-#    nbinsdesc.set_functions(None, 'dict')
+    nbinsdesc.to_complete_measure(measure)
+    nbinsdesc._format_default_functions()
+    nbinsdesc.set_functions(None, None)
+    nbinsdesc.set_functions(None, 'dict')
     features = np.random.random((100, 5))
     nbinsdesc.set_global_info(features, True)
     nbinsdesc.set_global_info(features, False)

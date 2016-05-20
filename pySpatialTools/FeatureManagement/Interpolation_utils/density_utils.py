@@ -10,10 +10,12 @@ import numpy as np
 
 
 def comparison_densities(density1, density2):
-    return np.log(density1/float(density2))
+    """Log comparison between densities."""
+    return np.log(density1/density2)
 
 
 def clustering_by_comparison(density1, density2, Zscore=3.):
+    """"""
     comparison = comparison_densities(density1, density2)
     Zs = np.std(comparison)
     m = np.mean(comparison)
