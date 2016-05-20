@@ -31,6 +31,7 @@ import test_perturbation
 import test_descriptormodels
 import test_spdescriptormodels
 import test_interpolation
+import test_sampling
 
 # Messages
 message_init_tests =\
@@ -43,7 +44,7 @@ Intel Core i7-3537U
 NVidia GeForce GT720M 2GB
 -------------------------------"""
 message_ref_computer = "Average time in ref. computer: %s seconds."
-time_ref_computer = str(3.50)
+time_ref_computer = str(400.0)
 message_own_computer = "Time testing in this computer: %s seconds."
 
 
@@ -60,7 +61,7 @@ def test():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         #warnings.simplefilter("error")
-#        test_pythonUtils.test()
+        test_pythonUtils.test()
         test_io.test()
         test_transformations.test()
         test_utils.test()
@@ -75,6 +76,7 @@ def test():
         test_spatial_relations.test()
         test_spdescriptormodels.test()
         test_interpolation.test()
+        test_sampling.test()
     ## Closing tests
     time_own_computer = str(np.round(time.time()-t0, 2))
     print(message_own_computer % time_own_computer)
