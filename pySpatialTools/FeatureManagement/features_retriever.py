@@ -32,8 +32,9 @@ from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
     sparse_dict_completer_unknown, sum_addresult_function
 from aux_featuremanagement import create_aggfeatures
-from features_objects import ImplicitFeatures, ExplicitFeatures
-from descriptormodel import DummyDescriptor
+from features_objects import ImplicitFeatures, ExplicitFeatures, Features,\
+    _featuresobject_parsing_creation
+from descriptormodel import DummyDescriptor, DescriptorModel
 
 
 class FeaturesManager:
@@ -109,7 +110,9 @@ class FeaturesManager:
         # Format to feature objects
         nfeat = len(features_objects)
         for i in range(nfeat):
-            features_objects[i] = self._auxformat_features(features_objects[i])
+#            features_objects[i] = self._auxformat_features(features_objects[i])
+            features_objects[i] =\
+                _featuresobject_parsing_creation(features_objects[i])
         self.features = features_objects
         ## 1. Check input
         if nfeat == 0:
@@ -124,21 +127,21 @@ class FeaturesManager:
             raise Exception(msg)
         self.k_perturb = kp
 
-    def _auxformat_features(self, features):
-        """Format individual features information."""
-        if type(features) == np.ndarray:
-            sh = features.shape
-            if len(sh) == 1:
-                features = features.reshape((sh[0], 1))
-                features = ImplicitFeatures(features)
-            if len(sh) == 2:
-                features = ImplicitFeatures(features)
-            elif len(sh) == 3:
-                features = ExplicitFeatures(features)
-        else:
-            if not features.__name__ == "pySpatialTools.FeaturesObject":
-                raise TypeError("Incorrect features format.")
-        return features
+#    def _auxformat_features(self, features):
+#        """Format individual features information."""
+#        if type(features) == np.ndarray:
+#            sh = features.shape
+#            if len(sh) == 1:
+#                features = features.reshape((sh[0], 1))
+#                features = ImplicitFeatures(features)
+#            if len(sh) == 2:
+#                features = ImplicitFeatures(features)
+#            elif len(sh) == 3:
+#                features = ExplicitFeatures(features)
+#        else:
+#            if not features.__name__ == "pySpatialTools.FeaturesObject":
+#                raise TypeError("Incorrect features format.")
+#        return features
 
     def _format_descriptormodel(self, descriptormodels=None):
         """Formatter of the descriptormodels."""
@@ -648,3 +651,94 @@ class FeaturesManager:
 
     ####################### Auxiliar temporal functions #######################
     ###########################################################################
+
+
+###############################################################################
+######################### Auxiliar Features functions #########################
+###############################################################################
+############################ Features parsing utils ###########################
+# Utils to parse different ways to give features information and output or a
+# Features instance or a FeaturesManager instance.
+def _featuresmanager_parsing_creation(feats_info):
+    """FeaturesManager instantiation from features information. This function
+    transforms features information into a FeaturesManager object.
+
+    Standarts inputs:
+    * Features object
+    * FeaturesManager object
+    * (Features object, pars_featuresManager)
+    * (Features object, pars_featuresManager, descriptormodel)
+    """
+    if isinstance(feats_info, Features):
+        feats_info = FeaturesManager(feats_info)
+    elif isinstance(feats_info, FeaturesManager):
+        pass
+    else:
+        assert(type(feats_info) == tuple)
+        if isinstance(feats_info[0], Features):
+            assert(type(feats_info[1]) == dict)
+            assert(len(feats_info) >= 2)
+            if len(feats_info) == 2:
+                pars_features = feats_info[1]
+            else:
+                assert(len(feats_info) == 3)
+                if type(feats_info[2]) == list:
+                    for i in range(len(feats_info[2])):
+                        assert(isinstance(feats_info[2][i], DescriptorModel))
+                else:
+                    assert(isinstance(feats_info[2], DescriptorModel))
+                pars_features = feats_info[1]
+                pars_features['descriptormodels'] = feats_info[2]
+            feats_info = FeaturesManager(feats_info[0], **pars_features)
+        else:
+            assert(type(feats_info[0]) == tuple)
+            new_feats_info = _featuresobject_parsing_creation(feats_info[0])
+            if len(feats_info) == 2:
+                new_feats_info = (new_feats_info, feats_info[1])
+            else:
+                new_feats_info = (new_feats_info, feats_info[1], feats_info[2])
+            feats_info = _featuresmanager_parsing_creation(new_feats_info)
+    assert(isinstance(feats_info, FeaturesManager))
+    return feats_info
+
+
+def _features_parsing_creation(feats_info):
+    """Features General parsing function. This function transforms any features
+    information into a FeaturesManager object.
+
+    Standarts inputs:
+    * np.ndarray
+    * Features object
+    * FeaturesManager object
+    * (np.ndarray, pars_featuresManager)
+    * (np.ndarray, pars_featuresManager, descriptormodel)
+    * (Features object, pars_featuresManager)
+    * (Features object, pars_featuresManager, descriptormodel)
+    * (Features_info tuple, pars_featuresManager)
+    * (Features_info tuple, pars_featuresManager, descriptormodel)
+    """
+    if type(feats_info) == np.ndarray:
+        feats_info = _featuresobject_parsing_creation(feats_info)
+        feats_info = FeaturesManager(feats_info)
+    elif isinstance(feats_info, Features):
+        feats_info = FeaturesManager(feats_info)
+    elif isinstance(feats_info, FeaturesManager):
+        pass
+    else:
+        assert(type(feats_info) == tuple)
+        assert(type(feats_info[1]) == dict)
+        if type(feats_info[0]) == np.ndarray:
+            feats_info = _featuresobject_parsing_creation(feats_info)
+            feats_info = FeaturesManager(feats_info)
+        elif isinstance(feats_info[0], Features):
+            feats_info = _featuresmanager_parsing_creation(feats_info)
+        else:
+            assert(type(feats_info[0]) == tuple)
+            new_feats_info = _featuresobject_parsing_creation(feats_info[0])
+            if len(feats_info) == 2:
+                new_pars_info = (new_feats_info, feats_info[1])
+            else:
+                new_pars_info = (new_feats_info, feats_info[1], feats_info[2])
+            feats_info = _featuresmanager_parsing_creation(new_pars_info)
+    assert(isinstance(feats_info, FeaturesManager))
+    return feats_info

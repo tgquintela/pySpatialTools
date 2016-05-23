@@ -764,5 +764,50 @@ class ExplicitFeatures(Features):
         raise NotImplementedError("Not implemented yet.")
 
 
+###############################################################################
+######################### Auxiliar Features functions #########################
+###############################################################################
 def checker_sp_descriptor(retriever, features_o):
     pass
+
+
+def _featuresobject_parsing_creation(feats_info):
+    """Feature object information parsing and instantiation.
+
+    Standarts:
+    * np.ndarray
+    * Features object
+    * (Features object, descriptormodel)
+    * (np.ndarray, descriptormodel)
+    """
+    if type(feats_info) == np.ndarray:
+        sh = feats_info.shape
+        if len(sh) == 1:
+            feats_info = feats_info.reshape((sh[0], 1))
+            feats_info = ImplicitFeatures(feats_info)
+        if len(sh) == 2:
+            feats_info = ImplicitFeatures(feats_info)
+        elif len(sh) == 3:
+            feats_info = ExplicitFeatures(feats_info)
+    elif isinstance(feats_info, Features):
+        pass
+    else:
+        assert(type(feats_info) == tuple)
+        assert(type(feats_info[0]) == np.ndarray)
+        assert(type(feats_info[1]) == dict)
+        if len(feats_info) == 2:
+            pars_feats = feats_info[1]
+        else:
+            assert(len(feats_info) == 3)
+            pars_feats = feats_info[1]
+            pars_feats['characterizer'] = feats_info[2]
+        sh = feats_info[0].shape
+        if len(sh) == 1:
+            feats_arr = feats_info[0].reshape((sh[0], 1))
+            feats_info = ImplicitFeatures(feats_arr, **pars_feats)
+        if len(sh) == 2:
+            feats_info = ImplicitFeatures(feats_info[0], **pars_feats)
+        elif len(sh) == 3:
+            feats_info = ExplicitFeatures(feats_info[0], **pars_feats)
+    assert(isinstance(feats_info, Features))
+    return feats_info

@@ -16,6 +16,7 @@ from pySpatialTools.utils.util_classes import Neighs_Info
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
     DummyRetriever, GeneralRetriever, WindowsRetriever
+from pySpatialTools.Retrieve.retrievers import Retriever
 from pySpatialTools.Retrieve.aux_retriever import _check_retriever
 
 ## WindowsRetriever functions
@@ -34,6 +35,7 @@ from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
     _check_retriever, create_retriever_input_output,\
     _general_autoexclude, _array_autoexclude, _list_autoexclude
 from pySpatialTools.Retrieve import DummyRetriever, DummyLocObject
+from pySpatialTools.Retrieve import _retriever_parsing_creation
 ## Tools retriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
@@ -1381,7 +1383,6 @@ def test():
 #        if boolean:
 #            raise Exception("It has to halt here.")
 
-
 #    try:
 #        boolean = False
 #        print 'x'*10
@@ -1580,3 +1581,27 @@ def test():
 #    iteration_auxiliar(shape, l, center, excluded)
 #    shape, l, center, excluded = (10, 10), [1, 5], [2, 2], False
 #    iteration_auxiliar(shape, l, center, excluded)
+
+    ###########################################################################
+    #### Auxiliar retriever parsing utils
+    #####################################
+    ## Standards inputs to tests
+    #    * Retriever object
+    #    * (Retriever class, main_info)
+    #    * (Retriever class, main_info, pars_ret)
+    #    * (Retriever class, main_info, pars_ret, autolocs)
+    #
+    locs = np.random.random((100, 2))
+    pars_ret = {}
+
+    retriever_info = (KRetriever, locs)
+    retriever_object = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_object, Retriever))
+    retriever_info = (KRetriever, locs, pars_ret)
+    retriever_object = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_object, Retriever))
+    retriever_info = (KRetriever, locs, pars_ret, locs)
+    retriever_object = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_object, Retriever))
+
+    retriever_object = _retriever_parsing_creation(retriever_object)

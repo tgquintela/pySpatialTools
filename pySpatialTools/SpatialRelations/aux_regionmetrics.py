@@ -10,37 +10,42 @@ from scipy.sparse import coo_matrix
 import networkx as nx
 import numpy as np
 from ..FeatureManagement import SpatialDescriptorModel
+from ..FeatureManagement.features_retriever import FeaturesManager
+from ..FeatureManagement.features_objects import ImplicitFeatures
 
 
-#def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):
-#    """"""
-#    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
-#    retriever = retriever(locs, info_ret, ifdistance=True)
-#    loc_r = discretizor.discretize(locs)
-#    map_locs = dict(zip(regions_id, elements_i))
-#    r_locs = np.array([int(map_locs[r]) for r in loc_r])
-#    descriptormodel = descriptormodel(r_locs, sp_typemodel='correlation')
-#    sp_descriptor = SpatialDescriptorModel(retriever, descriptormodel)
-#    n_e = locs.shape[0]
-#    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
-#    return sp_descriptor
-#
-#
-#def create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i):
-#    """"""
-#    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
-#    if type(retriever) == str:
-#        regionslocs = discretizor.get_regionslocs()[elements_i, :]
-#        return regionslocs, retriever
-#
-#    retriever = retriever(discretizor.get_regionslocs()[elements_i, :],
-#                          info_ret, ifdistance=True)
-#    descriptormodel = descriptormodel(np.array(elements_i),
-#                                      sp_typemodel='matrix')
-#    sp_descriptor = SpatialDescriptorModel(retriever, descriptormodel)
-#    n_e = len(elements_i)
-#    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
-#    return sp_descriptor
+def create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i):
+    """"""
+    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
+    retriever = retriever(locs, info_ret, ifdistance=True)
+    loc_r = discretizor.discretize(locs)
+    map_locs = dict(zip(regions_id, elements_i))
+    r_locs = np.array([int(map_locs[r]) for r in loc_r])
+    descriptormodel = descriptormodel(r_locs, sp_typemodel='correlation')
+    sp_descriptor = SpatialDescriptorModel(retriever, descriptormodel)
+    n_e = locs.shape[0]
+    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
+    return sp_descriptor
+
+
+def create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i):
+    """"""
+    discretizor, locs, retriever, info_ret, descriptormodel = sp_descriptor
+    if type(retriever) == str:
+        regionslocs = discretizor.get_regionslocs()[elements_i, :]
+        return regionslocs, retriever
+
+    # Creation of spdesc model
+    retriever = retriever(discretizor.get_regionslocs()[elements_i, :],
+                          info_ret, ifdistance=True)
+    features = ImplicitFeatures(np.ones(len(elements_i)),
+                                descriptormodel=descriptormodel)
+    featurer = FeaturesManager(features, map_vals_i=elements_i)
+    sp_descriptor = SpatialDescriptorModel(retriever, featurer)
+
+    n_e = len(elements_i)
+    sp_descriptor.reindices = np.arange(n_e).reshape((n_e, 1))
+    return sp_descriptor
 
 
 def get_regions4distances(discretizor, elements=None, activated=None):
@@ -73,38 +78,40 @@ def get_regions4distances(discretizor, elements=None, activated=None):
     return regions_id, elements_i
 
 
-#def compute_selfdistances(retriever, element_labels, typeoutput='network',
-#                          symmetric=True):
-#    """Compute the self distances of the neighbourhood network defined by the
-#    retriever object.
-#
-#    Parameters
-#    ----------
-#    retriever:
-#    element_labels:
-#    typeoutput: str, ['network', 'sparse', 'matrix']
-#        the type of ouput representation we want.
-#    symmetric: boolean
-#        if True the resultant distance information if forced to only give the
-#        upperpart of the distance-matrix in order to save memory.
-#
-#    """
-#    lista = []
-#    for reg in list(element_labels):
-#        ## TODO: change locs
-#        neighs, dists = retriever.retrieve_neighs(reg, ifdistance=True)
-#        neighs, dists = filter_possible_neighs(element_labels, neighs, dists)
-#        neighs, dists = np.array(neighs), np.array(dists)
-#        aux = [(reg, neighs[i], dists[i]) for i in range(len(list(neighs)))]
-#        lista += aux
-#    ## Transformation to a sparse matrix
-#    element_labels = np.array(element_labels)
-#    relations = sparse_from_listaregneighs(lista, element_labels, symmetric)
-#    if typeoutput == 'network':
-#        relations = nx.from_scipy_sparse_matrix(relations)
-#    elif typeoutput == 'matrix':
-#        relations = relations.A
-#    return relations
+def compute_selfdistances(retriever, element_labels, typeoutput='network',
+                          symmetric=True):
+    """Compute the self distances of the neighbourhood network defined by the
+    retriever object.
+
+    Parameters
+    ----------
+    retriever:
+    element_labels:
+    typeoutput: str, ['network', 'sparse', 'matrix']
+        the type of ouput representation we want.
+    symmetric: boolean
+        if True the resultant distance information if forced to only give the
+        upperpart of the distance-matrix in order to save memory.
+
+    """
+    lista = []
+    for reg in list(element_labels):
+        neighs_info = retriever.retrieve_neighs(reg, ifdistance=True)
+        # Neighs_info management
+        neighs, dists, _, _ = neighs_info.get_information(0)
+        neighs, dists = neighs[0], dists[0]
+        neighs, dists = filter_possible_neighs(element_labels, neighs, dists)
+        neighs, dists = np.array(neighs), np.array(dists)
+        aux = [(reg, neighs[i], dists[i]) for i in range(len(list(neighs)))]
+        lista += aux
+    ## Transformation to a sparse matrix
+    element_labels = np.array(element_labels)
+    relations = sparse_from_listaregneighs(lista, element_labels, symmetric)
+    if typeoutput == 'network':
+        relations = nx.from_scipy_sparse_matrix(relations)
+    elif typeoutput == 'matrix':
+        relations = relations.A
+    return relations
 
 
 def filter_possible_neighs(only_possible, neighs, dists):
@@ -143,12 +150,12 @@ def filter_possible_neighs(only_possible, neighs, dists):
     return neighs, dists
 
 
-#def sparse_from_listaregneighs(lista, u_regs, symmetric):
-#    """Sparse representation matrix from a list of tuples of indices and
-#    values.
-#    """
-#    sh = (u_regs.shape[0], u_regs.shape[0])
-#    lista = np.array(lista)
-#    dts, iss, jss = lista[:, 2], lista[:, 0], lista[:, 1]
-#    relations = coo_matrix((dts, (iss, jss)), shape=sh)
-#    return relations
+def sparse_from_listaregneighs(lista, u_regs, symmetric):
+    """Sparse representation matrix from a list of tuples of indices and
+    values.
+    """
+    sh = (u_regs.shape[0], u_regs.shape[0])
+    lista = np.array(lista)
+    dts, iss, jss = lista[:, 2], lista[:, 0], lista[:, 1]
+    relations = coo_matrix((dts, (iss, jss)), shape=sh)
+    return relations

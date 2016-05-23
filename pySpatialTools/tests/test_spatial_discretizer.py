@@ -22,6 +22,8 @@ from pySpatialTools.Discretization.Discretization_set.\
     general_set_discretization import format_membership, to_sparse,\
     find_idx_in_array
 
+from pySpatialTools.Retrieve import _discretization_parsing_creation
+
 ## TODO:
 ########
 # IrregularSpatialDisc
@@ -302,3 +304,11 @@ def test():
 #    disc7.check_neighbors([disc7[0], disc7[1]], disc7[2])
 #    disc7.get_limits()
 #    disc7.get_limits(disc6.regions_id[0])
+
+    ###########################################################################
+    #### Testing auxiliar parsing
+    locs = np.random.random((100, 2))
+    discretization_info = disc1, locs
+    _discretization_parsing_creation(discretization_info)
+    discretization_info = locs, np.random.randint(0, 10, 100)
+    _discretization_parsing_creation(discretization_info)

@@ -22,7 +22,7 @@ class RegionDistances:
     defined by a discretization of a discretized points.
     """
 
-    def __init__(self, relations=None, distanceorweighs=True, symmetric=True,
+    def __init__(self, relations, distanceorweighs=True, symmetric=True,
                  input_='indices', output='indices', _data=None, data_in=None,
                  input_type=None):
         ## Initialization

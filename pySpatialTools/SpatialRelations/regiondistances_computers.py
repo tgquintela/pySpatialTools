@@ -12,9 +12,8 @@ import networkx as nx
 from scipy.sparse import coo_matrix
 from scipy.spatial.distance import pdist, cdist
 
-#from aux_regionmetrics import get_regions4distances,\
-#    create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs
-from aux_regionmetrics import get_regions4distances
+from aux_regionmetrics import get_regions4distances,\
+    create_sp_descriptor_points_regs, create_sp_descriptor_regionlocs
 
 
 def compute_CenterLocsRegionDistances(sp_descriptor, store='network',

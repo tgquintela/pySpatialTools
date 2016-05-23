@@ -9,9 +9,12 @@ Testing the feature retriever.
 import numpy as np
 from itertools import product
 from pySpatialTools.FeatureManagement.features_retriever import\
-    FeaturesManager
+    FeaturesManager, _features_parsing_creation,\
+    _featuresmanager_parsing_creation
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures
+    ImplicitFeatures, ExplicitFeatures, Features,\
+    _featuresobject_parsing_creation
+from pySpatialTools.FeatureManagement.descriptormodel import DummyDescriptor
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.artificial_data import\
@@ -280,3 +283,86 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
+
+    ###########################################################################
+    #### Testing auxiliar parsing
+    feats0 = np.random.randint(0, 10, 100)
+    feats1 = feats0.reshape((100, 1))
+    feats2 = np.random.random((100, 2, 3))
+    desc = DummyDescriptor()
+    pars_feats = {}
+
+    # Testing combinations of possible inputs
+    feats_info = feats0
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = feats1
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = feats2
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = (feats0, pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = (feats1, pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = (feats2, pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = (feats0, pars_feats, desc)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = (feats1, pars_feats, desc)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = (feats2, pars_feats, desc)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+
+    features_obj = _featuresobject_parsing_creation(feats_info)
+    assert(isinstance(features_obj, Features))
+    features_ret = _features_parsing_creation(features_obj)
+    assert(isinstance(features_ret, FeaturesManager))
+    features_obj = _featuresobject_parsing_creation(feats_info)
+    assert(isinstance(features_obj, Features))
+    pars_feats = {}
+    feats_info = (features_obj, pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = (features_obj, pars_feats, desc)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = (features_obj, pars_feats, [desc, desc])
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+
+    feats_info = ((feats0, {}), pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = ((feats0, {}), pars_feats, desc)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = ((feats0, {}), pars_feats, [desc, desc])
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = ((feats0, {}, desc), pars_feats, [desc, desc])
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+
+    feats_info = features_ret
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+
+    features_ret = _featuresmanager_parsing_creation(features_obj)
+    assert(isinstance(features_ret, FeaturesManager))
+    features_ret = _featuresmanager_parsing_creation(features_ret)
+    assert(isinstance(features_ret, FeaturesManager))

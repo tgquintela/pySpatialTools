@@ -9,11 +9,12 @@ test for spatial relations module. There are two computers methods untested.
 import numpy as np
 from itertools import product
 from pySpatialTools.Discretization import GridSpatialDisc
-from pySpatialTools.Retrieve import OrderEleNeigh
+from pySpatialTools.Retrieve import OrderEleNeigh, KRetriever
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
+from pySpatialTools.FeatureManagement.descriptormodel import DummyDescriptor
 
 from pySpatialTools.SpatialRelations import RegionDistances, DummyRegDistance,\
-    format_out_relations
+    format_out_relations, _relations_parsing_creation
 from pySpatialTools.SpatialRelations.regiondistances_computers\
     import compute_AvgDistanceRegions, compute_CenterLocsRegionDistances,\
     compute_ContiguityRegionDistances, compute_PointsNeighsIntersection
@@ -23,6 +24,14 @@ from pySpatialTools.SpatialRelations.element_metrics import\
     measure_difference, unidimensional_periodic
 from pySpatialTools.SpatialRelations.aux_regionmetrics import\
     get_regions4distances, filter_possible_neighs
+
+from pySpatialTools.SpatialRelations import compute_CenterLocsRegionDistances,\
+    compute_ContiguityRegionDistances, compute_PointsNeighsIntersection,\
+    compute_AvgDistanceRegions,\
+    format_out_relations,\
+    get_regions4distances, create_sp_descriptor_regionlocs,\
+    create_sp_descriptor_points_regs, sparse_from_listaregneighs,\
+    compute_selfdistances
 
 
 def test():
@@ -51,6 +60,7 @@ def test():
     format_out_relations(mainmapper1, 'network')
     format_out_relations(mainmapper1, 'sp_relations')
     lista = format_out_relations(mainmapper1, 'list')
+    u_regs = mainmapper1.data
 
     ## Element metrics
     element_i, element_j = 54, 2
@@ -64,43 +74,6 @@ def test():
     measure_difference(element_i, element_j, pars=pars2)
     measure_difference(element_j, element_i, pars=pars1)
     measure_difference(element_j, element_i, pars=pars2)
-    ## Relative position
-
-    ## aux_regionmetrics
-    # Get regions activated
-    elements = griddisc1.get_regions_id()
-    get_regions4distances(griddisc1, elements=None, activated=None)
-    get_regions4distances(griddisc1, elements, activated=elements)
-
-    # Filter possible neighs
-    only_possible = np.unique(np.random.randint(0, 100, 50))
-    neighs = [np.unique(np.random.randint(0, 100, 6)) for i in range(4)]
-    dists = [np.random.random(len(neighs[i])) for i in range(4)]
-    filter_possible_neighs(only_possible, neighs, dists)
-    filter_possible_neighs(only_possible, neighs, None)
-
-    # TODO: Sync with other classes as sp_desc_models
-#    sparse_from_listaregneighs(lista, u_regs, symmetric=True)
-#    sparse_from_listaregneighs(lista, u_regs, symmetric=False)
-#    create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i)
-#    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
-#    compute_selfdistances(retriever, element_labels, typeoutput='network',
-#                          symmetric=True)
-    # Region spatial relations
-    # For future (TODO)
-
-    ### RegionDistances Computers
-    ## Compute Contiguity
-    relations, _data, symmetric, store =\
-        compute_ContiguityRegionDistances(griddisc1, store='sparse')
-    mainmapper1 = RegionDistances(relations=relations, _data=None,
-                                  symmetric=symmetric)
-    neighs, dists = mainmapper1.retrieve_neighs([0])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 1)
-    neighs, dists = mainmapper1.retrieve_neighs([0, 1])
-    assert(len(neighs) == len(dists))
-    assert(len(neighs) == 2)
 
     def ensure_output(neighs, dists, mainmapper):
 #        print dists
@@ -119,6 +92,8 @@ def test():
     ###########################################################################
     ### Massive combinatorial testing
     # Possible parameters
+    relations, _data, symmetric, store =\
+        compute_ContiguityRegionDistances(griddisc1, store='sparse')
     pos_relations = [relations, relations.A,
                      format_out_relations(relations, 'network')]
     pos_distanceorweighs, pos_sym = [True, False], [True, False]
@@ -290,15 +265,76 @@ def test():
         if boolean:
             raise Exception("It has to halt here.")
 
-    ## Needed regionmetrics
-#    mainmapper2 = RegionDistances(relations=relations, _data=_data,
-#                                  symmetric=symmetric)
-#    ## In retrievers
-#    ret0 = OrderEleNeigh(dummymapper, info_ret, constant_info=True)
-#    ret1 = OrderEleNeigh(mainmapper1, info_ret, bool_input_idx=False,
-#                         constant_info=True)
-#    ret2 = OrderEleNeigh(mainmapper2, info_ret, constant_info=True)
-#    ret3 = OrderEleNeigh(mainmapper3, info_ret)
+    ###########################################################################
+    ### Auxiliar parsing creation functions test
+    ############################################
+    # Standarts
+    #    * relations object
+    #    * (main_relations_info, pars_rel)
+    #    * (main_relations_info, pars_rel, _data)
+    #    * (main_relations_info, pars_rel, _data, data_in)
+    #
+    ## Main relations information
+    relations = np.random.random((100, 20))
+    _data = np.arange(20)
+    _data_input = np.arange(100)
+
+    relations_info = (relations, {})
+    relations_object = _relations_parsing_creation(relations_info)
+    assert(isinstance(relations_object, RegionDistances))
+
+    relations_info = (relations, {}, _data)
+    relations_object = _relations_parsing_creation(relations_info)
+    assert(isinstance(relations_object, RegionDistances))
+
+    relations_info = (relations, {}, _data, _data_input)
+    relations_object = _relations_parsing_creation(relations_info)
+    assert(isinstance(relations_object, RegionDistances))
+
+    relations_object = _relations_parsing_creation(relations_object)
+    assert(isinstance(relations_object, RegionDistances))
+
+    relations_object = _relations_parsing_creation(relations)
+    assert(isinstance(relations_object, RegionDistances))
+
+    ###########################################################################
+    ### Computers testing
+    #####################
+    ## aux_regionmetrics
+    # Get regions activated
+    elements = griddisc1.get_regions_id()
+    get_regions4distances(griddisc1, elements=None, activated=None)
+    get_regions4distances(griddisc1, elements, activated=elements)
+
+    # Filter possible neighs
+    only_possible = np.unique(np.random.randint(0, 100, 50))
+    neighs = [np.unique(np.random.randint(0, 100, 6)) for i in range(4)]
+    dists = [np.random.random(len(neighs[i])) for i in range(4)]
+    filter_possible_neighs(only_possible, neighs, dists)
+    filter_possible_neighs(only_possible, neighs, None)
+
+    # TODO: Sync with other classes as sp_desc_models
+    lista = [[0, 1, 2, 3], [0, 2, 3, 5], [1, 1, 1, 1]]
+    u_regs = np.arange(25)
+    regions_id = np.arange(25)
+    elements_i = np.arange(25)
+    element_labels = np.arange(25)
+    discretizor = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
+
+    locs = np.random.random((100, 2))
+    retriever = KRetriever
+    info_ret = np.ones(100)*4
+    descriptormodel = DummyDescriptor()
+
+    sp_descriptor = discretizor, locs, retriever, info_ret, descriptormodel
+
+    sparse_from_listaregneighs(lista, u_regs, symmetric=True)
+    sparse_from_listaregneighs(lista, u_regs, symmetric=False)
+#    compute_selfdistances(retriever(locs, 4, ifdistance=True), element_labels,
+#                          typeoutput='network', symmetric=True)
+
+#    create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i)
+#    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
 
     ## Compute Avg distance
 #    relations, _data, symmetric, store =\
@@ -316,6 +352,21 @@ def test():
 #    regdists = RegionDistances(relations=relations, _data=_data,
 #                               symmetric=symmetric)
 
+    # Region spatial relations
+    # For future (TODO)
+
+    ### RegionDistances Computers
+    ## Compute Contiguity
+    relations, _data, symmetric, store =\
+        compute_ContiguityRegionDistances(griddisc1, store='sparse')
+    mainmapper1 = RegionDistances(relations=relations, _data=None,
+                                  symmetric=symmetric)
+    neighs, dists = mainmapper1.retrieve_neighs([0])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 1)
+    neighs, dists = mainmapper1.retrieve_neighs([0, 1])
+    assert(len(neighs) == len(dists))
+    assert(len(neighs) == 2)
 
     ## Compute CenterLocs
     ## Compute PointsNeighsIntersection
@@ -323,3 +374,8 @@ def test():
 
     ## Aux_regionmetrics
     #sparse_from_listaregneighs(lista, u_regs, symmetric)
+
+
+    ###########################################################################
+    ### Relative positioner testing
+    ###############################
