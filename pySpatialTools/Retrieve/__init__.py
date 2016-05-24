@@ -21,9 +21,9 @@ from collectionretrievers import RetrieverManager
 from general_retriever import GeneralRetriever
 
 ## Import useful functions
-from aux_retriever import create_retriever_input_output, NullRetriever
+from aux_retriever import NullRetriever
 from dummy_retrievers import DummyLocObject
 
 ## Import retriever parsing utils
 from aux_retriever_parsing import _discretization_parsing_creation,\
-    _retriever_parsing_creation
+    _retriever_parsing_creation, _discretization_regionlocs_parsing_creation

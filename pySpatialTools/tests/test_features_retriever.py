@@ -286,6 +286,9 @@ def test():
 
     ###########################################################################
     #### Testing auxiliar parsing
+    ## Functions which carry the uniformation of inputs from possible ways to
+    ## input features information.
+    ##
     feats0 = np.random.randint(0, 10, 100)
     feats1 = feats0.reshape((100, 1))
     feats2 = np.random.random((100, 2, 3))
@@ -364,5 +367,12 @@ def test():
 
     features_ret = _featuresmanager_parsing_creation(features_obj)
     assert(isinstance(features_ret, FeaturesManager))
+    features_ret = _featuresmanager_parsing_creation(features_ret)
+    assert(isinstance(features_ret, FeaturesManager))
+
+    feats_info = ((feats0, {}, desc), {})
+    features_ret = _featuresmanager_parsing_creation(features_ret)
+    assert(isinstance(features_ret, FeaturesManager))
+    feats_info = ((feats0, {}, desc), {}, [desc, desc])
     features_ret = _featuresmanager_parsing_creation(features_ret)
     assert(isinstance(features_ret, FeaturesManager))

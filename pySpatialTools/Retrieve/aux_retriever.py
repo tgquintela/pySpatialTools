@@ -67,33 +67,6 @@ def _check_retriever(retriever):
         raise TypeError(msg)
 
 
-def create_retriever_input_output(regions):
-    def remap(neighs_info, regions):
-        neighs, dists = neighs_info
-        neighs_o, dists_o = [], []
-        for iss_i in range(len(neighs)):
-            neighs_p, dists_p = [], []
-            for i in range(len(neighs[iss_i])):
-                neighs_ip = np.where(regions == neighs[iss_i][i])[0]
-                neighs_p.append(neighs_ip)
-                if dists[iss_i] is not None:
-                    sh = len(neighs_ip), 1
-                    dists_p.append(np.ones(sh) * dists[iss_i][i])
-            if neighs_p:
-                neighs_p = np.concatenate(neighs_p)
-            if dists_p:
-                dists_p = np.concatenate(dists_p)
-            else:
-                dists_p = np.ones((0, 1))
-            neighs_o.append(neighs_p)
-            dists_o.append(dists_p)
-        return neighs_o, dists_o
-
-    map_input = lambda self, idxs: [np.array([regions[e]]) for e in idxs]
-    map_output = lambda self, idxs, neighs_info: remap(neighs_info, regions)
-    return map_input, map_output
-
-
 ############################## Exclude functions ##############################
 ###############################################################################
 def _list_autoexclude(to_exclude_elements, neighs, dists):

@@ -764,6 +764,45 @@ class ExplicitFeatures(Features):
         raise NotImplementedError("Not implemented yet.")
 
 
+class PhantomFeatures(Features):
+    """Phantom features class. In this 'empty' class we don't have features
+    stored but a way to transform neighs_info into features using
+    descriptormodels.
+    """
+    ## Type
+    typefeat = 'phantom'
+
+    def _initialization(self):
+        ## Default mutable functions
+        self._get_characs_k = self._get_characs_k
+        self._get_real_data = self._real_data_general
+        self._get_virtual_data = self._virtual_data_general
+        ## Specific class parameters
+        self.relabel_indices = None  # TODO
+        self.features_array = None
+
+    def __init__(self, features, perturbations=None, names=[], out_features=[],
+                 characterizer=None, out_formatter=None):
+        self._global_initialization()
+        self._initialization()
+        self._format_features(features, out_features)
+        self._format_characterizer(characterizer, out_formatter)
+        self._format_variables(names)
+        self._format_perturbation(perturbations)
+
+    @property
+    def k_perturb(self):
+        if self._dim_perturb:
+            return np.sum(self._dim_perturb)-1
+
+    @property
+    def shape(self):
+        n = None
+        nfeats = None if self.variables is None else len(self.variables)
+        ks = self.k_perturb+1
+        return n, nfeats, ks
+
+
 ###############################################################################
 ######################### Auxiliar Features functions #########################
 ###############################################################################

@@ -14,9 +14,8 @@ import signal
 
 ## Retrieve
 from pySpatialTools.Discretization import GridSpatialDisc
-from pySpatialTools.Retrieve import create_retriever_input_output,\
-    SameEleNeigh, KRetriever, CircRetriever, RetrieverManager,\
-    WindowsRetriever
+from pySpatialTools.Retrieve import SameEleNeigh, KRetriever,\
+    CircRetriever, RetrieverManager, WindowsRetriever
 # Artificial data
 from pySpatialTools.utils.artificial_data import generate_randint_relations
 

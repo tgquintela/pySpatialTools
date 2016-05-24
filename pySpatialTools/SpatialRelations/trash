@@ -1,4 +1,84 @@
 
+###### regiondistances_computers 2016-05-24
+
+def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
+                                      elements=None, symmetric=True,
+                                      activated=None):
+    """Region distances defined only by the distance of the representative
+    points of each region.
+    It can be cutted by a definition of a retriever neighbourhood of each
+    representative point.
+    This function to compute the spatial distances between the regions.
+
+    Parameters
+    ----------
+    sp_descriptor: sp_descriptor or tuple.
+        the spatial descriptormodel object or the tuple of elements needed
+        to build it (discretizor, locs, retriever, descriptormodel)
+    store: optional, ['network', 'sparse', 'matrix']
+        the type of object we want to store the relation metric.
+    elements: array_like, list or None
+        the regions we want to use for measure the metric distance between
+        them.
+    symmetric: boolean
+        assume symmetric measure.
+    activated: numpy.ndarray or None
+        the location points we want to know if we use the regions non-empty
+        or None if we want to use all of them.
+
+    Returns
+    -------
+    relations: networkx, scipy.sparse, np.ndarray
+        the relationship information between regions.
+    _data: np.ndarray
+        the regions_id.
+    symmetric: boolean
+        if the relations are symmetric or not (in order to save memory space).
+    store: str
+        how we want to store the relations.
+
+    """
+    ## 0. Preparing variables
+    pars_rel = {'distanceorweighs': True, 'symmetric': symmetric,
+                'store': store}
+    # Sp descriptor management
+    if type(sp_descriptor) == tuple:
+        activated = sp_descriptor[1] if activated is not None else None
+        regions_id, elements_i = get_regions4distances(sp_descriptor[0],
+                                                       elements, activated)
+        sp_descriptor = create_sp_descriptor_regionlocs(sp_descriptor,
+                                                        regions_id,
+                                                        elements_i)
+        _data = np.array(regions_id)
+        _data = _data.reshape((_data.shape[0], 1))
+    else:
+        regions, elements_i = get_regions4distances(sp_descriptor,
+                                                    elements, activated)
+        _data = np.array(regions)
+        _data = _data.reshape((_data.shape[0], 1))
+
+
+    ## 1. Computation of relations
+    if type(sp_descriptor) == tuple:
+        relations = pdist(sp_descriptor[0], sp_descriptor[1])
+    else:
+        relations = sp_descriptor.compute_net()[:, :, 0]
+
+
+    ## 2. Formatting output
+    if store == 'matrix':
+        pass
+    elif store == 'sparse':
+        relations = coo_matrix(relations)
+    elif store == 'network':
+        relations = coo_matrix(relations)
+        relations = nx.from_scipy_sparse_matrix(relations)
+        mapping = dict(zip(relations.nodes(), regs))
+        relations = nx.relabel_nodes(relations, mapping)
+    _data = regs
+
+    return relations, pars_rel, _data
+
 ###### regionmetrics 2016-04-19
 
     def __getitem__(self, i):

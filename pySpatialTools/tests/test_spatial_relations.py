@@ -28,10 +28,8 @@ from pySpatialTools.SpatialRelations.aux_regionmetrics import\
 from pySpatialTools.SpatialRelations import compute_CenterLocsRegionDistances,\
     compute_ContiguityRegionDistances, compute_PointsNeighsIntersection,\
     compute_AvgDistanceRegions,\
-    format_out_relations,\
-    get_regions4distances, create_sp_descriptor_regionlocs,\
-    create_sp_descriptor_points_regs, sparse_from_listaregneighs,\
-    compute_selfdistances
+    format_out_relations, get_regions4distances,\
+    sparse_from_listaregneighs, compute_selfdistances
 
 
 def test():
@@ -92,7 +90,7 @@ def test():
     ###########################################################################
     ### Massive combinatorial testing
     # Possible parameters
-    relations, _data, symmetric, store =\
+    relations, pars_rel, _data =\
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     pos_relations = [relations, relations.A,
                      format_out_relations(relations, 'network')]
@@ -160,18 +158,20 @@ def test():
 
     ## Individual extreme cases
     ## Instantiation
+    pars_rel = {'symmetric': False}
     relations = relations.A
     data_in = list(np.arange(len(relations)))
-    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                  symmetric=symmetric, data_in=data_in)
+    wrond_data = np.random.random((100))
+    mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                  data_in=data_in, **pars_rel)
     data_in = np.arange(len(relations)).reshape((len(relations), 1))
-    mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                  symmetric=symmetric, data_in=data_in)
+    mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                  data_in=data_in, **pars_rel)
     try:
         boolean = False
         wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
+                                      data_in=data_in, **pars_rel)
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -181,8 +181,8 @@ def test():
         boolean = False
         wrond_data = np.random.random((100, 3, 4))
         sparse_rels = randint_sparse_matrix(0.8, (25, 25))
-        mainmapper3 = RegionDistances(relations=sparse_rels, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      data_in=data_in, **pars_rel)
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -191,8 +191,8 @@ def test():
     try:
         boolean = False
         wrond_data = np.random.random((100, 3, 4))
-        mainmapper3 = RegionDistances(relations=relations, _data=data_in,
-                                      symmetric=symmetric, data_in=wrond_data)
+        mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
+                                      data_in=data_in, **pars_rel)
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -203,7 +203,7 @@ def test():
         boolean = False
         wrond_data = np.random.random((100, 3, 4))
         mainmapper3 = RegionDistances(relations=relations, _data=wrond_data,
-                                      symmetric=symmetric, data_in=data_in)
+                                      data_in=data_in, **pars_rel)
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -357,10 +357,10 @@ def test():
 
     ### RegionDistances Computers
     ## Compute Contiguity
-    relations, _data, symmetric, store =\
+    relations, pars_rel, _data =\
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     mainmapper1 = RegionDistances(relations=relations, _data=None,
-                                  symmetric=symmetric)
+                                  **pars_rel)
     neighs, dists = mainmapper1.retrieve_neighs([0])
     assert(len(neighs) == len(dists))
     assert(len(neighs) == 1)

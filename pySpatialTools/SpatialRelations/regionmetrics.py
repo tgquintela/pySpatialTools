@@ -24,7 +24,7 @@ class RegionDistances:
 
     def __init__(self, relations, distanceorweighs=True, symmetric=True,
                  input_='indices', output='indices', _data=None, data_in=None,
-                 input_type=None):
+                 input_type=None, store=None):
         ## Initialization
         self._initialization()
         ## Relations management

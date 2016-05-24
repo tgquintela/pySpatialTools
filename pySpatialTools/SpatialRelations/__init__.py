@@ -31,5 +31,5 @@ from formatters import format_out_relations, _relations_parsing_creation
 
 ## Individual functions for preparing the computation of relations
 from aux_regionmetrics import get_regions4distances,\
-    create_sp_descriptor_regionlocs, create_sp_descriptor_points_regs,\
     sparse_from_listaregneighs, compute_selfdistances
+#    create_sp_descriptor_regionlocs, create_sp_descriptor_points_regs,\

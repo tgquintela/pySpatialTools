@@ -9,9 +9,8 @@ testing descriptor models utilities.
 ## Retrieve
 #from pySpatialTools.Discretization import GridSpatialDisc
 #from pySpatialTools.Retrieve.SpatialRelations import AvgDistanceRegions
-from pySpatialTools.Retrieve import create_retriever_input_output,\
-    OrderEleNeigh, SameEleNeigh, KRetriever, CircRetriever,\
-    RetrieverManager
+from pySpatialTools.Retrieve import OrderEleNeigh, SameEleNeigh,\
+    KRetriever, CircRetriever, RetrieverManager
 from pySpatialTools.utils.artificial_data import\
     continuous_array_features, categorical_agg_dict_features,\
     categorical_array_features, continuous_dict_features,\

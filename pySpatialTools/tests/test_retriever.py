@@ -28,18 +28,20 @@ from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
     get_core_indices, get_extremes_regularneighs_grid,\
     generate_grid_neighs_coord, generate_grid_neighs_coord_i
 
-from pySpatialTools.Retrieve import create_retriever_input_output
-
 ## Aux_retriever
 from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
-    _check_retriever, create_retriever_input_output,\
-    _general_autoexclude, _array_autoexclude, _list_autoexclude
+    _check_retriever, _general_autoexclude, _array_autoexclude,\
+    _list_autoexclude
 from pySpatialTools.Retrieve import DummyRetriever, DummyLocObject
 from pySpatialTools.Retrieve import _retriever_parsing_creation
 ## Tools retriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
 from pySpatialTools.Discretization import GridSpatialDisc
+from pySpatialTools.Retrieve.aux_retriever_parsing import\
+    create_m_in_inverse_discretization, create_m_in_direct_discretization,\
+    create_m_out_inverse_discretization, create_m_out_direct_discretization
+
 
 #from scipy.sparse import coo_matrix
 
@@ -247,8 +249,37 @@ def test():
     ensure_proper_exclude(out, o_d, neighs, neighs, dists)
 
     # map regions to points
-    mapin_regpoints, mapout_regpoints = create_retriever_input_output(regions)
-    mapout_regpoints(None, idxs, (neighs, dists))
+#    mapin_regpoints, mapout_regpoints = create_retriever_input_output(regions)
+#    mapout_regpoints(None, idxs, (neighs, dists))
+    #### TODO: Other creations testing
+    disc1 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
+    locs = np.random.random((100, 2))
+    regs = disc1.discretize(locs)
+
+    m_in_inverse = create_m_in_inverse_discretization((disc1, locs))
+    m_in_inverse(None, idxs)
+    m_in_inverse = create_m_in_inverse_discretization((locs, regs))
+    m_in_inverse(None, idxs)
+    m_in_direct = create_m_in_direct_discretization((disc1, locs))
+    m_in_direct(None, idxs)
+    m_in_direct = create_m_in_direct_discretization((locs, regs))
+    m_in_direct(None, idxs)
+    m_out_inverse = create_m_out_inverse_discretization((disc1, locs))
+    m_out_inverse(None, idxs, (neighs, dists))
+    m_out_inverse = create_m_out_inverse_discretization((locs, regs))
+    m_out_inverse(None, idxs, (neighs, dists))
+    m_out_direct = create_m_out_direct_discretization((disc1, locs))
+    m_out_direct(None, idxs, (neighs, dists))
+    m_out_direct = create_m_out_direct_discretization((locs, regs))
+    m_out_direct(None, idxs, (neighs, dists))
+    m_out_inverse = create_m_out_inverse_discretization((disc1, locs))
+    m_out_inverse(None, idxs, (neighs, [None]*len(neighs)))
+    m_out_inverse = create_m_out_inverse_discretization((locs, regs))
+    m_out_inverse(None, idxs, (neighs, [None]*len(neighs)))
+    m_out_direct = create_m_out_direct_discretization((disc1, locs))
+    m_out_direct(None, idxs, (neighs, [None]*len(neighs)))
+    m_out_direct = create_m_out_direct_discretization((locs, regs))
+    m_out_direct(None, idxs, (neighs, [None]*len(neighs)))
 
     ###########################################################################
     ######### Tools_Retriever module
