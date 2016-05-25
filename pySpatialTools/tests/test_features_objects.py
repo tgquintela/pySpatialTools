@@ -9,7 +9,7 @@ Testing the feature retriever.
 import numpy as np
 from itertools import product
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures, Features,\
+    ImplicitFeatures, ExplicitFeatures, Features, PhantomFeatures,\
     _featuresobject_parsing_creation
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 from pySpatialTools.utils.perturbations import PermutationPerturbation
@@ -391,10 +391,20 @@ def test():
     #### Phantom Features testing
     ### Definition classes
     # Instantiation
+    pos_fea_info = [None, (100, 25)]
+    pos_perturbations = [None, perturbation]
+    pos_names = [[]]
+    pos_outfeats = [[]]
+    pos_characterizer = [None, ]
+    pos_outformatter = [None]
 
-
-
-
+    possibilities = [pos_fea_info, pos_perturbations, pos_names, pos_outfeats,
+                     pos_characterizer, pos_outformatter]
+    ## Combination of inputs testing
+    for p in product(*possibilities):
+        fe = PhantomFeatures(features_info=p[0], perturbations=p[1],
+                             names=p[2], out_features=p[3], characterizer=p[4],
+                             out_formatter=p[5])
 
     ###########################################################################
     #### Testing auxiliar parsing

@@ -793,8 +793,8 @@ class PhantomFeatures(Features):
 
     @property
     def shape(self):
-        n = None if self._n is None else self._n
-        nfeats = None if self.variables is None else len(self.variables)
+        n = self._n
+        nfeats = self._nfeats
         ks = self.k_perturb+1
         return n, nfeats, ks
 
@@ -818,8 +818,10 @@ class PhantomFeatures(Features):
         pass
 
     def _format_variables(self, names):
-        self.variables = names
-        self.out_features = self.variables
+        if names:
+            self.variables = names
+            self.out_features = self.variables
+            self._nfeats = len(names)
 
 
 ###############################################################################

@@ -101,7 +101,7 @@ def compute_selfdistances(retriever, element_labels, typeoutput='network',
         neighs, dists, _, _ = neighs_info.get_information(0)
         neighs, dists = neighs[0], dists[0]
         neighs, dists = filter_possible_neighs(element_labels, neighs, dists)
-        neighs, dists = np.array(neighs), np.array(dists)
+        neighs, dists = np.array(neighs[0]), np.array(dists[0])
         aux = [(reg, neighs[i], dists[i]) for i in range(len(list(neighs)))]
         lista += aux
     ## Transformation to a sparse matrix
@@ -155,6 +155,7 @@ def sparse_from_listaregneighs(lista, u_regs, symmetric):
     values.
     """
     sh = (u_regs.shape[0], u_regs.shape[0])
+    print lista
     lista = np.array(lista)
     dts, iss, jss = lista[:, 2], lista[:, 0], lista[:, 1]
     relations = coo_matrix((dts, (iss, jss)), shape=sh)

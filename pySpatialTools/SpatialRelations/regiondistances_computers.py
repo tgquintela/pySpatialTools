@@ -102,30 +102,29 @@ def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
 
     """
     ## 0. Preparing variables
-    pars_rel = {'distanceorweighs': True, 'symmetric': symmetric,
-                'store': store}
+    pars_rel = {'distanceorweighs': True, 'symmetric': symmetric}
 
     ## 1. Computing
     if type(sp_descriptor) == tuple:
         disc_info, retriever_info, _ = sp_descriptor
-        ## TODO: get_regions4distances, create_sp_descriptor_regionlocs
         centerlocs, regs =\
             _discretization_regionlocs_parsing_creation(disc_info, elements,
                                                         activated)
         if retriever_info is None:
-            relations = pdist(centerlocs, centerlocs)
+            relations = cdist(centerlocs, centerlocs)
             pars_rel['symmetric'] = True
         else:
-            if type(retriever_info) != tuple:
-                retriever_info = retriever_info, centerlocs
-            else:
-                retriever_info = tuple([retriever_info[0]] + [centerlocs] +
-                                       list(retriever_info[1:]))
+            assert(type(retriever_info) == tuple)
+            retriever_info = tuple([retriever_info[0]] + [centerlocs] +
+                                   list(retriever_info[1:]))
 
             ## TODO:
             # Instantiate PhantomFeatures
-            # Map_vals_i
-            sp_descriptor = _spdesc_parsing_creation(retriever_info)
+            feats_info = PhantomFeatures((None, len(regs)), characterizer=TODO)
+            # Map_vals_i (not sure if it is needed)
+            #pars_feats['map_vals_i'] = Map_vals_i(regs)
+            sp_descriptor = _spdesc_parsing_creation(retriever_info,
+                                                     feats_info)
             relations = sp_descriptor.compute_net()[:, :, 0]
     else:
         relations = sp_descriptor.compute_net()[:, :, 0]
@@ -142,7 +141,6 @@ def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
         mapping = dict(zip(relations.nodes(), regs))
         relations = nx.relabel_nodes(relations, mapping)
     _data = regs
-
     return relations, pars_rel, _data
 
 
@@ -182,8 +180,7 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
     k=0, iss=0
 
     """
-
-
+    pars_rel = {'distanceorweighs': False, 'symmetric': symmetric}
     ## 1. Computing
     if type(sp_descriptor) == tuple:
         disc_info, retriever_info, _ = sp_descriptor
@@ -193,12 +190,28 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
             relations = pdist(centerlocs, centerlocs)
             pars_rel['symmetric'] = True
         else:
-            sp_descriptor = _spdesc_parsing_creation(retriever_info)
+            ## TODO:
+            feats_info = PhantomFeatures((None, len(regs)), characterizer=TODO)
+            ########
+            sp_descriptor = _spdesc_parsing_creation(retriever_info,
+                                                     feats_info)
             relations = sp_descriptor.compute_net()[:, :, 0]
     else:
         relations = sp_descriptor.compute_net()[:, :, 0]
         _data = np.arange(len(relations))
+    ## 2. Formatting output
+    if store == 'matrix':
+        pass
+    elif store == 'sparse':
+        relations = coo_matrix(relations)
+    elif store == 'network':
+        relations = coo_matrix(relations)
+        relations = nx.from_scipy_sparse_matrix(relations)
+        mapping = dict(zip(relations.nodes(), u_regs.ravel()))
+        relations = nx.relabel_nodes(relations, mapping)
+    pars_rel = {'symmetric': symmetric, 'store': store}
 
+    return relations, pars_rel, _data
 
 
 #    symmetric = True
@@ -224,20 +237,20 @@ def compute_AvgDistanceRegions(locs, discretizor, regretriever,
 #    dts, iss, jss = np.hstack(dts), np.hstack(iss), np.hstack(jss)
 #    iss, jss = iss.astype(int), jss.astype(int)
 #    relations = coo_matrix((dts, (iss, jss)), shape=(n_regs, n_regs))
-
-    ## 2. Formatting output
-    if store == 'matrix':
-        pass
-    elif store == 'sparse':
-        relations = coo_matrix(relations)
-    elif store == 'network':
-        relations = coo_matrix(relations)
-        relations = nx.from_scipy_sparse_matrix(relations)
-        mapping = dict(zip(relations.nodes(), u_regs.ravel()))
-        relations = nx.relabel_nodes(relations, mapping)
-    pars_rel = {'symmetric': symmetric, 'store': store}
-
-    return relations, pars_rel, _data
+#
+#    ## 2. Formatting output
+#    if store == 'matrix':
+#        pass
+#    elif store == 'sparse':
+#        relations = coo_matrix(relations)
+#    elif store == 'network':
+#        relations = coo_matrix(relations)
+#        relations = nx.from_scipy_sparse_matrix(relations)
+#        mapping = dict(zip(relations.nodes(), u_regs.ravel()))
+#        relations = nx.relabel_nodes(relations, mapping)
+#    pars_rel = {'symmetric': symmetric, 'store': store}
+#
+#    return relations, pars_rel, _data
 
 
 def compute_PointsNeighsIntersection(sp_descriptor, store='network',
@@ -276,26 +289,28 @@ def compute_PointsNeighsIntersection(sp_descriptor, store='network',
         how we want to store the relations.
 
     """
-    ## 0. Needed variables
-    # Sp descriptor management
-    if type(sp_descriptor) == tuple:
-        activated = sp_descriptor[1] if activated is not None else None
-        regions_id, elements_i = get_regions4distances(sp_descriptor[0],
-                                                       elements, activated)
-        sp_descriptor = create_sp_descriptor_points_regs(sp_descriptor,
-                                                         regions_id,
-                                                         elements_i)
-        _data = np.array(regions_id)
-        _data = _data.reshape((_data.shape[0], 1))
-    else:
-        regions, elements_i = get_regions4distances(sp_descriptor,
-                                                    elements, activated)
-        _data = np.array(regions)
-        _data = _data.reshape((_data.shape[0], 1))
 
-    ## 1. Computation of relations
-    relations = sp_descriptor.compute_net()[:, :, 0]
-    #filter_relations(relations, self.data, elements)
+
+    pars_rel = {'distanceorweighs': False, 'symmetric': symmetric}
+    ## 1. Computing
+    if type(sp_descriptor) == tuple:
+        disc_info, retriever_info, _ = sp_descriptor
+        ## TODO: get_regions4distances, create_sp_descriptor_regionlocs
+        centerlocs, regs = disc_info
+        if retriever_info is None:
+            relations = pdist(centerlocs, centerlocs)
+            pars_rel['symmetric'] = True
+        else:
+            ## TODO:
+            feats_info = PhantomFeatures((None, len(regs)), characterizer=TODO)
+            ########
+            sp_descriptor = _spdesc_parsing_creation(retriever_info,
+                                                     feats_info)
+            relations = sp_descriptor.compute_net()[:, :, 0]
+    else:
+        relations = sp_descriptor.compute_net()[:, :, 0]
+        _data = np.arange(len(relations))
+    ## 2. Formatting output
     if store == 'matrix':
         pass
     elif store == 'sparse':
@@ -303,8 +318,42 @@ def compute_PointsNeighsIntersection(sp_descriptor, store='network',
     elif store == 'network':
         relations = coo_matrix(relations)
         relations = nx.from_scipy_sparse_matrix(relations)
-        mapping = dict(zip(relations.nodes(), regions_id))
+        mapping = dict(zip(relations.nodes(), u_regs.ravel()))
         relations = nx.relabel_nodes(relations, mapping)
     pars_rel = {'symmetric': symmetric, 'store': store}
 
     return relations, pars_rel, _data
+
+#
+#    ## 0. Needed variables
+#    # Sp descriptor management
+#    if type(sp_descriptor) == tuple:
+#        activated = sp_descriptor[1] if activated is not None else None
+#        regions_id, elements_i = get_regions4distances(sp_descriptor[0],
+#                                                       elements, activated)
+#        sp_descriptor = create_sp_descriptor_points_regs(sp_descriptor,
+#                                                         regions_id,
+#                                                         elements_i)
+#        _data = np.array(regions_id)
+#        _data = _data.reshape((_data.shape[0], 1))
+#    else:
+#        regions, elements_i = get_regions4distances(sp_descriptor,
+#                                                    elements, activated)
+#        _data = np.array(regions)
+#        _data = _data.reshape((_data.shape[0], 1))
+#
+#    ## 1. Computation of relations
+#    relations = sp_descriptor.compute_net()[:, :, 0]
+#    #filter_relations(relations, self.data, elements)
+#    if store == 'matrix':
+#        pass
+#    elif store == 'sparse':
+#        relations = coo_matrix(relations)
+#    elif store == 'network':
+#        relations = coo_matrix(relations)
+#        relations = nx.from_scipy_sparse_matrix(relations)
+#        mapping = dict(zip(relations.nodes(), regions_id))
+#        relations = nx.relabel_nodes(relations, mapping)
+#    pars_rel = {'symmetric': symmetric, 'store': store}
+#
+#    return relations, pars_rel, _data

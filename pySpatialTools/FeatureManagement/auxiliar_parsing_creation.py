@@ -21,3 +21,8 @@ def _spdesc_parsing_creation(retrievers_info, features_info, pars_spdesc={},
     pars_spdesc['mapselector_spdescriptor'] = selectors
     spdesc = SpatialDescriptorModel(retrievers, featurers, **pars_spdesc)
     return spdesc
+
+
+def _aggregation_features_parsing_creation(retrievers_info, ):
+    """Instantiation of spdesc object from aggregation information."""
+    pass

@@ -330,8 +330,13 @@ def test():
 
     sparse_from_listaregneighs(lista, u_regs, symmetric=True)
     sparse_from_listaregneighs(lista, u_regs, symmetric=False)
-#    compute_selfdistances(retriever(locs, 4, ifdistance=True), element_labels,
-#                          typeoutput='network', symmetric=True)
+    ret_selfdists = KRetriever(locs, 4, ifdistance=True)
+    compute_selfdistances(ret_selfdists, np.arange(100), typeoutput='network',
+                          symmetric=True)
+    compute_selfdistances(ret_selfdists, np.arange(100), typeoutput='sparse',
+                          symmetric=True)
+    compute_selfdistances(ret_selfdists, np.arange(100), typeoutput='matrix',
+                          symmetric=True)
 
 #    create_sp_descriptor_points_regs(sp_descriptor, regions_id, elements_i)
 #    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
@@ -356,7 +361,12 @@ def test():
     # For future (TODO)
 
     ### RegionDistances Computers
+    griddisc1 = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
     ## Compute Contiguity
+    relations, pars_rel, _data =\
+        compute_ContiguityRegionDistances(griddisc1, store='matrix')
+    relations, pars_rel, _data =\
+        compute_ContiguityRegionDistances(griddisc1, store='network')
     relations, pars_rel, _data =\
         compute_ContiguityRegionDistances(griddisc1, store='sparse')
     mainmapper1 = RegionDistances(relations=relations, _data=None,
@@ -369,6 +379,25 @@ def test():
     assert(len(neighs) == 2)
 
     ## Compute CenterLocs
+    sp_descriptor = griddisc1, None, None
+    ## TODO: pdist problem
+    relations, pars_rel, _data =\
+        compute_CenterLocsRegionDistances(sp_descriptor, store='network',
+                                          elements=None, symmetric=True,
+                                          activated=None)
+    relations, pars_rel, _data =\
+        compute_CenterLocsRegionDistances(sp_descriptor, store='matrix',
+                                          elements=None, symmetric=True,
+                                          activated=None)
+    relations, pars_rel, _data =\
+        compute_CenterLocsRegionDistances(sp_descriptor, store='sparse',
+                                          elements=None, symmetric=True,
+                                          activated=None)
+    ## Retriever tuple
+    ## Retriever object
+
+    ## Spdesc
+
     ## Compute PointsNeighsIntersection
 
 
