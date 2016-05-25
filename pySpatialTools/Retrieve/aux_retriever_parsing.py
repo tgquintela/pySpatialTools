@@ -2,11 +2,14 @@
 
 import numpy as np
 from retrievers import Retriever
+from collectionretrievers import RetrieverManager
+from pySpatialTools.Discretization import SpatialDiscretizor
 
 
 ###############################################################################
 ######################## Main paser creation functions ########################
 ###############################################################################
+################################ Discretization ###############################
 def _discretization_parsing_creation(discretization_info):
     """Function which uniforms the discretization info to be useful in other
     parts of the code.
@@ -40,9 +43,9 @@ def _discretization_regionlocs_parsing_creation(discretization_info,
     * (discretizator, locs, regs)
     """
     if type(discretization_info) == tuple:
-        assert(isinstance(discretization_info[0], object))
+        assert(isinstance(discretization_info[0], SpatialDiscretizor))
         regionlocs = discretization_info[0].regionlocs
-        regions = discretization_info[0].regions
+        regions = discretization_info[0].regions_id
         boolean = False
         if activated:
             regs = discretization_info[0].discretize(discretization_info[1])
@@ -60,12 +63,14 @@ def _discretization_regionlocs_parsing_creation(discretization_info,
             regions = regions[logi]
             regionlocs = regionlocs[logi]
     else:
+        assert(isinstance(discretization_info, SpatialDiscretizor))
         regionlocs = discretization_info.regionlocs
-        regions = discretization_info.regions
+        regions = discretization_info.regions_id
     return regionlocs, regions
 
 
-def _retriever_parsing_creation(retriever_info):
+################################## Retrievers #################################
+def _retrieverobject_parsing_creation(retriever_info):
     """Function which uniforms the retriever info to be useful in other
     parts of the code.
 
@@ -86,6 +91,50 @@ def _retriever_parsing_creation(retriever_info):
         if len(retriever_info) == 4:
             pars_ret['autolocs'] = retriever_info[3]
         retriever_info = retriever_info[0](retriever_info[1], **pars_ret)
+    assert(isinstance(retriever_info, Retriever))
+    return retriever_info
+
+
+def _retrievermanager_parsing_creation(retriever_info):
+    """Function which uniforms the retriever info to be useful in other
+    parts of the code.
+
+    Standarts
+    * Retriever object
+    * Retriever objects
+    """
+    if isinstance(retriever_info, Retriever):
+        retriever_info = RetrieverManager(retriever_info)
+    elif type(retriever_info) == list:
+        assert(all([isinstance(e, Retriever) for e in retriever_info]))
+        retriever_info = RetrieverManager(retriever_info)
+    else:
+        assert(isinstance(retriever_info, RetrieverManager))
+    assert(isinstance(retriever_info, RetrieverManager))
+    return retriever_info
+
+
+def _retriever_parsing_creation(retriever_info):
+    """Function which uniforms the retriever info to be useful in other
+    parts of the code.
+
+    Standarts
+    * Retriever object
+    * (Retriever class, main_info)
+    * (Retriever class, main_info, pars_ret)
+    * (Retriever class, main_info, pars_ret, autolocs)
+    """
+    if isinstance(retriever_info, RetrieverManager):
+        pass
+    elif isinstance(retriever_info, Retriever):
+        retriever_info = _retrievermanager_parsing_creation(retriever_info)
+    elif type(retriever_info) == list:
+        r = [_retrieverobject_parsing_creation(ret) for ret in retriever_info]
+        retriever_info = _retrievermanager_parsing_creation(r)
+    else:
+        retriever_info = _retrieverobject_parsing_creation(retriever_info)
+        retriever_info = _retrievermanager_parsing_creation(retriever_info)
+    assert(isinstance(retriever_info, RetrieverManager))
     return retriever_info
 
 

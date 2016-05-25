@@ -64,6 +64,10 @@ class GridSpatialDisc(MetricDiscretizor):
         "Get the regionslocs (representative region location) described here."
         return self._map_regionid2regionlocs(self.get_regions_id())
 
+    @property
+    def regionlocs(self):
+        return self.get_regionslocs()
+
     ########################### Compulsary mappers ###########################
     ##########################################################################
     def _map_loc2regionid(self, locs):

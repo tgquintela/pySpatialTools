@@ -671,11 +671,16 @@ def _featuresmanager_parsing_creation(feats_info):
     """
     if isinstance(feats_info, Features):
         feats_info = FeaturesManager(feats_info)
+    elif type(feats_info) == list:
+        assert(all([isinstance(e, Features) for e in feats_info]))
+        feats_info = FeaturesManager(feats_info)
     elif isinstance(feats_info, FeaturesManager):
         pass
     else:
         assert(type(feats_info) == tuple)
-        if isinstance(feats_info[0], Features):
+        if isinstance(feats_info[0], Features) or type(feats_info[0]) == list:
+            if type(feats_info[0]) == list:
+                assert(all([isinstance(e, Features) for e in feats_info[0]]))
             assert(type(feats_info[1]) == dict)
             assert(len(feats_info) >= 2)
             if len(feats_info) == 2:
@@ -722,6 +727,9 @@ def _features_parsing_creation(feats_info):
         feats_info = FeaturesManager(feats_info)
     elif isinstance(feats_info, Features):
         feats_info = FeaturesManager(feats_info)
+    elif type(feats_info) == list:
+        assert(all([isinstance(e, Features) for e in feats_info]))
+        feats_info = FeaturesManager(feats_info)
     elif isinstance(feats_info, FeaturesManager):
         pass
     else:
@@ -731,6 +739,8 @@ def _features_parsing_creation(feats_info):
             feats_info = _featuresobject_parsing_creation(feats_info)
             feats_info = FeaturesManager(feats_info)
         elif isinstance(feats_info[0], Features):
+            feats_info = _featuresmanager_parsing_creation(feats_info)
+        elif type(feats_info[0]) == list:
             feats_info = _featuresmanager_parsing_creation(feats_info)
         else:
             assert(type(feats_info[0]) == tuple)

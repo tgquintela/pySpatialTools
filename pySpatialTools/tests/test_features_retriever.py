@@ -330,10 +330,16 @@ def test():
     assert(isinstance(features_obj, Features))
     features_ret = _features_parsing_creation(features_obj)
     assert(isinstance(features_ret, FeaturesManager))
+    features_ret = _features_parsing_creation([features_obj])
+    assert(isinstance(features_ret, FeaturesManager))
     features_obj = _featuresobject_parsing_creation(feats_info)
     assert(isinstance(features_obj, Features))
     pars_feats = {}
     feats_info = (features_obj, pars_feats)
+    features_ret = _features_parsing_creation(feats_info)
+    assert(isinstance(features_ret, FeaturesManager))
+    pars_feats = {}
+    feats_info = ([features_obj], pars_feats)
     features_ret = _features_parsing_creation(feats_info)
     assert(isinstance(features_ret, FeaturesManager))
     pars_feats = {}

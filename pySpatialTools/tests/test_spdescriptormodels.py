@@ -34,7 +34,8 @@ from pySpatialTools.utils.util_classes import create_mapper_vals_i
 ## Descriptormodel
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor, NBinsHistogramDesc, SparseCounter
-from pySpatialTools.FeatureManagement import SpatialDescriptorModel
+from pySpatialTools.FeatureManagement import SpatialDescriptorModel,\
+    _spdesc_parsing_creation
 
 #from ..utils.artificial_data import create_random_image
 from ..utils.util_external import Logger
@@ -359,6 +360,12 @@ def test():
     os.remove('logfile.log')
     spdesc._compute_nets()
     spdesc._compute_retdriven()
+
+    ############
+    ### Auxiliar functions
+    ####
+    spdesc = _spdesc_parsing_creation(ret, feat)
+    assert(isinstance(spdesc, SpatialDescriptorModel))
 
 #    ###########################################################################
 #    ###########################################################################

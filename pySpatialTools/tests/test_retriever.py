@@ -1625,14 +1625,21 @@ def test():
     locs = np.random.random((100, 2))
     pars_ret = {}
 
+    retriever_info = KRetriever(locs)
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    retriever_info = [KRetriever(locs)]
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_manager, RetrieverManager))
     retriever_info = (KRetriever, locs)
-    retriever_object = _retriever_parsing_creation(retriever_info)
-    assert(isinstance(retriever_object, Retriever))
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_manager, RetrieverManager))
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_manager, RetrieverManager))
     retriever_info = (KRetriever, locs, pars_ret)
-    retriever_object = _retriever_parsing_creation(retriever_info)
-    assert(isinstance(retriever_object, Retriever))
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_manager, RetrieverManager))
     retriever_info = (KRetriever, locs, pars_ret, locs)
-    retriever_object = _retriever_parsing_creation(retriever_info)
-    assert(isinstance(retriever_object, Retriever))
+    retriever_manager = _retriever_parsing_creation(retriever_info)
+    assert(isinstance(retriever_manager, RetrieverManager))
 
-    retriever_object = _retriever_parsing_creation(retriever_object)
+    retriever_manager = _retriever_parsing_creation(retriever_manager)

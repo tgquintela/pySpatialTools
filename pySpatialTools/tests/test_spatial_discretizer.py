@@ -22,7 +22,9 @@ from pySpatialTools.Discretization.Discretization_set.\
     general_set_discretization import format_membership, to_sparse,\
     find_idx_in_array
 
-from pySpatialTools.Retrieve import _discretization_parsing_creation
+from pySpatialTools.Retrieve import _discretization_parsing_creation,\
+    _discretization_regionlocs_parsing_creation
+
 
 ## TODO:
 ########
@@ -312,3 +314,22 @@ def test():
     _discretization_parsing_creation(discretization_info)
     discretization_info = locs, np.random.randint(0, 10, 100)
     _discretization_parsing_creation(discretization_info)
+    disc1.discretize(locs)
+
+    regs, locs = _discretization_regionlocs_parsing_creation(disc1)
+#    assert(len(regs) == len(locs))
+    regs, locs = _discretization_regionlocs_parsing_creation((disc1, locs))
+#    assert(len(regs) == len(locs))
+    regs, locs = _discretization_regionlocs_parsing_creation((disc1, locs),
+                                                             None, True)
+#    assert(len(regs) == len(locs))
+    locs = np.random.random((100, 2))
+    disc1 = GridSpatialDisc((ngx, ngy), xlim=(0, 1), ylim=(0, 1))
+    regs, locs = _discretization_regionlocs_parsing_creation((disc1, locs),
+                                                             np.arange(100),
+                                                             True)
+#    assert(len(regs) == len(locs))
+    regs, locs = _discretization_regionlocs_parsing_creation((disc1, locs),
+                                                             np.arange(100),
+                                                             False)
+#    assert(len(regs) == len(locs))

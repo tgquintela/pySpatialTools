@@ -121,6 +121,10 @@ def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
             else:
                 retriever_info = tuple([retriever_info[0]] + [centerlocs] +
                                        list(retriever_info[1:]))
+
+            ## TODO:
+            # Instantiate PhantomFeatures
+            # Map_vals_i
             sp_descriptor = _spdesc_parsing_creation(retriever_info)
             relations = sp_descriptor.compute_net()[:, :, 0]
     else:

@@ -18,3 +18,5 @@ from Discretization_2d.polygondiscretization import IrregularSpatialDisc
 
 ## Set Discretization
 from Discretization_set import SetDiscretization
+
+from spatialdiscretizer import SpatialDiscretizor

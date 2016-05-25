@@ -773,19 +773,15 @@ class PhantomFeatures(Features):
     typefeat = 'phantom'
 
     def _initialization(self):
-        ## Default mutable functions
-        self._get_characs_k = self._get_characs_k
-        self._get_real_data = self._real_data_general
-        self._get_virtual_data = self._virtual_data_general
         ## Specific class parameters
         self.relabel_indices = None  # TODO
         self.features_array = None
 
-    def __init__(self, features, perturbations=None, names=[], out_features=[],
-                 characterizer=None, out_formatter=None):
+    def __init__(self, features_info, perturbations=None, names=[],
+                 out_features=[], characterizer=None, out_formatter=None):
         self._global_initialization()
         self._initialization()
-        self._format_features(features, out_features)
+        self._format_features(features_info)
         self._format_characterizer(characterizer, out_formatter)
         self._format_variables(names)
         self._format_perturbation(perturbations)
@@ -797,10 +793,33 @@ class PhantomFeatures(Features):
 
     @property
     def shape(self):
-        n = None
+        n = None if self._n is None else self._n
         nfeats = None if self.variables is None else len(self.variables)
         ks = self.k_perturb+1
         return n, nfeats, ks
+
+    ############################### Interaction ###############################
+    ###########################################################################
+    ################################# Getters #################################
+    def _get_feats_k(self, k, idxs):
+        return idxs[k]
+
+    def _get_relpos_k(self, k, d):
+        return d[k]
+
+    ################################ Formatters ###############################
+    ###########################################################################
+    def _format_features(self, features_info):
+        self._n, self._nfeats = None, None
+        if type(features_info) == tuple:
+            self._n, self._nfeats = features_info
+
+    def _format_perturbation(self, perturbations):
+        pass
+
+    def _format_variables(self, names):
+        self.variables = names
+        self.out_features = self.variables
 
 
 ###############################################################################
