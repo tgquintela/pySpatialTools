@@ -23,6 +23,14 @@ def _spdesc_parsing_creation(retrievers_info, features_info, pars_spdesc={},
     return spdesc
 
 
-def _aggregation_features_parsing_creation(retrievers_info, ):
+def _aggregation_features_parsing_creation(aggregation_info):
     """Instantiation of spdesc object from aggregation information."""
-    pass
+    if isinstance(aggregation_info, SpatialDescriptorModel):
+        pass
+    elif type(aggregation_info) == tuple:
+        if len(aggregation_info) == 2:
+            retrievers_info, features_info = aggregation_info
+            aggregation_info =\
+                _spdesc_parsing_creation(retrievers_info, features_info)
+
+    return aggregation_info

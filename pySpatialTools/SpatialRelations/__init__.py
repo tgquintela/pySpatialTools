@@ -23,13 +23,9 @@ from regiondistances_computers import compute_CenterLocsRegionDistances,\
     compute_ContiguityRegionDistances, compute_PointsNeighsIntersection,\
     compute_AvgDistanceRegions
 
-## Individual functions for computing relations
-#from region_spatial_relations import regions_relation_points
-#from general_spatial_relations import general_spatial_relation,\
-#    general_spatial_relations
+## Individual functions for formatting
 from formatters import format_out_relations, _relations_parsing_creation
 
 ## Individual functions for preparing the computation of relations
 from aux_regionmetrics import get_regions4distances,\
     sparse_from_listaregneighs, compute_selfdistances
-#    create_sp_descriptor_regionlocs, create_sp_descriptor_points_regs,\

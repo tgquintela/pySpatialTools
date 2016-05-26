@@ -393,6 +393,19 @@ def test():
         compute_CenterLocsRegionDistances(sp_descriptor, store='sparse',
                                           elements=None, symmetric=True,
                                           activated=None)
+    sp_descriptor = griddisc1, (KRetriever, {'info_ret': 2}), None
+
+### TODO: Descriptormodel
+#    relations, pars_rel, _data =\
+#        compute_CenterLocsRegionDistances(sp_descriptor, store='sparse',
+#                                          elements=None, symmetric=True,
+#                                          activated=None)
+#    sp_descriptor = griddisc1, (KRetriever, {'info_ret': 2}), None
+#    relations, pars_rel, _data =\
+#        compute_AvgDistanceRegions(sp_descriptor, store='sparse',
+#                                   elements=None, symmetric=True,
+#                                   activated=None)
+
     ## Retriever tuple
     ## Retriever object
 

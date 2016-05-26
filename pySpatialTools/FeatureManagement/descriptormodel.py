@@ -83,17 +83,78 @@ class DummyDescriptor(DescriptorModel):
         ## Check descriptormodel
         self._checker_descriptormodel()
 
-    def compute_characs(self, pointfeats, point_pos):
+    def compute(self, pointfeats, point_pos):
         """From [iss][nei][feats] to [iss][feats]"""
         return [pfeats[0] for pfeats in pointfeats]
+#
+#    def reducer(self, aggdescriptors_idxs, point_aggpos):
+#        """From [iss][nei][feats] to [iss][feats]"""
+#        return self.compute_characs(aggdescriptors_idxs, point_aggpos)
+#
+#    def aggdescriptor(self, pointfeats, point_pos):
+#        """From [iss][nei][feats] to [iss][feats]"""
+#        return self.compute_characs(pointfeats, point_pos)
 
-    def reducer(self, aggdescriptors_idxs, point_aggpos):
-        """From [iss][nei][feats] to [iss][feats]"""
-        return self.compute_characs(aggdescriptors_idxs, point_aggpos)
 
-    def aggdescriptor(self, pointfeats, point_pos):
+class DummyDistancesDescriptor(DescriptorModel):
+    """Dummy distances descriptor model created for testing purposes."""
+
+    name_desc = "Dummy descriptor"
+
+    def __init__(self, n, map_idx=None, funct=None):
+        ## Specific class parameters
+        self._n = n
+        self._map2idx = lambda idx: idx
+        if map_idx is not None:
+            self._map2idx = map_idx
+        self._funct = lambda x: x if x is not None else 0
+        if funct is not None:
+            self._funct = funct
+        ## General compulsary functions
+        self._out_formatter = null_out_formatter
+        self._f_default_names = lambda x: range(x[1])
+        ## Check descriptormodel
+        self._checker_descriptormodel()
+
+    def compute(self, pointfeats, point_pos):
         """From [iss][nei][feats] to [iss][feats]"""
-        return self.compute_characs(pointfeats, point_pos)
+        return self._core_characterizer(pointfeats, point_pos)
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        """Dummy set for setting specific inputs and outputs."""
+        if type_outfeatures == 'dict':
+            self._core_characterizer = self._distances_characterizer_dict
+        else:
+            self._core_characterizer = self._distances_characterizer_array
+
+    def _distances_characterizer_dict(self, pointfeats, point_pos):
+        """"""
+        descriptors = []
+        if point_pos is None:
+            return descriptors
+        for iss_i in range(len(pointfeats)):
+            descriptors_i = {}
+            if point_pos[iss_i] is None:
+                descriptors.append(descriptors_i)
+                continue
+            for nei in range(len(pointfeats[iss_i])):
+                descriptors_i[self._map2idx(pointfeats[iss_i][nei])] =\
+                    self._funct(point_pos[iss_i][nei])
+            descriptors.append(descriptors_i)
+        return descriptors
+
+    def _distances_characterizer_array(self, pointfeats, point_pos):
+        """"""
+        descriptors = np.ones((len(pointfeats), self._n))*self._funct(0)
+        if point_pos is None:
+            return descriptors
+        for iss_i in range(len(pointfeats)):
+            if point_pos[iss_i] is None:
+                continue
+            for nei in range(len(pointfeats[iss_i])):
+                descriptors[iss_i][self._map2idx(pointfeats[iss_i][nei])] =\
+                    self._funct(point_pos[iss_i][nei])
+        return descriptors
 
 
 class GeneralDescriptor(DescriptorModel):

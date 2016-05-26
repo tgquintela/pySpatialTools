@@ -66,23 +66,20 @@ def test():
 
     class Dummy1Desc(DummyDesc):
         def __init__(self):
-            self.compute_characs = None
-            self._out_formatter = None
-            self.reducer = None
+            self.compute = lambda x, d: [e[0] for e in x]
+            self._out_formatter = lambda x, y1, y2, y3: x
             self._f_default_names = compute_featurenames
 
     class Dummy2Desc_exp(DummyDesc):
         def __init__(self):
-            self.compute_characs = lambda x, d: [e[0] for e in x]
+            self.compute = lambda x, d: [e[0] for e in x]
             self._out_formatter = lambda x, y1, y2, y3: x
-            self.reducer = None
             self._f_default_names = compute_featurenames
 
     class Dummy2Desc_imp(DummyDesc):
         def __init__(self):
-            self.compute_characs = lambda x, d: np.array([e[0] for e in x])
+            self.compute = lambda x, d: np.array([e[0] for e in x])
             self._out_formatter = lambda x, y1, y2, y3: x
-            self.reducer = None
             self._f_default_names = compute_featurenames
 
     ## Possible descriptormodels to test
@@ -196,14 +193,15 @@ def test():
         # Descriptormodels setting
         # null formatters
         #Feat._format_characterizer(None, None)
-        Feat.set_descriptormodel(dum1desc)
-        if Feat.typefeat == 'implicit':
-            Feat.set_descriptormodel(dum2desc)
-        else:
-            Feat.set_descriptormodel(dum2desc_agg)
+        if Feat.typefeat != 'phantom':
+            Feat.set_descriptormodel(dum1desc)
+            if Feat.typefeat == 'implicit':
+                Feat.set_descriptormodel(dum2desc)
+            else:
+                Feat.set_descriptormodel(dum2desc_agg)
 
-        avgdesc = AvgDescriptor()
-        Feat.set_descriptormodel(avgdesc)
+            avgdesc = AvgDescriptor()
+            Feat.set_descriptormodel(avgdesc)
 
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))
@@ -252,11 +250,10 @@ def test():
     pos_nss = [0, 1, 2, 3, 4]
     pos_null = [None, 0., np.inf]
     pos_characterizer = [None]
-    pos_outformatter = [None]
+#    pos_outformatter = [None]
     pos_indices = [None]
 
-    possibilities = [pos_nss, pos_null, pos_characterizer, pos_outformatter,
-                     pos_indices]
+    possibilities = [pos_nss, pos_null, pos_characterizer, pos_indices]
 
     for p in product(*possibilities):
 #        print p
@@ -265,9 +262,8 @@ def test():
         if np.random.randint(0, 2):
             names = pos_names[p[0]]
         ## Instantiation
-        Feat = ExplicitFeatures(pos_feats[p[0]], names=names, indices=p[4],
-                                characterizer=p[2], out_formatter=p[3],
-                                nullvalue=p[1])
+        Feat = ExplicitFeatures(pos_feats[p[0]], names=names, indices=p[3],
+                                characterizer=p[2], nullvalue=p[1])
         ## Testing main functions
         test_getitem(Feat)
 
@@ -275,9 +271,8 @@ def test():
     try:
         boolean = False
         names = [str(i) for i in range(len(aggcontfeats_ar0[0])+1)]
-        ExplicitFeatures(aggcontfeats_ar0, names=names, indices=p[4],
-                         characterizer=p[2], out_formatter=p[3],
-                         nullvalue=p[1])
+        ExplicitFeatures(aggcontfeats_ar0, names=names, indices=p[3],
+                         characterizer=p[2], nullvalue=p[1])
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -323,12 +318,12 @@ def test():
     pos_nss = [0, 1, 2, 3, 4]
     pos_null = [None]  # TODO: [None, 0., np.inf]
     pos_characterizer = [None]
-    pos_outformatter = [None]
+#    pos_outformatter = [None]
     pos_indices = [None]  # TODO
     pos_perturbations = [None, perturbation]
 
-    possibilities = [pos_nss, pos_null, pos_characterizer, pos_outformatter,
-                     pos_indices, pos_perturbations]
+    possibilities = [pos_nss, pos_null, pos_characterizer, pos_indices,
+                     pos_perturbations]
     ## Combination of inputs testing
     for p in product(*possibilities):
 #        print p
@@ -338,8 +333,7 @@ def test():
             names = pos_names[p[0]]
         ## Instantiation
         Feat = ImplicitFeatures(pos_feats[p[0]], names=names,
-                                characterizer=p[2], out_formatter=p[3],
-                                perturbations=p[5])
+                                characterizer=p[2], perturbations=p[4])
         ## Testing main functions
 #        if p[0] < 3:
 #            test_getitem(Feat)
@@ -391,20 +385,21 @@ def test():
     #### Phantom Features testing
     ### Definition classes
     # Instantiation
-    pos_fea_info = [None, (100, 25)]
+    pos_fea_info = [(100, 25)]
     pos_perturbations = [None, perturbation]
     pos_names = [[]]
     pos_outfeats = [[]]
     pos_characterizer = [None, ]
-    pos_outformatter = [None]
+#    pos_outformatter = [None]
 
     possibilities = [pos_fea_info, pos_perturbations, pos_names, pos_outfeats,
-                     pos_characterizer, pos_outformatter]
+                     pos_characterizer]
     ## Combination of inputs testing
     for p in product(*possibilities):
+        print p
         fe = PhantomFeatures(features_info=p[0], perturbations=p[1],
-                             names=p[2], out_features=p[3], characterizer=p[4],
-                             out_formatter=p[5])
+                             names=p[2], out_features=p[3], characterizer=p[4])
+        test_getitem(fe)
 
     ###########################################################################
     #### Testing auxiliar parsing

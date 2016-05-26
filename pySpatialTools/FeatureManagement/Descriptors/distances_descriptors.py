@@ -63,7 +63,6 @@ class DistanceDescriptors(DescriptorModel):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
         """
-        
         return measure
 
     def relative_descriptors(self, i, neighs_info, desc_i, desc_neigh, vals_i):
@@ -80,6 +79,7 @@ class DistanceDescriptors(DescriptorModel):
 
 
 def transform_desc_neighs():
+    pass
 
 
 def distances_descriptors(pointfeats, point_pos, f):

@@ -391,7 +391,7 @@ class FeaturesManager:
         ## Input mapping
         i_input = self._maps_input[typefeats[0]](i)
         ## Retrieve features
-        feats_i = self.features[typefeats[1]][i_input, k]
+        feats_i = self.features[typefeats[1]].compute((i_input, k))
         ## Outformat
         feats_i = self._maps_output(self, feats_i)
         return feats_i
@@ -411,7 +411,7 @@ class FeaturesManager:
             i_j = [i[j]] if type(i[j]) == int else i[j]
             i_input = self._maps_input[typefeats[j][0]](i_j)
             ## Retrieve features
-            feats_ij = self.features[typefeats[j][1]][i_input, k]
+            feats_ij = self.features[typefeats[j][1]].compute((i_input, k))
             ## Outformat
             feats_ij = self._maps_output(self, feats_ij)
             for k_j in range(len(feats_ij)):
@@ -439,7 +439,7 @@ class FeaturesManager:
         ## Input mapping
         neighs_info = self._maps_input[typefeats[0]](neighs_info)
         ## Features retrieve
-        feats_neighs = self.features[typefeats[1]][neighs_info, k]
+        feats_neighs = self.features[typefeats[1]].compute((neighs_info, k))
         ## Outformat
         feats_neighs = self._maps_output(self, feats_neighs)
         return feats_neighs
@@ -460,7 +460,8 @@ class FeaturesManager:
             neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
             neighs_info_j = self._maps_input[typefeats[j][0]](neighs_info_j)
             ## Features retrieve
-            feats_neighs_j = self.features[typefeats[j][1]][neighs_info_j, k]
+            feats_neighs_j =\
+                self.features[typefeats[j][1]].compute((neighs_info_j, k))
             ## Outformat
             feats_neighs_j = self._maps_output(self, feats_neighs_j)
             ## Store

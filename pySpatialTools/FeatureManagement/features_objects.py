@@ -21,7 +21,7 @@ from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
 from pySpatialTools.utils.util_classes import Neighs_Info
 from pySpatialTools.utils.util_classes.neighs_info import\
     neighsinfo_features_preformatting_tuple
-from descriptormodel import DummyDescriptor
+from descriptormodel import DummyDescriptor, DummyDistancesDescriptor
 
 
 class Features:
@@ -43,15 +43,17 @@ class Features:
         ## Function to homogenize output respect aggfeatures
         # Reduction of dimensionality (dummy getting first neigh feats)
         self.descriptormodel = DummyDescriptor()
-        self._characterizer = lambda x, d: np.array([e[0] for e in x])
+#        self._characterizer = lambda x, d: np.array([e[0] for e in x])
         self._format_out_k = lambda x, y1, y2, y3: x
         self._out = 'ndarray'
 
     def __len__(self):
-        if type(self.features) == list and self.typefeat == 'explicit':
-            return len(self.features[0])
-        else:
-            return len(self.features)
+        if self.shape[0] is None:
+            return 0
+        return self.shape[0]
+
+    def compute(self, key):
+        return self[key]
 
     def __getitem__(self, key):
         """Possible ways to get items in pst.Features classes:
@@ -77,7 +79,7 @@ class Features:
                 key = key_i, key[1]
                 # Instantiation
                 neighs_info = Neighs_Info()
-                neighs_info.set_information(self.k_perturb, len(self.features))
+                neighs_info.set_information(self.k_perturb, self.shape[0])
                 neighs_info.set(key)
                 empty = neighs_info.empty()
                 # Get information
@@ -118,11 +120,12 @@ class Features:
                 for j_i in range(len(i[j_k])):
                     if len(i[j_k][j_i]) == 0:
                         continue
-                    bool_overbound = np.max(i[j_k][j_i]) >= self.shape[0]
-                    bool_lowerbound = np.min(i[j_k][j_i]) < 0
-#                    print i[j_k][j_i], self.shape[0]
-                    if bool_lowerbound or bool_overbound:
-                        raise IndexError("Indices out of bounds.")
+                    if self.shape[0] is not None:
+                        bool_overbound = np.max(i[j_k][j_i]) >= self.shape[0]
+                        bool_lowerbound = np.min(i[j_k][j_i]) < 0
+    #                    print i[j_k][j_i], self.shape[0]
+                        if bool_lowerbound or bool_overbound:
+                            raise IndexError("Indices out of bounds.")
         ## 2. Format k
         if k is None:
             k = list(range(self.k_perturb+1))
@@ -192,17 +195,27 @@ class Features:
     def set_descriptormodel(self, descriptormodel, featuresnames=[]):
         """Link the descriptormodel and the feature retriever."""
         descriptormodel.set_functions(type(self.features).__name__, self._out)
-        if self.typefeat == 'implicit':
-            self._format_characterizer(descriptormodel.compute_characs,
-                                       descriptormodel._out_formatter)
-        elif self.typefeat == 'explicit':
-            self._format_characterizer(descriptormodel.reducer,
-                                       descriptormodel._out_formatter)
+        ## Set descriptormodel
+        self.descriptormodel = descriptormodel
+
+#        if self.typefeat == 'implicit':
+#            self._format_characterizer(descriptormodel.compute_characs,
+#                                       descriptormodel._out_formatter)
+#        elif self.typefeat == 'explicit':
+#            self._format_characterizer(descriptormodel.reducer,
+#                                       descriptormodel._out_formatter)
+        ## Set featurenames
         if featuresnames:
             self._format_variables(featuresnames)
         else:
             featuresnames = descriptormodel._f_default_names(self.features)
             self._format_variables(featuresnames)
+
+        ## Test
+        out = self[([0], [0.]), 0]
+        if type(out[0][0]) == dict and self._out == 'ndarray':
+            warnings.warn("Change in output type because incoherence.")
+            self._out = 'dict'
         self._setdescriptor = True
 
     ################################ Formatters ###############################
@@ -213,26 +226,33 @@ class Features:
                                      self._nullvalue)
         return feats_o
 
-    def _format_characterizer(self, characterizer, out_formatter):
-        """Format characterizer function. It is needed to homogenize outputs in
-        order to have the same output type as the aggfeatures.
-        """
+    def _format_characterizer(self, characterizer):
         if characterizer is not None:
-            self._characterizer = characterizer
-        if out_formatter is not None:
-            self._format_out_k = out_formatter
+            self.set_descriptormodel(characterizer)
 
-        if not (characterizer is None or out_formatter is None):
-            ## Test
-            out = self[([0], [0.]), 0]
-            if type(out[0][0]) == dict and self._out == 'ndarray':
-                warnings.warn("Change in output type because incoherence.")
-                self._out = 'dict'
+#    def _format_characterizer(self, characterizer, out_formatter):
+#        """Format characterizer function. It is needed to homogenize outputs in
+#        order to have the same output type as the aggfeatures.
+#        """
+#        if characterizer is not None:
+#            self._characterizer = characterizer
+#        if out_formatter is not None:
+#            self._format_out_k = out_formatter
+#
+#        if not (characterizer is None or out_formatter is None):
+#            ## Test
+#            out = self[([0], [0.]), 0]
+#            if type(out[0][0]) == dict and self._out == 'ndarray':
+#                warnings.warn("Change in output type because incoherence.")
+#                self._out = 'dict'
             ## Redundant
 #            try:
 #                self[([0], [0.]), 0]
 #            except:
 #                raise TypeError("Incorrect characterizer.")
+
+    def _characterizer(self, x, d):
+        return self.descriptormodel.compute(x, d)
 
 #    def _format_feat_interactors(self, typeidxs):
 #        """Programming this class in order to fit properly to the inputs and
@@ -344,7 +364,7 @@ class ImplicitFeatures(Features):
         self._global_initialization()
         self._initialization()
         self._format_features(features, out_features)
-        self._format_characterizer(characterizer, out_formatter)
+        self._format_characterizer(characterizer)
         self._format_variables(names)
         self._format_perturbation(perturbations)
 
@@ -601,12 +621,12 @@ class ExplicitFeatures(Features):
         self._get_virtual_data = self._virtual_data_general
 
     def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
-                 characterizer=None, out_formatter=None):
+                 characterizer=None):
         self._global_initialization()
         self._initialization()
         self._format_aggfeatures(aggfeatures, names, indices)
         self._nullvalue = self._nullvalue if nullvalue is None else nullvalue
-        self._format_characterizer(characterizer, out_formatter)
+        self._format_characterizer(characterizer)
 
     @property
     def shape(self):
@@ -721,7 +741,7 @@ class ExplicitFeatures(Features):
             self.features = aggfeatures
             self.k_perturb = self._k_reindices-1
             # Default listdict characterizer
-            self._characterizer = lambda x, d: [e[0] for e in x]
+#            self._characterizer = lambda x, d: [e[0] for e in x]
         elif type(aggfeatures) == np.ndarray:
             if len(aggfeatures.shape) == 1:
                 self._k_reindices = 1
@@ -776,13 +796,14 @@ class PhantomFeatures(Features):
         ## Specific class parameters
         self.relabel_indices = None  # TODO
         self.features_array = None
+        self.features = 0, 0
 
     def __init__(self, features_info, perturbations=None, names=[],
                  out_features=[], characterizer=None, out_formatter=None):
         self._global_initialization()
         self._initialization()
         self._format_features(features_info)
-        self._format_characterizer(characterizer, out_formatter)
+        self._format_characterizer(characterizer)
         self._format_variables(names)
         self._format_perturbation(perturbations)
 
@@ -813,6 +834,7 @@ class PhantomFeatures(Features):
         self._n, self._nfeats = None, None
         if type(features_info) == tuple:
             self._n, self._nfeats = features_info
+            self.features = features_info
 
     def _format_perturbation(self, perturbations):
         pass
@@ -822,6 +844,12 @@ class PhantomFeatures(Features):
             self.variables = names
             self.out_features = self.variables
             self._nfeats = len(names)
+
+    def _format_characterizer(self, characterizer):
+        if characterizer is not None:
+            self.set_descriptormodel(characterizer)
+        else:
+            self.set_descriptormodel(DummyDistancesDescriptor(self._nfeats))
 
 
 ###############################################################################

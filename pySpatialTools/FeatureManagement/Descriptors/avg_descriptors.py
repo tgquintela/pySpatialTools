@@ -42,7 +42,7 @@ class AvgDescriptor(DescriptorModel):
     ###########################################################################
     ####################### Compulsary main functions #########################
     ###########################################################################
-    def compute_characs(self, pointfeats, point_pos):
+    def compute(self, pointfeats, point_pos):
         """Compulsary function to pass for the feture retriever.
 
         Parameters
@@ -63,19 +63,19 @@ class AvgDescriptor(DescriptorModel):
         descriptors = self._core_characterizer(pointfeats, point_pos)
         return descriptors
 
-    def reducer(self, aggdescriptors_idxs, point_aggpos):
-        """Reducer gets the aggdescriptors of the neighbourhood regions
-        aggregated and collapse all of them to compute the descriptor
-        associated to a retrieved neighbourhood.
-        TODO: Global info for averaging
-        """
-        descriptors = avg_reducer(aggdescriptors_idxs, point_aggpos)
-        return descriptors
-
-    def aggdescriptor(self, pointfeats, point_pos):
-        "This function assigns descriptors to a aggregation unit."
-        descriptors = aggregator_summer(pointfeats, point_pos)
-        return descriptors
+#    def reducer(self, aggdescriptors_idxs, point_aggpos):
+#        """Reducer gets the aggdescriptors of the neighbourhood regions
+#        aggregated and collapse all of them to compute the descriptor
+#        associated to a retrieved neighbourhood.
+#        TODO: Global info for averaging
+#        """
+#        descriptors = avg_reducer(aggdescriptors_idxs, point_aggpos)
+#        return descriptors
+#
+#    def aggdescriptor(self, pointfeats, point_pos):
+#        "This function assigns descriptors to a aggregation unit."
+#        descriptors = aggregator_summer(pointfeats, point_pos)
+#        return descriptors
 
     ###########################################################################
     ##################### Non-compulsary main functions #######################
