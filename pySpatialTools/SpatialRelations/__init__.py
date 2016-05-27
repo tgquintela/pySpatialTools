@@ -20,8 +20,8 @@ from regionmetrics import DummyRegDistance, RegionDistances
 
 ## Function methods of distances
 from regiondistances_computers import compute_CenterLocsRegionDistances,\
-    compute_ContiguityRegionDistances, compute_PointsNeighsIntersection,\
-    compute_AvgDistanceRegions
+    compute_ContiguityRegionDistances, compute_AvgDistanceRegions
+    # compute_PointsNeighsIntersection
 
 ## Individual functions for formatting
 from formatters import format_out_relations, _relations_parsing_creation
