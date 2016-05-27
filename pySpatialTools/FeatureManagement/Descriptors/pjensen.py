@@ -12,7 +12,7 @@ Parameters
 
 import numpy as np
 from collections import Counter
-from ..descriptormodel import DescriptorModel
+from descriptormodel import DescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\

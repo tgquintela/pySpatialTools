@@ -23,7 +23,7 @@ from pySpatialTools.FeatureManagement.Interpolation_utils.\
     density_utils import clustering_by_comparison
 
 
-from pySpatialTools.FeatureManagement.descriptormodel import Interpolator
+from pySpatialTools.FeatureManagement.Descriptors import Interpolator
 from pySpatialTools.utils.util_external import Logger
 
 

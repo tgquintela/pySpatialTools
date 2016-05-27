@@ -18,7 +18,7 @@ from pySpatialTools.utils.artificial_data import continuous_array_features,\
     categorical_dict_features, continuous_agg_array_features,\
     categorical_agg_array_features, continuous_agg_dict_features,\
     categorical_agg_dict_features
-from pySpatialTools.FeatureManagement.descriptormodel import DummyDescriptor
+from pySpatialTools.FeatureManagement.Descriptors import DummyDescriptor
 from ..utils.util_classes import Neighs_Info
 
 
@@ -396,7 +396,7 @@ def test():
                      pos_characterizer]
     ## Combination of inputs testing
     for p in product(*possibilities):
-        print p
+#        print p
         fe = PhantomFeatures(features_info=p[0], perturbations=p[1],
                              names=p[2], out_features=p[3], characterizer=p[4])
         test_getitem(fe)

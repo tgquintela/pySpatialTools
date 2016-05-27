@@ -6,6 +6,8 @@ testing descriptor models utilities.
 
 """
 
+from itertools import product
+
 ## Retrieve
 #from pySpatialTools.Discretization import GridSpatialDisc
 #from pySpatialTools.Retrieve.SpatialRelations import AvgDistanceRegions
@@ -33,8 +35,8 @@ from pySpatialTools.FeatureManagement.aux_descriptormodels import\
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor, PjensenDescriptor, SumDescriptor, NBinsHistogramDesc,\
     SparseCounter
-from pySpatialTools.FeatureManagement.descriptormodel import\
-    GeneralDescriptor
+from pySpatialTools.FeatureManagement.Descriptors import\
+    GeneralDescriptor, DistancesDescriptor, NormalizedDistanceDescriptor
 from pySpatialTools.FeatureManagement.aux_descriptormodels import *
 
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel
@@ -434,7 +436,71 @@ def test():
     ############################# Descriptormodels ############################
     ###########################################################################
     #################################
+    ###### DistanceDescriptor
+    #########################
+    pos_n = [100]
+    pos_map_idx = [None, lambda idx: idx]
+    pos_funct = [None, lambda d: d]
+
+    pos = [pos_n, pos_map_idx, pos_funct]
+
+    for p in product(*pos):
+        distdesc = DistancesDescriptor(nfeats=p[0], map_idx=p[1], funct=p[2])
+
+        distdesc.set_functions(None, 'dict')
+        distdesc.compute([[0]], [[0.3]])
+        distdesc.compute([[0]], [None])
+        distdesc.compute([[0]], None)
+
+        distdesc.set_functions(None, 'ndarray')
+        distdesc.compute([[0]], [[0.3]])
+        distdesc.compute([[0]], [None])
+        distdesc.compute([[0]], None)
+
+    ###### NormalizedDistanceDescriptor
+    ###################################
+    regs = np.random.randint(0, 6, 100)
+    pos_regs = [regs, regs, regs.reshape((100, 1)), regs.reshape((100, 1)),
+                np.array([regs, regs, regs]).T]
+    pos_kperturb = [0, 2, 0, 2, 2]
+
+    pos_ipos = range(len(pos_kperturb))
+    pos_n = [6]
+    pos_map_idx = [None, lambda idx: idx]
+    pos_funct = [None, lambda d: d]
+
+    pos = [pos_ipos, pos_n, pos_map_idx, pos_funct]
+    for p in product(*pos):
+        ks = pos_kperturb[p[0]] if pos_kperturb[p[0]] is not None else 0
+        distdesc = NormalizedDistanceDescriptor(pos_regs[p[0]], nfeats=p[1],
+                                                map_idx=p[2], funct=p[3],
+                                                k_perturb=pos_kperturb[p[0]])
+
+        distdesc.set_functions(None, 'dict')
+        distdesc.compute([[0]], [[0.3]])
+        distdesc.compute([[0]], [None])
+        distdesc.compute([[0]], None)
+
+        distdesc.set_functions(None, 'ndarray')
+        desc0 = distdesc.compute([[0]], [[0.3]])
+        desc1 = distdesc.compute([[0]], [None])
+        desc2 = distdesc.compute([[0]], None)
+
+        vals_i = np.random.randint(0, 6, ks+1)
+
+        desc0 = np.array([desc0])
+        desc1 = np.array([desc1])
+        desc2 = np.array([desc2])
+
+        distdesc.complete_desc_i(None, None, None, desc0, vals_i)
+        distdesc.complete_desc_i(None, None, None, desc1, vals_i)
+        distdesc.complete_desc_i(None, None, None, desc2, vals_i)
+
+        measure = np.random.random((6, 6, ks+1))
+        distdesc.to_complete_measure(measure)
+
     #### SumDescriptor
+    ##################
     point_pos = None
     measure = np.random.random((100, 10, 2))
 #    characs = np.random.random((10, 5))

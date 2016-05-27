@@ -6,7 +6,7 @@ Descriptor which counts a histogram by using nbins.
 """
 
 import numpy as np
-from ..descriptormodel import DescriptorModel
+from descriptormodel import DescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\

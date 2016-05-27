@@ -8,7 +8,7 @@ descriptors.
 
 """
 
-from ..descriptormodel import DescriptorModel
+from descriptormodel import DescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\

@@ -34,7 +34,7 @@ from aux_descriptormodels import append_addresult_function,\
 from aux_featuremanagement import create_aggfeatures
 from features_objects import ImplicitFeatures, ExplicitFeatures, Features,\
     _featuresobject_parsing_creation
-from descriptormodel import DummyDescriptor, DescriptorModel
+from Descriptors import DummyDescriptor, DescriptorModel
 
 
 class FeaturesManager:

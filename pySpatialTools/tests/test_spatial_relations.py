@@ -11,13 +11,13 @@ from itertools import product
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import OrderEleNeigh, KRetriever
 from pySpatialTools.utils.artificial_data import randint_sparse_matrix
-from pySpatialTools.FeatureManagement.descriptormodel import DummyDescriptor
+from pySpatialTools.FeatureManagement.Descriptors import DummyDescriptor
 
 from pySpatialTools.SpatialRelations import RegionDistances, DummyRegDistance,\
     format_out_relations, _relations_parsing_creation
 from pySpatialTools.SpatialRelations.regiondistances_computers\
     import compute_AvgDistanceRegions, compute_CenterLocsRegionDistances,\
-    compute_ContiguityRegionDistances, compute_PointsNeighsIntersection
+    compute_ContiguityRegionDistances  # , compute_PointsNeighsIntersection
 from pySpatialTools.SpatialRelations.util_spatial_relations import\
     general_spatial_relation, general_spatial_relations
 from pySpatialTools.SpatialRelations.element_metrics import\
@@ -25,9 +25,7 @@ from pySpatialTools.SpatialRelations.element_metrics import\
 from pySpatialTools.SpatialRelations.aux_regionmetrics import\
     get_regions4distances, filter_possible_neighs
 
-from pySpatialTools.SpatialRelations import compute_CenterLocsRegionDistances,\
-    compute_ContiguityRegionDistances, compute_PointsNeighsIntersection,\
-    compute_AvgDistanceRegions,\
+from pySpatialTools.SpatialRelations import\
     format_out_relations, get_regions4distances,\
     sparse_from_listaregneighs, compute_selfdistances
 
@@ -342,20 +340,17 @@ def test():
 #    create_sp_descriptor_regionlocs(sp_descriptor, regions_id, elements_i)
 
     ## Compute Avg distance
-#    relations, _data, symmetric, store =\
-#        compute_AvgDistanceRegions(locs, griddisc1, ret1)
-#    regdists = RegionDistances(relations=relations, _data=_data,
-#                               symmetric=symmetric)
-#    regdists = RegionDistances(relations=relations, _data=None,
-#                               symmetric=symmetric, distanceorweighs=False)
-#    relations, _data, symmetric, store =\
-#        compute_AvgDistanceRegions(locs, griddisc2, ret2)
-#    regdists = RegionDistances(relations=relations, _data=_data,
-#                               symmetric=symmetric)
-#    relations, _data, symmetric, store =\
-#        compute_AvgDistanceRegions(locs, griddisc3, ret3)
-#    regdists = RegionDistances(relations=relations, _data=_data,
-#                               symmetric=symmetric)
+    locs = np.random.random((100, 2))
+    sp_descriptor = (griddisc1, locs), (KRetriever, {'info_ret': 5}), None
+    relations, pars_rel, _data =\
+        compute_AvgDistanceRegions(sp_descriptor, store='network')
+    regdists = RegionDistances(relations=relations, _data=_data, **pars_rel)
+    relations, pars_rel, _data =\
+        compute_AvgDistanceRegions(sp_descriptor, store='matrix')
+    regdists = RegionDistances(relations=relations, _data=_data, **pars_rel)
+    relations, pars_rel, _data =\
+        compute_AvgDistanceRegions(sp_descriptor, store='sparse')
+    regdists = RegionDistances(relations=relations, _data=_data, **pars_rel)
 
     # Region spatial relations
     # For future (TODO)
@@ -396,15 +391,10 @@ def test():
     sp_descriptor = griddisc1, (KRetriever, {'info_ret': 2}), None
 
 ### TODO: Descriptormodel
-#    relations, pars_rel, _data =\
-#        compute_CenterLocsRegionDistances(sp_descriptor, store='sparse',
-#                                          elements=None, symmetric=True,
-#                                          activated=None)
-#    sp_descriptor = griddisc1, (KRetriever, {'info_ret': 2}), None
-#    relations, pars_rel, _data =\
-#        compute_AvgDistanceRegions(sp_descriptor, store='sparse',
-#                                   elements=None, symmetric=True,
-#                                   activated=None)
+    relations, pars_rel, _data =\
+        compute_CenterLocsRegionDistances(sp_descriptor, store='sparse',
+                                          elements=None, symmetric=True,
+                                          activated=None)
 
     ## Retriever tuple
     ## Retriever object
@@ -413,10 +403,8 @@ def test():
 
     ## Compute PointsNeighsIntersection
 
-
     ## Aux_regionmetrics
     #sparse_from_listaregneighs(lista, u_regs, symmetric)
-
 
     ###########################################################################
     ### Relative positioner testing

@@ -14,7 +14,7 @@ from pySpatialTools.FeatureManagement.features_retriever import\
 from pySpatialTools.FeatureManagement.features_objects import\
     ImplicitFeatures, ExplicitFeatures, Features,\
     _featuresobject_parsing_creation
-from pySpatialTools.FeatureManagement.descriptormodel import DummyDescriptor
+from pySpatialTools.FeatureManagement.Descriptors import DummyDescriptor
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.artificial_data import\

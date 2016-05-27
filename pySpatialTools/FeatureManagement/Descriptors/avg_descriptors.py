@@ -7,13 +7,12 @@ descriptors.
 
 """
 
-from ..descriptormodel import DescriptorModel
+from descriptormodel import DescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import avg_reducer, null_completer,\
     aggregator_summer, sum_addresult_function, general_featurenames,\
     null_out_formatter
-
 ## Characterizers
 from ..aux_descriptormodels import characterizer_average,\
     characterizer_average_array, characterizer_average_listdict,\

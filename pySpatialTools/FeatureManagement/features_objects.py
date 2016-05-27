@@ -21,7 +21,7 @@ from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
 from pySpatialTools.utils.util_classes import Neighs_Info
 from pySpatialTools.utils.util_classes.neighs_info import\
     neighsinfo_features_preformatting_tuple
-from descriptormodel import DummyDescriptor, DummyDistancesDescriptor
+from Descriptors import DummyDescriptor, DistancesDescriptor
 
 
 class Features:
@@ -849,7 +849,7 @@ class PhantomFeatures(Features):
         if characterizer is not None:
             self.set_descriptormodel(characterizer)
         else:
-            self.set_descriptormodel(DummyDistancesDescriptor(self._nfeats))
+            self.set_descriptormodel(DistancesDescriptor(self._nfeats))
 
 
 ###############################################################################
