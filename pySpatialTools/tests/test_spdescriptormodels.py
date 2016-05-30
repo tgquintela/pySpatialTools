@@ -16,6 +16,11 @@ import signal
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import SameEleNeigh, KRetriever,\
     CircRetriever, RetrieverManager, WindowsRetriever
+from pySpatialTools.Retrieve.retrievers import Retriever
+from pySpatialTools.Retrieve.tools_retriever import create_aggretriever,\
+    dummy_implicit_outretriver, dummy_explicit_outretriver,\
+    avgregionlocs_outretriever
+
 # Artificial data
 from pySpatialTools.utils.artificial_data import generate_randint_relations
 
@@ -26,7 +31,7 @@ from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures
+    ImplicitFeatures, ExplicitFeatures, Features
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.util_classes import create_mapper_vals_i
@@ -36,6 +41,8 @@ from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
     AvgDescriptor, NBinsHistogramDesc, SparseCounter
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel,\
     _spdesc_parsing_creation
+from pySpatialTools.FeatureManagement.spatial_descriptormodels import\
+    create_aggfeatures, _parse_aggregation_feat
 
 #from ..utils.artificial_data import create_random_image
 from ..utils.util_external import Logger
@@ -152,8 +159,63 @@ def test():
 
     ###########################################################################
     ###########################################################################
+    ######## Testing aggregations preparation
+    ## Testing all possible aggregation_in
+    agg_f_ret = None
+    desc_in, desc_out = AvgDescriptor(), AvgDescriptor()
+    feats = ImplicitFeatures(np.random.random((100, 10)),
+                             characterizer=AvgDescriptor())
+
+    agg_in = agg_f_ret, desc_in, {}, {}, desc_out
+    res = _parse_aggregation_feat(agg_in, feats)
+    assert(type(res) == tuple)
+    assert(len(res) == 5)
+    agg_in = agg_f_ret, desc_in, {}, {}
+    res = _parse_aggregation_feat(agg_in, feats)
+    assert(type(res) == tuple)
+    assert(len(res) == 5)
+    agg_in = agg_f_ret, {}, {}
+    res = _parse_aggregation_feat(agg_in, feats)
+    assert(type(res) == tuple)
+    assert(len(res) == 5)
+    agg_in = agg_f_ret, desc_in, desc_out
+    res = _parse_aggregation_feat(agg_in, feats)
+    assert(type(res) == tuple)
+    assert(len(res) == 5)
+    agg_in = (agg_f_ret, )
+    res = _parse_aggregation_feat(agg_in, feats)
+    assert(type(res) == tuple)
+    assert(len(res) == 5)
+
+    # Creation standard aggregation_info
+    disc = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
+    locs = np.random.random((100, 2))
+    regs = disc.discretize(locs)
+    disc_info = locs, regs, disc
+
+    retriever_in = (KRetriever, {'info_ret': 4})
+    retriever_out = (KRetriever, {'info_ret': 4})
+    aggregating = avgregionlocs_outretriever, (avgregionlocs_outretriever, )
+
+    aggregation_info = disc_info, retriever_in, retriever_out, aggregating
+    # Creation of aggregation objects
+    aggretriever = create_aggretriever(aggregation_info)
+    assert(isinstance(aggretriever, Retriever))
+    aggfeatures = create_aggfeatures(aggregation_info, feats)
+    assert(isinstance(aggfeatures, Features))
+
+    ###########################################################################
+    ###########################################################################
     ######## Testing instantiation spdesc
     ## TODO: bool_input_idx=False
+
+    # Aggregation
+    disc = GridSpatialDisc((5, 5), xlim=(0, 1), ylim=(0, 1))
+    retriever_in = (KRetriever, {'info_ret': 4})
+    retriever_out = (KRetriever, {'info_ret': 4})
+    aggregating = avgregionlocs_outretriever, (avgregionlocs_outretriever, )
+    aggregation_info = disc, retriever_in, retriever_out, aggregating
+
     # Locs and retrievers
     n_in, n_out = 50, 50  # TODO: Different sizes and easy manage
     locs_input = np.random.random((n_in, 2))
@@ -340,6 +402,12 @@ def test():
 #            logi = e == "Not error time."
 #            if not logi:
 #                spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
+
+        ## Testing aggregations
+        if len(spdesc.retrievers) == len(spdesc.featurers):
+            spdesc.add_aggregations(aggregation_info)
+        else:
+            spdesc.add_aggregations(aggregation_info, ([0], [0]))
         s += 1
 
     feats1 = ImplicitFeatures(featsarr0)
@@ -366,6 +434,8 @@ def test():
     ####
     spdesc = _spdesc_parsing_creation(ret, feat)
     assert(isinstance(spdesc, SpatialDescriptorModel))
+    res = create_aggfeatures(spdesc, None)
+    assert(isinstance(res, ExplicitFeatures))
 
 #    ###########################################################################
 #    ###########################################################################

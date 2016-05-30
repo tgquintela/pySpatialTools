@@ -12,7 +12,7 @@ import networkx as nx
 from scipy.sparse import coo_matrix
 from scipy.spatial.distance import cdist
 
-from pySpatialTools.Retrieve import _discretization_parsing_creation,\
+from pySpatialTools.Discretization import _discretization_parsing_creation,\
     _discretization_regionlocs_parsing_creation
 #from aux_regionmetrics import get_regions4distances
 #    create_sp_descriptor_points_regs #, create_sp_descriptor_regionlocs

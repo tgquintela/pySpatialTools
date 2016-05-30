@@ -11,11 +11,18 @@ TODO
 
 """
 
+## General imports
 import numpy as np
+## General objects
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import RetrieverManager
-from features_retriever import FeaturesManager
 from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
+from features_retriever import FeaturesManager
+## Special tools functions
+from pySpatialTools.Discretization import _discretization_parsing_creation,\
+    _discretization_information_creation
+from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
+from features_objects import _featuresobject_parsing_creation
 from ..utils import sp_general_filter_perturbations
 
 
@@ -96,23 +103,41 @@ class SpatialDescriptorModel:
         self.featurers.add_perturbations(feat_perturbs)
         assert(self.retrievers.k_perturb == self.featurers.k_perturb)
 
-    def _format_aggregations(self, aggregations):
+    def _format_aggregations(self, aggregations, i_r=(None, None)):
         """Prepare and add aggregations to retrievers and features."""
         if aggregations is None:
             return
         if type(aggregations) == list:
             for i in range(len(aggregations)):
-                self._format_aggregations(aggregations[i])
+                self._format_aggregations(aggregations[i], i_r)
         if type(aggregations) == tuple:
-            # Add aggregations to retrievers
-            self.retrievers.add_aggregations(*aggregations)
-            # Add aggregations to features
-            self.featurers.add_aggregations(*aggregations)
-        else:
-            # Add aggregations to retrievers
-            self.retrievers.add_aggregations(aggregations)
-            # Add aggregations to features
-            self.featurers.add_aggregations(*aggregations)
+            ## Prepare instructions
+            i_ret = i_r[0]
+            i_ret = range(len(self.retrievers)) if i_ret is None else i_ret
+            i_ret = [i_ret] if type(i_ret) != list else i_ret
+            i_feat = i_r[1]
+            i_feat = range(len(self.featurers)) if i_feat is None else i_feat
+            i_feat = [i_feat]*len(i_ret) if type(i_feat) != list else i_feat
+            ## Assert correctness
+            print i_ret, i_feat
+            assert(len(i_ret) == len(i_feat))
+            ## Main loop
+            for i in range(len(i_ret)):
+                ## Preparing information to retriever number i_ret
+                ret = self.retrievers.retrievers[i_ret[i]]
+                agg_0 = _discretization_information_creation(aggregations[0],
+                                                             ret)
+                aggregations_i = tuple([agg_0] + list(aggregations[1:]))
+                # Add aggregation to retrievers
+                new_ret = create_aggretriever(aggregations_i)
+                self.retrievers.add_aggregations(new_ret)
+                # Add aggregations to features
+                i_feat_i = [i_feat[i]] if type(i_feat[i]) == int else i_feat[i]
+                for j in i_feat_i:
+                    new_features =\
+                        create_aggfeatures(aggregations_i,
+                                           self.featurers.features[j])
+                    self.featurers.add_aggregations(new_features)
 
     def _format_featurers(self, featurers):
         if isinstance(featurers, FeaturesManager):
@@ -122,8 +147,6 @@ class SpatialDescriptorModel:
 
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
         "Format selectors."
-#        print _mapselector_spdescriptor
-#        print '='*20
         self.selectors = self._default_selectors
         if _mapselector_spdescriptor is None:
             self._mapselector_spdescriptor =\
@@ -289,9 +312,9 @@ class SpatialDescriptorModel:
         """Add perturbations to the spatial descriptormodel."""
         self._format_perturbations(perturbations)
 
-    def add_aggregations(self, aggregations):
+    def add_aggregations(self, aggregations, i_r=(None, None)):
         """Add aggregations to the spatial descriptor model."""
-        self._format_aggregations(aggregations)
+        self._format_aggregations(aggregations, i_r)
 
     def set_loop(self, pos_inputs, map_indices=None):
         """Set loop in order to get only reduced possibilities."""
@@ -430,3 +453,82 @@ class SpatialDescriptorModel:
                                                   n_procs)
         measure = modelproc.compute_measure()
         return measure
+
+
+###############################################################################
+############################# Auxiliar functions ##############################
+###############################################################################
+############################# Create aggfeatures ##############################
+###############################################################################
+def create_aggfeatures(sp_descriptor, features):
+    """Average distance of points of the different regions.
+    Function to compute the spatial distances between regions.
+
+    Parameters
+    ----------
+    sp_descriptor: tuple (aggregation_info format) or SpatialDescriptorModel
+        the information to compute aggregation.
+
+    Returns
+    -------
+    new_exlicit_features: pst.Features object
+        the features object obtained by aggregating the features.
+
+    """
+    ## 1. Computing
+    if type(sp_descriptor) == tuple:
+        ## 0. Parsing inputs
+        disc_info, retriever_in, _, agg_info = sp_descriptor
+        assert(type(agg_info) == tuple)
+        assert(len(agg_info) == 2)
+        _, aggregating_feat = agg_info
+        agg_f_ret, desc_in, pars_feat_in, pars_feats, desc_out =\
+            _parse_aggregation_feat(aggregating_feat, features)
+        ## Retrievers
+        locs, regs, disc = _discretization_parsing_creation(disc_info)
+        retrievers = agg_f_ret(retriever_in, locs, regs, disc)
+        ## Featurers
+        # Feature creation
+        object_feats, core_features, pars_fea_o_in = features.export_features()
+        pars_fea_o_in['characterizer'] = desc_in
+        new_features = object_feats(core_features, **pars_fea_o_in)
+        # Feature manager creation
+        pars_feat_in['maps_vals_i'] = regs
+        pars_feat_in['selectors'] = (0, 0), (0, 0), (0, 0)
+        featurers = FeaturesManager(new_features, **pars_feat_in)
+        ## 1. Preparing spdesc object
+        spdesc = SpatialDescriptorModel(retrievers, featurers)
+        ## 2. Compute
+        aggfeatures = spdesc.compute()
+    else:
+        aggfeatures = sp_descriptor.compute()
+        pars_feats = {}
+        desc_out = sp_descriptor.featurers.features[0].descriptormodel
+
+    ## 3. Creation of the object features aggregations
+    new_exlicit_features =\
+        _featuresobject_parsing_creation((aggfeatures, pars_feats, desc_out))
+    return new_exlicit_features
+
+
+def _parse_aggregation_feat(aggregating_in, features):
+    assert(type(aggregating_in) == tuple)
+    if len(aggregating_in) == 5:
+        agg_f_ret, desc_in, pars_feat_in, pars_feats, desc_out = aggregating_in
+    elif len(aggregating_in) == 4:
+        agg_f_ret, desc_in, pars_feat_in, pars_feats = aggregating_in
+        desc_out = features.descriptormodel
+
+    elif len(aggregating_in) == 3 and type(aggregating_in[1]) == dict:
+        agg_f_ret, pars_feat_in, pars_feats = aggregating_in
+        desc_in = features.descriptormodel
+        desc_out = features.descriptormodel
+    elif len(aggregating_in) == 3 and type(aggregating_in[1]) != dict:
+        agg_f_ret, desc_in, desc_out = aggregating_in
+        pars_feat_in, pars_feats = {}, {}
+    else:
+        agg_f_ret = aggregating_in[0]
+        pars_feat_in, pars_feats = {}, {}
+        desc_in = features.descriptormodel
+        desc_out = features.descriptormodel
+    return agg_f_ret, desc_in, pars_feat_in, pars_feats, desc_out

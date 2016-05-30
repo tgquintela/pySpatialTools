@@ -25,5 +25,4 @@ from aux_retriever import NullRetriever
 from dummy_retrievers import DummyLocObject
 
 ## Import retriever parsing utils
-from aux_retriever_parsing import _discretization_parsing_creation,\
-    _retriever_parsing_creation, _discretization_regionlocs_parsing_creation
+from aux_retriever_parsing import _retriever_parsing_creation

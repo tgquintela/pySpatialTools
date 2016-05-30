@@ -203,6 +203,12 @@ def test():
             avgdesc = AvgDescriptor()
             Feat.set_descriptormodel(avgdesc)
 
+        ## Export features
+        feat_o, feat_info, feat_pars = Feat.export_features()
+        new_feats = feat_o(feat_info, **feat_pars)
+        assert(isinstance(new_feats, feat_o))
+
+
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))
     features0 = np.random.random((n, m))

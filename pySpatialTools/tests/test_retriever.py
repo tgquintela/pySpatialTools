@@ -35,7 +35,9 @@ from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
 from pySpatialTools.Retrieve import DummyRetriever, DummyLocObject
 from pySpatialTools.Retrieve import _retriever_parsing_creation
 ## Tools retriever
-from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
+from pySpatialTools.Retrieve.tools_retriever import create_aggretriever,\
+    dummy_implicit_outretriver, dummy_explicit_outretriver,\
+    avgregionlocs_outretriever
 from pySpatialTools.SpatialRelations import DummyRegDistance
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve.aux_retriever_parsing import\
@@ -53,6 +55,7 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation,\
     MixedFeaturePertubation, PermutationPerturbationLocations
+from pySpatialTools.Discretization import _discretization_parsing_creation
 
 
 def test():
@@ -282,22 +285,39 @@ def test():
     m_out_direct(None, idxs, (neighs, [None]*len(neighs)))
 
     ###########################################################################
+    ######### Instantiation  (tools_retriever)
+    retriever_out = (KRetriever, {'info_ret': 3})
+    ret_out = dummy_implicit_outretriver(retriever_out, locs, regs, disc1)
+    assert(isinstance(ret_out, Retriever))
+    ret_out.retrieve_neighs(0)
+    ret_out = avgregionlocs_outretriever(retriever_out, locs, regs, disc1)
+    assert(isinstance(ret_out, Retriever))
+    ret_out.retrieve_neighs(0)
+
+    f_rand = lambda regs: DummyRegDistance(regs)
+    retriever_out = (SameEleNeigh, {}, f_rand, np.arange(10))
+    ret_out = dummy_explicit_outretriver(retriever_out, locs, regs, disc1)
+    assert(isinstance(ret_out, Retriever))
+    ret_out.retrieve_neighs(0)
+
+    ###########################################################################
     ######### Tools_Retriever module
-    disc1 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
-    regions = np.random.randint(0, 50, 100)
-    ret = create_aggretriever(regions, regmetric=None)
-    ret._input_map(0)
-    try:
-        boolean = False
-        ret._input_map(None)
-        boolean = True
-        raise Exception("It has to halt here.")
-    except:
-        if boolean:
-            raise Exception("It has to halt here.")
-    ret = create_aggretriever(disc1, DummyRegDistance(regions))
-    ret._input_map(np.random.random((1, 2)))
-    create_aggretriever(disc1, retriever=SameEleNeigh)
+    ### TODO: New tests
+#####     disc1 = GridSpatialDisc((10, 10), xlim=(0, 1), ylim=(0, 1))
+#####     regions = np.random.randint(0, 50, 100)
+#####     ret = create_aggretriever(regions, regmetric=None)
+#####     ret._input_map(0)
+#####     try:
+#####         boolean = False
+#####         ret._input_map(None)
+#####         boolean = True
+#####         raise Exception("It has to halt here.")
+#####     except:
+#####         if boolean:
+#####             raise Exception("It has to halt here.")
+#####     ret = create_aggretriever(disc1, DummyRegDistance(regions))
+#####     ret._input_map(np.random.random((1, 2)))
+#####     create_aggretriever(disc1, retriever=SameEleNeigh)
 
     ###########################################################################
     ######### Exhaustive testing over common retrievers tools

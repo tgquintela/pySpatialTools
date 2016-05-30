@@ -7,45 +7,18 @@ Auxiliar functions for management of features.
 """
 
 import numpy as np
-from features_objects import ExplicitFeatures
+from features_objects import _featuresobject_parsing_creation
+from features_retriever import _features_parsing_creation
 
 
-#
-#def create_aggfeatures(discretization, regmetric, features, descriptormodel):
-#    """Create aggregated features.
-#    """
-#    ### 0. Create Aggregator sp_model
-#    ## 00. Create map_vals_i and data_input
-#    if type(discretization) == tuple:
-#        locs, discretizor = discretization
-#        regs = discretizor.discretize(locs)
-#    else:
-#        regs = discretization
-#    u_regs = np.unique(regs)
-#    u_regs = np.array([u_regs[i] for i in range(len(u_regs))
-#                       if u_regs[i] in regmetric.data_input])
-#    u_regs = u_regs.reshape((len(u_regs), 1))
-#    # Map_vals_i (TODO)
-#
-#    # Map_output
-#    def m_out(neighs_info):
-#        outs = np.where(regs == x)[0]
-##        if len(outs) == 
-#
-#    ## 01. Join Retriever with the pieces
-#
-#    ## 02. Assert and format features retriever
-#    # tuple features+pars+descriptormodel
-#    # tuple Features+descriptormodel
-#    # object Features
-#
-#    ## 03. Create Sp_descmodel
-#
-#    ### 1. Compute measure with sp_descmodel
-#
-#    ### 2. Prepare output (characterizer?)
-#    agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
-#    return agg
+###############################################################################
+################### Candidates to aggregating_in functions ####################
+###############################################################################
+def dummy_aggregation_in(locs, regs, disc, descriptormodel, features,
+                         pars_feat):
+
+        #### aggfeatures, names=[], _nullvalue=0, characterizer=None
+        new_features, new_descriptor,  = ''
 
 
 def create_aggfeatures(discretization, regmetric, features, descriptormodel):
@@ -105,23 +78,3 @@ def create_aggfeatures(discretization, regmetric, features, descriptormodel):
     agg = ExplicitFeatures(agg, indices=u_regs, characterizer=characterizer)
     ## TODO: names=[], nullvalue=None
     return agg
-
-
-def empty_neighs(neighs):
-    logi = False
-    try:
-        logi = not bool(np.prod(np.array(neighs).shape))
-    except:
-        pass
-    return logi
-
-
-#def compute_featuresnames(descriptormodel, featureobject):
-#    """Compute the possible feature names from the pointfeatures."""
-#    if type(featureobject) == np.ndarray:
-#        featuresnames = descriptormodel._f_default_names(featureobject)
-#        return featuresnames
-#    if 'typefeat' in dir(featureobject):
-#        featuresnames =\
-#            descriptormodel._f_default_names(featureobject.features)
-#    return featuresnames

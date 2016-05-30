@@ -22,7 +22,7 @@ from pySpatialTools.Discretization.Discretization_set.\
     general_set_discretization import format_membership, to_sparse,\
     find_idx_in_array
 
-from pySpatialTools.Retrieve import _discretization_parsing_creation,\
+from pySpatialTools.Discretization import _discretization_parsing_creation,\
     _discretization_regionlocs_parsing_creation
 
 
@@ -313,8 +313,9 @@ def test():
     discretization_info = disc1, locs
     _discretization_parsing_creation(discretization_info)
     discretization_info = locs, np.random.randint(0, 10, 100)
-    _discretization_parsing_creation(discretization_info)
+    locs, regs, discs = _discretization_parsing_creation(discretization_info)
     disc1.discretize(locs)
+    locs, regs, discs = _discretization_parsing_creation((locs, regs, discs))
 
     regs, locs = _discretization_regionlocs_parsing_creation(disc1)
 #    assert(len(regs) == len(locs))

@@ -380,6 +380,16 @@ class ImplicitFeatures(Features):
         ks = self.k_perturb+1
         return n, nfeats, ks
 
+    def export_features(self):
+        object_feats = ImplicitFeatures
+        core_features = self.features
+        pars_fea_o_in = {}
+        pert = None if len(self._perturbators) == 1 else self._perturbators[1:]
+        pars_fea_o_in['perturbations'] = pert
+        pars_fea_o_in['names'] = self.variables
+        pars_fea_o_in['characterizer'] = self.descriptormodel
+        return object_feats, core_features, pars_fea_o_in
+
     ############################### Interaction ###############################
     ###########################################################################
     ################################ Candidates ###############################
@@ -546,7 +556,7 @@ class ImplicitFeatures(Features):
         else:
             ## TODO: Call to featurenames default computers
             if type(self.features) == np.ndarray:
-                self.variables = list(range(len(self.features)))
+                self.variables = list(range(len(self.features[0])))
             elif type(self.features) == list:
                 names = []
                 for i in range(len(self.features)):
@@ -575,8 +585,8 @@ class ImplicitFeatures(Features):
         if type(perturbations) == list:
             for p in perturbations:
                 self._dim_perturb.append(p.k_perturb)
-                self._create_map_perturbation()
                 self._perturbators.append(p)
+                self._create_map_perturbation()
 
     def _create_map_perturbation(self):
         """Create the map for getting the perturbation object."""
@@ -586,10 +596,11 @@ class ImplicitFeatures(Features):
         ## Build a mapper
         mapper = np.zeros((np.sum(self._dim_perturb), 2)).astype(int)
         for i in range(len(sl)):
-            inds = np.zeros((sl[i].stop-sl[i].start, 2))
-            inds[:, 0] = i
-            inds[:, 1] = np.arange(sl[i].stop-sl[i].start)
-            mapper[sl[i]] = inds
+            if self._perturbators[i]._perturbtype != 'none':
+                inds = np.zeros((sl[i].stop-sl[i].start, 2))
+                inds[:, 0] = i
+                inds[:, 1] = np.arange(sl[i].stop-sl[i].start)
+                mapper[sl[i]] = inds
 
         ## 1. Creation of the mapper function
         def map_perturb(x):
@@ -634,6 +645,15 @@ class ExplicitFeatures(Features):
             return len(self.features[0]), len(self.variables), self.k_perturb+1
         else:
             return (len(self.features), len(self.variables), self.k_perturb+1)
+
+    def export_features(self):
+        object_feats = ExplicitFeatures
+        core_features = self.features
+        pars_fea_o_in = {}
+        pars_fea_o_in['nullvalue'] = self._nullvalue
+        pars_fea_o_in['names'] = self.variables
+        pars_fea_o_in['characterizer'] = self.descriptormodel
+        return object_feats, core_features, pars_fea_o_in
 
     ############################### Interaction ###############################
     ###########################################################################
@@ -819,6 +839,15 @@ class PhantomFeatures(Features):
         ks = self.k_perturb+1
         return n, nfeats, ks
 
+    def export_features(self):
+        object_feats = PhantomFeatures
+        core_features = self.features
+        pars_fea_o_in = {}
+        pars_fea_o_in['perturbations'] = self._perturbators
+        pars_fea_o_in['names'] = self.variables
+        pars_fea_o_in['characterizer'] = self.descriptormodel
+        return object_feats, core_features, pars_fea_o_in
+
     ############################### Interaction ###############################
     ###########################################################################
     ################################# Getters #################################
@@ -837,7 +866,9 @@ class PhantomFeatures(Features):
             self.features = features_info
 
     def _format_perturbation(self, perturbations):
-        pass
+        if type(perturbations) != list:
+            perturbations = [perturbations]
+        self._perturbators = perturbations
 
     def _format_variables(self, names):
         if names:
@@ -867,6 +898,10 @@ def _featuresobject_parsing_creation(feats_info):
     * Features object
     * (Features object, descriptormodel)
     * (np.ndarray, descriptormodel)
+
+    TODO
+    ----
+    Give support to listFeatures.
     """
     if type(feats_info) == np.ndarray:
         sh = feats_info.shape

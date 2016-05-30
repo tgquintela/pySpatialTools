@@ -18,5 +18,9 @@ from Discretization_2d.polygondiscretization import IrregularSpatialDisc
 
 ## Set Discretization
 from Discretization_set import SetDiscretization
-
 from spatialdiscretizer import SpatialDiscretizor
+
+## Discretization information parsers
+from aux_discretization_parsing import _discretization_parsing_creation,\
+    _discretization_regionlocs_parsing_creation,\
+    _discretization_information_creation

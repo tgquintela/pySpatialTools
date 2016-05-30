@@ -31,9 +31,8 @@ from ..utils.util_classes import create_mapper_vals_i,\
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\
     sparse_dict_completer_unknown, sum_addresult_function
-from aux_featuremanagement import create_aggfeatures
-from features_objects import ImplicitFeatures, ExplicitFeatures, Features,\
-    _featuresobject_parsing_creation
+#from aux_featuremanagement import create_aggfeatures
+from features_objects import _featuresobject_parsing_creation, Features
 from Descriptors import DummyDescriptor, DescriptorModel
 
 
@@ -630,25 +629,25 @@ class FeaturesManager:
 
     ######################### Aggregation management ##########################
     ###########################################################################
-    def add_aggregations(self, discretization, regmetric, retriever=None,
-                         pars_features={}, kfeat=0):
+    def add_aggregations(self, aggfeatures):
         """Add aggregations to featuremanager. Only it is useful this function
         if there is only one retriever previously and we are aggregating the
         first one.
         """
-        ## 0. Get kfeats
-        kfeats = [kfeat] if type(kfeat) == int else kfeat
-        if kfeats is None:
-            kfeats = []
-            for i in range(len(self)):
-                if self.features[i].typefeat == 'implicit':
-                    kfeats.append(i)
-        ## 1. Compute and store aggregations
-        for i in kfeats:
-            aggfeatures = create_aggfeatures(discretization, regmetric,
-                                             self.features[i],
-                                             self.descriptormodel)
-            self.features.append(aggfeatures)
+        self.features.append(aggfeatures)
+#        ## 0. Get kfeats
+#        kfeats = [kfeat] if type(kfeat) == int else kfeat
+#        if kfeats is None:
+#            kfeats = []
+#            for i in range(len(self)):
+#                if self.features[i].typefeat == 'implicit':
+#                    kfeats.append(i)
+#        ## 1. Compute and store aggregations
+#        for i in kfeats:
+#            aggfeatures = create_aggfeatures(discretization, regmetric,
+#                                             self.features[i],
+#                                             self.descriptormodel)
+#            self.features.append(aggfeatures)
 
     ####################### Auxiliar temporal functions #######################
     ###########################################################################

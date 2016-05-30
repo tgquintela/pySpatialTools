@@ -16,6 +16,7 @@ from tools_retriever import create_aggretriever
 from pySpatialTools.utils.util_classes import Spatial_RetrieverSelector,\
     format_selection
 from pySpatialTools.utils.util_classes.neighs_info import join_by_iss
+from retrievers import Retriever
 
 inttypes = [int, np.int32, np.int64]
 
@@ -223,12 +224,13 @@ class RetrieverManager:
 
     ######################### Aggregation management ##########################
     ###########################################################################
-    def add_aggregations(self, discretization, regmetric=None, retriever=None,
-                         pars_retriever={}, kfeat=0):
+    def add_aggregations(self, aggregation_info):
         """Add aggregations to retrievers. Only it is useful this function if
         there is only one retriever previously and we are aggregating the first
         one.
         """
-        retriever = create_aggretriever(discretization, regmetric, retriever,
-                                        pars_retriever)
-        self.retrievers.append(retriever)
+        if isinstance(aggregation_info, Retriever):
+            self.retrievers.append(aggregation_info)
+        else:
+            retriever = create_aggretriever(aggregation_info)
+            self.retrievers.append(retriever)
