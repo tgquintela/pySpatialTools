@@ -30,8 +30,7 @@ from pySpatialTools.SpatialRelations import\
     sparse_from_listaregneighs, compute_selfdistances
 
 from pySpatialTools.SpatialRelations.relative_positioner import\
-    RelativePositioner, RelativeRegionPositioner, metric_distances,\
-    diff_vectors
+    RelativePositioner, metric_distances, diff_vectors
 
 
 def test():
