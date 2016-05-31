@@ -67,11 +67,13 @@ import numpy as np
 import warnings
 from copy import copy
 from scipy.sparse import coo_matrix
+
 from aux_retriever import _check_retriever, _general_autoexclude,\
     _array_autoexclude, _list_autoexclude
-from ..utils import NonePerturbation
-from ..utils import ret_filter_perturbations
-from ..utils.util_classes import SpatialElementsCollection, Neighs_Info
+from pySpatialTools.utils.perturbations import NonePerturbation,\
+    ret_filter_perturbations
+from pySpatialTools.utils.neighs_info import Neighs_Info
+from pySpatialTools.utils.util_classes import SpatialElementsCollection
 
 arraytypes = [np.ndarray, list]
 inttypes = [int, np.int32, np.int64]

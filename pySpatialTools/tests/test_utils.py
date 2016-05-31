@@ -28,11 +28,11 @@ from pySpatialTools.utils.artificial_data.artificial_measure import *
 
 from pySpatialTools.utils.artificial_data.artificial_data_membership import\
     random_membership
-from pySpatialTools.utils.util_classes import create_mapper_vals_i,\
+from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i,\
     Map_Vals_i
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
-from pySpatialTools.utils.util_classes import DummySelector,\
+from pySpatialTools.utils.selectors import DummySelector,\
     GeneralCollectionSelectors, Spatial_RetrieverSelector,\
     Feat_RetrieverSelector, FeatInd_RetrieverSelector, Desc_RetrieverSelector,\
     Sp_DescriptorSelector

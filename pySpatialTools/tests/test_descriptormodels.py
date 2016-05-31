@@ -27,7 +27,7 @@ from pySpatialTools.FeatureManagement.features_objects import Features,\
     ImplicitFeatures, ExplicitFeatures
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation
-from pySpatialTools.utils.util_classes import create_mapper_vals_i
+from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 
 ## Descriptormodel
 from pySpatialTools.FeatureManagement.aux_descriptormodels import\

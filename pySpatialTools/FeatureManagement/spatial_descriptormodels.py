@@ -16,14 +16,14 @@ import numpy as np
 ## General objects
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import RetrieverManager
-from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
+from pySpatialTools.utils.selectors import Sp_DescriptorSelector
 from features_retriever import FeaturesManager
 ## Special tools functions
 from pySpatialTools.Discretization import _discretization_parsing_creation,\
     _discretization_information_creation
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from features_objects import _featuresobject_parsing_creation
-from ..utils import sp_general_filter_perturbations
+from pySpatialTools.utils.perturbations import sp_general_filter_perturbations
 
 
 class SpatialDescriptorModel:
@@ -119,7 +119,6 @@ class SpatialDescriptorModel:
             i_feat = range(len(self.featurers)) if i_feat is None else i_feat
             i_feat = [i_feat]*len(i_ret) if type(i_feat) != list else i_feat
             ## Assert correctness
-            print i_ret, i_feat
             assert(len(i_ret) == len(i_feat))
             ## Main loop
             for i in range(len(i_ret)):

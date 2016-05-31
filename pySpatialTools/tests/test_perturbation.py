@@ -20,7 +20,7 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
 from pySpatialTools.utils.perturbations import GeneralPerturbation
-from pySpatialTools.utils import sp_general_filter_perturbations,\
+from pySpatialTools.utils.perturbations import sp_general_filter_perturbations,\
     feat_filter_perturbations, ret_filter_perturbations
 
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor

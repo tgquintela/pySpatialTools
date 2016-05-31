@@ -10,7 +10,7 @@ import numpy as np
 from itertools import product
 
 # Auxiliars
-from pySpatialTools.utils.util_classes import Neighs_Info
+from pySpatialTools.utils.neighs_info import Neighs_Info
 
 ## Retrievers
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\

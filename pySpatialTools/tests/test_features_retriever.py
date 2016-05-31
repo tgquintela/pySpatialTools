@@ -19,7 +19,7 @@ from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.artificial_data import\
     categorical_agg_dict_features
-from ..utils.util_classes import Neighs_Info
+from pySpatialTools.utils.neighs_info import Neighs_Info
 
 
 def test():

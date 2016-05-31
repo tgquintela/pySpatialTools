@@ -17,9 +17,9 @@ Explicit data
 import numpy as np
 import warnings
 warnings.filterwarnings("always")
-from pySpatialTools.utils import NonePerturbation, feat_filter_perturbations
-from pySpatialTools.utils.util_classes import Neighs_Info
-from pySpatialTools.utils.util_classes.neighs_info import\
+from pySpatialTools.utils.perturbations import NonePerturbation,\
+    feat_filter_perturbations
+from pySpatialTools.utils.neighs_info import Neighs_Info,\
     neighsinfo_features_preformatting_tuple
 from Descriptors import DummyDescriptor, DistancesDescriptor
 

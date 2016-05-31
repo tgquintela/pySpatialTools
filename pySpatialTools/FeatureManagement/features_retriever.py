@@ -25,8 +25,10 @@ TODO
 
 import numpy as np
 ## Check initialization of map vals i
-from ..utils.util_classes import create_mapper_vals_i,\
-    Feat_RetrieverSelector, ensuring_neighs_info, format_selection
+from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
+from pySpatialTools.utils.selectors import Feat_RetrieverSelector,\
+    format_selection
+from pySpatialTools.utils.neighs_info import ensuring_neighs_info
 
 from aux_descriptormodels import append_addresult_function,\
     replacelist_addresult_function, sparse_dict_completer,\

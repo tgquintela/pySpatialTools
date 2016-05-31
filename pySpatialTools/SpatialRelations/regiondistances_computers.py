@@ -195,8 +195,8 @@ def compute_AvgDistanceRegions(sp_descriptor, store='network', elements=None,
         # Preparing descriptormodel
         _data = np.unique(regs)
         ## WARNING:
-        map_idx = lambda reg: reg
-        #map_idx = lambda reg: np.where(_data == reg)[0][0]
+        #map_idx = lambda reg: reg
+        map_idx = lambda reg: np.where(_data == reg)[0][0]
         descriptormodel =\
             NormalizedDistanceDescriptor(regs, len(_data), map_idx=map_idx)
         # Preparing spdesc

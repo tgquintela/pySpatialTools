@@ -9,8 +9,12 @@ it links to some db.
 
 import numpy as np
 from itertools import product
-from ..utils.util_classes import Neighs_Info
-from ..utils.util_classes.neighs_info import *
+from pySpatialTools.utils.neighs_info import Neighs_Info, join_by_iss,\
+    neighsinfo_features_preformatting_tuple, inspect_raw_neighs
+from pySpatialTools.utils.neighs_info.auxiliar_joinning_neighs import\
+    join_neighsinfo_AND_general, join_neighsinfo_OR_general,\
+    join_neighsinfo_XOR_general, join_neighsinfo_AND_general,\
+    join_neighsinfo_OR_general, join_neighsinfo_XOR_general
 
 
 def test():

@@ -13,9 +13,9 @@ this manager, but in this case it is not the output, it is the input.
 
 import numpy as np
 from tools_retriever import create_aggretriever
-from pySpatialTools.utils.util_classes import Spatial_RetrieverSelector,\
+from pySpatialTools.utils.selectors import Spatial_RetrieverSelector,\
     format_selection
-from pySpatialTools.utils.util_classes.neighs_info import join_by_iss
+from pySpatialTools.utils.neighs_info import join_by_iss
 from retrievers import Retriever
 
 inttypes = [int, np.int32, np.int64]

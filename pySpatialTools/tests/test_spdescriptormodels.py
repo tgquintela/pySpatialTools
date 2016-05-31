@@ -25,7 +25,7 @@ from pySpatialTools.Retrieve.tools_retriever import create_aggretriever,\
 from pySpatialTools.utils.artificial_data import generate_randint_relations
 
 ## Utilities
-from pySpatialTools.utils.util_classes import Sp_DescriptorSelector
+from pySpatialTools.utils.selectors import Sp_DescriptorSelector
 
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
@@ -34,7 +34,7 @@ from pySpatialTools.FeatureManagement.features_objects import\
     ImplicitFeatures, ExplicitFeatures, Features
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation
-from pySpatialTools.utils.util_classes import create_mapper_vals_i
+from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 
 ## Descriptormodel
 from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
