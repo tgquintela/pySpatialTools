@@ -29,6 +29,10 @@ from pySpatialTools.SpatialRelations import\
     format_out_relations, get_regions4distances,\
     sparse_from_listaregneighs, compute_selfdistances
 
+from pySpatialTools.SpatialRelations.relative_positioner import\
+    RelativePositioner, RelativeRegionPositioner, metric_distances,\
+    diff_vectors
+
 
 def test():
     ### Parameters or externals
@@ -409,3 +413,16 @@ def test():
     ###########################################################################
     ### Relative positioner testing
     ###############################
+    n_el, n_dim = 5, 2
+    elements_i = np.random.random((n_el, n_dim))
+    elements_neighs = []
+    for i in range(n_el):
+        aux_neigh = np.random.random((np.random.randint(1, 4), n_dim))
+        elements_neighs.append(aux_neigh)
+    rel_pos = RelativePositioner(metric_distances)
+    rel_pos.compute(elements_i, elements_neighs)
+
+    rel_pos = RelativePositioner(diff_vectors)
+    rel_pos.compute(elements_i, elements_neighs)
+
+#    RelativeRegionPositioner

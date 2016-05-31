@@ -11,6 +11,8 @@ from itertools import product
 
 # Auxiliars
 from pySpatialTools.utils.neighs_info import Neighs_Info
+from pySpatialTools.SpatialRelations.relative_positioner import\
+    metric_distances, RelativePositioner
 
 ## Retrievers
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
@@ -46,7 +48,6 @@ from pySpatialTools.Retrieve.aux_retriever_parsing import\
 
 
 #from scipy.sparse import coo_matrix
-
 from pySpatialTools.utils.artificial_data import \
     random_transformed_space_points, generate_random_relations_cutoffs
 from pySpatialTools.Discretization import SetDiscretization
@@ -360,7 +361,7 @@ def test():
     pos_infof = [None, lambda x, pars: 0]
     pos_typeret = ['space']  # ''
     pos_autoexclude = [False]  # True, None for other time
-    pos_relativepos = [None]
+    pos_relativepos = [None, RelativePositioner(metric_distances)]
     pos_constantneighs = [True, False, None]
 
     ## Combinations
