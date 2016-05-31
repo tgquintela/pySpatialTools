@@ -51,6 +51,7 @@ packages = ['pySpatialTools',
             'pySpatialTools.Retrieve',
             'pySpatialTools.SpatialRelations',
             'pySpatialTools.tests',
+            'pySpatialTools.tests.test_pythonUtils',
             'pySpatialTools.Testers',
             'pySpatialTools.Transformations',
             'pySpatialTools.Transformations.Transformation_2d',
@@ -58,8 +59,16 @@ packages = ['pySpatialTools',
             'pySpatialTools.Transformations.Transformation_nd',
             'pySpatialTools.tools',
             'pySpatialTools.utils',
+            'pySpatialTools.utils.artificial_data',
+            'pySpatialTools.utils.selectors',
+            'pySpatialTools.utils.mapper_vals_i',
+            'pySpatialTools.utils.neighs_info',
+            'pySpatialTools.utils.perturbations',
             'pySpatialTools.utils.util_classes',
-            'pySpatialTools.utils.util_external']
+            'pySpatialTools.utils.util_external',
+            'pySpatialTools.utils.util_external.Logger',
+            'pySpatialTools.utils.util_external.parallel_tools',
+            'pySpatialTools.utils.util_external.ProcessTools']
 
 docdirbase = 'share/doc/pySpatialTools-%s' % version
 # add basic documentation
