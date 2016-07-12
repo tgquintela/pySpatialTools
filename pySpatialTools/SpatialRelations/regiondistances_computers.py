@@ -125,7 +125,7 @@ def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
             descriptormodel = DistancesDescriptor(len(regs), map_idx=map_idx)
             # Instantiate PhantomFeatures
             feats_info = PhantomFeatures((None, len(regs)),
-                                         characterizer=descriptormodel)
+                                         descriptormodel=descriptormodel)
             # Map_vals_i setting
             pars_feats = {'maps_vals_i': regs}
             feats_info = feats_info, pars_feats
@@ -201,7 +201,7 @@ def compute_AvgDistanceRegions(sp_descriptor, store='network', elements=None,
             NormalizedDistanceDescriptor(regs, len(_data), map_idx=map_idx)
         # Preparing spdesc
         feats_info = PhantomFeatures((None, len(_data)),
-                                     characterizer=descriptormodel)
+                                     descriptormodel=descriptormodel)
         # Map_vals_i setting
         pars_feats = {'maps_vals_i': regs}
         feats_info = feats_info, pars_feats
@@ -280,7 +280,7 @@ def compute_AvgDistanceRegions(sp_descriptor, store='network', elements=None,
 #            NormalizedDistanceDescriptor(regs, len(_data), map_idx=map_idx)
 #        # Preparing spdesc
 #        feats_info = PhantomFeatures((None, len(_data)),
-#                                     characterizer=descriptormodel)
+#                                     descriptormodel=descriptormodel)
 #        # Map_vals_i setting
 #        pars_feats = {'maps_vals_i': regs}
 #        feats_info = feats_info, pars_feats
