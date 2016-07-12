@@ -2,50 +2,41 @@
 [![Coverage Status](https://coveralls.io/repos/github/tgquintela/pySpatialTools/badge.svg?branch=master)](https://coveralls.io/github/tgquintela/pySpatialTools?branch=master)
 # pySpatialTools
 This package is built in order to provide prototyping tools in python to deal with spatial data in python and model spatial-derived relations between different elements in a system.
-In some systems, due to the huge amount of data, the complexity of their topology their local nature or because other practical reasons we are forced to use only local information for model the system properties and dynamics.
+In some systems, due to the huge amount of data, the complexity of their topology their local nature or because other practical reasons we are forced to use only local information for model the system properties and dynamics, or for getting insightful local-derived features.
 
-pySpatialTools is useful for complex topological systems with different type of spatial data elements and feature data elements in which we are not able to study alls at once because of the data size.
+pySpatialTools is useful for complex topological systems with different type of spatial data elements and feature data elements in which we are not able to study all at once because of the data size.
 
 pySpatialTools could be not recommendable for treating some specific problems with homogeneous and/or regular data which could be treated with other python packages, as for example *computational linguistics* ([nltk](http://www.nltk.org/)), *computer vision* or *grid data* ([scipy.ndimage](http://docs.scipy.org/doc/scipy/reference/ndimage.html) and [openCV](https://opencv-python-tutroals.readthedocs.org/en/latest/#)) or others.
 
 
-# Technical considerations
-pySpatialTools is code trying to respect [**PEP8**](https://www.python.org/dev/peps/pep-0008/) python standard style of code and it is structured in the different main modules:
-+ Retrieve: module which helps us to code a retrieving methods and use the ones coded in the framework. 
-+ Feature_engineering: helps us to transform the spatial relations between elements their local neighborhoods in relations with the element features of all of them.
-+ Model: module to code prediction or recommendations tasks.
-+ Testing: Testing functions to study how good your model it is regarding different considerations.
-+ io: functions which can help to interact with another packages and help to read and output data from pySpatialTools.
-+ tests: tests coded in order to ensure the good installation and performance of the package.
-+ tools: util functions to be used by the user.
-+ utils: util functions used by other modules of the package.
+## Technical considerations
+pySpatialTools is a framework which is coded trying to respect [**PEP8**](https://www.python.org/dev/peps/pep-0008/) python standard style of code.
+As a framework, pySpatialTools is not specifically case-oriented but flexible which allows the user to easy integrate their tools, specific data and problem to the framework in order to ease the solution of their problem. The framework not only provides high-level tools and general useful functions for spatial problems, but also a structures and standards that structure the program in an understandable way.
 
-The main pipeline application in order to match points with features of their neighborhood is:
+The main structure of the problem is inspired by a general definition of the problem of *spatial analysis*. The data is divided in spatial data and features data. The work-flow is:
+1. Retrieve of elements using their spatial information.
+2. Get the associated features of the retrieved spatial elements.
+3. Compute the descriptors of the elements by using the neighborhood information.
+4. Aggregate to a final computed magnitude.
 
-|   |   |   |   |   |   |
-| :------: | :------: | :------: | :------: | :------: | :------: |
-| **element** | i | i_s | neighs | neighs_o | neighs_f |
-| **topology** | T_0  | T_1 | T_2 | T_3 | T_4 |
-| **functions** | ret.input_map | ret | ret.output_map | features._maps_output | - |
+There are some *hot spots*, where the user can take profit of the framework code and use it as a wrapper of his own code in order to take profit of the tools he has available. The main *hot spots* are:
+* BaseRetriever (or even its son classes): where it happens the connection (and possibly the storage) of the spatial data, as well as the retrieve.
+* BaseFeatures (or even its son classes): where it happens the connection (and possibly the storage) of the feature data, as well as the retrieve and computation of descriptors).
+* `BaseDescriptorModel`: where it is computed the descriptors of the selected element from the associated spatial neighborhood retrieved.
+* BasePerturbations: where it is implemented the statistical random models to apply to the data in order to perform posterior statistical testing.
+* BaseRelativePositioner: where it is implemented the basic relative position quantity (distance, similarity or other complex object) definition for assign a posteriori measure between elements and the elements in their neighborhoods after the retrieve. 
 
-The topologies can be repeated or totally different. We can choose the different paths of the pipeline through the choose of the selectors.
-It is convenient to design the maps and the selectors.
-
-
-The main pipeline that the user has to perform is:
-
-> 1. Build the whole possible retrievers we are going to use.
-> 2. Collect the features and create all the perturbations and aggregations which we could consider needed and the possible output we want.
-> 3. Create the descriptor model we are going to use.
-> 4. Design the selectors in order to be consistent with the retriever-output/descriptor-input.
-> 5. Join altogether in the spatial descriptor model object and compute.
+With these classes the users, by using inheritance and respecting the standards of the framework, can adapt their tools to the framework in order to save time and efforts, and give a common interface.
 
 
 ## Main features
-* Generic framework to deal easily and quickly with irregular heterogeneous spatial-like data (any data which could be embedded in a topological space).
+* Generic framework to deal easily and quickly with *irregular heterogeneous spatial-like data* (any data which could be embedded in a topological space).
 * Provides a generic interface to code new compatible methods and functions to check their compatibility.
-* Support for n-dimensional spaces or any other topological space as we want to define it through the definition of each associated neighborhood for each element using [Retrieve](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve) module.
-* Possibility to define irregular neighborhoods regarding on the the elements spatial information, main features of each point or even by combination of simple definitions of retrievers with [collection of retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/collectionretrievers.py) and a [selector mapper]().
+* Generic support for n-dimensional metric spaces or other topological spaces by defining to each element their neighbourhood using [Retrieve](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve) module.
+* Spatial data could be points, lines, polygons or other complex elements in n-dimensional spaces.
+* Features data could be sparse defined with key, values possible definition.
+* Possibility to define irregular neighborhoods regarding on the the elements spatial information, main features of each point or even by combination of simple definitions of retrievers with [collection of retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/collectionretrievers.py) and a [selector mapper](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/utils/selectors/spdesc_mapper.py).
+* Possibility to wrap an interaction with external spatial databases.
 * Some specific simple retrievers (as K-order, k-neighbour, radius retriever) coded in [Retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py) submodule.
 * Some specific simple descriptor models (as histogram or averaging desc) coded in [Descriptors](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/Descriptors) submodule.
 
@@ -55,10 +46,14 @@ The main pipeline that the user has to perform is:
 ### Abstract applications
 * Transform topological data into another topological space, more appropriate for the study of the system.
 * Explore cross-information between aggregated information and punctual features.
+* Assigning local features to some elements for posterior study.
 
 ### General applications
-* Spatial game theory: study and prediction in [*spatial games*]().
-
+* Spatial game theory: study and prediction in [*spatial games*]() evolution by using the statistical and machine learning tools to the extracted features.
+* Spatial regression models: perform a local regression model for a heterogeneous and user-defined neighborhood.
+* Support tool in Exploratory Analysis computing quickly easy local measures.
+* Preprocessing information for modeling or visualization, e.g. spatially aggregating data.
+* Study the spatial scaling property of features data.
 
 ## Installation
 
@@ -73,45 +68,6 @@ git clone https://github.com/tgquintela/pySpatialTools
 * [scipy](https://www.scipy.org/)
 * [scikit-learn](http://scikit-learn.org/stable/)
 
-## Tutorial
-
-The interface of this package could be summarized with this tools:
-
-* [Discretization](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/Discretization/__init__.py): used to map coordinates of some R^n space into regions.
-Example of 2d grid.
-
-```python
-grid_size, xlim, ylim = (100, 100), (0, 100), (0, 100)
-disc0 = GridSpatialDisc(grid_size, xlim, ylim)
-```
-
-* [Region relations](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/Spatial_Relations/__init__.py): used to compute and store relations between regions.
-
-```python
-mainmapper = RegionDistances(relations=relations, _data=_data, symmetric=symmetric)
-```
-
-* [Retriever](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py): used to define neighborhood of spatial elements. Introducing some parameters in the class we are able to define an individualized neighborhood for each spatial element.
-Example of retriever k-neighbors.
-
-```python
-locs = np.random.random((n, 2))*100
-info_ret = np.random.randint(1, 10, n)
-
-ret0 = KRetriever(locs, info_ret, ifdistance=True, relative_pos=diff_vectors)
-neighs, relative_positions = ret0.retrieve_neighs(0)
-```
-
-* [Descriptor](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/descriptormodel.py#L11): used to measure a descriptors of each desired and defined element in order to model the system.
-It consider the generic case in which is defined by the own point features of the element considered and the point features and the relative
-spatial situation of each neighborhood element.
-
-```python
-gret = CollectionRetrievers(retrievers_list)
-feats_ret = FeaturesRetriever(features_list, Countdescriptor())
-sp_model = SpatialDescriptorModel(gret, desc)
-sp_corr = sp_model.compute_nets()
-```
 
 ## Testing
 
@@ -145,6 +101,9 @@ for developers you can test from the source using nosetests of nose package.
 ```shell
 nosetests path/to/dir
 ```
+
+## Tutorial
+For know how to use the program, check the [tutorial](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/TUTORIAL.md).
 
 ## Project and contributions
 This package is in an early stage. If there is any idea to improve it or even code do not hesitate to do it or communicate with the main developer through mail:
