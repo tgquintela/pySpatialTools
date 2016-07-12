@@ -4,6 +4,8 @@ Retrive Module
 ==============
 Module oriented to group functions related with the retrieve of the
 neighbourhood or local properties related with the neighbourhood.
+This module gives the neighbourhood indications to retrieve feature properties
+of the elements in neighbourhood in the FeatureManagement module.
 
 """
 

@@ -2,7 +2,7 @@
 """
 Retrievers
 ----------
-The objects to retrieve neighbours in flat (non-splitted) space or precomputed
+The objects to retrieve neighbours in topological space or precomputed
 mapped relations.
 The retrievers can be defined in different topologic spaces.
 This class acts as a wrapper to the core definition of this retrievers. In
@@ -536,7 +536,7 @@ class Retriever:
             self._input_map = input_map
         if output_map is not None:
             if type(output_map).__name__ == 'function':
-                self.output_map = [output_map]
+                self._output_map = [output_map]
             else:
                 assert(type(output_map) == list)
                 assert(all([type(m).__name__ == 'function'
@@ -889,7 +889,7 @@ class Retriever:
         ## 1. Loc retriever
         # If indice
         if type(i_loc) in int_types:
-            loc_i = self._get_loc_from_idx(i_loc)
+            loc_i = self._get_loc_from_idxs(i_loc)
         # If List
         elif type(i_loc) == list:
             # Empty list
@@ -899,7 +899,7 @@ class Retriever:
             if type(i_loc[0]) in int_types:
                 locs_i = []
                 for i in i_loc:
-                    loc_i = self._get_loc_from_idx(i)
+                    loc_i = self._get_loc_from_idxs(i)
                     locs_i.append(loc_i)
                 ## Same structure as data
                 if type(self.data_input) == np.ndarray:

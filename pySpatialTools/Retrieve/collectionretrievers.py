@@ -8,6 +8,7 @@ This module contains the main class to mamage all retrievers without entering
 in low-level programming.
 As the FeaturesRetriever there are a requisit to have all the retrievers under
 this manager, but in this case it is not the output, it is the input.
+All of them are required to have the same input size.
 
 """
 
@@ -41,7 +42,6 @@ class RetrieverManager:
         self.retrievers = []
         self.n_inputs = 0
         self.staticneighs = True
-        ## TODO:
         self.selector = (0, 0)
 
     def __init__(self, retrievers, selector_retriever=None):
@@ -161,6 +161,16 @@ class RetrieverManager:
         aux = [self[i].staticneighs == self.staticneighs for i in range(n_ret)]
         assert(aux)
 
+    def _format_k_perturbs(self):
+        ## 1. Format kperturb
+        kp = self[0].k_perturb
+        k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
+        # Check k perturbations
+        if not all(k_rei_bool):
+            msg = "Not all the retriever objects have the same perturbations."
+            raise Exception(msg)
+        self.k_perturb = kp
+
     def _format_selector(self, selector):
         """Programable get_type_ret."""
         if selector is None:
@@ -221,6 +231,7 @@ class RetrieverManager:
             self.retrievers[i_ret].add_perturbations(perturbations)
         ## Update staticneighs
         self._format_staticneighs()
+        self._format_k_perturbs()
 
     ######################### Aggregation management ##########################
     ###########################################################################
