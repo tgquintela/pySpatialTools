@@ -3,7 +3,7 @@
 Perturbations
 -------------
 Module oriented to perform a perturbation of the system in order to carry out
-with testing of models.
+with statistical testing of models.
 The main function of this module is grouping functions which are able to
 change the system to other statistically probable options in order to explore
 the sample space.
@@ -38,6 +38,13 @@ class GeneralPerturbation:
         self.relations_p = None
         self.discretizations_p = None
         self.k_perturb = 1
+        ## Ensure correctness
+        self.assert_correctness()
+
+    def assert_correctness(self):
+        """Assert the correct Perturbation class."""
+        assert('_categorytype' in dir(self))
+        assert('_perturbtype' in dir(self))
 
     def apply2indice(self, i, k):
         return i
