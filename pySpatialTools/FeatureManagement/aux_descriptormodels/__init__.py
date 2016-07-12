@@ -25,7 +25,8 @@ from add2result_functions import sum_addresult_function,\
 
 ## Invocable completers
 from completers import null_completer, weighted_completer,\
-    sparse_dict_completer, sparse_dict_completer_unknown
+    sparse_dict_completer, sparse_dict_completer_unknown,\
+    null_completer_concatenator
 
 ## Invocable aggregation functions
 from aggregation_functions import aggregator_1sh_counter, aggregator_summer,\

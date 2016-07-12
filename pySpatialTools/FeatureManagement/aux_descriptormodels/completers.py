@@ -54,7 +54,7 @@ def sparse_dict_completer(measure, global_info=None):
         data, iss, jss = np.array(data), np.array(iss), np.array(jss)
         measure[k] = coo_matrix((data, (iss, jss)), shape=shape)
 
-    measure = np.array(measure)
+#    measure = np.array(measure)
     return measure
 
 
@@ -105,6 +105,12 @@ def sparse_dict_completer_unknown(measure, global_info=None):
 def null_completer(measure, global_info=None):
     "Do not change the measure."
     return measure
+
+
+def null_completer_concatenator(measure, global_info=None):
+    """Don not change anything, only concatenate all the partial descriptors
+    for each vals_i."""
+    return np.concatenate(measure)
 
 
 def weighted_completer(measure, global_info):

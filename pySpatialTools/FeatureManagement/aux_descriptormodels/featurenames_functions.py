@@ -49,10 +49,18 @@ def general_featurenames(features_o):
 
 def list_featurenames(features_o):
     """Compute the featurenames for list of dicts features collections."""
-    keys = []
-    for i in range(len(features_o)):
-        keys += features_o[i].keys()
-    featurenames = list(set(keys))
+    if type(features_o[0]) == dict:
+        keys = []
+        for i in range(len(features_o)):
+            keys += features_o[i].keys()
+        featurenames = list(set(keys))
+    else:
+        assert(type(features_o[0][0]) == dict)
+        keys = []
+        for k in range(len(features_o)):
+            for i in range(len(features_o[k])):
+                keys += features_o[k][i].keys()
+        featurenames = list(set(keys))
     return featurenames
 
 
