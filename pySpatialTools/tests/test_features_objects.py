@@ -208,7 +208,6 @@ def test():
         new_feats = feat_o(feat_info, **feat_pars)
         assert(isinstance(new_feats, feat_o))
 
-
     ## Definition arrays
     aggfeatures = np.random.random((n/2, m, rei))
     features0 = np.random.random((n, m))
@@ -268,8 +267,8 @@ def test():
         if np.random.randint(0, 2):
             names = pos_names[p[0]]
         ## Instantiation
-        Feat = ExplicitFeatures(pos_feats[p[0]], names=names, indices=p[3],
-                                characterizer=p[2], nullvalue=p[1])
+        Feat = ExplicitFeatures(pos_feats[p[0]], descriptormodel=p[2],
+                                names=names, indices=p[3], nullvalue=p[1])
         ## Testing main functions
         test_getitem(Feat)
 
@@ -278,7 +277,7 @@ def test():
         boolean = False
         names = [str(i) for i in range(len(aggcontfeats_ar0[0])+1)]
         ExplicitFeatures(aggcontfeats_ar0, names=names, indices=p[3],
-                         characterizer=p[2], nullvalue=p[1])
+                         descriptormodel=p[2], nullvalue=p[1])
         boolean = True
         raise Exception("It has to halt here.")
     except:
@@ -339,28 +338,29 @@ def test():
             names = pos_names[p[0]]
         ## Instantiation
         Feat = ImplicitFeatures(pos_feats[p[0]], names=names,
-                                characterizer=p[2], perturbations=p[4])
+                                descriptormodel=p[2], perturbations=p[4])
         ## Testing main functions
 #        if p[0] < 3:
 #            test_getitem(Feat)
         test_getitem(Feat)
 
-    Feat_imp = ImplicitFeatures(contfeats_ar0, perturbation)
+    Feat_imp = ImplicitFeatures(contfeats_ar0, perturbations=perturbation)
     test_getitem(Feat_imp)
-    Feat_imp = ImplicitFeatures(catfeats_ar0, perturbation)
+    Feat_imp = ImplicitFeatures(catfeats_ar0, perturbations=perturbation)
     test_getitem(Feat_imp)
-    Feat_imp = ImplicitFeatures(catfeats_ar0.ravel(), perturbation, names=[0])
+    Feat_imp = ImplicitFeatures(catfeats_ar0.ravel(),
+                                perturbations=perturbation, names=[0])
     test_getitem(Feat_imp)
-    Feat_imp = ImplicitFeatures(catfeats_ar1, perturbation)
+    Feat_imp = ImplicitFeatures(catfeats_ar1, perturbations=perturbation)
     test_getitem(Feat_imp)
-    Feat_imp = ImplicitFeatures(contfeats_dict, perturbation)
+    Feat_imp = ImplicitFeatures(contfeats_dict, perturbations=perturbation)
 #    test_getitem(Feat_imp)
-    Feat_imp = ImplicitFeatures(catfeats_dict, perturbation)
+    Feat_imp = ImplicitFeatures(catfeats_dict, perturbations=perturbation)
 #    test_getitem(Feat_imp)
 
     try:
         boolean = False
-        Feat = ImplicitFeatures(contfeats_ar0, None)
+        Feat = ImplicitFeatures(contfeats_ar0, perturbations=None)
         Feat._map_perturb(-1)
         boolean = True
         raise Exception("It has to halt here.")
@@ -369,7 +369,7 @@ def test():
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        Feat = ImplicitFeatures(contfeats_ar0, perturbation)
+        Feat = ImplicitFeatures(contfeats_ar0, perturbations=perturbation)
         Feat._map_perturb(-1)
         boolean = True
         raise Exception("It has to halt here.")
@@ -378,7 +378,7 @@ def test():
             raise Exception("It has to halt here.")
     try:
         boolean = False
-        Feat = ImplicitFeatures(contfeats_ar0, perturbation)
+        Feat = ImplicitFeatures(contfeats_ar0, perturbations=perturbation)
         Feat._map_perturb(1000)
         boolean = True
         raise Exception("It has to halt here.")
@@ -404,7 +404,8 @@ def test():
     for p in product(*possibilities):
 #        print p
         fe = PhantomFeatures(features_info=p[0], perturbations=p[1],
-                             names=p[2], out_features=p[3], characterizer=p[4])
+                             names=p[2], out_features=p[3],
+                             descriptormodel=p[4])
         test_getitem(fe)
 
     ###########################################################################

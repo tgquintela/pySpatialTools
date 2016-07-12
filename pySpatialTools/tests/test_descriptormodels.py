@@ -32,7 +32,7 @@ from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 ## Descriptormodel
 from pySpatialTools.FeatureManagement.aux_descriptormodels import\
     aggregator_1sh_counter
-from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
+from pySpatialTools.FeatureManagement.Descriptors import CountDescriptor,\
     AvgDescriptor, PjensenDescriptor, SumDescriptor, NBinsHistogramDesc,\
     SparseCounter
 from pySpatialTools.FeatureManagement.Descriptors import\
@@ -614,15 +614,15 @@ def test():
     avgdesc.set_functions(None, None)
 
     #################################
-    #### Countdescriptor
+    #### CountDescriptor
 #    point_pos = np.random.random((10, 5))
 #    measure = np.random.random((100, 10, 2))
-#    countdesc = Countdescriptor()
+#    countdesc = CountDescriptor()
 #    characs = np.random.randint(0, 10, 50).reshape((10, 5))
 #    feats = categorical_array_features(100, 10)
 #    feats_dict = categorical_dict_features(100, 10)
 
-    countdesc = Countdescriptor()
+    countdesc = CountDescriptor()
     countdesc.compute(pointfeats_arrayarray0, point_pos)
     countdesc.compute(pointfeats_arrayarray1, point_pos)
     countdesc.compute(pointfeats_listarray0, point_pos)
@@ -801,7 +801,7 @@ def test():
 #    feats1 = ImplicitFeatures(feat_arr1)
 #
 #    avgdesc = AvgDescriptor()
-#    countdesc = Countdescriptor()
+#    countdesc = CountDescriptor()
 #    pjensendesc = PjensenDescriptor()
 #
 #    feats_ret0 = FeaturesManager(feats0, countdesc, maps_vals_i=map_vals_i)
@@ -882,7 +882,7 @@ def test():
 #
 #    # Descriptors
 #    avgdesc = AvgDescriptor()
-#    countdesc = Countdescriptor()
+#    countdesc = CountDescriptor()
 #    pjensendesc = PjensenDescriptor()
 #    sumdesc = SumDescriptor()
 #    nbinsdesc = NBinsHistogramDesc(5)
@@ -908,5 +908,6 @@ def test():
 #    sparsedesc.aggdescriptor(catfeats, point_pos)
 #
 #    ## GeneralDescriptor
-#    GeneralDescriptor(characterizer_summer, sum_reducer, characterizer_summer,
-#                      null_completer)
+    gendesc = GeneralDescriptor(characterizer_summer, null_completer)
+    gendesc = GeneralDescriptor(characterizer_summer, null_completer,
+                                null_out_formatter)

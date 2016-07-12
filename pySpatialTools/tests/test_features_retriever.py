@@ -20,15 +20,44 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.artificial_data import\
     categorical_agg_dict_features
 from pySpatialTools.utils.neighs_info import Neighs_Info
+from pySpatialTools.FeatureManagement.aux_resulter_building import\
+    DefaultResulter, GeneralResulter, default_creation_initializations,\
+    creation_concatenator_joiner, creation_null_joiner,\
+    creation_initialization_output_closearray,\
+    creation_initialization_output_list, creation_initialization_output_lists,\
+    creation_initialization_output_list_selfdriven,\
+    creation_initialization_desc_dict, creation_initialization_desc_array
 
 
 def test():
+    ###########################################################################
+    #### Testing auxiliar resulters
+    ## Functions which helps to manage descriptors and build result measure
+    ##
+    def test_resulter_functions(fm):
+        ## Application of joiner functions
+        creation_concatenator_joiner()
+        creation_null_joiner()
+        ## Creation function tests
+        default_creation_initializations(fm)
+        if all([e is not None for e in fm.shape_measure]):
+            creation_initialization_output_closearray(fm)
+        creation_initialization_output_list(fm)
+        creation_initialization_output_lists(fm)
+        creation_initialization_output_list_selfdriven(fm)
+        creation_initialization_desc_dict(fm)
+        creation_initialization_desc_array(fm)
+        ## Creation of resulters tests
+        resulter = DefaultResulter(fm)
+        GeneralResulter(*resulter.get_functions())
+
     ## Definition parameters
     n = 1000
     rei = 10
 
     n, n_feats = np.random.randint(10, 1000), np.random.randint(1, 20)
     ks = np.random.randint(1, 20)
+
     ###########################################################################
     ##########################
     #### FeatureRetriever testing
@@ -165,7 +194,6 @@ def test():
         fm[0]
         fm.shape
         len(fm)
-        fm.nfeats
         fm.set_map_vals_i(m_vals_i)
         fm.initialization_desc()
         fm.initialization_output()
@@ -252,6 +280,8 @@ def test():
             FeaturesManager([ImplicitFeatures(feats1),
                              ImplicitFeatures(feats3, names=[3, 4])],
                             mode=mode)
+        ## Test resulter functions
+        test_resulter_functions(fm)
 
     ## Cases
     feats = [ImplicitFeatures(feats1), ImplicitFeatures(feats1)]

@@ -37,7 +37,7 @@ from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 
 ## Descriptormodel
-from pySpatialTools.FeatureManagement.Descriptors import Countdescriptor,\
+from pySpatialTools.FeatureManagement.Descriptors import CountDescriptor,\
     AvgDescriptor, NBinsHistogramDesc, SparseCounter
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel,\
     _spdesc_parsing_creation
@@ -56,7 +56,7 @@ def test():
     ## Retrievers management
     ret0 = KRetriever(locs, 3, ifdistance=True)
     ret1 = CircRetriever(locs, .3, ifdistance=True)
-    #countdesc = Countdescriptor()
+    #countdesc = CountDescriptor()
 
     ## Other functions
     def map_indices(s, i):
@@ -164,7 +164,7 @@ def test():
     agg_f_ret = None
     desc_in, desc_out = AvgDescriptor(), AvgDescriptor()
     feats = ImplicitFeatures(np.random.random((100, 10)),
-                             characterizer=AvgDescriptor())
+                             descriptormodel=AvgDescriptor())
 
     agg_in = agg_f_ret, desc_in, {}, {}, desc_out
     res = _parse_aggregation_feat(agg_in, feats)
@@ -471,7 +471,7 @@ def test():
 #        return corr_arr[i_n]
 #    map_vals_i = create_mapper_vals_i(map_vals_i_t, feat_arr0)
 #
-#    countdesc = Countdescriptor()
+#    countdesc = CountDescriptor()
 #    feats_ret = FeaturesManager([features], descriptormodels=countdesc,
 #                                maps_vals_i=map_vals_i)
 ##    feats_ret.add_aggregations((locs, griddisc), regret)

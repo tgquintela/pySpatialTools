@@ -37,7 +37,7 @@ def test():
     ret = KRetriever(locs1, 4, ifdistance=True)
     ret1 = KRetriever(locs1, ifdistance=True)
 
-    f_dens0, f_dens1 = 'weighted_count', 'weighted_avg'
+    f_dens0, f_dens1, f_dens2 = 'weighted_count', 'weighted_avg', 'null'
     pars_d = {}
     f_weights = ['null', 'linear', 'Trapezoid', 'inverse_prop', 'inverse_prop',
                  'exponential', 'exponential', 'gaussian', 'gaussian',
@@ -84,6 +84,8 @@ def test():
                                     f_weights[1], pars_w[1], f_dens1, pars_d)
     M = general_density_assignation(locs, ret1, kneighs4, feats1,
                                     f_weights[1], pars_w[1], f_dens1, pars_d)
+    M = general_density_assignation(locs, ret1, kneighs4, feats1,
+                                    f_weights[1], pars_w[1], f_dens0, pars_d)
 
     interpolator = Interpolator(f_weights[1], pars_w[1], f_dens1, pars_d)
 

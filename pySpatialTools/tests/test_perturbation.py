@@ -41,6 +41,9 @@ def test():
     #### GeneralPermutations
     ## Create perturbations
     class DummyPerturbation(GeneralPerturbation):
+        _categorytype = 'feature'
+        _perturbtype = 'dummy'
+
         def __init__(self, ):
             self._initialization()
             self.features_p = np.random.random((10, 10, 10))
