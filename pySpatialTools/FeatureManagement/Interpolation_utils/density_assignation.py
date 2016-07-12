@@ -89,6 +89,8 @@ def compute_measure_i(weights, values, f_dens, params_d):
             measure = compute_measure_wcount(weights, values, **params_d)
         elif f_dens == 'weighted_avg':
             measure = compute_measure_wavg(weights, values, **params_d)
+        elif f_dens == 'null':
+            measure = compute_measure_null(weights, values, **params_d)
     else:
         measure = f_dens(weights, values, **params_d)
 
@@ -108,6 +110,11 @@ def compute_measure_wavg(weights, values):
     elements around the point considered.
     """
     measure = np.sum((weights * values.T).T, axis=0)
+    return measure
+
+
+def compute_measure_null(weights, values):
+    measure = values[0]
     return measure
 
 
@@ -138,7 +145,7 @@ def from_distance_to_weights(dist, method, params):
             weights = dist
     else:
         weights = method(dist, **params)
-    weights = weights.ravel()
+    weights = np.array(weights).ravel()
     return weights
 
 
