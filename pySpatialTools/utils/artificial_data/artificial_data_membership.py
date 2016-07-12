@@ -2,7 +2,7 @@
 """
 artificial data
 ----------------
-functions which creates artificial data.
+Functions which creates artificial data.
 """
 
 import numpy as np
