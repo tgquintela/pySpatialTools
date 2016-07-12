@@ -489,7 +489,7 @@ def create_aggfeatures(sp_descriptor, features):
         ## Featurers
         # Feature creation
         object_feats, core_features, pars_fea_o_in = features.export_features()
-        pars_fea_o_in['characterizer'] = desc_in
+        pars_fea_o_in['descriptormodel'] = desc_in
         new_features = object_feats(core_features, **pars_fea_o_in)
         # Feature manager creation
         pars_feat_in['maps_vals_i'] = regs

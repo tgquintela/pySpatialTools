@@ -29,13 +29,10 @@ from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 from pySpatialTools.utils.selectors import Feat_RetrieverSelector,\
     format_selection
 from pySpatialTools.utils.neighs_info import ensuring_neighs_info
-
-from aux_descriptormodels import append_addresult_function,\
-    replacelist_addresult_function, sparse_dict_completer,\
-    sparse_dict_completer_unknown, sum_addresult_function
 #from aux_featuremanagement import create_aggfeatures
 from features_objects import _featuresobject_parsing_creation, Features
 from Descriptors import DummyDescriptor, DescriptorModel
+from aux_resulter_building import DefaultResulter
 
 
 class FeaturesManager:
@@ -57,8 +54,8 @@ class FeaturesManager:
         self.mode = None
         self.selector = (0, 0), (0, 0), (0, 0)
         ## IO information
-        self._variables = {}       ## TO CHANGE
-        self.featuresnames = []    ## TO CHANGE
+#        self._variables = {}       ## TO CHANGE
+#        self.featuresnames = []    ## TO CHANGE
         self.out_features = []
         self.k_perturb = 0
         self._out = 'ndarray'  # dict
@@ -69,17 +66,17 @@ class FeaturesManager:
 
     def __init__(self, features_objects, mode=None, maps_input=None,
                  maps_output=None, maps_vals_i=None, descriptormodels=None,
-                 selectors=[None]*3):
+                 selectors=[None]*3, resulter=None):
         self._initialization()
 #        out = out if out in ['ndarray', 'dict'] else None
 #        self._out = self._out if out is None else out
+        self._format_descriptormodel(descriptormodels)
         self._format_maps(maps_input, maps_output, maps_vals_i)
         self._format_features(features_objects)
         self._format_mode(mode)
         self._format_outfeatures()
-        self._format_result_building()
-        self._format_descriptormodel(descriptormodels)
         self.set_selector(*selectors)
+        self._format_result_building(resulter)
 
     def __getitem__(self, i_feat):
         if i_feat < 0 or i_feat >= len(self.features):
@@ -96,8 +93,15 @@ class FeaturesManager:
         return self._maps_vals_i.n_in, self._maps_vals_i.n_out
 
     @property
-    def nfeats(self):
-        return len(self.featuresnames)
+    def shape_measure(self):
+        """The measures of the possible output measure."""
+        n_vals_i = self._maps_vals_i.n_out
+        n_feats = len(self.out_features) if self.out_features else None
+        return n_vals_i, n_feats, self.k_perturb+1
+
+#    @property
+#    def nfeats(self):
+#        return len(self.variables)
 
     ################################ Formatters ###############################
     ###########################################################################
@@ -120,29 +124,7 @@ class FeaturesManager:
             msg = "Any feature object is input in the featureRetriever."
             raise TypeError(msg)
         ## 2. Format kperturb
-        kp = self[0].k_perturb
-        k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
-        # Check k perturbations
-        if not all(k_rei_bool):
-            msg = "Not all the feature objects have the same perturbations."
-            raise Exception(msg)
-        self.k_perturb = kp
-
-#    def _auxformat_features(self, features):
-#        """Format individual features information."""
-#        if type(features) == np.ndarray:
-#            sh = features.shape
-#            if len(sh) == 1:
-#                features = features.reshape((sh[0], 1))
-#                features = ImplicitFeatures(features)
-#            if len(sh) == 2:
-#                features = ImplicitFeatures(features)
-#            elif len(sh) == 3:
-#                features = ExplicitFeatures(features)
-#        else:
-#            if not features.__name__ == "pySpatialTools.FeaturesObject":
-#                raise TypeError("Incorrect features format.")
-#        return features
+        self._format_k_perturbs()
 
     def _format_descriptormodel(self, descriptormodels=None):
         """Formatter of the descriptormodels."""
@@ -153,60 +135,20 @@ class FeaturesManager:
                 descriptormodels = [descriptormodels]
             self.descriptormodels += descriptormodels
 
-    def _format_result_building(self):
-        ## Size of the possible results.
-        n_vals_i = self._maps_vals_i.n_out
-        n_feats = len(self.out_features)
-        if self._out == 'ndarray':
-            assert(self.mode in ['sequential', 'parallel'])
+    def _format_result_building(self, resulter=None):
+        """It manages all the possibilities of measure construction
+        we could do."""
+        self.resulter = DefaultResulter(self, resulter)
 
-            ## Format initialization descriptors
-            def initialization_desc():
-                descriptors = []
-                for i in range(len(self)):
-                    aux_i = np.ones((1, len(self[i].out_features)))
-                    descriptors.append(aux_i * self[i]._nullvalue)
-                descriptors = np.concatenate(descriptors, axis=1)
-                return descriptors
-            # Set initialization descriptors
-            self.initialization_desc = initialization_desc
-            ## Pure Array
-            if n_vals_i is not None:
-                shape = (n_vals_i, n_feats, self.k_perturb+1)
-                # Set initialization output descriptors
-                self.initialization_output = lambda: np.zeros(shape)
-                self._join_descriptors = lambda x: np.concatenate(x)
-                ## Option to externally set add2result and to_complete
-                self.add2result = sum_addresult_function
-                self.to_complete_measure = lambda X: X
-            ## List array measure
-            else:
-                shape = (n_vals_i, n_feats, self.k_perturb+1)
-                # Set initialization output descriptors
-                self.initialization_output = lambda: []  ## TODO: All dimensions
-                self._join_descriptors = lambda x: np.concatenate(x)
-                ## Option to externally set add2result and to_complete
-                self.add2result = append_addresult_function
-                self.to_complete_measure = lambda X: np.concatenate(X)
-        else:
-            self.initialization_desc = lambda: [{}]
-            if n_vals_i is not None:
-                ## Init global result
-                self.initialization_output =\
-                    lambda: [[[] for i in range(n_vals_i)]
-                             for k in range(self.k_perturb+1)]
-                self._join_descriptors = lambda x: x
-                ## Adding result (TODO: External set option)
-                self.add2result = append_addresult_function
-                self.to_complete_measure = sparse_dict_completer
-            else:
-                ## Init global result
-                self.initialization_output =\
-                    lambda: [[[], []] for k in range(self.k_perturb+1)]
-                self._join_descriptors = lambda x: x
-                ## Adding result (TODO: External set option)
-                self.add2result = replacelist_addresult_function
-                self.to_complete_measure = sparse_dict_completer_unknown
+    def _format_k_perturbs(self):
+        ## 1. Format kperturb
+        kp = self[0].k_perturb
+        k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
+        # Check k perturbations
+        if not all(k_rei_bool):
+            msg = "Not all the feature objects have the same perturbations."
+            raise Exception(msg)
+        self.k_perturb = kp
 
     ############################## Format IO maps #############################
     def _format_map_vals_i(self, sp_typemodel):
@@ -250,16 +192,17 @@ class FeaturesManager:
         """
         ## Format basic modes
         if mode is None:
+            ## Out setting
+            assert(all([self[0]._out == e._out for e in self]))
+            self._out = self[0]._out
             ## If open out_features
             if not len(self[0].out_features):
-                self._out = 'dict'
                 n_f = len(self)
                 logi = [not len(self[i].out_features) for i in range(n_f)]
                 assert(all(logi))
                 self.out_features = []
                 self.mode = None
             else:
-                self._out = 'ndarray'
                 outs = self[0].out_features
                 logi = [self[i].out_features == outs for i in range(len(self))]
                 if all(logi):
@@ -270,6 +213,7 @@ class FeaturesManager:
                 else:
                     self.mode = 'parallel'
         else:
+            ## TODO: parallel and sequential TODO
             assert(mode in ['sequential', 'parallel'])
             self.mode = mode
 
@@ -382,6 +326,23 @@ class FeaturesManager:
         descriptors = self._join_descriptors(descriptors)
 
         return descriptors, vals_i
+
+    ########################## Main manager functions #########################
+    ## Interaction with resulter object
+    def initialization_desc(self):
+        return self.resulter.initialization_desc()
+
+    def initialization_output(self):
+        return self.resulter.initialization_output()
+
+    def _join_descriptors(self, descriptors):
+        return self.resulter._join_descriptors(descriptors)
+
+    def add2result(self, desc, desc_i, vals_i):
+        return self.resulter.add2result(desc, desc_i, vals_i)
+
+    def to_complete_measure(self, measure):
+        return self.resulter.to_complete_measure(measure)
 
     ######################## Interaction with features ########################
     ############################# Input features ##############################
@@ -626,8 +587,13 @@ class FeaturesManager:
     def add_perturbations(self, perturbations):
         """Adding perturbations to features.
         """
+        ## 1. Apply perturbations
         for i_ret in range(len(self.features)):
             self.features[i_ret].add_perturbations(perturbations)
+        ## 2. Format kperturb
+        self._format_k_perturbs()
+        ## 3. Reformat resulter
+        self._format_result_building()
 
     ######################### Aggregation management ##########################
     ###########################################################################

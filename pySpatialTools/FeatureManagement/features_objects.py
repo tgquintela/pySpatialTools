@@ -32,7 +32,6 @@ class Features:
         ## Main attributes
         self.features = None
         self.variables = []
-        self.out_features = []
         self._setdescriptor = False
         ## Other attributes
         self._nullvalue = 0
@@ -40,12 +39,13 @@ class Features:
         self._perturbators = [NonePerturbation()]
         self._map_perturb = lambda x: (0, 0)
         self._dim_perturb = [1]
-        ## Function to homogenize output respect aggfeatures
-        # Reduction of dimensionality (dummy getting first neigh feats)
+        ## Descriptormodel and output
         self.descriptormodel = DummyDescriptor()
-#        self._characterizer = lambda x, d: np.array([e[0] for e in x])
-        self._format_out_k = lambda x, y1, y2, y3: x
         self._out = 'ndarray'
+        self.out_features = []  # They have to be list of str
+#        # Reduction of dimensionality (dummy getting first neigh feats)
+#        self._descriptormodel = lambda x, d: np.array([e[0] for e in x])
+#        self._format_out_k = lambda x, y1, y2, y3: x
 
     def __len__(self):
         if self.shape[0] is None:
@@ -155,7 +155,7 @@ class Features:
             the different ks we want to get features.
         d: list of list of lists or None [ks, iss, nei, dim]
             the information of relative position we are going to use in the
-            characterizer.
+            descriptormodel.
         """
         feats = []
         for k in c_k:
@@ -190,27 +190,28 @@ class Features:
 #        ########################
         return feats
 
+    def _descriptormodel(self, x, d):
+        return self.descriptormodel.compute(x, d)
+
+    def _format_out(self, feats):
+        "Transformation array-dict."
+        feats_o =\
+            self.descriptormodel._out_formatter(feats, self.out_features,
+                                                self._out, self._nullvalue)
+        return feats_o
+
     ################################# Setters #################################
     ###########################################################################
-    def set_descriptormodel(self, descriptormodel, featuresnames=[]):
+    def set_descriptormodel(self, descriptormodel, out_features=[],
+                            out_type=None):
         """Link the descriptormodel and the feature retriever."""
-        descriptormodel.set_functions(type(self.features).__name__, self._out)
+        ## Format out
+        self._format_outtypes(out_type)
         ## Set descriptormodel
+        descriptormodel.set_functions(type(self.features).__name__, self._out)
         self.descriptormodel = descriptormodel
-
-#        if self.typefeat == 'implicit':
-#            self._format_characterizer(descriptormodel.compute_characs,
-#                                       descriptormodel._out_formatter)
-#        elif self.typefeat == 'explicit':
-#            self._format_characterizer(descriptormodel.reducer,
-#                                       descriptormodel._out_formatter)
-        ## Set featurenames
-        if featuresnames:
-            self._format_variables(featuresnames)
-        else:
-            featuresnames = descriptormodel._f_default_names(self.features)
-            self._format_variables(featuresnames)
-
+        ## Format outfeatures
+        self._format_out_features(out_features)
         ## Test
         out = self[([0], [0.]), 0]
         if type(out[0][0]) == dict and self._out == 'ndarray':
@@ -220,39 +221,25 @@ class Features:
 
     ################################ Formatters ###############################
     ###########################################################################
-    def _format_out(self, feats):
-        "Transformation array-dict."
-        feats_o = self._format_out_k(feats, self.out_features, self._out,
-                                     self._nullvalue)
-        return feats_o
+    def _format_descriptormodel(self, descriptormodel, out_features, out_type):
+        if descriptormodel is not None:
+            self.set_descriptormodel(descriptormodel, out_features, out_type)
+        else:
+            self.set_descriptormodel(self.descriptormodel, out_features,
+                                     out_type)
 
-    def _format_characterizer(self, characterizer):
-        if characterizer is not None:
-            self.set_descriptormodel(characterizer)
+    def _format_out_features(self, out_features):
+        ## Set out featurenames
+        if out_features:
+            self.out_features = out_features
+        else:
+            self.out_features =\
+                self.descriptormodel._f_default_names(self.features)
 
-#    def _format_characterizer(self, characterizer, out_formatter):
-#        """Format characterizer function. It is needed to homogenize outputs in
-#        order to have the same output type as the aggfeatures.
-#        """
-#        if characterizer is not None:
-#            self._characterizer = characterizer
-#        if out_formatter is not None:
-#            self._format_out_k = out_formatter
-#
-#        if not (characterizer is None or out_formatter is None):
-#            ## Test
-#            out = self[([0], [0.]), 0]
-#            if type(out[0][0]) == dict and self._out == 'ndarray':
-#                warnings.warn("Change in output type because incoherence.")
-#                self._out = 'dict'
-            ## Redundant
-#            try:
-#                self[([0], [0.]), 0]
-#            except:
-#                raise TypeError("Incorrect characterizer.")
-
-    def _characterizer(self, x, d):
-        return self.descriptormodel.compute(x, d)
+    def _format_outtypes(self, _out):
+        if _out is not None:
+            assert(_out in ['ndarray', 'array', 'dict'])
+            self._out = 'ndarray' if _out in ['ndarray', 'array'] else _out
 
 #    def _format_feat_interactors(self, typeidxs):
 #        """Programming this class in order to fit properly to the inputs and
@@ -313,12 +300,12 @@ class Features:
 #        print 'characs_inputs', k, idxs, d
         feats_k = self._get_feats_k(k, idxs)
         d_k = self._get_relpos_k(k, d)
-        ## Computing characterizers
+        ## Computing descriptormodels
 #        print d
-#        print 'characterizer_inputs', feats_k, d_k, self._out
-        feats_k = self._characterizer(feats_k, d_k)
+#        print 'descriptormodel_inputs', feats_k, d_k, self._out
+        feats_k = self._descriptormodel(feats_k, d_k)
         ## Formatting result
-#        print feats_k, self._characterizer
+#        print feats_k, self._descriptormodel
         feats_k = self._format_out(feats_k)
 
 #        #### Testing #######################
@@ -359,13 +346,14 @@ class ImplicitFeatures(Features):
         self.relabel_indices = None  # TODO
         self.features_array = None
 
-    def __init__(self, features, perturbations=None, names=[], out_features=[],
-                 characterizer=None, out_formatter=None):
+    def __init__(self, features, descriptormodel=None, perturbations=None,
+                 out_type='ndarray', names=[], out_features=[]):
         self._global_initialization()
         self._initialization()
-        self._format_features(features, out_features)
-        self._format_characterizer(characterizer)
-        self._format_variables(names)
+        self._format_outtypes(out_type)
+        self._format_features(features)
+        self._format_descriptormodel(descriptormodel, out_features, out_type)
+        self._format_variables(names, out_features)
         self._format_perturbation(perturbations)
 
     @property
@@ -387,7 +375,7 @@ class ImplicitFeatures(Features):
         pert = None if len(self._perturbators) == 1 else self._perturbators[1:]
         pars_fea_o_in['perturbations'] = pert
         pars_fea_o_in['names'] = self.variables
-        pars_fea_o_in['characterizer'] = self.descriptormodel
+        pars_fea_o_in['descriptormodel'] = self.descriptormodel
         return object_feats, core_features, pars_fea_o_in
 
     ############################### Interaction ###############################
@@ -531,7 +519,7 @@ class ImplicitFeatures(Features):
 
     ################################ Formatters ###############################
     ###########################################################################
-    def _format_features(self, features, out_features):
+    def _format_features(self, features):
         """Format features. They have to have deep=2.[iss][feats]."""
         if type(features) == np.ndarray:
             sh = features.shape
@@ -542,19 +530,14 @@ class ImplicitFeatures(Features):
             assert(type(features) == list)
             assert(type(features[0]) == dict)
             self.features = features
-        if out_features or type(self.features) == list:
-            self.out_features = out_features
-        else:
-            self.out_features = list(range(len(self.features[0])))
 
-    def _format_variables(self, names):
+    def _format_variables(self, names, out_features=[]):
         """Format variables."""
         if names:
             if type(self.features) == np.ndarray:
                 assert(len(names) == len(self.features[0]))
                 self.variables = names
         else:
-            ## TODO: Call to featurenames default computers
             if type(self.features) == np.ndarray:
                 self.variables = list(range(len(self.features[0])))
             elif type(self.features) == list:
@@ -564,6 +547,8 @@ class ImplicitFeatures(Features):
                 self.variables = list(set(names))
 #            feats = self[([0], [0]), 0]
 #            print feats
+        ## Set out featurenames
+        self._format_out_features(out_features)
 
     ######################### Perturbation management #########################
     ###########################################################################
@@ -617,13 +602,18 @@ class ImplicitFeatures(Features):
 class ExplicitFeatures(Features):
     """Explicit features class. In this class we have explicit representation
     of the features.
+
+    The standarts over this data are:
+    * [ks][iss]{feats}
+    * (iss, feats, ks)
+
     """
     "TODO: adaptation of not only np.ndarray format"
     ## Type
     typefeat = 'explicit'
 
     def _initialization(self):
-#        self._characterizer = lambda x, d: x
+#        self._descriptormodel = lambda x, d: x
         self.possible_regions = None
         self.indices = []
         ## Default mutable functions
@@ -631,13 +621,15 @@ class ExplicitFeatures(Features):
         self._get_real_data = self._real_data_general
         self._get_virtual_data = self._virtual_data_general
 
-    def __init__(self, aggfeatures, names=[], nullvalue=None, indices=None,
-                 characterizer=None):
+    def __init__(self, aggfeatures, descriptormodel=None, out_type='ndarray',
+                 names=[], out_features=[], nullvalue=None, indices=None):
         self._global_initialization()
         self._initialization()
-        self._format_aggfeatures(aggfeatures, names, indices)
+        self._format_outtypes(out_type)
+        self._format_aggfeatures(aggfeatures, indices)
+        self._format_descriptormodel(descriptormodel, out_features, out_type)
+        self._format_variables(names, out_features)
         self._nullvalue = self._nullvalue if nullvalue is None else nullvalue
-        self._format_characterizer(characterizer)
 
     @property
     def shape(self):
@@ -652,7 +644,7 @@ class ExplicitFeatures(Features):
         pars_fea_o_in = {}
         pars_fea_o_in['nullvalue'] = self._nullvalue
         pars_fea_o_in['names'] = self.variables
-        pars_fea_o_in['characterizer'] = self.descriptormodel
+        pars_fea_o_in['descriptormodel'] = self.descriptormodel
         return object_feats, core_features, pars_fea_o_in
 
     ############################### Interaction ###############################
@@ -754,14 +746,14 @@ class ExplicitFeatures(Features):
 
     ################################ Formatters ###############################
     ###########################################################################
-    def _format_aggfeatures(self, aggfeatures, names, indices):
+    def _format_aggfeatures(self, aggfeatures, indices):
         """Formatter for aggfeatures."""
         if type(aggfeatures) == list:
             self._k_reindices = len(aggfeatures)
             self.features = aggfeatures
             self.k_perturb = self._k_reindices-1
-            # Default listdict characterizer
-#            self._characterizer = lambda x, d: [e[0] for e in x]
+            # Default listdict descriptormodel
+#            self._descriptormodel = lambda x, d: [e[0] for e in x]
         elif type(aggfeatures) == np.ndarray:
             if len(aggfeatures.shape) == 1:
                 self._k_reindices = 1
@@ -780,19 +772,26 @@ class ExplicitFeatures(Features):
                 self.k_perturb = aggfeatures.shape[2]-1
             elif len(aggfeatures.shape) > 3:
                 raise IndexError("Aggfeatures with more than 3 dimensions.")
-        self._format_variables(names)
         self.indices = indices
 
-    def _format_variables(self, names):
-        if type(self.features) == np.ndarray:
-            nfeats = self.features.shape[1]
-            self.variables = names if names else list(range(nfeats))
-            self.out_features = self.variables
-            if len(self.variables) != self.features.shape[1]:
-                raise IndexError("Incorrect length of variables list.")
+    def _format_variables(self, names, out_features=[]):
+        """Format variables."""
+        if names:
+            if type(self.features) == np.ndarray:
+                assert(len(names) == self.features.shape[1])
+                self.variables = names
         else:
-            self.variables = names
-            self.out_features = self.variables
+            if type(self.features) == np.ndarray:
+                self.variables = list(range(self.features.shape[1]))
+            elif type(self.features) == list:
+                names = []
+                for i in range(len(self.features[0])):
+                    names += self.features[0][i].keys()
+                self.variables = list(set(names))
+#            feats = self[([0], [0]), 0]
+#            print feats
+        ## Set out featurenames
+        self._format_out_features(out_features)
 
     ######################### Perturbation management #########################
     ###########################################################################
@@ -818,13 +817,14 @@ class PhantomFeatures(Features):
         self.features_array = None
         self.features = 0, 0
 
-    def __init__(self, features_info, perturbations=None, names=[],
-                 out_features=[], characterizer=None, out_formatter=None):
+    def __init__(self, features_info, descriptormodel=None, perturbations=None,
+                 out_type='ndarray', names=[], out_features=[]):
         self._global_initialization()
         self._initialization()
+        self._format_outtypes(out_type)
         self._format_features(features_info)
-        self._format_characterizer(characterizer)
-        self._format_variables(names)
+        self._format_descriptormodel(descriptormodel, out_features, out_type)
+        self._format_variables(names, out_features)
         self._format_perturbation(perturbations)
 
     @property
@@ -845,7 +845,7 @@ class PhantomFeatures(Features):
         pars_fea_o_in = {}
         pars_fea_o_in['perturbations'] = self._perturbators
         pars_fea_o_in['names'] = self.variables
-        pars_fea_o_in['characterizer'] = self.descriptormodel
+        pars_fea_o_in['descriptormodel'] = self.descriptormodel
         return object_feats, core_features, pars_fea_o_in
 
     ############################### Interaction ###############################
@@ -862,7 +862,7 @@ class PhantomFeatures(Features):
     def _format_features(self, features_info):
         self._n, self._nfeats = None, None
         if type(features_info) == tuple:
-            self._n, self._nfeats = features_info
+            self._n, self._vars = features_info
             self.features = features_info
 
     def _format_perturbation(self, perturbations):
@@ -870,17 +870,21 @@ class PhantomFeatures(Features):
             perturbations = [perturbations]
         self._perturbators = perturbations
 
-    def _format_variables(self, names):
+    def _format_variables(self, names, out_features=[]):
         if names:
             self.variables = names
-            self.out_features = self.variables
-            self._nfeats = len(names)
-
-    def _format_characterizer(self, characterizer):
-        if characterizer is not None:
-            self.set_descriptormodel(characterizer)
         else:
-            self.set_descriptormodel(DistancesDescriptor(self._nfeats))
+            self.variables = range(self._vars)
+        ## Outfeatures preparation
+        self._format_out_features(out_features)
+        self._nfeats = len(self.out_features)
+
+    def _format_descriptormodel(self, descriptormodel, out_features, out_type):
+        if descriptormodel is not None:
+            self.set_descriptormodel(descriptormodel)
+        else:
+            # Default descriptormodel
+            self.set_descriptormodel(DistancesDescriptor(self._vars))
 
 
 ###############################################################################
@@ -923,7 +927,7 @@ def _featuresobject_parsing_creation(feats_info):
         else:
             assert(len(feats_info) == 3)
             pars_feats = feats_info[1]
-            pars_feats['characterizer'] = feats_info[2]
+            pars_feats['descriptormodel'] = feats_info[2]
         sh = feats_info[0].shape
         if len(sh) == 1:
             feats_arr = feats_info[0].reshape((sh[0], 1))
