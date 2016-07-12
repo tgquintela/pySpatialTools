@@ -8,13 +8,14 @@ models from puntual features.
 """
 
 from ..aux_descriptormodels.add2result_functions import sum_addresult_function
-from ..aux_descriptormodels.featurenames_functions import array_featurenames
+from ..aux_descriptormodels.featurenames_functions import array_featurenames,\
+    list_featurenames
 from ..aux_descriptormodels.out_formatters import null_out_formatter
 ## Specific functions
 from pySpatialTools.FeatureManagement.Interpolation_utils import\
     create_weighted_function
 
-import numpy as np
+#import numpy as np
 
 
 class DescriptorModel:
@@ -22,6 +23,11 @@ class DescriptorModel:
     that are required for each desctiptor instantiated object.
     """
 
+    def default_initialization(self):
+        self.selfdriven = True
+
+    ####################### Factorized general functions ######################
+    ###########################################################################
     def complete_desc_i(self, i, neighs_info, desc_i, desc_neighs, vals_i):
         """Dummy completion for general abstract class."""
 #        ## TESTING CODE ########################
@@ -46,9 +52,10 @@ class DescriptorModel:
 
     ####################### Compulsary general functions ######################
     ###########################################################################
-    def _checker_descriptormodel(self):
-        """Function to check if the desctiptormodel is well coded."""
-        pass
+    def _assert_correctness(self):
+        """Assert correct instantiation of the class."""
+        assert('name_desc' in dir(self))
+        assert('compute' in dir(self))
 
     ################# Dummy compulsary overwritable functions #################
     def to_complete_measure(self, corr_loc):
@@ -65,7 +72,8 @@ class DescriptorModel:
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Dummy set for setting specific inputs and outputs."""
-        pass
+        ## Set outformatter as null
+        self._out_formatter = null_out_formatter
 
     ###########################################################################
     ########################## Formatter functions ############################
@@ -79,21 +87,18 @@ class DummyDescriptor(DescriptorModel):
 
     def __init__(self):
         self._out_formatter = null_out_formatter
-        self._f_default_names = array_featurenames
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     def compute(self, pointfeats, point_pos):
         """From [iss][nei][feats] to [iss][feats]"""
         return [pfeats[0] for pfeats in pointfeats]
-#
-#    def reducer(self, aggdescriptors_idxs, point_aggpos):
-#        """From [iss][nei][feats] to [iss][feats]"""
-#        return self.compute_characs(aggdescriptors_idxs, point_aggpos)
-#
-#    def aggdescriptor(self, pointfeats, point_pos):
-#        """From [iss][nei][feats] to [iss][feats]"""
-#        return self.compute_characs(pointfeats, point_pos)
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        if type_infeatures == 'ndarray':
+            self._f_default_names = array_featurenames
+        else:
+            self._f_default_names = list_featurenames
 
 
 class GeneralDescriptor(DescriptorModel):
@@ -102,8 +107,8 @@ class GeneralDescriptor(DescriptorModel):
 
     name_desc = "General descriptor"
 
-    def __init__(self, characterizer, reducer, aggdescriptor, completer=None,
-                 out_formatter=None, featurenames=None, add2result=None):
+    def __init__(self, characterizer, completer=None, out_formatter=None,
+                 featurenames=None):
         """
         Parameters
         ----------
@@ -115,15 +120,13 @@ class GeneralDescriptor(DescriptorModel):
             features and retrieving spatial features.
         """
         ## Specific class settings
-        self.compute_characs = characterizer
-        self.reducer = reducer
-        self.aggdescriptor = aggdescriptor
+        self.compute = characterizer
         if completer is not None:
             self.to_complete_measure = completer
-        self._format_extra_functions(out_formatter, featurenames, add2result)
-        self._checker_descriptormodel()
+        self._format_extra_functions(out_formatter, featurenames)
+        self._assert_correctness()
 
-    def _format_extra_functions(self, out_formatter, featurenames, add2result):
+    def _format_extra_functions(self, out_formatter, featurenames):
         ## Initial function set
         if out_formatter is None:
             self._out_formatter = null_out_formatter
@@ -133,10 +136,6 @@ class GeneralDescriptor(DescriptorModel):
             self._f_default_names = array_featurenames
         else:
             self._f_default_names = featurenames
-        if add2result is None:
-            self._defult_add2result = sum_addresult_function
-        else:
-            self._defult_add2result = add2result
 
 
 class Interpolator(DescriptorModel):
@@ -147,10 +146,11 @@ class Interpolator(DescriptorModel):
     (Weights not depending only on distances but also on ij type)
     Integrate special parameters in the functions with function-creators.
 
-    implementation of 3 cases:
+    implementation of 4 cases:
     - autoretrieve
     - non-autoretrieve without features_i
     - non-autoretrieve with features_i
+    - Fit locally more functions
 
     """
 
@@ -170,11 +170,9 @@ class Interpolator(DescriptorModel):
         characterizer = create_weighted_function(f_weight, pars_w,
                                                  f_dens, pars_d)
         ## Specific class settings
-        self.compute_characs = characterizer
-        self.reducer = characterizer
-        self.aggdescriptor = characterizer
+        self.compute = characterizer
         ## Initial function set
         self._out_formatter = null_out_formatter
         self._f_default_names = array_featurenames
         self._defult_add2result = sum_addresult_function
-        self._checker_descriptormodel()
+        self._assert_correctness()

@@ -30,11 +30,14 @@ class NBinsHistogramDesc(DescriptorModel):
     def __init__(self, n_bins, features=None, type_infeatures=None,
                  type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
+        ## Global initialization
+        self.default_initialization()
         ## Initial function set
+        self.selfdriven = False
         self._format_default_functions()
         self.set_functions(type_infeatures, type_outfeatures)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
         ## Globals initialization
         self.globals_ = [n_bins, None, None, False]
         if features is not None:
@@ -70,19 +73,6 @@ class NBinsHistogramDesc(DescriptorModel):
         #keys = [self.mapper[key] for key in counts.keys()]
         #descriptors[0, keys] = counts.values()
         return descriptors
-#
-#    def reducer(self, aggdescriptors_idxs, point_aggpos):
-#        """Reducer gets the aggdescriptors of the neighbourhood regions
-#        aggregated and collapse all of them to compute the descriptor
-#        associated to a retrieved neighbourhood.
-#        """
-#        descriptors = sum_reducer(aggdescriptors_idxs, point_aggpos)
-#        return descriptors
-#
-#    def aggdescriptor(self, pointfeats, point_pos):
-#        "This function assigns descriptors to a aggregation unit."
-#        descriptors = self.compute_characs(pointfeats, point_pos)
-#        return descriptors
 
     ###########################################################################
     ############################# Extra functions #############################
@@ -127,7 +117,10 @@ class NBinsHistogramDesc(DescriptorModel):
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.
         """
-        if type_outfeatures == 'dict':
+        assert(type_infeatures in [None, 'ndarray'])
+        if type_outfeatures is None:
+            self._out_formatter = count_out_formatter_general
+        elif type_outfeatures == 'dict':
             self._out_formatter = null_out_formatter
         else:
             self._out_formatter = count_out_formatter_dict2array

@@ -32,13 +32,16 @@ class PjensenDescriptor(DescriptorModel):
     def __init__(self, features=None, type_infeatures=None,
                  type_outfeatures=None):
         "The inputs are the needed to compute model_dim."
+        ## Global initialization
+        self.default_initialization()
         ## Initial function set
+        self.selfdriven = False
         self._format_default_functions()
         self.set_functions(type_infeatures, type_outfeatures)
         if features is not None:
             self.set_global_info(features)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     ###########################################################################
     ####################### Compulsary main functions #########################

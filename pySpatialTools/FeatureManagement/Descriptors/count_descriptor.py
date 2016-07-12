@@ -18,7 +18,7 @@ from ..aux_descriptormodels import\
     count_out_formatter_dict2array
 
 
-class Countdescriptor(DescriptorModel):
+class CountDescriptor(DescriptorModel):
     """Model of spatial descriptor computing by counting the type of the
     neighs represented in feat_arr.
 
@@ -28,11 +28,14 @@ class Countdescriptor(DescriptorModel):
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
+        ## Global initialization
+        self.default_initialization()
         ## Initial function set
+        self.selfdriven = False
         self._format_default_functions()
         self.set_functions(type_infeatures, type_outfeatures)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     ###########################################################################
     ####################### Compulsary main functions #########################

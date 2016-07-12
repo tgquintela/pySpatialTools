@@ -20,6 +20,10 @@ class DistancesDescriptor(DescriptorModel):
     name_desc = "Dummy distances descriptor"
 
     def _initialization(self):
+        ## Global initialization
+        self.default_initialization()
+        ## Local initialization
+        self.selfdriven = False
         self._map2idx = lambda idx: idx
         self._funct = lambda x: x if x is not None else 0
         ## General compulsary functions
@@ -31,7 +35,7 @@ class DistancesDescriptor(DescriptorModel):
         self._initialization()
         self._setting_information(nfeats, map_idx, funct)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     def compute(self, pointfeats, point_pos):
         """From [iss][nei][feats] to [iss][feats]"""
@@ -95,7 +99,7 @@ class NormalizedDistanceDescriptor(DistancesDescriptor):
         self._setting_information(nfeats, map_idx, funct)
         self.set_global_info(regions, nfeats, k_perturb)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     def set_global_info(self, regions, n_reg, k_perturb):
         """Store the mapping regions to indices and the sum of coincidences

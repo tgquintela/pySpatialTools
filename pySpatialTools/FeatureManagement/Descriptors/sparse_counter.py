@@ -7,14 +7,14 @@ Counting values in a sparse way.
 
 """
 
-from count_descriptor import Countdescriptor
+from count_descriptor import CountDescriptor
 
 ## Specific functions
 from ..aux_descriptormodels import append_addresult_function,\
     count_out_formatter_general, sparse_dict_completer, counter_featurenames
 
 
-class SparseCounter(Countdescriptor):
+class SparseCounter(CountDescriptor):
     """Model of spatial descriptor computing by counting the type of the
     neighs represented in features in a sparse fashion.
     """
@@ -24,11 +24,14 @@ class SparseCounter(Countdescriptor):
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
         """The inputs are the needed to compute model_dim."""
+        ## Global initialization
+        self.default_initialization()
         ## Initial function set
+        self.selfdriven = False
         self._format_default_functions()
         self.set_functions(type_infeatures, type_outfeatures)
         ## Check descriptormodel
-        self._checker_descriptormodel()
+        self._assert_correctness()
 
     ###########################################################################
     ####################### Compulsary main functions #########################
