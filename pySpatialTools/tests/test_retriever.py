@@ -1365,7 +1365,8 @@ def test():
         gret[0]
         for neighs_info in gret:
             pass
-        gret.add_retrievers(ret3)
+        gret.add_retrievers(CircRetriever(data2[:], info_ret=0.1,
+                                          autolocs=data_input))
         gret.add_perturbations(perturbation4)
         gret.set_selector(mapper)
         gret.retrieve_neighs(10)
