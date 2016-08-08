@@ -123,8 +123,9 @@ class Features:
                     if self.shape[0] is not None:
                         bool_overbound = np.max(i[j_k][j_i]) >= self.shape[0]
                         bool_lowerbound = np.min(i[j_k][j_i]) < 0
-    #                    print i[j_k][j_i], self.shape[0]
+#                        print i[j_k][j_i], self.shape[0]
                         if bool_lowerbound or bool_overbound:
+#                            print i, k, d, bool_overbound, bool_lowerbound
                             raise IndexError("Indices out of bounds.")
         ## 2. Format k
         if k is None:
