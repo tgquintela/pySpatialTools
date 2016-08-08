@@ -8,6 +8,7 @@ descriptors.
 
 """
 
+import numpy as np
 from descriptormodel import DescriptorModel
 
 ## Specific functions
@@ -107,3 +108,31 @@ class CountDescriptor(DescriptorModel):
     ###########################################################################
     ######################### Compulsary formatters ###########################
     ###########################################################################
+
+
+class CounterNNDesc(DescriptorModel):
+    """Descriptor based on count all the neighs that it receives."""
+    name_desc = "Counter NN descriptor"
+    _nullvalue = 0
+
+    def __init__(self):
+        """The inputs are the needed to compute model_dim."""
+        ## Global initialization
+        self.default_initialization()
+        ## Initial function set
+        self.selfdriven = False
+        self._format_default_functions()
+        ## Check descriptormodel
+        self._assert_correctness()
+
+    def compute(self, pointfeats, point_pos):
+        n_iss = len(pointfeats)
+        descriptors = np.zeros((n_iss, 1))
+        for i in range(n_iss):
+            descriptors[i] = len(pointfeats[i])
+        return descriptors
+
+    def _format_default_functions(self):
+        """Format default mutable functions."""
+        self._out_formatter = null_out_formatter
+        self._f_default_names = lambda x: [0]

@@ -101,6 +101,24 @@ class DummyDescriptor(DescriptorModel):
             self._f_default_names = list_featurenames
 
 
+class NullPhantomDescriptor(DescriptorModel):
+    """Dummy descriptor model created for testing purposes."""
+
+    name_desc = "Dummy descriptor"
+
+    def __init__(self):
+        self._out_formatter = null_out_formatter
+        ## Check descriptormodel
+        self._assert_correctness()
+
+    def compute(self, pointfeats, point_pos):
+        """From [iss][nei][feats] to [iss][feats]"""
+        return [pfeats[0] for pfeats in pointfeats]
+
+    def set_functions(self, type_infeatures, type_outfeatures):
+        self._f_default_names = lambda x: [0]
+
+
 class GeneralDescriptor(DescriptorModel):
     """General descriptor model totally personalizable.
     """
