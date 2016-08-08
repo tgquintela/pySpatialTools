@@ -15,6 +15,7 @@ import numpy as np
 from scipy.interpolate import Rbf
 from pySpatialTools.base import BaseRelativePositioner, BaseDescriptorModel
 from pySpatialTools.Retrieve import KRetriever, CircRetriever
+from pySpatialTools.FeatureManagement.features_objects import ImplicitFeatures
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
 from pySpatialTools.FeatureManagement.spatial_descriptormodels import\
@@ -86,6 +87,12 @@ class AvgPosition(BaseDescriptorModel):
         return names
 
 
+class AvgJoinerPosition(AvgPosition):
+    def relative_descriptors(self, i, neighs_info, desc_i, desc_neigh, vals_i):
+        "Relative descriptors."
+        return desc_neigh
+
+
 if __name__ == '__main__':
     #### Case of equal axis variance
     ## Initialization of the points
@@ -107,6 +114,7 @@ if __name__ == '__main__':
     points = np.vstack([x, y]).T
     # Initialization
     centroids = (np.random.random((nclusters, 2))-.5)*10
+    selectors = ((0, 0), (0, 1), (0, 0))
     avgdesc = AvgPosition()
     avgdesc.set_global_info(np.arange(nclusters))
     feats = ImplicitFeatures(np.arange(nclusters), descriptormodel=avgdesc)
@@ -116,7 +124,10 @@ if __name__ == '__main__':
         ret0 = KRetriever(locs=centroids, autolocs=points, info_ret=nclusters,
                           ifdistance=True,
                           output_map=_output_map_mindist_filter)
-        feats_ret = FeaturesManager(feats, maps_vals_i=np.zeros(len(points)))
+        feats_ret = FeaturesManager([points, feats],
+                                    maps_vals_i=np.zeros(len(points)),
+                                    selectors=selectors,
+                                    descriptormodels=AvgJoinerPosition())
         spdesc = SpatialDescriptorModel(ret0, feats_ret)
         measure = spdesc.compute()
 
