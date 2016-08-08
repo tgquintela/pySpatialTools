@@ -36,7 +36,7 @@ def general_projection(coordinates, method='ellipsoidal', inverse=False,
         coordinates = degrees2radians(coordinates)
     ## Projection
     if method == 'spheroidal':
-        coordinates = spheroidal_projection<(coordinates, inverse)
+        coordinates = spheroidal_projection(coordinates, inverse)
     elif method == 'ellipsoidal':
         coordinates = ellipsoidal_projection(coordinates, inverse)
     # Correction magnitudes if inverse
@@ -57,7 +57,9 @@ def degrees2radians(coordinates):
 
 
 def spheroidal_projection(coordinates, inverse=False):
-    """Projection under the assumption of spheroidal surface."""
+    """Projection under the assumption of spheroidal surface.
+    The coordinates are received as (latitud, longitud).
+    """
     if not inverse:
         coordinates[:, 0] = coordinates[:, 0]*np.cos(coordinates[:, 1])
         coordinates[:, 1] = coordinates[:, 1]
@@ -68,7 +70,10 @@ def spheroidal_projection(coordinates, inverse=False):
 
 
 def ellipsoidal_projection(coordinates, inverse=False):
-    """Projection under the assumption of ellipsoidal surface."""
+    """Projection under the assumption of ellipsoidal surface.
+    The coordinates are received as (latitud, longitud).
+
+    """
     ## Constants measured experimentally
     K11, K12, K13 = 111.13209, -0.56605, 0.00120
     K21, K22, K23 = 111.41513, -0.09455, 0.00012
