@@ -86,9 +86,16 @@ class Retriever:
 
     ######################## Retrieve-driven retrieve #########################
     def set_iter(self, info_ret=None, max_bunch=None):
-        info_ret = self._default_ret_val if info_ret is None else info_ret
-        max_bunch = len(self) if max_bunch is None else max_bunch
+        ## Inforet management
+        info_ret = self._info_ret if info_ret is None else info_ret
         self._info_ret = info_ret
+        ## max_bunch management
+        logi_bunch = not self._detect_constant_info_ret(info_ret)
+        if logi_bunch:
+            max_bunch = 10000 if max_bunch is None else max_bunch
+            max_bunch = max_bunch if max_bunch <= 10000 else 10000
+        else:
+            max_bunch = 1
         self._max_bunch = max_bunch
 
     def __iter__(self):
@@ -224,8 +231,13 @@ class Retriever:
         #i_loc = self._get_loc_i(i_loc)
         ifdistance = self._ifdistance if ifdistance is None else ifdistance
         # Prepare perturbation index
-        ks = [k] if type(k) == int else k
-        ks = range(self.k_perturb+1) if ks is None else ks
+        if type(k) == int:
+            assert(k > 0 and k <= self.perturb+1)
+            ks = [k]
+        elif k is None:
+            ks = range(self.k_perturb+1)
+        else:
+            ks = range(self.k_perturb+1)
         ## Check output (TODO)
         return info_i, ifdistance, ks
 
@@ -346,6 +358,8 @@ class Retriever:
         self._output_map = [lambda s, i, x: x]
         if 'bool_listind' not in dir(self):
             self.bool_listind = False
+        self._select_output = self._null_select_output
+        self._output_map_selector = 0
         ## Check
         _check_retriever(self)
 
@@ -432,21 +446,60 @@ class Retriever:
             self._info_ret = self._default_ret_val
         else:
             self._info_f = info_f
-            aux_default = self._default_ret_val
-            self._info_ret = aux_default if info_ret is None else info_ret
+            self._info_ret = self._filter_info_ret(info_ret)
         ## Constant retrieve?
         if constant_info:
             self._constant_ret = True
+            if not self._detect_constant_info_ret():
+                self._constant_ret = False
             if info_f is None:
                 self._get_info_i = self._dummy_get_info_i_stored
-                if '__len__' in dir(info_ret) and self.data_input is not None:
-                    if len(info_ret) == len(self.data_input):
-                        self._get_info_i = self._dummy_get_info_i_indexed
+                if not self._detect_constant_info_ret():
+                    self._get_info_i = self._dummy_get_info_i_indexed
             else:
                 self._get_info_i = self._dummy_get_info_i_f
         else:
             self._get_info_i = self._general_get_info_i
             self._constant_ret = False
+
+    def _filter_info_ret(self, info_ret):
+        """Function to transform information retiever.
+        WARNING: Force to transform info_ret information to the types
+        similar to default retriever val `_default_ret_val`. This casting
+        could produce errors in not considered cases.
+        """
+        logi_array = type(self._default_ret_val) in arraytypes
+        logi_number = type(self._default_ret_val) in [np.float]+inttypes
+        if info_ret is None:
+            info_ret = self._default_ret_val
+        elif type(info_ret) == type(self._default_ret_val):
+            pass
+        elif type(info_ret) in arraytypes and logi_array:
+            if len(info_ret) == len(self._default_ret_val):
+                if type(info_ret) == list:
+                    info_ret = np.array(self._default_ret_val)
+                else:
+                    info_ret = list(self._default_ret_val)
+        elif type(info_ret) in [np.float]+inttypes and logi_number:
+            if type(info_ret) in inttypes:
+                info_ret = float(info_ret)
+            else:
+                info_ret = int(info_ret)
+        return info_ret
+
+    def _detect_constant_info_ret(self, info_ret=None):
+        """Detect if the information is constant or not."""
+        ## TODO: len(info_ret) == len(self.data_input):
+        if info_ret is None:
+            info_ret = self._info_ret
+        logi_cte = type(info_ret) == type(self._default_ret_val)
+        if '__len__' in dir(info_ret):
+            if (len(info_ret) == len(self)) and logi_cte:
+                logi_cte = False
+#            else:
+#                ## Force to be input as info_ret
+#                logi_cte = True
+        return logi_cte
 
     def _format_retriever_function(self):
         """Format function to retrieve. It defines the main retrieve functions.
@@ -633,6 +686,35 @@ class Retriever:
 
     def _null_exclude_auto(self, i_loc, neighs, dists, kr=0):
         return neighs, dists
+
+    ############################### Output format #############################
+    ## Collapse to _select_output in _retrieve_neighs
+    # Returns
+    # -------
+    # output: int
+    #     the outmat to select
+    #
+    def set_outmapper_selector(self, outmapper):
+        ## TODO: selects automatically the outmap function
+        if type(outmapper) in [list, np.ndarray]:
+            outmapper = np.array(outmapper).astype(int)
+            assert(outmapper.max() < len(self._output_map))
+            self._output_map_selector = outmapper
+            self._select_output = self._indexed_select_output
+        else:
+            assert(type(outmapper) == int)
+            self._select_output = self._cte_select_output
+            self._output_map_selector = outmapper
+
+    def _null_select_output(self, i, output):
+        return output
+
+    def _cte_select_output(self, i, output=0):
+        return self._output_map_selector
+
+    def _indexed_select_output(self, i, output=0):
+        j = self.get_indice_i(i)
+        return self._output_map_selector[j]
 
     ############################# Exclude managing ############################
     ## Collapse to _build_excluded_elements in _format_exclude
@@ -1140,7 +1222,7 @@ class Retriever:
     def data_output(self):
         return self.retriever[0].data
 
-    def compute_neighnet(self, mapper, datavalue=None):
+    def compute_neighnet(self, mapper=None, datavalue=None):
         """Compute the relations neighbours and build a network or multiplex
         with the defined retriever class.
         If we have an explicit retriever it is probably better to use algebra
@@ -1152,7 +1234,8 @@ class Retriever:
         * Extend to k != 0
         * Accept a mapper if not heterogenous output
 
-        Definition of heterogenous: len(output_map) == 1, same output for each retriever
+        Definition of heterogenous: len(output_map) == 1, same output for each
+        retriever
         """
         ## 0. Conditions to ensure
         if self._heterogenous_output:
@@ -1168,7 +1251,6 @@ class Retriever:
 #            n_data = 1
         ks = self.neighs_info.ks
         ks = [0] if ks is None else ks
-#        n_data = len(self.neighs_info.ks)
         sh = (self._n0, self._n1)
         ## 1. Computation
         # If explicit: (not the best way to use that, it is better to use algebra)
@@ -1180,30 +1262,36 @@ class Retriever:
         iss, jss = [[] for i in range(len(ks))], [[] for i in range(len(ks))]
         data = [[] for i in range(len(ks))]
         self.set_iter()
+        self.set_outmapper_selector(mapper)
         for iss_i, neighs_info in self:
-#        for i in xrange(sh[0]):
-#            neighs_info = self[i]
             neighs, rel_pos, ks, iss_nei = neighs_info.get_information()
             ## Adding for each k perturbation if they are neighs to add
             for k in range(len(ks)):
-                # Number of neighs for i in k perturbation
-                n_i = len(neighs[k][0])
-                if n_i != 0:
-                    iss_i, jss_i = [i]*n_i, list(neighs[k][0])
-                    iss[k].append(iss_i)
-                    jss[k].append(jss_i)
-                    ## Data definition
-                    if datavalue is not None:
-                        data[k] += [datavalue]*n_i
-                    elif self._ifdistance is True:
-                        data[k] += list(rel_pos[k][0])
-                    else:
-                        data[k] += [1.]*n_i
+                for i in range(len(neighs[k])):
+                    # Number of neighs for i in k perturbation
+                    n_i = len(neighs[k][i])
+                    if n_i != 0:
+                        iss_ii, jss_ii = [iss_i[i]]*n_i, list(neighs[k][i])
+                        iss[k].append(iss_ii)
+                        jss[k].append(jss_ii)
+                        ## Data definition
+                        if datavalue is not None:
+                            data[k] += [datavalue]*n_i
+                        elif self._ifdistance is True:
+                            data[k] += list(rel_pos[k][0])
+                        else:
+                            data[k] += [1.]*n_i
         ## 2. Format output
         # Concatenation
-        iss = [np.hstack(iss[k]) for k in range(len(ks))]
-        jss = [np.hstack(jss[k]) for k in range(len(ks))]
-        data = [np.hstack(data[k]) for k in range(len(ks))]
+        for k in range(len(ks)):
+            if len(iss[k]):
+                iss[k] = np.hstack(iss[k])
+                jss[k] = np.hstack(jss[k])
+                data[k] = np.hstack(data[k])
+            else:
+                iss[k] = np.array(iss[k])
+                jss[k] = np.array(jss[k])
+                data[k] = np.array(data[k])
         # Nets creations
         nets = []
         for k in range(len(ks)):

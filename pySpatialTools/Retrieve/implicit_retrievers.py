@@ -63,12 +63,14 @@ class SpaceRetriever(Retriever):
     ###########################################################################
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output with excluding."
+        output = self._select_output(i_locs, output)
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
         return neighs, dists
 
     def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
         "Format output without excluding the same i."
+        output = self._select_output(i_locs, output)
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         return neighs, dists
 
@@ -347,6 +349,12 @@ class WindowsRetriever(SpaceRetriever):
     bool_listind = True
 
     ######################## Retrieve-driven retrieve #########################
+    def set_iter(self, info_ret=None, max_bunch=None):
+        info_ret = self._default_ret_val if info_ret is None else info_ret
+        max_bunch = len(self) if max_bunch is None else max_bunch
+        self._info_ret = info_ret
+        self._max_bunch = max_bunch
+
     def __iter__(self):
         """WARNING: Support only for kr=0"""
         ## Prepare iteration
