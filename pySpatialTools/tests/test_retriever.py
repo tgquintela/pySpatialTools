@@ -432,6 +432,7 @@ def test():
         ################
         # Assert information getting
         info_i, info_i2 = ret._get_info_i(i, 0), ret._get_info_i(j, 0)
+#        print info_i, info_i2
         assert(info_i == 0)
         assert(np.all(info_i2 == 0))
         ## Get locations
@@ -629,14 +630,16 @@ def test():
             ret.set_iter()
             for iss, nei in ret:
                 break
-            try:
-                boolean = False
-                ret.retrieve_neighs(0, k=k_option)
-                boolean = True
-                raise Exception("It has to halt here.")
-            except:
-                if boolean:
+            if not ret._constant_ret:
+                ## The k has to be between 0 and k_perturb+1
+                try:
+                    boolean = False
+                    ret.retrieve_neighs(0, k=k_option)
+                    boolean = True
                     raise Exception("It has to halt here.")
+                except:
+                    if boolean:
+                        raise Exception("It has to halt here.")
             try:
                 boolean = False
                 ret._map_perturb(k_option)
