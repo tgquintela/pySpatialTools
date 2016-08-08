@@ -14,17 +14,18 @@ pySpatialTools is a framework which is coded trying to respect [**PEP8**](https:
 As a framework, pySpatialTools is not specifically case-oriented but flexible which allows the user to easy integrate their tools, specific data and problem to the framework in order to ease the solution of their problem. The framework not only provides high-level tools and general useful functions for spatial problems, but also a structures and standards that structure the program in an understandable way.
 
 The main structure of the problem is inspired by a general definition of the problem of *spatial analysis*. The data is divided in spatial data and features data. The work-flow is:
+
 1. Retrieve of elements using their spatial information.
 2. Get the associated features of the retrieved spatial elements.
 3. Compute the descriptors of the elements by using the neighborhood information.
 4. Aggregate to a final computed magnitude.
 
 There are some *hot spots*, where the user can take profit of the framework code and use it as a wrapper of his own code in order to take profit of the tools he has available. The main *hot spots* are:
-* BaseRetriever (or even its son classes): where it happens the connection (and possibly the storage) of the spatial data, as well as the retrieve.
-* BaseFeatures (or even its son classes): where it happens the connection (and possibly the storage) of the feature data, as well as the retrieve and computation of descriptors).
+* `BaseRetriever` (or even its son classes): where it happens the connection (and possibly the storage) of the spatial data, as well as the retrieve.
+* `BaseFeatures` (or even its son classes): where it happens the connection (and possibly the storage) of the feature data, as well as the retrieve and computation of descriptors).
 * `BaseDescriptorModel`: where it is computed the descriptors of the selected element from the associated spatial neighborhood retrieved.
-* BasePerturbations: where it is implemented the statistical random models to apply to the data in order to perform posterior statistical testing.
-* BaseRelativePositioner: where it is implemented the basic relative position quantity (distance, similarity or other complex object) definition for assign a posteriori measure between elements and the elements in their neighborhoods after the retrieve. 
+* `BasePerturbations`: where it is implemented the statistical random models to apply to the data in order to perform posterior statistical testing.
+* `BaseRelativePositioner`: where it is implemented the basic relative position quantity (distance, similarity or other complex object) definition for assign a posteriori measure between elements and the elements in their neighborhoods after the retrieve. 
 
 With these classes the users, by using inheritance and respecting the standards of the framework, can adapt their tools to the framework in order to save time and efforts, and give a common interface.
 
@@ -112,9 +113,11 @@ tgq.spm@gmail.com
 
 ### Next steps
 - [x] Format package into some conventions.
+- [x] Examples
 - [ ] Code Tester module.
 - [ ] Prediction module.
-- [ ] Examples
+
+Other [TODOs](https://github.com/tgquintela/pySpatialTools/blob/master/TODO.md)
 
 ### License
 pySpatialTools is available as open source under the terms of the [MIT License](https://github.com/tgquintela/pySpatialTools/blob/master/LICENSE).
