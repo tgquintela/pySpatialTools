@@ -109,7 +109,8 @@ def compute_measure_wavg(weights, values):
     """Measure to compute density based on the weighted average of selected
     elements around the point considered.
     """
-    measure = np.sum((weights * values.T).T, axis=0)
+#    measure = np.sum((np.array(weights) * np.array(values).T).T, axis=0)
+    measure = np.dot(weights, values)
     return measure
 
 
@@ -204,10 +205,10 @@ def dist2weights_gauss(dist, max_r, max_w=1, min_w=1e-3, S=None, rescale=True):
     if S is None:
         S = set_scale_gauss(max_r, max_w, min_w)
     if rescale:
-        A = max_w/(norm.pdf(0)-norm.pdf(max_r, scale=S))
+        A = max_w/(norm.pdf(0, scale=S)-norm.pdf(max_r, scale=S))
         weights = A*norm.pdf(dist, scale=S)
     else:
-        A = max_w/norm.pdf(0)
+        A = max_w/norm.pdf(0, scale=S)
         weights = A*norm.pdf(dist, scale=S)
     return weights
 
@@ -260,20 +261,18 @@ def set_scales_kernel(method, max_r, max_w, min_w, r_char=None):
 def set_scale_surgauss(max_r, max_w, min_w):
     "Set the scale factor of the surgauss kernel."
     A = max_w/norm.sf(0)
-    scale = minimize(lambda x: (A*norm.sf(max_r, scale=x)-min_w)**2,
-                     x0=np.array([max_r]), method='BFGS',
-                     tol=1e-8, bounds=(0, None))
-    scale = scale['x'][0]
+    f_err = lambda x: (A*norm.sf(max_r, scale=x)-min_w)**2
+    scale = minimize(f_err, x0=np.array([max_r]), method='Powell', tol=1e-8)
+    scale = float(scale['x'])
     return scale
 
 
 def set_scale_gauss(max_r, max_w, min_w):
     "Set the scale factor of the gauss kernel."
     A = max_w/norm.pdf(0)
-    scale = minimize(lambda x: (A*norm.pdf(max_r, scale=x)-min_w)**2,
-                     x0=np.array([max_r]), method='BFGS',
-                     tol=1e-8, bounds=(0, None))
-    scale = scale['x'][0]
+    f_err = lambda x: (A*norm.pdf(max_r, scale=x)-min_w)**2
+    scale = minimize(f_err, x0=np.array([0]), method='Powell', tol=1e-8)
+    scale = float(scale['x'])
     return scale
 
 
