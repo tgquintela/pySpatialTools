@@ -74,7 +74,20 @@ def check_discretizors(discretizor):
 
 
 def check_flag_multi(regions):
-    """Check if there is multiple region assignation in regions."""
+    """Check if there is multiple region assignation in regions.
+
+    Parameters
+    ----------
+    regions: array_like or list
+        the regions output after discretization.
+
+    Returns
+    -------
+    flag_multi: boolean
+        the flag which says there is multiple assignation of regions or there
+        is only one regions for each spatial object.
+
+    """
     if type(regions) == np.ndarray:
         flag_multi = False
     else:

@@ -11,11 +11,11 @@ from shapely import ops
 import numpy as np
 from sklearn.neighbors import KDTree
 
-from ..metricdiscretizor import MetricDiscretizor
+from ..metricdiscretizor import BaseMetricDiscretizor
 from utils import tesselation, match_regions
 
 
-class BisectorSpatialDisc(MetricDiscretizor):
+class BisectorSpatialDisc(BaseMetricDiscretizor):
     """A method of defining regions by only giving the central points and
     using the bisector as a border.
     """
@@ -44,7 +44,7 @@ class BisectorSpatialDisc(MetricDiscretizor):
 
         Returns
         -------
-        regions_id: numpy.ndarray
+        regions_id: np.ndarray
             the region_id of each location for this discretization.
 
         """
@@ -57,6 +57,17 @@ class BisectorSpatialDisc(MetricDiscretizor):
     def _map_regionid2regionlocs(self, regions_id):
         """Function which maps the regions ID to their most representative
         location.
+
+        Parameters
+        ----------
+        regions_id: np.ndarray
+            the regions id information.
+
+        Returns
+        -------
+        regionlocs: np.ndarray, shape (n, 2)
+            the region locations of the each assigned location region.
+
         """
         ## 0. Variable needed
         if type(regions_id) == int:
@@ -70,7 +81,19 @@ class BisectorSpatialDisc(MetricDiscretizor):
         return regionlocs
 
     def _map_locs2regionlocs(self, locs):
-        "Map locations to regionlocs."
+        """Map locations to regionlocs.
+
+        Parameters
+        ----------
+        locs: array_like, shape (n, 2)
+            the locations.
+
+        Returns
+        -------
+        regionlocs: array_like, shape (n, 2)
+            the region locations of the each assigned location region.
+
+        """
         ## 0. Use kd trees in order to retrieve nearest points.
         idxs = self.regionretriever.query(locs, 1, False)[:, 0]
         ## 1. Return regionlocs
@@ -78,7 +101,7 @@ class BisectorSpatialDisc(MetricDiscretizor):
         return regionlocs
 
     def _compute_contiguity_geom(self, limits):
-        "Compute which regions are contiguous and returns a graph."
+        """Compute which regions are contiguous and returns a graph."""
         ## TODO:
         raise Exception("Not implemented function yet.")
         ## Obtain random points around all the r_points
@@ -86,7 +109,19 @@ class BisectorSpatialDisc(MetricDiscretizor):
         ## Remove repeated pairs
 
     def _compute_limits(self, region_id=None):
-        """WARNING: probably not yet completely implemented."""
+        """WARNING: probably not yet completely implemented.
+
+        Parameters
+        ----------
+        region_id: integer or None (default)
+            the region id information.
+
+        Returns
+        -------
+        limits: array_like
+            the limits information.
+
+        """
         if region_id is None:
             polygons = tesselation(self.regionlocs)
             whole = ops.unary_union(polygons)

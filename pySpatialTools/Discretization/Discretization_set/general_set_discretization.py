@@ -8,10 +8,10 @@ Discretization set. Explicit relations between elements and their groups.
 
 import numpy as np
 from scipy.sparse import issparse, coo_matrix
-from ..spatialdiscretizer import SpatialDiscretizor
+from ..spatialdiscretizer import BaseSpatialDiscretizor
 
 
-class SetDiscretization(SpatialDiscretizor):
+class SetDiscretization(BaseSpatialDiscretizor):
     """Set discretization is mapping between a non-metric space and another
     topological space.
     """

@@ -7,10 +7,10 @@ Metric discretizer are all the discretizers based in a metric space.
 """
 
 import numpy as np
-from spatialdiscretizer import SpatialDiscretizor
+from spatialdiscretizer import BaseSpatialDiscretizor
 
 
-class MetricDiscretizor(SpatialDiscretizor):
+class BaseMetricDiscretizor(BaseSpatialDiscretizor):
     """Metric discretizor groups all the applications, parameters and functions
     common of all discretizers based on metric spaces.
     """
@@ -18,12 +18,37 @@ class MetricDiscretizor(SpatialDiscretizor):
     format_ = 'implicit'
 
     def map_locs2regionlocs(self, locs):
-        "Map locations to regionlocs."
+        """Map locations to regionlocs.
+
+        Parameters
+        ----------
+        locs: array_like, shape (n, 2)
+            the locations.
+
+        Returns
+        -------
+        regionlocs: array_like, shape (n, 2)
+            the region locations of the each assigned location region.
+
+        """
         regionid = self.discretize(locs)
         regionlocs = self._map_regionid2regionlocs(regionid)
         return regionlocs
 
     def map2agglocs(self, locs):
+        """Map locations to aggregated locations.
+
+        Parameters
+        ----------
+        locs: array_like, shape (n, 2)
+            the locations.
+
+        Returns
+        -------
+        agglocs: array_like, shape (n, 2)
+            the region mean locations of the each assigned region.
+
+        """
         n_locs = locs.shape[0]
         agglocs = np.zeros(locs.shape).astype(float)
         regions = self.discretize(locs)

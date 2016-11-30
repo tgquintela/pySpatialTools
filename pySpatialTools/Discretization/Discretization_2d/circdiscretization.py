@@ -10,11 +10,11 @@ discretization of space.
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from ..metricdiscretizor import MetricDiscretizor
+from ..metricdiscretizor import BaseMetricDiscretizor
 from pySpatialTools.utils.util_external import distribute_tasks
 
 
-class CircularSpatialDisc(MetricDiscretizor):
+class CircularSpatialDisc(BaseMetricDiscretizor):
     """Circular spatial discretization. The regions are circles with different
     sizes. One point could belong to zero, one or more than one region.
     """
@@ -45,7 +45,19 @@ class CircularSpatialDisc(MetricDiscretizor):
 
     def _compute_limits(self, region_id=None):
         """Compute bounding box limits of the selected region or the whole
-        discretization."""
+        discretization.
+
+        Parameters
+        ----------
+        region_id: integer or None (default)
+            the region id information.
+
+        Returns
+        -------
+        limits: array_like
+            the limits information.
+
+        """
         if region_id is None:
             limits = compute_limits_circ(self.regionlocs, self.borders,
                                          self.regions_id)

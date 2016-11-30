@@ -9,13 +9,13 @@ The class and functions related with the 2d-grid discretization.
 import numpy as np
 from scipy.sparse import coo_matrix
 
-from ..metricdiscretizor import MetricDiscretizor
+from ..metricdiscretizor import BaseMetricDiscretizor
 from utils import mask_application_grid
 
 
 ################################# Grid based ##################################
 ###############################################################################
-class GridSpatialDisc(MetricDiscretizor):
+class GridSpatialDisc(BaseMetricDiscretizor):
     "Grid spatial discretization. The regions are rectangular with equal size."
     multiple = False
     n_dim = 2
@@ -40,7 +40,19 @@ class GridSpatialDisc(MetricDiscretizor):
 
     ## Automatic
     def _compute_limits(self, region_id=None):
-        "Build the limits of the region discretized."
+        """Build the limits of the region discretized.
+
+        Parameters
+        ----------
+        region_id: integer or None (default)
+            the region id information.
+
+        Returns
+        -------
+        limits: array_like
+            the limits information.
+
+        """
         if region_id is None:
             limits = compute_limits_grid(self.borders)
             self.limits = limits

@@ -9,10 +9,10 @@ sklearnlikediscretization
 
 """
 
-from ..metricdiscretizor import MetricDiscretizor
+from ..metricdiscretizor import BaseMetricDiscretizor
 
 
-class SklearnDisc(MetricDiscretizor):
+class SklearnDisc(BaseMetricDiscretizor):
     """
     """
 

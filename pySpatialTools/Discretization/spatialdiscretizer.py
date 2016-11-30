@@ -28,7 +28,6 @@ TODO
 - nd-grid discretization
 
 
-
 - Retrieve only populated regions. (Renumerate populated regions)
 - Multiple discretization types aggregated
 - Compute contiguity using correlation measure
@@ -41,7 +40,7 @@ import warnings
 from utils import check_discretizors, check_flag_multi
 
 
-class SpatialDiscretizor:
+class BaseSpatialDiscretizor:
     """
     Spatial Discretizor object. This object performs a discretization of the
     spatial domain and it is able to do:
@@ -97,7 +96,7 @@ class SpatialDiscretizor:
 
         See also
         --------
-        pySpatialTools.Retrieve
+        pySpatialTools.BaseRetriever
 
         """
         region = self.discretize(element_i)

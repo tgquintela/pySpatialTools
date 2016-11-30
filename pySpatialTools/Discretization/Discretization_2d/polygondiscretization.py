@@ -15,12 +15,12 @@ from shapely import ops
 from shapely.geometry import Point
 from utils import match_regions, tesselation
 
-from ..metricdiscretizor import MetricDiscretizor
+from ..metricdiscretizor import BaseMetricDiscretizor
 
 
 ############################### Polygon based #################################
 ###############################################################################
-class IrregularSpatialDisc(MetricDiscretizor):
+class IrregularSpatialDisc(BaseMetricDiscretizor):
     """Grid spatial discretization."""
     n_dim = 2
     multiple = None
@@ -72,6 +72,18 @@ class IrregularSpatialDisc(MetricDiscretizor):
     def map_regionid2regionlocs(self, regions=None):
         """Function which maps the regions ID to their most representative
         location.
+
+        Parameters
+        ----------
+        locs: np.ndarray, shape (n, 2)
+            the locations for which we want to obtain their region given that
+            discretization.
+
+        Returns
+        -------
+        regionlocs: array_like, shape (n, 2)
+            the region locations of the each assigned location region.
+
         """
         if regions is None:
             n_dim = np.array(self.borders[0].centroid).shape[0]
@@ -88,7 +100,19 @@ class IrregularSpatialDisc(MetricDiscretizor):
         return regionlocs
 
     def map_locs2regionlocs(self, locs):
-        "Map locations to regionlocs."
+        """Map locations to regionlocs.
+
+        Parameters
+        ----------
+        locs: array_like, shape (n, 2)
+            the locations.
+
+        Returns
+        -------
+        regionlocs: array_like, shape (n, 2)
+            the region locations of the each assigned location region.
+
+        """
         regionid = self.map_loc2regionid(locs)
         regionlocs = self.map_regionid2regionlocs(regionid)
         return regionlocs
@@ -103,7 +127,20 @@ class IrregularSpatialDisc(MetricDiscretizor):
             agglocs[i, :] = np.mean(locs[logi, :], axis=0)
         return agglocs
 
-    def compute_limits(self, region_id=None):
+    def _compute_limits(self, region_id=None):
+        """Compute the limits of the whole system or of a specific region_id.
+
+        Parameters
+        ----------
+        region_id: integer or None (default)
+            the region id information.
+
+        Returns
+        -------
+        limits: array_like
+            the limits information.
+
+        """
         if region_id is None:
             whole = ops.cascaded_union(self.borders)
             limits = np.array(whole.bounds).reshape((2, 2)).T
