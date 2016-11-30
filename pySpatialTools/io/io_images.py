@@ -11,7 +11,21 @@ from itertools import product
 
 
 def create_locs_features_from_image(image):
-    """Create locs and features from image."""
+    """Create locs and features from image.
+
+    Parameters
+    ----------
+    image: np.ndarray
+        the image matrix represented using numpy.
+
+    Returns
+    -------
+    locs: np.ndarray
+        the locations positions. The grid positions of the image.
+    feats: np.ndarray
+        the intensity of the image.
+
+    """
     sh = image.shape
     if len(sh) == 2:
         image = image.reshape((sh[0], sh[1], 1))
