@@ -7,9 +7,7 @@ called easier.
 """
 
 #import Retrieve.retrievers.Retriever as BaseRetriever
-from FeatureManagement.features_objects import Features as BaseFeatures
-from FeatureManagement.Descriptors import DescriptorModel as\
-    BaseDescriptorModel
-from utils.perturbations import GeneralPerturbation as BasePerturbations
-from SpatialRelations.relative_positioner import RelativePositioner as\
-    BaseRelativePositioner
+from FeatureManagement.features_objects import BaseFeatures
+from FeatureManagement.Descriptors import BaseDescriptorModel
+from utils.perturbations import BasePerturbation
+from SpatialRelations.relative_positioner import BaseRelativePositioner
