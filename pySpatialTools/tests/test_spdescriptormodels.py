@@ -16,7 +16,7 @@ import signal
 from pySpatialTools.Discretization import GridSpatialDisc
 from pySpatialTools.Retrieve import SameEleNeigh, KRetriever,\
     CircRetriever, RetrieverManager, WindowsRetriever
-from pySpatialTools.Retrieve.retrievers import Retriever
+from pySpatialTools.Retrieve.retrievers import BaseRetriever
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever,\
     dummy_implicit_outretriver, dummy_explicit_outretriver,\
     avgregionlocs_outretriever
@@ -31,7 +31,7 @@ from pySpatialTools.utils.selectors import Sp_DescriptorSelector
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures, Features
+    ImplicitFeatures, ExplicitFeatures, BaseFeatures
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation
 from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
@@ -40,7 +40,7 @@ from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i
 from pySpatialTools.FeatureManagement.Descriptors import CountDescriptor,\
     AvgDescriptor, NBinsHistogramDesc, SparseCounter
 from pySpatialTools.FeatureManagement import SpatialDescriptorModel,\
-    _spdesc_parsing_creation
+    _spdesc_parsing_creation, SpatioTemporalDescriptorModel
 from pySpatialTools.FeatureManagement.spatial_descriptormodels import\
     create_aggfeatures, _parse_aggregation_feat
 
@@ -200,9 +200,9 @@ def test():
     aggregation_info = disc_info, retriever_in, retriever_out, aggregating
     # Creation of aggregation objects
     aggretriever = create_aggretriever(aggregation_info)
-    assert(isinstance(aggretriever, Retriever))
+    assert(isinstance(aggretriever, BaseRetriever))
     aggfeatures = create_aggfeatures(aggregation_info, feats)
-    assert(isinstance(aggfeatures, Features))
+    assert(isinstance(aggfeatures, BaseFeatures))
 
     ###########################################################################
     ###########################################################################
@@ -428,6 +428,9 @@ def test():
     os.remove('logfile.log')
     spdesc._compute_nets()
     spdesc._compute_retdriven()
+    ## Model functions
+    spdesc.fit(np.arange(20), np.random.random(20))
+    spdesc.predict(np.arange(20))
 
     ############
     ### Auxiliar functions
@@ -436,6 +439,19 @@ def test():
     assert(isinstance(spdesc, SpatialDescriptorModel))
     res = create_aggfeatures(spdesc, None)
     assert(isinstance(res, ExplicitFeatures))
+
+    ###########################################################################
+    ###########################################################################
+    spdesc_temp = SpatioTemporalDescriptorModel(spdesc)
+    indices = np.arange(10)
+    y = np.random.random(10)
+    spdesc_temp = spdesc_temp.fit(indices, y)
+    spdesc_temp.predict(indices)
+    spdesc_temp = SpatioTemporalDescriptorModel([spdesc, spdesc])
+    indices = np.arange(20)
+    y = np.random.random(20)
+    spdesc_temp = spdesc_temp.fit(indices, y)
+    spdesc_temp.predict(indices)
 
 #    ###########################################################################
 #    ###########################################################################

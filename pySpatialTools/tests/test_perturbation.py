@@ -14,12 +14,12 @@ from pySpatialTools.Retrieve import KRetriever, CircRetriever
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
-from pySpatialTools.FeatureManagement.features_objects import Features,\
+from pySpatialTools.FeatureManagement.features_objects import BaseFeatures,\
     ImplicitFeatures, ExplicitFeatures
 from pySpatialTools.utils.perturbations import PermutationPerturbation,\
     NonePerturbation, JitterLocations, PermutationIndPerturbation,\
     ContiniousIndPerturbation, DiscreteIndPerturbation, MixedFeaturePertubation
-from pySpatialTools.utils.perturbations import GeneralPerturbation
+from pySpatialTools.utils.perturbations import BasePerturbation
 from pySpatialTools.utils.perturbations import sp_general_filter_perturbations,\
     feat_filter_perturbations, ret_filter_perturbations
 
@@ -40,7 +40,7 @@ def test():
     ###########################################################################
     #### GeneralPermutations
     ## Create perturbations
-    class DummyPerturbation(GeneralPerturbation):
+    class DummyPerturbation(BasePerturbation):
         _categorytype = 'feature'
         _perturbtype = 'dummy'
 

@@ -30,7 +30,7 @@ from pySpatialTools.SpatialRelations import\
     sparse_from_listaregneighs, compute_selfdistances
 
 from pySpatialTools.SpatialRelations.relative_positioner import\
-    RelativePositioner, metric_distances, diff_vectors
+    BaseRelativePositioner, metric_distances, diff_vectors
 
 
 def test():
@@ -418,10 +418,10 @@ def test():
     for i in range(n_el):
         aux_neigh = np.random.random((np.random.randint(1, 4), n_dim))
         elements_neighs.append(aux_neigh)
-    rel_pos = RelativePositioner(metric_distances)
+    rel_pos = BaseRelativePositioner(metric_distances)
     rel_pos.compute(elements_i, elements_neighs)
 
-    rel_pos = RelativePositioner(diff_vectors)
+    rel_pos = BaseRelativePositioner(diff_vectors)
     rel_pos.compute(elements_i, elements_neighs)
 
 #    RelativeRegionPositioner

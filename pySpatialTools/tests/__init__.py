@@ -31,6 +31,7 @@ import test_descriptormodels
 import test_spdescriptormodels
 import test_interpolation
 import test_sampling
+import test_api
 
 # Messages
 message_init_tests =\
@@ -75,6 +76,7 @@ def test():
         test_spdescriptormodels.test()
         test_interpolation.test()
         test_sampling.test()
+        test_api.test()
     ## Closing tests
     time_own_computer = str(np.round(time.time()-t0, 2))
     print(message_own_computer % time_own_computer)

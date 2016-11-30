@@ -23,7 +23,7 @@ from pySpatialTools.utils.artificial_data.artificial_measure import *
 ## Features
 from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager
-from pySpatialTools.FeatureManagement.features_objects import Features,\
+from pySpatialTools.FeatureManagement.features_objects import BaseFeatures,\
     ImplicitFeatures, ExplicitFeatures
 
 from pySpatialTools.utils.perturbations import PermutationPerturbation

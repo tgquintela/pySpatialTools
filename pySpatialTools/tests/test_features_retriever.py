@@ -12,7 +12,7 @@ from pySpatialTools.FeatureManagement.features_retriever import\
     FeaturesManager, _features_parsing_creation,\
     _featuresmanager_parsing_creation
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures, Features,\
+    ImplicitFeatures, ExplicitFeatures, BaseFeatures,\
     _featuresobject_parsing_creation
 from pySpatialTools.FeatureManagement.Descriptors import DummyDescriptor
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
@@ -357,13 +357,13 @@ def test():
     assert(isinstance(features_ret, FeaturesManager))
 
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     features_ret = _features_parsing_creation(features_obj)
     assert(isinstance(features_ret, FeaturesManager))
     features_ret = _features_parsing_creation([features_obj])
     assert(isinstance(features_ret, FeaturesManager))
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     pars_feats = {}
     feats_info = (features_obj, pars_feats)
     features_ret = _features_parsing_creation(feats_info)

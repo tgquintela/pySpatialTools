@@ -33,9 +33,10 @@ from pySpatialTools.utils.mapper_vals_i import create_mapper_vals_i,\
 from ..utils.util_classes import Locations, SpatialElementsCollection,\
     Membership
 from pySpatialTools.utils.selectors import DummySelector,\
-    GeneralCollectionSelectors, Spatial_RetrieverSelector,\
+    BaseCollectionSelectors, Spatial_RetrieverSelector,\
     Feat_RetrieverSelector, FeatInd_RetrieverSelector, Desc_RetrieverSelector,\
     Sp_DescriptorSelector
+from pySpatialTools.Discretization.Discretization_2d import GridSpatialDisc
 
 
 def test():
@@ -563,7 +564,7 @@ def test():
     selector1 = DummySelector(mapper_array)
     selector2 = DummySelector(lambda idx: mapper_array[idx], n_in=100, n_out=3)
     selector3 = DummySelector(lambda idx: [mapper_array[idx]]*3, n_in=100)
-    sl = GeneralCollectionSelectors([selector1, selector2, selector3])
+    sl = BaseCollectionSelectors([selector1, selector2, selector3])
 
     # Spatial retriever selector
     sel = Spatial_RetrieverSelector(np.array([mapper_array]*2).T)
@@ -718,3 +719,4 @@ def test():
     selfeat = Feat_RetrieverSelector((lambda idx: (0, 0, 0, 0, 0, 0),
                                      {'n_in': 200}))
     test_getitem(selfeat)
+

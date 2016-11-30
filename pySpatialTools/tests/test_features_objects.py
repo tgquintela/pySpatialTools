@@ -9,7 +9,7 @@ Testing the feature retriever.
 import numpy as np
 from itertools import product
 from pySpatialTools.FeatureManagement.features_objects import\
-    ImplicitFeatures, ExplicitFeatures, Features, PhantomFeatures,\
+    ImplicitFeatures, ExplicitFeatures, BaseFeatures, PhantomFeatures,\
     _featuresobject_parsing_creation
 from pySpatialTools.FeatureManagement.Descriptors import AvgDescriptor
 from pySpatialTools.utils.perturbations import PermutationPerturbation
@@ -419,30 +419,30 @@ def test():
     # Testing combinations of possible inputs
     feats_info = feats0
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = feats1
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = feats2
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats0, pars_feats)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats1, pars_feats)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats2, pars_feats)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats0, pars_feats, desc)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats1, pars_feats, desc)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     feats_info = (feats2, pars_feats, desc)
     features_obj = _featuresobject_parsing_creation(feats_info)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))
     features_obj = _featuresobject_parsing_creation(features_obj)
-    assert(isinstance(features_obj, Features))
+    assert(isinstance(features_obj, BaseFeatures))

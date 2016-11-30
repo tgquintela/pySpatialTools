@@ -12,13 +12,13 @@ from itertools import product
 # Auxiliars
 from pySpatialTools.utils.neighs_info import Neighs_Info
 from pySpatialTools.SpatialRelations.relative_positioner import\
-    metric_distances, RelativePositioner
+    metric_distances, BaseRelativePositioner
 
 ## Retrievers
 from pySpatialTools.Retrieve import KRetriever, CircRetriever,\
     RetrieverManager, SameEleNeigh, OrderEleNeigh, LimDistanceEleNeigh,\
     DummyRetriever, GeneralRetriever, WindowsRetriever
-from pySpatialTools.Retrieve.retrievers import Retriever
+from pySpatialTools.Retrieve.retrievers import BaseRetriever
 from pySpatialTools.Retrieve.aux_retriever import _check_retriever
 
 ## WindowsRetriever functions
@@ -31,7 +31,7 @@ from pySpatialTools.Retrieve.aux_windowretriever import create_window_utils,\
     generate_grid_neighs_coord, generate_grid_neighs_coord_i
 
 ## Aux_retriever
-from pySpatialTools.Retrieve.aux_retriever import NullRetriever,\
+from pySpatialTools.Retrieve.aux_retriever import NullCoreRetriever,\
     _check_retriever, _general_autoexclude, _array_autoexclude,\
     _list_autoexclude
 from pySpatialTools.Retrieve import DummyRetriever, DummyLocObject
@@ -159,7 +159,7 @@ def test():
     idxs = to_exclude_elements
 
     # Testing
-    dummyret = NullRetriever(regions)
+    dummyret = NullCoreRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -168,11 +168,11 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    dummyret = NullRetriever(regions)
+    dummyret = NullCoreRetriever(regions)
     dummyret.retriever = None
     dummyret._default_ret_val = None
     # Testing
-    dummyret = NullRetriever(regions)
+    dummyret = NullCoreRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -181,12 +181,12 @@ def test():
     except:
         if boolean:
             raise Exception("It has to halt here.")
-    dummyret = NullRetriever(regions)
+    dummyret = NullCoreRetriever(regions)
     dummyret._define_retriever = None
     dummyret._format_output_exclude = None
     dummyret._format_output_noexclude = None
     # Testing
-    dummyret = NullRetriever(regions)
+    dummyret = NullCoreRetriever(regions)
     try:
         boolean = False
         _check_retriever(dummyret)
@@ -289,16 +289,16 @@ def test():
     ######### Instantiation  (tools_retriever)
     retriever_out = (KRetriever, {'info_ret': 3})
     ret_out = dummy_implicit_outretriver(retriever_out, locs, regs, disc1)
-    assert(isinstance(ret_out, Retriever))
+    assert(isinstance(ret_out, BaseRetriever))
     ret_out.retrieve_neighs(0)
     ret_out = avgregionlocs_outretriever(retriever_out, locs, regs, disc1)
-    assert(isinstance(ret_out, Retriever))
+    assert(isinstance(ret_out, BaseRetriever))
     ret_out.retrieve_neighs(0)
 
     f_rand = lambda regs: DummyRegDistance(regs)
     retriever_out = (SameEleNeigh, {}, f_rand, np.arange(10))
     ret_out = dummy_explicit_outretriver(retriever_out, locs, regs, disc1)
-    assert(isinstance(ret_out, Retriever))
+    assert(isinstance(ret_out, BaseRetriever))
     ret_out.retrieve_neighs(0)
 
     ###########################################################################
@@ -361,7 +361,7 @@ def test():
     pos_infof = [None, lambda x, pars: 0]
     pos_typeret = ['space']  # ''
     pos_autoexclude = [False]  # True, None for other time
-    pos_relativepos = [None, RelativePositioner(metric_distances)]
+    pos_relativepos = [None, BaseRelativePositioner(metric_distances)]
     pos_constantneighs = [True, False, None]
 
     ## Combinations
