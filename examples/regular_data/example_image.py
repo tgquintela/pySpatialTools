@@ -3,7 +3,9 @@
 Example of image feature extraction using pySpatialTools
 --------------------------------------------------------
 In this example we are gonna use pySpatialTools to extract some features
-from an image example.
+from an image example. It is not the most recommendable way of do it,
+because they are better software to do that specific task, quicker and more
+memory efficient.
 
 """
 

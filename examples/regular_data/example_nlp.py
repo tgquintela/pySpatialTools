@@ -3,7 +3,9 @@
 Example nlp
 -----------
 Text is a regular sequential data which could be treated as a
-with regular time sampling.
+with regular time sampling. Natural language processing uses that view to
+process and extract information from text, in the point of view of features
+extraction or for measure creation.
 """
 
 import numpy as np

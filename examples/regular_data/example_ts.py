@@ -2,7 +2,10 @@
 """
 Example time_series
 -------------------
-Time series with regular time sampling.
+Time series with regular time sampling. In the point of view of time series
+with regular sampling, there are measures in each moment of time. It is only
+needed to define all the information, the measures at each time and the t0 and
+the step.
 """
 
 import numpy as np
