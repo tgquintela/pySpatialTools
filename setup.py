@@ -37,6 +37,7 @@ if sys.argv[-1] == 'setup.py':
 version = release.write_versionfile()
 
 packages = ['pySpatialTools',
+            'pySpatialTools.api',
             'pySpatialTools.Discretization',
             'pySpatialTools.Discretization.Discretization_2d',
             'pySpatialTools.Discretization.Discretization_3d',
@@ -53,6 +54,7 @@ packages = ['pySpatialTools',
             'pySpatialTools.Preprocess.Transformations.Transformation_3d',
             'pySpatialTools.Preprocess.Transformations.Transformation_nd',
             'pySpatialTools.Retrieve',
+            'pySpatialTools.Sampling',
             'pySpatialTools.SpatialRelations',
             'pySpatialTools.tests',
             'pySpatialTools.tests.test_pythonUtils',
