@@ -1,0 +1,100 @@
+
+
+###############################################################################
+############################## WEIGHTED SAMPLING ##############################
+###############################################################################
+def firstorder_sampling_fixed(points_cat, probs, n):
+    """Sampling of firtst order statistics. This function performs a fixed,
+    weighted, disperse sampling from a collection of points. The weights are
+    given by the first-order statistics.
+
+    Parameters
+    ----------
+    points_cat: numpy.ndarray, shape(n_p)
+        the category of each point represented as a sequential integers.
+    probs: numpy.ndarray
+        probabilities we want to keep in the sample.
+    n: integer
+        number of samples we want
+
+    Returns
+    -------
+    indices: numpy.ndarray, shape(n)
+        the indices of the samples.
+
+    """
+
+    # Needed variables
+    n_p = points_cat.shape[0]
+    sampling = np.zeros(n_p)
+
+    # Normalization of probs
+    probs = probs/(n_p/float(n))
+
+    # Sampling
+    n_sampled = 0
+    i = 0
+    while True:
+        i = i % n_p
+        if not sampling[i]:
+            r = np.random.random()
+            if r <= probs[points_cat[i]]:
+                sampling[i] = 1
+                n_sampled += 1
+                if n_sampled == n:
+                    break
+        i += 1
+
+    # Retrieve indices
+    indices = np.where(sampling)[0]
+
+    return indices
+
+
+
+
+###############################################################################
+############################# Auxiliary functions #############################
+###############################################################################
+def region_sampling(discretizor, n):
+    """Uniformely sampling of regions in space.
+
+    Parameters
+    ----------
+    discretizor: pySpatialTools.Neighbour.discretizor object
+        the object which gives the information or how to compute regions.
+    n: int
+        the number of regions we want to retrieve.
+
+    Returns
+    -------
+    regions: numpy.ndarray, shape (n,)
+        the regions code we want.
+
+    """
+    m = len(discretizor.regions)  # TODO: regions not empty
+    regions = np.random.randint(0, m, n)
+    return regions
+
+
+def weighted_region_sampling(discretizor, n, weights=None):
+    """Uniformely sampling of regions in space.
+
+    Parameters
+    ----------
+    discretizor: pySpatialTools.Neighbour.discretizor object
+        the object which gives the information or how to compute regions.
+    n: int
+        the number of regions we want to retrieve.
+    weights: numpy.ndarray
+        the weights of each region.
+
+    Returns
+    -------
+    regions: numpy.ndarray, shape (n,)
+        the regions code we want.
+
+    """
+    list_regions = len(discretizor.regions)  # TODO: regions not empty
+    regions = element_importance_prop_sampling(list_regions, n, weights)
+    return regions
