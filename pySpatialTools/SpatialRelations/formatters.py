@@ -25,6 +25,7 @@ def format_out_relations(relations, out_):
     -------
     relations: decided format
         the relations expressed in the decided format.
+
     """
 
     if out_ == 'sparse':
@@ -44,11 +45,20 @@ def _relations_parsing_creation(relations_info):
     """Function which uniforms the relations info to be useful in other
     parts of the code.
 
-    Standarts
-    * relations object
-    * (main_relations_info, pars_rel)
-    * (main_relations_info, pars_rel, _data)
-    * (main_relations_info, pars_rel, _data, data_in)
+    Parameters
+    ----------
+    relations_info: pst.RegionDistances or tuple
+        the relations information. The standard input structure are:
+            * relations object
+            * (main_relations_info, pars_rel)
+            * (main_relations_info, pars_rel, _data)
+            * (main_relations_info, pars_rel, _data, data_in)
+
+    Returns
+    -------
+    relations_info: pst.RegionDistances
+        the relations information.
+
     """
     if isinstance(relations_info, RegionDistances):
         pass

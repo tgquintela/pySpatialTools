@@ -10,12 +10,45 @@ Utilities to define a metric .
 ## Point elements
 ###############################################################################
 def measure_difference(element_i, element_j, pars={}):
+    """
+
+    Parameters
+    ----------
+    element_i: float or np.ndarray
+        the spatial information of the element `i`.
+    element_j: float or np.ndarray
+        the spatial information of the element `j`.
+    pars: dict
+        the parameters of the measures.
+
+    Returns
+    -------
+    measure: float or np.ndarray
+        the measure computed.
+
+    """
     measure = (element_j - element_i)
     return measure
 
 
 def unidimensional_periodic(element_i, element_j, pars={}):
-    """Unidimensional periodic metric."""
+    """Unidimensional periodic metric.
+
+    Parameters
+    ----------
+    element_i: float or np.ndarray
+        the spatial information of the element `i`.
+    element_j: float or np.ndarray
+        the spatial information of the element `j`.
+    pars: dict
+        the parameters of the measures.
+
+    Returns
+    -------
+    measure: float or np.ndarray
+        the measure computed.
+
+    """
     periodic = pars['periodic'] if 'periodic' in pars else None
     if periodic is None:
         return measure_difference(element_i, element_j)

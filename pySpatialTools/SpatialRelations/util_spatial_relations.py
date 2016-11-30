@@ -17,8 +17,10 @@ def general_spatial_relation(sp_el1, sp_el2, f):
 
     Parameters
     ----------
-    sp_el1:
-    sp_el2:
+    sp_el1: optional
+        the spatial information of element 1.
+    sp_el2: optional
+        the spatial information of element 2.
     f: function
         function to compute spatial relation between spatial objects.
 
@@ -38,7 +40,8 @@ def general_spatial_relations(Sp_els, f, simmetry=False):
 
     Parameters
     ----------
-    Sp_els:
+    Sp_els: array_like
+        the spatial elements collection.
     f: function
         function to compute spatial relation between spatial objects.
     simmetry: boolean

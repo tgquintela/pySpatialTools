@@ -45,6 +45,7 @@ def compute_ContiguityRegionDistances(discretizor, store='network'):
         if the relations are symmetric or not (in order to save memory space).
     store: str
         how we want to store the relations.
+
     """
     ## 0. Preparing variables
     #_data = discretizor.reshape((discretizor.shape[0], 1))
@@ -78,7 +79,6 @@ def compute_CenterLocsRegionDistances(sp_descriptor, store='network',
 
     Parameters
     ----------
-    TODO:
     sp_descriptor: sp_descriptor or tuple.
         the spatial descriptormodel object or the tuple of elements needed
         to build it (discretizor, locs, retriever, descriptormodel)
@@ -157,7 +157,6 @@ def compute_AvgDistanceRegions(sp_descriptor, store='network', elements=None,
 
     Parameters
     ----------
-    TODO:
     locs: np.ndarray
         the locations of the elements.
     discretizor: pst.Discretization object

@@ -16,9 +16,12 @@ def get_regions4distances(discretizor, elements=None, activated=None):
 
     Parameters
     ----------
-    discretizor:
-    elements:
-    activated:
+    discretizor: pst.BaseDiscretizor
+        the discretization information.
+    elements: np.ndarray or None (default)
+        the elements we want to consider. If None, all are considered.
+    activated: boolean or None (default)
+        the use only of the regions which have elements in them or all.
 
     Returns
     -------
@@ -48,8 +51,10 @@ def compute_selfdistances(retriever, element_labels, typeoutput='network',
 
     Parameters
     ----------
-    retriever:
-    element_labels:
+    retriever: pst.BaseRetriever
+        the retriever object.
+    element_labels: np.ndarray
+        the element labels.
     typeoutput: str, ['network', 'sparse', 'matrix']
         the type of ouput representation we want.
     symmetric: boolean
@@ -116,6 +121,21 @@ def filter_possible_neighs(only_possible, neighs, dists):
 def sparse_from_listaregneighs(lista, u_regs, symmetric):
     """Sparse representation matrix from a list of tuples of indices and
     values.
+
+    Parameters
+    ----------
+    lista: list
+        the list of relations.
+    u_regs: np.ndarray
+        the regions id.
+    symmetric: boolean
+        if symmetric True else False.
+
+    Returns
+    -------
+    coo_matrix: scipy.coo_matrix
+        the scipy sparse coordinate representation of the relations.
+
     """
     sh = (u_regs.shape[0], u_regs.shape[0])
     lista = np.array(lista)
