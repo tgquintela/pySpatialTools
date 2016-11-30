@@ -18,11 +18,34 @@ class SpatialElementsCollection:
     """
 
     def __init__(self, sp_ele_collection, elements_id=None):
+        """The spatial elements collection instanciation.
+
+        Parameters
+        ----------
+        sp_ele_collection: list or np.ndarray
+            the collection of elements.
+        elements_id: np.ndarray, list
+            the tags of each element.
+
+        """
         self.elements = self._format_elements(sp_ele_collection)
         self.n_elements = len(self.elements)
         self.elements_id = self._format_tags(elements_id)
 
     def __getitem__(self, i):
+        """Get items of the elements `i`.
+
+        Parameters
+        ----------
+        i: int
+            the element `i` we want to get their locations.
+
+        Returns
+        -------
+        ele_i: np.ndarray
+            the spatial infomraion associated with the elements `i`.
+
+        """
         if self.elements_id is None:
             if len(self) <= i or i < 0:
                 raise IndexError("Index out of bonds")
@@ -36,9 +59,18 @@ class SpatialElementsCollection:
         return ele_i
 
     def __len__(self):
+        """Number of total elements stored."""
         return len(self.elements)
 
     def __iter__(self):
+        """Sequencial retrieving the locations stored in data.
+
+        Returns
+        -------
+        loc_i: optional
+            location of element `i`.
+
+        """
         if self.elements_id is None:
             for i in xrange(len(self)):
                 yield self[i]
@@ -49,6 +81,17 @@ class SpatialElementsCollection:
     def __eq__(self, loc):
         """Retrieve which points have the same coordinates. It returns a
         1d-boolean array.
+
+        Parameters
+        ----------
+        loc: optional
+            the spatial information of some element.
+
+        Returns
+        -------
+        logi: boolean np.ndarray
+            the elements that have the same spatial information.
+
         """
         if type(self.elements) == list:
             logi = np.array([np.all(e == loc) for e in self.elements])
@@ -57,7 +100,14 @@ class SpatialElementsCollection:
         return logi
 
     def relabel_elements(self, relabel_map):
-        "Relabel the elements."
+        """Relabel the elements.
+
+        Parameters
+        ----------
+        relabel_map: dict or np.ndarray
+            the information to change the labels.
+
+        """
         if self.elements_id is None:
             if type(relabel_map) == np.ndarray:
                 self.elements_id = relabel_map
@@ -73,7 +123,14 @@ class SpatialElementsCollection:
             self.elements_id = new_tags
 
     def _format_elements(self, sp_ele_collection):
-        "Format properly the elements."
+        """Format properly the elements.
+
+        Parameters
+        ----------
+        sp_ele_collection: list or np.ndarray
+            the collection of elements.
+
+        """
         if type(sp_ele_collection) == np.ndarray:
             return Locations(sp_ele_collection)
         else:
@@ -84,6 +141,19 @@ class SpatialElementsCollection:
                 raise TypeError("Collection don't have __len__ function.")
 
     def _format_tags(self, tags):
+        """Format tag.
+
+        Parameters
+        ----------
+        tags: np.ndarray, list
+            the tags we want to format.
+
+        Returns
+        -------
+        tags: np.ndarray, list
+            the tags formatted.
+
+        """
         if tags is not None:
             if type(tags) in [np.ndarray, list]:
                 tags = np.array(tags)
@@ -102,6 +172,16 @@ class Locations:
     """
 
     def __init__(self, locations, points_id=None):
+        """The locations object which stores the whole data.
+
+        Parameters
+        ----------
+        locations: np.ndarray
+            the locations to be stored.
+        points_id: list or np.ndarray
+            the points code id.
+
+        """
         locations = self._to_locations(locations)
         self.n_dim = locations.shape[1]
         self.n_points = len(locations)
@@ -109,7 +189,19 @@ class Locations:
         self.points_id = self._format_tags(points_id)
 
     def __eq__(self, loc):
-        "Retrieve which points have the same coordinates."
+        """Retrieve which points have the same coordinates.
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location selected we want to get from data.
+
+        Returns
+        -------
+        logi: boolean np.ndarray
+            if the elements are equal to the input location.
+
+        """
         loc = self._to_loc(loc)
         logi = np.ones(self.n_points).astype(bool)
         for i_dim in range(self.n_dim):
@@ -117,13 +209,35 @@ class Locations:
         return logi
 
     def __iter__(self):
+        """Sequencial retrieving the locations stored in data.
+
+        Returns
+        -------
+        loc_i: np.ndarray
+            location of element `i`.
+
+        """
         for i in xrange(self.n_points):
             yield self[i]
 
     def __len__(self):
+        """Number of total points stored."""
         return self.n_points
 
     def __getitem__(self, i):
+        """Get the item of element `i`.
+
+        Parameters
+        ----------
+        i: int
+            the element `i` we want to get their locations.
+
+        Returns
+        -------
+        loc_i: np.ndarray
+            location of element `i`.
+
+        """
         if isinstance(i, slice):
             raise IndexError("Not possible to get collectively.")
         if self.points_id is None:
@@ -136,6 +250,19 @@ class Locations:
         return loc_i
 
     def _format_tags(self, tags):
+        """Format tag.
+
+        Parameters
+        ----------
+        tags: np.ndarray, list
+            the tags we want to format.
+
+        Returns
+        -------
+        tags: np.ndarray, list
+            the tags formatted.
+
+        """
         if tags is not None:
             if type(tags) in [np.ndarray, list]:
                 tags = np.array(tags)
@@ -148,11 +275,35 @@ class Locations:
         return tags
 
     def _to_loc(self, loc):
-        "Transform a location array in a locations"
+        """Transform a location array in a locations
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location to be formatted properly as location.
+
+        Returns
+        -------
+        loc: np.ndarray
+            the location to be formatted properly as location.
+
+        """
         return loc.ravel()
 
     def _to_locations(self, locations):
-        "Transform a locations array into the proper shape."
+        """Transform a locations array into the proper shape.
+
+        Parameters
+        ----------
+        locations: np.ndarray
+            the locations to be formatted properly as locations.
+
+        Returns
+        -------
+        locations: np.ndarray
+            the locations to be formatted properly as locations.
+
+        """
         if type(locations) == np.ndarray:
             if len(locations.shape) == 1:
                 locations = locations.reshape((len(locations), 1))
@@ -161,6 +312,17 @@ class Locations:
     def compute_distance(self, loc, kwargs={}):
         """Compute distance between loc and all the other points in the
         collection.
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location to compute the distance to all the locations stored.
+
+        Returns
+        -------
+        distances: np.ndarray
+            the distances to all the locations stored from the location input.
+
         """
         ## Extend to other types of elements
         loc = self._to_loc(loc)
@@ -208,10 +370,25 @@ class Locations:
 
     @property
     def data(self):
+        """The locations data stored."""
         return self.locations
 
     def in_block_distance_d(self, loc, d):
-        "If there is in less than d distance in all the dimensions."
+        """If there is in less than d distance in all the dimensions.
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location selected as centroid.
+        d: float
+            the distance magnitude.
+
+        Returns
+        -------
+        logi: boolean np.ndarray
+            if the elements are in the distance of the selected location.
+
+        """
         loc = self._to_loc(loc)
         loc = loc if len(loc.shape) == 2 else loc.reshape((1, len(loc)))
         logi = np.ones(len(self.locations))
@@ -224,19 +401,56 @@ class Locations:
     def in_manhattan_d(self, loc, d):
         """Compute if the location loc is in d manhattan distance of each of
         the points of this collection.
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location selected as centroid.
+        d: float
+            the distance magnitude.
+
+        Returns
+        -------
+        logi: boolean np.ndarray
+            if the elements are in the distance of the selected location.
+
         """
         distances = self.compute_distance(loc, {'metric': 'cityblock'})
         logi = distances < d
         return logi
 
     def in_radio(self, loc, r, kwargs={}):
-        "If there is in less than r distance in the metric selected."
+        """If there is in less than r distance in the metric selected.
+
+        Parameters
+        ----------
+        loc: np.ndarray
+            the location selected as centroid.
+        r: float
+            the radius we want to check.
+        kwargs: dict (defeault={})
+            the parameters required by the compute_distance function.
+
+        Returns
+        -------
+        logi: boolean np.ndarray
+            if the elements are in the radius of the selected location.
+
+        """
         logi = self.compute_distance(loc, kwargs) < r
         return logi
 
     def space_transformation(self, method, params):
         """Space transformation. It calls to the transformation functions or
         classes of the pySpatialTools.
+
+        Parameters
+        ----------
+        method: function or instance
+            the method of transformation we want to apply.
+        params: dictionary
+            the parameters required for the selected transformation.
+
         """
         if type(method).__name__ == 'function':
             self.locations = method(self.locations, params)

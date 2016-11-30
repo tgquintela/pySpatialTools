@@ -11,6 +11,7 @@ from perturbations import NonePerturbation, JitterLocations,\
     PermutationPerturbation, MixedFeaturePertubation,\
     PermutationIndPerturbation, DiscreteIndPerturbation,\
     ContiniousIndPerturbation, PermutationPerturbationLocations,\
-    GeneralPerturbation
+    BasePerturbation, PartialPermutationPerturbationGeneration,\
+    PermutationPerturbationGeneration
 from filter_perturbations import sp_general_filter_perturbations,\
     feat_filter_perturbations, ret_filter_perturbations

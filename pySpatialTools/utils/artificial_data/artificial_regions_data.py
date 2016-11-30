@@ -3,6 +3,7 @@
 Artificial regions data
 -----------------------
 Regions randomly defined.
+
 """
 
 import numpy as np
@@ -12,7 +13,23 @@ numbertypes = [int, float, np.float, np.int32, np.int64]
 
 
 def random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0):
-    """Generate a list of shapely polygons."""
+    """Generate a list of shapely polygons.
+
+    Parameters
+    ----------
+    n_poly: int
+        the number of polygons we want to generate.
+    bounding: tuple (default=(None, None))
+        the boundary limits.
+    n_edges: int (default=0)
+        the number of edges.
+
+    Returns
+    -------
+    polygons: list of shapely.geometry.Polygon
+        the polytions
+
+    """
     polygons = []
     n_edges = [n_edges]*n_poly if type(n_edges) != list else n_edges
     for i in range(n_poly):
@@ -22,7 +39,21 @@ def random_shapely_polygons(n_poly, bounding=(None, None), n_edges=0):
 
 def random_shapely_polygon(bounding=(None, None), n_edges=0):
     """Generate a random polygon with different edges into a bounding box
-    defined by the user."""
+    defined by the user.
+
+    Parameters
+    ----------
+    bounding: tuple (default=(None, None))
+        the boundary limits.
+    n_edges: int (default=0)
+        the number of edges.
+
+    Returns
+    -------
+    polygon: shapely.geometry.Polygon
+        the polytion we want to randomly generate.
+
+    """
     ## Ensure correct dimensions
     assert(len(bounding) in [2, 3])
     n_dim = len(bounding)

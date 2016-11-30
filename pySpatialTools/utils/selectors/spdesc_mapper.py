@@ -12,21 +12,55 @@ data.
 """
 
 import numpy as np
-from copy import copy
+#from copy import copy
 
 inttypes = [int, np.int32, np.int64]
 
 
-class GeneralSelector:
-    """General selector."""
+class BaseSelector:
+    """Basic selector."""
 
     def __init__(self, mapper, n_in=None, n_out=None, compute=False):
+        """The BaseSelector.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+        compute: boolean (default=False)
+            if compute the n_out and other parameters from the tranformation
+            mapper given.
+
+        """
         ## Preparation
         self._inititizalization()
         ## Formatting and storing
         self._format_maps(mapper, n_in, n_out, compute)
 
     def _format_maps(self, mapper, n_in, n_out, compute):
+        """Format mapper.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+        compute: boolean (default=False)
+            if compute the n_out and other parameters from the tranformation
+            mapper given.
+
+        """
         if type(mapper) == np.ndarray:
             if len(mapper.shape) == 1:
                 mapper = mapper.reshape((len(mapper), 1))
@@ -57,6 +91,20 @@ class GeneralSelector:
                                   compute)
 
     def __getitem__(self, keys):
+        """Get item with keys retriever.
+
+        Parameters
+        ----------
+        keys: int, list, tuple
+            the information of elements we want to obtain their selection
+            options.
+
+        Returns
+        -------
+        outs: list, tuple or np.ndarray
+            the selection options for the elements we input.
+
+        """
         if type(keys) == int:
             outs = self._mapper(keys)
         elif type(keys) in [list, tuple]:
@@ -67,7 +115,16 @@ class GeneralSelector:
         return outs
 
     def set_from_array(self, array_mapper, _n_vars_out):
-        """Set mapper from array."""
+        """Set mapper from array.
+
+        Parameters
+        ----------
+        array_mapper: np.ndarray
+            the array which defines the mapper.
+        _n_vars_out: int
+            the number of variables in the output.
+
+        """
         assert(len(array_mapper.shape) == 2)
         if array_mapper.shape[1] != _n_vars_out:
             msg = "Not correct shape of array to be a selector mapper."
@@ -84,7 +141,25 @@ class GeneralSelector:
 
     def set_from_function(self, mapper, n_in, n_out, _n_vars_out,
                           compute=True):
-        """Set mapper from function."""
+        """Set mapper from function.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+        _n_vars_out: int
+            the number of variables in the output.
+        compute: boolean (default=True)
+            if compute the n_out and other parameters from the tranformation
+            mapper given.
+
+        """
         assert(len(n_out) == _n_vars_out)
         self._mapper = mapper
         self.n_in = n_in
@@ -104,6 +179,14 @@ class GeneralSelector:
             self.n_out = [len(e) for e in self._pos_out]
 
     def _define_lack_parameters(self, mapper):
+        """Define lack of parameters.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+
+        """
         if '_n_vars_out' not in dir(self):
             if type(mapper).__name__ == 'function':
                 out = mapper(0)
@@ -113,10 +196,18 @@ class GeneralSelector:
             self._n_vars_out = len(out)
 
 
-class GeneralCollectionSelectors:
-    """General collections of selectors."""
+class BaseCollectionSelectors:
+    """Basic collections of selectors."""
 
     def __init__(self, selectors):
+        """The basic manager of collection of selectors.
+
+        Parameters
+        ----------
+        selectors: list of pst.BaseSelector
+            the selection information for different possible selections.
+
+        """
         n_ins = [selectors[i].n_in for i in range(len(selectors))]
         assert(all([n_in == n_ins[0] for n_in in n_ins]))
         self.n_in = n_ins[0]
@@ -127,6 +218,20 @@ class GeneralCollectionSelectors:
         self.selectors = selectors
 
     def __getitem__(self, idx):
+        """Get item of selections between them.
+
+        Parameters
+        ----------
+        idx: int
+            the information of elements we want to obtain their selection
+            options.
+
+        Returns
+        -------
+        res: list, tuple or np.ndarray
+            the selection options for the elements we input.
+
+        """
         res = []
         for i in range(len(self.selectors)):
             res.append(self.selectors[i][idx])
@@ -134,7 +239,14 @@ class GeneralCollectionSelectors:
         return res
 
     def _formatting_unique_collective_mapper(self, mapper):
-        """Is a collection of mappers categorize by a only mapper."""
+        """Is a collection of mappers categorize by a only mapper.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the map function.
+
+        """
         self.assert_correctness = self.assert_correctness_mapper
         if type(mapper).__name__ == 'instance':
             self._mapper_setting(mapper)
@@ -158,6 +270,15 @@ class GeneralCollectionSelectors:
             self.__getitem__ = self._getitem_mapper
 
     def assert_correctness(self, object2manageselection):
+        """Assert correctnets of the object for manage selection.
+
+        Parameters
+        ----------
+        object2manageselection: optional
+            the manager which is going to use the selection in order to manage
+            some process as the element retriever or the features retriever.
+
+        """
         for i in range(len(self.selectors)):
             self.selectors[i].assert_correctness(object2manageselection)
 
@@ -165,6 +286,16 @@ class GeneralCollectionSelectors:
         pass
 
     def _preprocess_selector(self, map_sel, map_sel_type):
+        """Preprocess the selector.
+
+        Parameters
+        ----------
+        map_sel: list, tuple, np.ndarray, function or instance
+            the mapper information.
+        map_sel_type: pst.BaseSelector or pst.BaseCollectionSelectors
+            the class to be instantiated with the proper information.
+
+        """
         if map_sel is None:
             map_sel = map_sel_type(map_sel)
         elif isinstance(map_sel, map_sel_type):
@@ -176,6 +307,20 @@ class GeneralCollectionSelectors:
         return map_sel
 
     def _getitem_mapper(self, keys):
+        """Get item with keys of selection.
+
+        Parameters
+        ----------
+        keys: int, list, tuple
+            the information of elements we want to obtain their selection
+            options.
+
+        Returns
+        -------
+        outs: list, tuple or np.ndarray
+            the selection options for the elements we input.
+
+        """
         if type(keys) == int:
             outs = self._mapper(keys)
             outs = self._outformat_mapper(outs)
@@ -190,6 +335,22 @@ class GeneralCollectionSelectors:
         return outs
 
     def _outformat_mapper(self, out):
+        """Outformat mapper. Format the output given by the mapper to fulfill
+        the standards.
+
+        Parameters
+        ----------
+        out: int, tuple or list
+            the selection decided by the map.
+        _n_vars_out: int or list
+            the number of variables in the output.
+
+        Returns
+        -------
+        outs: int, tuple or list
+            the corrected selection decided by the map.
+
+        """
         out_format = _outformat_mapper(out, self._n_vars_out)
 #        if type(out) == tuple:
 #            assert(len(out) == sum(self._n_vars_out))
@@ -208,6 +369,18 @@ class GeneralCollectionSelectors:
         return out_format
 
     def _initialize_variables(self, n_in=None, n_out=None):
+        """Initialization of basic variables.
+
+        Parameters
+        ----------
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+
+        """
         if n_in is not None:
             self.n_in = n_in
 #            if '_array_mapper' in dir(self):
@@ -215,6 +388,14 @@ class GeneralCollectionSelectors:
 #                    assert(len(self._array_mapper) >= n_in)
 
     def _mapper_setting(self, mapper):
+        """Mapper setting.
+
+        Parameters
+        ----------
+        mapper: np.ndarray, tuple, function or instance
+            the map function.
+
+        """
         if type(mapper) == np.ndarray:
             self._array_mapper = mapper
             self._mapper =\
@@ -233,7 +414,7 @@ class GeneralCollectionSelectors:
             self.n_in = mapper.n_in
 
 
-class DummySelector(GeneralSelector):
+class DummySelector(BaseSelector):
     """Dummy selector for testing and example purposes."""
     __name__ = "pst.DummySelector"
 
@@ -244,6 +425,20 @@ class DummySelector(GeneralSelector):
         self._open_n = (False)
 
     def set_pars(self, _n_vars_out, _default_map_values, n_out=None):
+        """Set the parameters of the selection.
+
+        Parameters
+        ----------
+        _n_vars_out: int
+            the number of variables in the output.
+        _default_map_values: int, tuple or others
+            the default values of selection.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+
+        """
+
         self._default_map_values = _default_map_values
         self._n_vars_out = _n_vars_out
         if n_out is not None:
@@ -253,13 +448,14 @@ class DummySelector(GeneralSelector):
         self.__init__(self._mapper, n_out=n_out)
 
 
-class Spatial_RetrieverSelector(GeneralSelector):
+class Spatial_RetrieverSelector(BaseSelector):
     """Spatial retriever mapper to indicate the path of possible options to
     retrieve spatial neighbourhood.
 
     2-dim selector output:
         - Retriever selection
         - Outputmap selection
+
     """
 #    _mapper = lambda s, idx: (0, 0)
     __name__ = "pst.Spatial_RetrieverSelector"
@@ -273,6 +469,23 @@ class Spatial_RetrieverSelector(GeneralSelector):
         self._open_n = (False, False)
 
     def __init__(self, _mapper_ret, mapper_out=None, n_in=None, n_out=None):
+        """Spatial retriever mapper to indicate the path of possible options to
+        retrieve spatial neighbourhood.
+
+        Parameters
+        ----------
+        _mapper_ret: np.ndarray, int, function or instance
+            the mapper retreiver information.
+        mapper_out: np.ndarray, int, function or instance (default=None)
+            auxiliar mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+
+        """
         ## Initialization
         self._inititizalization()
         ## Filter mappings
@@ -281,7 +494,21 @@ class Spatial_RetrieverSelector(GeneralSelector):
         self._format_maps(mapper, n_in, n_out, compute=False)
 
     def _preformat_maps(self, _mapper_ret, mapper_out):
-        """Preformat input maps."""
+        """Preformat input maps.
+
+        Parameters
+        ----------
+        _mapper_ret: np.ndarray, int, function or instance
+            the mapper retreiver information.
+        mapper_out: np.ndarray, int, function or instance (default=None)
+            auxiliar mapper information.
+
+        Returns
+        -------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+
+        """
         if mapper_out is not None:
             assert(type(_mapper_ret) == type(mapper_out))
             if type(mapper_out) == np.ndarray:
@@ -296,6 +523,15 @@ class Spatial_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
+        """Assert correctnets of the object for manage selection.
+
+        Parameters
+        ----------
+        manager: optional
+            the manager which is going to use the selection in order to manage
+            some process as the element retriever or the features retriever.
+
+        """
         assert(len(manager.retrievers) >= self.n_out[0])
         if '_array_mapper' in dir(self):
             if self._array_mapper is not None:
@@ -305,7 +541,7 @@ class Spatial_RetrieverSelector(GeneralSelector):
                     assert(len(manager.retrievers[i]._output_map) > max_out)
 
 
-class FeatInd_RetrieverSelector(GeneralSelector):
+class FeatInd_RetrieverSelector(BaseSelector):
     """Computation of features of the element we want to study."""
 
 #    _mapper = lambda self, idx: (0, 0)
@@ -320,6 +556,22 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         self._open_n = (False, False)
 
     def __init__(self, _mapper_feats, mapper_inp=None, n_in=None, n_out=None):
+        """The features individual selection of the featuresmanager part.
+
+        Parameters
+        ----------
+        _mapper_feats: np.ndarray, int, function or instance
+            the mapper features information.
+        mapper_inp: np.ndarray, int, function or instance (default=None)
+            auxiliar mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+
+        """
         ## Initialization
         self._inititizalization()
         ## Filter mappings
@@ -328,7 +580,21 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         self._format_maps(mapper, n_in, n_out, compute=False)
 
     def _preformat_maps(self, _mapper_feats, mapper_inp):
-        """Preformat input maps."""
+        """Preformat input maps.
+
+        Parameters
+        ----------
+        _mapper_feats: np.ndarray, int, function or instance
+            the mapper features information.
+        mapper_inp: np.ndarray, int, function or instance
+            auxiliar mapper information.
+
+        Returns
+        -------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+
+        """
         if mapper_inp is not None:
             assert(type(_mapper_feats) == type(mapper_inp))
             if type(mapper_inp) == np.ndarray:
@@ -343,11 +609,20 @@ class FeatInd_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
+        """Assert correctnets of the object for manage selection.
+
+        Parameters
+        ----------
+        manager: optional
+            the manager which is going to use the selection in order to manage
+            some process as the element retriever or the features retriever.
+
+        """
         assert(len(manager._maps_input) >= self.n_out[0])
         assert(len(manager.features) >= self.n_out[1])
 
 
-class Desc_RetrieverSelector(GeneralSelector):
+class Desc_RetrieverSelector(BaseSelector):
     """Selection of descriptor computation after pointfeatures and
     neighbourhood features."""
 
@@ -362,6 +637,22 @@ class Desc_RetrieverSelector(GeneralSelector):
         self._open_n = (False, False)
 
     def __init__(self, _mapper_feats, mapper_inp=None, n_in=None, n_out=None):
+        """The descriptors selection of the featuresmanager part.
+
+        Parameters
+        ----------
+        _mapper_feats: np.ndarray, int, function or instance
+            the mapper features information.
+        mapper_inp: np.ndarray, int, function or instance (default=None)
+            auxiliar mapper information.
+        n_in: int or None (default=None)
+            the size of the possible input. If the value is None, the input
+            is open.
+        n_out: int or None (default=None)
+            the size of the possible output. If the value is None, the output
+            is open.
+
+        """
         ## Initialization
         self._inititizalization()
         ## Filter mappings
@@ -370,7 +661,21 @@ class Desc_RetrieverSelector(GeneralSelector):
         self._format_maps(mapper, n_in, n_out, compute=False)
 
     def _preformat_maps(self, _mapper_feats, mapper_inp):
-        """Preformat input maps."""
+        """Preformat input maps.
+
+        Parameters
+        ----------
+        _mapper_feats: np.ndarray, int, function or instance
+            the mapper features information.
+        mapper_inp: np.ndarray, int, function or instance
+            auxiliar mapper information.
+
+        Returns
+        -------
+        mapper: np.ndarray, tuple, function or instance
+            the mapper information.
+
+        """
         if mapper_inp is not None:
             assert(type(_mapper_feats) == type(mapper_inp))
             if type(mapper_inp) == np.ndarray:
@@ -385,11 +690,20 @@ class Desc_RetrieverSelector(GeneralSelector):
         return mapper
 
     def assert_correctness(self, manager):
+        """Assert correctnets of the object for manage selection.
+
+        Parameters
+        ----------
+        manager: optional
+            the manager which is going to use the selection in order to manage
+            some process as the element retriever or the features retriever.
+
+        """
         assert(2 >= self.n_out[0])  # It is a boolean variable
         assert(len(manager.features) >= self.n_out[1])
 
 
-class Feat_RetrieverSelector(GeneralCollectionSelectors):
+class Feat_RetrieverSelector(BaseCollectionSelectors):
     """Features retriever mapper to indicate the path of possible options to
     interact with features.
     """
@@ -405,6 +719,19 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
         self._open_n = False
 
     def __init__(self, mapper_featin, mapper_featout=None, mapper_desc=None):
+        """Features part selectors.
+
+        Parameters
+        ----------
+        mapper_featin: tuple, np.ndarray, function or instance
+            the mapper of the whole features part or only of the part of
+            descriptors of elements `i`.
+        mapper_featout: tuple, np.ndarray, function or instance (default=None)
+            the mapper of the part of descriptors of neighs of elements `i`.
+        mapper_desc: tuple, np.ndarray, function or instance (default=None)
+            the mapper of the descriptors selection.
+
+        """
         ## Initialization
         self._inititizalization()
 #        print '-'*50
@@ -424,6 +751,20 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
             self._set_feat_selector(mapper_featin, mapper_featout, mapper_desc)
 
     def _assert_inputs(self, mapper_featin, mapper_featout, mapper_desc):
+        """Assert correct inputs.
+
+        Parameters
+        ----------
+        mapper_featin: tuple, np.ndarray, function or instance
+            the mapper of the whole features part or only of the part of
+            descriptors of elements `i`.
+        mapper_featout: tuple, np.ndarray, function or instance
+            the mapper of the part of descriptors of neighs of elements `i`.
+        mapper_desc: tuple, np.ndarray, function or instance
+            the mapper of the descriptors selection.
+
+
+        """
         assert(mapper_featin.__name__ == "pst.FeatInd_RetrieverSelector")
         assert(mapper_featout.__name__ == "pst.FeatInd_RetrieverSelector")
         assert(mapper_desc.__name__ == "pst.Desc_RetrieverSelector")
@@ -433,6 +774,19 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
             assert(mapper_featin.n_in == mapper_desc.n_in)
 
     def _set_feat_selector(self, mapper_featin, mapper_featout, mapper_desc):
+        """Set the possible selectors.
+
+        Parameters
+        ----------
+        mapper_featin: tuple, np.ndarray, function or instance
+            the mapper of the whole features part or only of the part of
+            descriptors of elements `i`.
+        mapper_featout: tuple, np.ndarray, function or instance
+            the mapper of the part of descriptors of neighs of elements `i`.
+        mapper_desc: tuple, np.ndarray, function or instance
+            the mapper of the descriptors selection.
+
+        """
         self.n_in = mapper_featin.n_in
         self.n_out = mapper_featin.n_out+mapper_featout.n_out+mapper_desc.n_out
         self._pos_out =\
@@ -440,7 +794,7 @@ class Feat_RetrieverSelector(GeneralCollectionSelectors):
         self.selectors = mapper_featin, mapper_featout, mapper_desc
 
 
-class Sp_DescriptorSelector(GeneralCollectionSelectors):
+class Sp_DescriptorSelector(BaseCollectionSelectors):
     """Spatial descriptor mapper to indicate the path of possible options to
     compute spatial descriptors.
     """
@@ -453,6 +807,16 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
         self.n_in = 0
 
     def __init__(self, map_ret=None, map_feat=None):
+        """The whole spatial descriptor model selector.
+
+        Parameters
+        ----------
+        map_ret: np.ndarray, int, function or instance (default=None)
+            the mapper retriever information.
+        map_feat: np.ndarray, int, function or instance (default=None)
+            the mapper features information.
+
+        """
         self._initialization()
 #        print '.'*50
 #        print map_ret, map_feat
@@ -468,7 +832,22 @@ class Sp_DescriptorSelector(GeneralCollectionSelectors):
 
 
 def _outformat_mapper(out, _n_vars_out):
-    """Outformat mapper."""
+    """Outformat mapper. Format the output given by the mapper to fulfill the
+    standards.
+
+    Parameters
+    ----------
+    out: int, tuple or list
+        the selection decided by the map.
+    _n_vars_out: int or list
+        the number of variables in the output.
+
+    Returns
+    -------
+    outs: int, tuple or list
+        the corrected selection decided by the map.
+
+    """
     if type(out) == list:
         outs = []
         for i in range(len(out)):
@@ -493,6 +872,19 @@ def _outformat_mapper(out, _n_vars_out):
 
 
 def format_selection(selection):
+    """Format selection.
+
+    Parameters
+    ----------
+    selection: list or others
+        the selections formatting properly.
+
+    Returns
+    -------
+    selection: list or others
+        the selections formatting properly.
+
+    """
     if type(selection) == list:
         i_len = len(selection[0])
         selection_list = [[] for i in range(i_len)]

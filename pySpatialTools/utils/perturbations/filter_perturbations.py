@@ -12,6 +12,19 @@ from perturbations import NonePerturbation
 def sp_general_filter_perturbations(perturbations):
     """General function to filter perturbations and get the specific
     transformed perturbations for retrievermanager and featuremanager.
+
+    Parameters
+    ----------
+    perturbations: pst.BasePerturbation or list
+        the perturbations applied to that features.
+
+    Returns
+    -------
+    perturb_ret: pst.BasePerturbation or list
+        the perturbation of retriever.
+    perturb_feat: pst.BasePerturbation or list
+        the perturbation of features.
+
     """
     ## 0. Format properly the perturbations
     if type(perturbations) != list:
@@ -25,7 +38,19 @@ def sp_general_filter_perturbations(perturbations):
 
 
 def ret_filter_perturbations(perturbations):
-    """Filter perturbations for retriever tasks."""
+    """Filter perturbations for retriever tasks.
+
+    Parameters
+    ----------
+    perturbations: pst.BasePerturbation or list
+        the perturbations applied to that features.
+
+    Returns
+    -------
+    perturbations: pst.BasePerturbation or list
+        the perturbations applied to that features.
+
+    """
     ## 0. Format properly the perturbations
     if type(perturbations) != list:
         perturbations = [perturbations]
@@ -43,7 +68,19 @@ def ret_filter_perturbations(perturbations):
 
 
 def feat_filter_perturbations(perturbations):
-    """Filter perturbations for features tasks."""
+    """Filter perturbations for features tasks.
+
+    Parameters
+    ----------
+    perturbations: pst.BasePerturbation or list
+        the perturbations applied to that features.
+
+    Returns
+    -------
+    perturbations: pst.BasePerturbation or list
+        the perturbations applied to that features.
+
+    """
     ## 0. Format properly the perturbations
     if type(perturbations) != list:
         perturbations = [perturbations]

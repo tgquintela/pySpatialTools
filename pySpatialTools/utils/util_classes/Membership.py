@@ -39,6 +39,7 @@ class Membership:
             a collection of elements is unique the membership can be
             represented as a numpy array, else it will be represented as a list
             of lists.
+
         """
         self._initialization()
         membership, out = format_membership(membership)
@@ -85,12 +86,35 @@ class Membership:
         return collections
 
     def __eq__(self, collection_id):
+        """The equal function collection by collection.
+
+        Parameters
+        ----------
+        collection_id: int
+            the collection code we want to obtain their linked elements.
+
+        Returns
+        -------
+        elements: list or np.ndarray
+            the elements associated to a collection given in the input.
+
+        """
         elements = self.getcollection(collection_id)
         return elements
 
     def __iter__(self):
         """Iterates over the elements and return element i, its collections to
         which it belongs and the membership value.
+
+        Returns
+        -------
+        i: int
+            the element considered.
+        colls: int or list or np.ndarray
+            the collections associated to the value of the element `i`.
+        memb_vals: float
+            the membership value.
+
         """
         if issparse(self._membership):
             for i in xrange(self.n_elements):
@@ -111,30 +135,70 @@ class Membership:
                     yield i, colls, memb_vals
 
     def __str__(self):
-        "Return a representation of information about the data of this class."
+        """Return a representation of information about the data of this class.
+
+        Returns
+        -------
+        summary: str
+            the summary information of that class.
+
+        """
         summary = """Membership class with %s elements and %s collections,
             in which there are %sweighted and %sunique relations between
             elements and collections."""
         wei = "" if self._weighted else "non-"
         unique = "" if self._unique else "non-"
         summary = summary % (self.n_elements, self.n_collections, wei, unique)
-        return ""
+        return summary
 
     @property
     def membership(self):
-        """Returns the membership data."""
+        """Returns the membership data.
+
+        Parameters
+        ----------
+        _membership: list, dict or np.ndarray
+            the membership information.
+
+        """
         return self._membership
 
     @property
     def shape(self):
+        """The size of the inputs and outputs.
+
+        Returns
+        -------
+        n_elements: int
+            the number of elements.
+        n_collections: int
+            the number of collections.
+
+        """
         return self.n_elements, self.n_collections
 
     @property
     def elements_id(self):
+        """The element indices.
+
+        Returns
+        -------
+        elements_id: list
+            the elements codes.
+
+        """
         return list(range(self.shape[0]))
 
     @property
     def max_collection_id(self):
+        """
+
+        Returns
+        -------
+        max_collection_id: int
+            the number of maximum code of the collections.
+
+        """
         try:
             return np.max(self.collections_id)
         except:
@@ -181,13 +245,28 @@ class Membership:
         return elements
 
     def to_network(self):
-        "Return a networkx graph object."
+        """Return a networkx graph object.
+
+        Returns
+        -------
+        membership: nx.Graph
+            the network representation of the membership in a networkx package.
+            The network has to be a bipartite network.
+
+        """
         dict_relations = self.to_dict()
         G = nx.from_dict_of_dicts(dict_relations)
         return G
 
     def to_dict(self):
-        "Return a dictionary object."
+        """Return a dictionary object.
+
+        Returns
+        -------
+        membership: dict
+            the membership representation in a dictionary form.
+
+        """
         element_lab = ["e %s" % str(e) for e in xrange(self.n_elements)]
         d = {}
         for i, collects_i, weighs in self:
@@ -207,12 +286,26 @@ class Membership:
         return d
 
     def to_sparse(self):
+        """Return a sparse object.
+
+        Returns
+        -------
+        membership: scipy.sparse
+            the membership representation in a sparse matrix representation.
+
+        """
         au = self.n_elements, self._unique, self._weighted, self.collections_id
         return to_sparse(self._membership, au)
 
     def reverse_mapping(self):
         """Reverse the mapping of elements to collections to collections to
         elements.
+
+        Returns
+        -------
+        reverse_membership: dict
+            the reverse mapping between collections and elements.
+
         """
         reversed_ = {}
         for coll_id in self.collections_id:
@@ -223,7 +316,19 @@ class Membership:
 
 
 def format_membership(membership):
-    """Format membership to fit it into the set discretizor standart."""
+    """Format membership to fit it into the set discretizor standart.
+
+    Parameters
+    ----------
+    membership: dict, np.ndarray, list, scipy.sparse or nx.Graph
+        the membership information.
+
+    Returns
+    -------
+    membership: dict, np.ndarray, list, scipy.sparse or nx.Graph
+        the membership information.
+
+    """
     tuple2 = False
     # Pre compute
     if type(membership) == tuple:
@@ -298,7 +403,21 @@ def format_membership(membership):
 
 
 def to_sparse(_membership, out):
-    "Return a sparse matrix object."
+    """Return a sparse matrix object.
+
+    Parameters
+    ----------
+    membership: dict, np.ndarray, list, scipy.sparse or nx.Graph
+        the membership information.
+    out: str, optional ['network', 'sparse', 'membership', 'list', 'matrix']
+        the out format we want to output the membership.
+
+    Returns
+    -------
+    membership: dict, np.ndarray, list, scipy.sparse or nx.Graph
+        the membership information.
+
+    """
     n_elements, _unique, _weighted, collections_id = out
     sh = n_elements, len(collections_id)
     aux_map = dict(zip(collections_id, range(sh[1])))

@@ -87,6 +87,40 @@ class Neighs_Info:
                  n=0, format_get_info=None, format_get_k_info=None,
                  format_set_iss=None, staticneighs=None, ifdistance=None,
                  type_neighs=None, type_sp_rel_pos=None, format_level=None):
+        """The instanciation of the container object for all the neighbourhood
+        information.
+
+        Parameters
+        ----------
+        constant_neighs: boolean (default=False)
+            if there are always the same number of neighs across all the
+            possible neighs.
+        kret: int (default=1)
+            the total perturbations applied (maximum k size).
+        format_structure: str, optional (default=None)
+            the type of structure in which we are going to set the
+            neighbourhood information.
+        n: int (default=0)
+            the maximum number of possible neighs code.
+        format_get_info: str optional (default=None)
+            in which format the information is returned to the user.
+        format_get_k_info: str optional (default=None)
+            in which format of the ks we set.
+        format_set_iss: str optional (default=None)
+            in which format of elements iss we set.
+        staticneighs: boolean (default=None)
+            if there is constant neighbourhood across the perturbations.
+        ifdistance: boolean (default=None)
+            if we set the distance or the relative position information.
+        type_neighs: str optional (default=None)
+            the type of object describing the neighs of the neighbourhood.
+        type_sp_rel_pos: str optional (default=None)
+            the type of object describing the relative position of the
+            neighbourhood.
+        format_level: int (default=None)
+            the level in which the information of the neighborhood will be set.
+
+        """
         ## Initialize class
         self._set_init()
         ## Extra info
@@ -110,15 +144,30 @@ class Neighs_Info:
         self._format_joining_functions()
 
     def __iter__(self):
-        """Get information sequentially."""
+        """Get information sequentially.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i`.
+        sp_relpos: list or np.ndarray
+            the relative position information for each element `i`.
+        ks: list or np.ndarray
+            the perturbations indices associated with the returned information.
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         for i in range(len(self.ks)):
             yield self.get_neighs([i]), self.get_sp_rel_pos([i]),\
                 [self.ks[i]], self.iss
 
     def empty(self):
+        """If it is empty."""
         return not self.any()
 
     def any(self):
+        """If it is not empty."""
         boolean = True
         if type(self.idxs) == np.ndarray:
             boolean = all(self.idxs.shape)
@@ -129,15 +178,28 @@ class Neighs_Info:
         return boolean
 
     def reset(self):
+        """Reset all the class to empty all the neighbourhood information."""
         self._set_init()
 
     def copy(self):
+        """Deep copy of the container."""
         return deepcopy(self)
 
     @property
     def shape(self):
         """Return the number of indices, neighbours and ks considered. For
-        irregular cases the neighbours number is set as None."""
+        irregular cases the neighbours number is set as None.
+
+        Returns
+        -------
+        sh0: int
+            the number of elements we want to get their neighbourhood.
+        sh1: int
+            the number of neighs they have it is constant.
+        sh2: int
+            the number of perturbations applied.
+
+        """
         if not self._setted:
             return None, None, None
         if type(self.idxs) == slice:
@@ -158,30 +220,65 @@ class Neighs_Info:
     ############################ GENERAL SETTINGS #############################
     ###########################################################################
     def set_information(self, k_perturb=0, n=0):
-        """Set specific global information."""
+        """Set specific global information.
+
+        Parameters
+        ----------
+        kret: int (default=0)
+            the total perturbations applied (maximum k size).
+        n: int (default=0)
+            the maximum number of possible neighs code.
+
+        """
         self._n = n
         self._kret = k_perturb
 
     def _set_ks_static(self, ks):
-        """External set ks for staticneighs."""
+        """External set ks for staticneighs.
+
+        Parameters
+        ----------
+        ks: list or np.ndarray
+            the perturbations indices associated with the stored information.
+
+        """
         self.ks = ks
         if np.max(self.ks) > self._kret:
             self._kret = np.max(self.ks)
 
     def _set_ks_dynamic(self, ks):
-        """External set ks for non-staticneighs."""
+        """External set ks for non-staticneighs.
+
+        Parameters
+        ----------
+        ks: list or np.ndarray
+            the perturbations indices associated with the stored information.
+
+        """
         assert(len(ks) == len(self.idxs))
         self.ks = ks
         if np.max(self.ks) > self._kret:
             self._kret = np.max(self.ks)
 
     def direct_set(self, neighs, sp_relative_pos=None):
-        """Direct set of neighs_info."""
+        """Direct set of neighs_info.
+
+        Parameters
+        ----------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` and for each
+            perturbation `k`.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         self.idxs = neighs
         self.sp_relative_pos = sp_relative_pos
         self.assert_goodness()
 
     def reset_functions(self):
+        """Reset the function regarding the parameters set."""
         if type(self.idxs) == list:
             type_neighs = 'list'
         elif type(self.idxs) == slice:
@@ -197,23 +294,53 @@ class Neighs_Info:
         self.set_types(type_neighs, type_sp_rel_pos)
 
     def reset_structure(self, format_structure):
+        """Reset structure regarding the parameters set and the
+        `format_structure` input.
+
+        Parameters
+        ----------
+        format_structure: str, optional
+            the type of structure in which we are going to set the
+            neighbourhood information.
+
+        """
         assert(format_structure in pos_structure)
         _, aux1, aux2, aux3 = self.format_set_info
         self.format_set_info = format_structure, aux1, aux2, aux3
         self.reset_format()
 
     def reset_level(self, format_level):
+        """Reset level regarding the parameters set and the new input.
+
+        Parameters
+        ----------
+        format_level: int
+            the level in which the information of the neighborhood will be set.
+
+        """
         assert(format_level in pos_levels)
         self.level = format_level
         self.reset_format()
 
     def reset_format(self):
+        """Reset format regarding the parameters set."""
         ## Formatters
         self._format_setters(*self.format_set_info)
         self._format_getters(*self.format_get_info)
         self._format_joining_functions()
 
     def set_types(self, type_neighs=None, type_sp_rel_pos=None):
+        """Set type of objects in which the information will be given.
+
+        Parameters
+        ----------
+        type_neighs: str optional (default=None)
+            the type of object describing the neighs of the neighbourhood.
+        type_sp_rel_pos: str optional (default=None)
+            the type of object describing the relative position of the
+            neighbourhood.
+
+        """
         ## 1. Set set_sp_rel_pos
         self.type_neighs, self.type_sp_rel_pos = type_neighs, type_sp_rel_pos
 
@@ -298,6 +425,16 @@ class Neighs_Info:
             self.staticneighs_set = True
 
     def set_structure(self, format_structure=None):
+        """Set the structure in which the neighbourhood information will be
+        given.
+
+        Parameters
+        ----------
+        format_structure: str, optional (default=None)
+            the type of structure in which we are going to set the
+            neighbourhood information.
+
+        """
         if format_structure is None:
             self._set_info = self._set_general
         elif format_structure == 'raw':
@@ -340,7 +477,18 @@ class Neighs_Info:
     ###########################################################################
     def _format_globalpars(self, staticneighs, ifdistance, format_level):
         """Global information non-mutable and mutable in order to force or keep
-        other information and functions."""
+        other information and functions.
+
+        Parameters
+        ----------
+        staticneighs: boolean
+            if there is constant neighbourhood across the perturbations.
+        ifdistance: boolean
+            if we set the distance or the relative position information.
+        format_level: int
+            the level in which the information of the neighborhood will be set.
+
+        """
         ## Basic information how it will be input neighs_info
         self.level = format_level
         ## Global known information about relative position
@@ -358,6 +506,22 @@ class Neighs_Info:
 
     def _format_setters(self, format_structure, type_neighs=None,
                         type_sp_rel_pos=None, format_set_iss=None):
+        """Format the setter functions.
+
+        Parameters
+        ----------
+        format_structure: str, optional
+            the type of structure in which we are going to set the
+            neighbourhood information.
+        type_neighs: str optional (default=None)
+            the type of object describing the neighs of the neighbourhood.
+        type_sp_rel_pos: str optional (default=None)
+            the type of object describing the relative position of the
+            neighbourhood.
+        format_set_iss: str optional (default=None)
+            in which format of elements iss we set.
+
+        """
         ## 1. Format structure
         self.set_structure(format_structure)
         ## 2. Set types
@@ -387,6 +551,14 @@ class Neighs_Info:
         self.set = self._general_set
 
     def _format_set_iss(self, format_set_iss=None):
+        """Format the setter iss function.
+
+        Parameters
+        ----------
+        format_set_iss: str optional (default=None)
+            in which format of elements iss we set.
+
+        """
         ## Format iss
         if format_set_iss is None or format_set_iss == 'general':
             self._set_iss = self._general_set_iss
@@ -398,7 +570,16 @@ class Neighs_Info:
             self._set_iss = self._list_set_iss
 
     def _format_getters(self, format_get_info=None, format_get_k_info=None):
-        """Function to program this class according to the stored idxs."""
+        """Function to program this class according to the stored idxs.
+
+        Parameters
+        ----------
+        format_get_info: str optional (default=None)
+            in which format the information is returned to the user.
+        format_get_k_info: str optional (default=None)
+            in which format of the ks we set.
+
+        """
         ## Get info setting
         if format_get_k_info is None:
             self.get_k = self._general_get_k
@@ -442,6 +623,8 @@ class Neighs_Info:
                 self.sp_relative_pos = np.array(self.sp_relative_pos)
 
     def _assert_iss_postformat(self):
+        """Assert if the iss is correctly formatted, if not, format properly.
+        """
         if type(self.idxs) in [list, np.ndarray]:
 #            print self.idxs, self.iss, self.set_neighs
             if self.staticneighs:
@@ -455,6 +638,7 @@ class Neighs_Info:
                 assert(all([len(k) == len(self.idxs[0]) for k in self.idxs]))
 
     def _assert_ks_postformat(self):
+        """Assert proper postformatting for the ks."""
         if type(self.idxs) in [list, np.ndarray]:
             if self.ks is None:
                 if self.staticneighs:
@@ -492,11 +676,14 @@ class Neighs_Info:
         pass
 
     def _idxs_postformat_array(self):
-        """"""
+        """The neighs information postformatting. It format in an array-form
+        the neighs stored in the instance.
+        """
         self.idxs = np.array(self.idxs)
 
     def _idxs_postformat_null(self):
-        """"""
+        """The neighs information postformatting. It doesnt change the format.
+        """
         pass
 
     ###########################################################################
@@ -506,7 +693,17 @@ class Neighs_Info:
     ########################### Setters candidates ############################
     ###########################################################################
     def _general_set(self, neighs_info, iss=None):
-        """General set."""
+        """General set.
+
+        Parameters
+        ----------
+        neighs_info: int, float, slice, np.ndarray, list, tuple or instance
+            the neighbourhood information given with the proper indicated
+            structure.
+        iss: list or np.ndarray (default=None)
+            the indices of the elements we stored their neighbourhood.
+
+        """
         ## Set function
         self._preset(neighs_info, iss)
         ## Post-set functions
@@ -514,7 +711,17 @@ class Neighs_Info:
         self.assert_goodness()
 
     def _preset(self, neighs_info, iss=None):
-        """Set the class."""
+        """Set the class.
+
+        Parameters
+        ----------
+        neighs_info: int, float, slice, np.ndarray, list, tuple or instance
+            the neighbourhood information given with the proper indicated
+            structure.
+        iss: list or np.ndarray (default=None)
+            the indices of the elements we stored their neighbourhood.
+
+        """
         self._reset_stored()
         self._set_iss(iss)
         self._set_info(neighs_info)
@@ -567,6 +774,7 @@ class Neighs_Info:
         self.staticneighs_set = None
 
     def _reset_stored(self):
+        """Reset the stored parameters and neighbourhood information."""
         ## Main information
         self.idxs = None
         self.sp_relative_pos = None
@@ -579,12 +787,15 @@ class Neighs_Info:
 
         Parameters
         ----------
-        neighs_info:
-            * (i, k)
-            * (neighs, k)
-            * (neighs_info, k)
-                where neighs_info is a tuple which could contain (neighs,
-                dists) or (neighs,)
+        neighs_info: int, float, slice, np.ndarray, list, tuple or instance
+            the neighbourhood information given with the proper indicated
+            structure. The standards of the inputs are:
+                * neighs [int, float, list, slice or np.ndarray]
+                * (i, k)
+                * (neighs, k)
+                * (neighs_info, k) where neighs_info is a tuple which could
+                contain (neighs, dists) or (neighs,)
+                * neighs_info in the form of pst.Neighs_Info
         """
         ## 0. Format inputs
         # If int is a neighs
@@ -629,14 +840,34 @@ class Neighs_Info:
     ############################## Set Structure ##############################
     ###########################################################################
     def _set_raw_structure(self, key):
-        """Raw structure.
-        * neighs{any form}
+        """Set the neighbourhood information in a form of raw structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * neighs{any form}
+
         """
         self.set_neighs(key)
         self.ifdistance = False
 
     def _set_structure_tuple(self, key):
-        """Tuple general.
+        """Set the neighbourhood information in a form of tuple general.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * (neighs, )
+                * (neighs_info{any form}, ks)
+                * (neighs_info{list of typle only}, ks)
+                * (neighs{any form}, sp_relative_pos{any form})
+                * ((neighs{any form}, sp_relative_pos{any form}), ks)
+                * (neighs_info{list of typle only}, ks)
+
         """
         if len(key) == 2:
             msg = "Ambiguous input in `set` function of pst.Neighs_Info."
@@ -660,16 +891,30 @@ class Neighs_Info:
             self.set_neighs(key[0])
 
     def _set_tuple_structure(self, key):
-        """Tuple structure.
-        * (neighs_info{any form}, ks)
+        """Set the neighbourhood information in a form of tuple structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * (neighs_info{any form}, ks)
+
         """
         if len(key) == 2:
             self.ks = list(np.array(key[1]))
         self.set_neighs(key[0])
 
     def _set_tuple_only_structure(self, key):
-        """Tuple only structure.
-        * (neighs{any form}, sp_relative_pos{any form})
+        """Set the neighbourhood information in a form of tuple only structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * (neighs{any form}, sp_relative_pos{any form})
+
         """
         self.set_neighs(key[0])
         if len(key) == 2:
@@ -678,8 +923,16 @@ class Neighs_Info:
             raise TypeError("Not correct input.")
 
     def _set_tuple_tuple_structure(self, key):
-        """Tuple tuple structure.
-        * ((neighs{any form}, sp_relative_pos{any form}), ks)
+        """Set the neighbourhood information in a form of tuple tuple
+        structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * ((neighs{any form}, sp_relative_pos{any form}), ks)
+
         """
         if len(key) == 2:
             ks = [key[1]] if type(key[1]) == int else key[1]
@@ -694,15 +947,30 @@ class Neighs_Info:
 #        self._set_list_tuple_only_structure(key[0])
 
     def _set_tuple_k_structure(self, key):
-        """Tuple structure:
-        * idxs, ks
+        """Set the neighbourhood information in a form of tuple structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * (idxs, ks)
+
         """
         self.ks = [key[1]] if type(key[1]) == int else key[1]
         self.set_neighs(key[0])
 
     def _set_structure_list(self, key):
-        """General list structure.
-        * [neighs_info{tuple form}]
+        """Set the neighbourhood information in a form of general list
+        structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * [neighs_info{tuple form}]
+
         """
         if len(key) == 0:
             self.set_neighs = self._set_neighs_general_list
@@ -741,16 +1009,32 @@ class Neighs_Info:
             self.set_neighs(np.array(key))
 
     def _set_list_tuple_only_structure(self, key):
-        """List tuple only structure.
-        * [(neighs{any form}, sp_relative_pos{any form})]
+        """Set the neighbourhood information in a form of list tuple only
+        structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * [(neighs{any form}, sp_relative_pos{any form})]
+
         """
         ## Change to list and whatever it was
         self.set_neighs([e[0] for e in key])
         self.set_sp_rel_pos([e[1] for e in key])
 
     def _set_tuple_list_tuple_structure(self, key):
-        """
-        * (neighs_info{list of typle only}, ks)
+        """Set the neighbourhood information in a form of tuple, list tuple
+        structure.
+
+        Parameters
+        ----------
+        neighs_info: tuple
+            the neighborhood information for each element `i` and perturbations
+            `k`. The standards to set that information are:
+                * (neighs_info{list of typle only}, ks)
+
         """
         self.ks = [key[1]] if type(key[1]) == int else key[1]
         if not self.staticneighs:
@@ -765,9 +1049,16 @@ class Neighs_Info:
     #
     def _general_set_neighs(self, key):
         """General setting of only neighs.
-        * neighs {number form}
-        * neighs {list form}
-        * neighs {array form}
+
+        Parameters
+        ----------
+        neighs: list or np.ndarray
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * neighs {number form}
+                * neighs {list form}
+                * neighs {array form}
+
         """
         if type(key) == list:
             self._set_neighs_general_list(key)
@@ -781,7 +1072,14 @@ class Neighs_Info:
 
     def _set_neighs_number(self, key):
         """Only one neighbor expressed in a number way.
-        * indice{int form}
+
+        Parameters
+        ----------
+        neighs: int
+            the neighborhood information for each element `i`. The standards to
+            set that information are:
+                * indice{int form}
+
         """
         if self.staticneighs:
             self.idxs = np.array([[key]]*len(self.iss))
@@ -794,8 +1092,15 @@ class Neighs_Info:
         self._setted = True
 
     def _set_neighs_slice(self, key):
-        """
-        * indices{slice form}
+        """Set neighs in a slice-form.
+
+        Parameters
+        ----------
+        neighs: slice
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices{slice form}
+
         """
         ## Condition to use slice type
         self._constant_neighs = True
@@ -816,8 +1121,15 @@ class Neighs_Info:
         self._setted = True
 
     def _set_neighs_array_lvl1(self, key):
-        """
-        * indices{np.ndarray form} shape: (neighs)
+        """Set neighs as a array level 1 form.
+
+        Parameters
+        ----------
+        neighs: np.ndarray
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices{np.ndarray form} shape: (neighs)
+
         """
         #sh = key.shape
         ## If only array of neighs
@@ -831,8 +1143,15 @@ class Neighs_Info:
         self._setted = True
 
     def _set_neighs_array_lvl2(self, key):
-        """
-        * indices{np.ndarray form} shape: (iss, neighs)
+        """Set neighs as array level 2 form.
+
+        Parameters
+        ----------
+        neighs: np.ndarray
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices{np.ndarray form} shape: (iss, neighs)
+
         """
         sh = key.shape
         ## If only iss and neighs
@@ -848,8 +1167,15 @@ class Neighs_Info:
             self.iss = list(range(sh[0]))
 
     def _set_neighs_array_lvl3(self, key):
-        """
-        * indices{np.ndarray form} shape: (ks, iss, neighs)
+        """Set neighs as array level 3 form.
+
+        Parameters
+        ----------
+        neighs: np.ndarray
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices{np.ndarray form} shape: (ks, iss, neighs)
+
         """
         self.idxs = np.array(key)
         self.ks = range(len(self.idxs)) if self.ks is None else self.ks
@@ -863,10 +1189,17 @@ class Neighs_Info:
         self._setted = True
 
     def _set_neighs_general_array(self, key):
-        """
-        * indices{np.ndarray form} shape: (neighs)
-        * indices{np.ndarray form} shape: (iss, neighs)
-        * indices{np.ndarray form} shape: (ks, iss, neighs)
+        """Set neighs as a general array form.
+
+        Parameters
+        ----------
+        neighs: np.ndarray
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices{np.ndarray form} shape: (neighs)
+                * indices{np.ndarray form} shape: (iss, neighs)
+                * indices{np.ndarray form} shape: (ks, iss, neighs)
+
         """
         key = np.array([key]) if type(key) in inttypes else key
         sh = key.shape
@@ -887,10 +1220,17 @@ class Neighs_Info:
             self._set_neighs_array_lvl3(key)
 
     def _set_neighs_general_list(self, key):
-        """
-        * indices {list of list form [neighs]} [neighs]
-        * [neighs_info{array-like form}, ...] [iss][neighs]
-        * [neighs_info{array-like form}, ...] [ks][iss][neighs]
+        """Set neighs as a general list form.
+
+        Parameters
+        ----------
+        neighs: list
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices {list of list form [neighs]} [neighs]
+                * [neighs_info{array-like form}, ...] [iss][neighs]
+                * [neighs_info{array-like form}, ...] [ks][iss][neighs]
+
         """
         ### WARNING: NOT WORK WITH EMPTY NEIGHS
         if '__len__' not in dir(key):
@@ -913,14 +1253,28 @@ class Neighs_Info:
                     self._set_neighs_list_list_list(key)
 
     def _set_neighs_list_only(self, key):
-        """
-        * indices {list of list form [neighs]} [neighs]
+        """Set the level 1 list
+
+        Parameters
+        ----------
+        neighs: list
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * indices {list of list form [neighs]} [neighs]
+
         """
         self._set_neighs_array_lvl1(np.array(key))
 
     def _set_neighs_list_list(self, key):
-        """
-        * [neighs_info{array-like form}, ...] [iss][neighs]
+        """Set the level 2 list.
+
+        Parameters
+        ----------
+        neighs: list
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * [neighs_info{array-like form}, ...] [iss][neighs]
+
         """
         if self._constant_neighs:
             key = np.array(key)
@@ -941,8 +1295,15 @@ class Neighs_Info:
         self._setted = True
 
     def _set_neighs_list_list_list(self, key):
-        """
-        * [neighs_info{array-like form}, ...] [ks][iss][neighs]
+        """Set neighs as a level 3 list form.
+
+        Parameters
+        ----------
+        neighs: list
+            the neighs information for each element `i`. The standards to set
+            that information are:
+                * [neighs_info{array-like form}, ...] [ks][iss][neighs]
+
         """
         self.ks = list(range(len(key))) if self.ks is None else self.ks
         if self._constant_neighs:
@@ -958,10 +1319,17 @@ class Neighs_Info:
     ########################### Set Sp_relative_pos ###########################
     ###########################################################################
     def _general_set_rel_pos(self, rel_pos):
-        """
-        * None
-        * list of arrays len(iss) -> unique rel_pos for ks
-        * list of lists of arrays -> complete
+        """Set the general relative position.
+
+        Parameters
+        ----------
+        rel_pos: int, float, list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * None
+                * list of arrays len(iss) -> unique rel_pos for ks
+                * list of lists of arrays -> complete
+
         """
         if rel_pos is None or self.ifdistance is False:
             self._null_set_rel_pos(rel_pos)
@@ -978,10 +1346,17 @@ class Neighs_Info:
             raise TypeError(msg)
 
     def _set_rel_pos_general_list(self, rel_pos):
-        """
-        * None
-        * list of arrays len(iss) -> unique rel_pos for ks
-        * list of lists of arrays -> complete
+        """Set of relative position in a general list form.
+
+        Parameters
+        ----------
+        rel_pos: list
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * None
+                * list of arrays len(iss) -> unique rel_pos for ks
+                * list of lists of arrays -> complete
+
         """
         if self.level is not None:
             if self.level == 0:
@@ -1011,16 +1386,39 @@ class Neighs_Info:
                         self._list_list_set_rel_pos(rel_pos)
 
     def _null_set_rel_pos(self, rel_pos):
-        """Not consider the input."""
+        """Not consider the input.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+
+        """
         self.get_sp_rel_pos = self._null_get_rel_pos
 
     def _set_rel_pos_number(self, rel_pos):
-        """Number set pos."""
+        """Number set pos.
+
+        Parameters
+        ----------
+        rel_pos: int or float
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * int or float
+
+        """
         self.sp_relative_pos = self._set_rel_pos_dim([rel_pos])
 
     def _set_rel_pos_dim(self, rel_pos):
-        """Set rel pos.
-        * rel_pos{array or list form} [dim]
+        """Set rel pos with zero level.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * rel_pos{array or list form} [dim]
+
         """
         if not '__len__' in dir(rel_pos):
             rel_pos = np.array([rel_pos])
@@ -1047,9 +1445,16 @@ class Neighs_Info:
 
     def _set_rel_pos_general_array(self, rel_pos):
         """Array set rel pos.
-        * rel_pos{np.ndarray form} shape: (neighs, dim)
-        * rel_pos{np.ndarray form} shape: (iss, neighs, dim)
-        * rel_pos{np.ndarray form} shape: (ks, iss, neighs, dim)
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * rel_pos{np.ndarray form} shape: (neighs, dim)
+                * rel_pos{np.ndarray form} shape: (iss, neighs, dim)
+                * rel_pos{np.ndarray form} shape: (ks, iss, neighs, dim)
+
         """
         n_shape = len(rel_pos.shape)
         if n_shape == 2:
@@ -1060,7 +1465,16 @@ class Neighs_Info:
             self._array_array_array_set_rel_pos(rel_pos)
 
     def _array_only_set_rel_pos(self, rel_pos):
-        """Array only. [nei][dim] or [nei]"""
+        """Set the array form relative position.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * Array only. [nei][dim] or [nei]
+
+        """
         ## Preformatting
         rel_pos = np.array(rel_pos)
         if len(rel_pos.shape) == 1:
@@ -1074,7 +1488,16 @@ class Neighs_Info:
         self.sp_relative_pos = sp_relative_pos
 
     def _array_array_set_rel_pos(self, rel_pos):
-        """Array or arrays. [iss][nei][dim] or [nei]."""
+        """Set the array-array (level 2) relative position.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                *Array or arrays. [iss][nei][dim] or [nei].
+
+        """
 #        self.staticneighs = True
         if self.staticneighs:
             self.sp_relative_pos = np.array(rel_pos)
@@ -1083,7 +1506,16 @@ class Neighs_Info:
             self.sp_relative_pos = np.array([rel_pos for k in range(len_ks)])
 
     def _array_array_array_set_rel_pos(self, rel_pos):
-        """Array or arrays. [ks][iss][nei][dim] or [ks][nei]."""
+        """Set the level 3 array relative position.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * Array or arrays. [ks][iss][nei][dim] or [ks][nei].
+
+        """
         if self.staticneighs:
             self.sp_relative_pos = rel_pos[0]
         else:
@@ -1091,13 +1523,29 @@ class Neighs_Info:
 
     def _list_only_set_rel_pos(self, rel_pos):
         """List only relative pos. Every iss and ks has the same neighs with
-        the same relative information. [nei][dim] or [nei]
+        the same relative information.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * [nei][dim] or [nei]
+
         """
         self._array_only_set_rel_pos(rel_pos)
 
     def _list_list_only_set_rel_pos(self, rel_pos):
         """List list only relative pos. Every ks has the same neighs with the
-        same relative information. [iss][nei][dim] or [iss][nei]
+        same relative information.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                *[iss][nei][dim] or [iss][nei]
+
         """
         if self.staticneighs is not True:
             assert(self.ks is not None)
@@ -1107,7 +1555,15 @@ class Neighs_Info:
             self.sp_relative_pos = rel_pos
 
     def _list_list_set_rel_pos(self, rel_pos):
-        """List list list relative pos. [ks][iss][nei][dim] or [ks][iss][nei]
+        """List list list relative pos.
+
+        Parameters
+        ----------
+        rel_pos: list or np.ndarray
+            the relative position of the neighbourhood respect the centroid.
+            The standard inputs form are:
+                * [ks][iss][nei][dim] or [ks][iss][nei]
+
         """
         if self.staticneighs:
             self.sp_relative_pos = rel_pos[0]
@@ -1117,7 +1573,14 @@ class Neighs_Info:
     ############################### Setter iss ################################
     ###########################################################################
     def _general_set_iss(self, iss):
-        """General set iss input."""
+        """General set iss input.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         if type(iss) == int:
             self._int_set_iss(iss)
         elif type(iss) in [list, np.ndarray]:
@@ -1132,15 +1595,36 @@ class Neighs_Info:
                         self.iss = range(len(self.idxs[0]))
 
     def _int_set_iss(self, iss):
-        """Input iss always integer."""
+        """Input iss always integer.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         self.iss = [iss]
 
     def _list_set_iss(self, iss):
-        """Input iss always array-like."""
+        """Input iss always array-like.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         self.iss = list(iss)
 
     def _null_set_iss(self, iss):
-        """Not consider the input."""
+        """Not consider the input.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         pass
 
     ###########################################################################
@@ -1150,6 +1634,20 @@ class Neighs_Info:
     ############################# Getter rel_pos ##############################
     ###########################################################################
     def _general_get_rel_pos(self, k_is=[0]):
+        """Get the relative position.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         if self.sp_relative_pos is None:
             return self._null_get_rel_pos(k_is)
         elif self.staticneighs:
@@ -1163,6 +1661,20 @@ class Neighs_Info:
                 return self._dynamic_rel_pos_array(k_is)
 
     def _null_get_rel_pos(self, k_is=[0]):
+        """Get the relative position.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         return [[None]*len(self.iss)]*len(k_is)
 
 #    def _constant_get_rel_pos(self, k_is=[0]):
@@ -1178,6 +1690,20 @@ class Neighs_Info:
 #        return rel_pos
 
     def _static_get_rel_pos(self, k_is=[0]):
+        """Get the relative position.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         return [self.sp_relative_pos for k in k_is]
 
 #    def _static_rel_pos_list(self, k_is=[0]):
@@ -1187,17 +1713,57 @@ class Neighs_Info:
 #        return np.array([self.sp_relative_pos for i in range(len(k_is))])
 
     def _dynamic_rel_pos_list(self, k_is=[0]):
+        """Get the relative position.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
 #        [[e[k_i] for e in self.sp_relative_pos] for k_i in k_is]
         return [self.sp_relative_pos[i] for i in k_is]
 
     def _dynamic_rel_pos_array(self, k_is=[0]):
+        """Get the relative position.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
 #        [[e[k_i] for e in self.sp_relative_pos] for k_i in k_is]
         return [self.sp_relative_pos[i] for i in k_is]
 
     ################################ Getters k ################################
     ###########################################################################
     def _general_get_k(self, k=None):
-        """General get k."""
+        """General get k.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated unformatted.
+
+        Returns
+        -------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated formatted.
+
+        """
         ## Format k
         if k is None:
             ks = self._default_get_k()
@@ -1208,14 +1774,38 @@ class Neighs_Info:
         return ks
 
     def _default_get_k(self, k=None):
-        """Default get ks."""
+        """Default get ks.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated unformatted.
+
+        Returns
+        -------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated formatted.
+
+        """
         if self.ks is None:
             return [0]
         else:
             return self.ks
 
     def _integer_get_k(self, k):
-        """Integer get k."""
+        """Integer get k.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated unformatted.
+
+        Returns
+        -------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated formatted.
+
+        """
         if type(k) == list:
             return [self._integer_get_k(e)[0] for e in k]
         if k >= 0 and k <= self._kret:
@@ -1225,12 +1815,37 @@ class Neighs_Info:
         return ks
 
     def _list_get_k(self, k):
-        """List get k."""
+        """List get k.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated unformatted.
+
+        Returns
+        -------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated formatted.
+
+        """
         ks = [self._integer_get_k(k_i)[0] for k_i in k]
         return ks
 
     def _get_k_indices(self, ks):
-        """List of indices of ks."""
+        """List of indices of ks.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        idx_ks: list
+            the associated indices to the perturbation indices. Get the index
+            order.
+
+        """
         if self.staticneighs:
             idx_ks = ks
         else:
@@ -1240,7 +1855,27 @@ class Neighs_Info:
     ############################ Getters information ##########################
     ###########################################################################
     def _general_get_information(self, k=None):
-        """Get information stored in this class."""
+        """Get information stored in this class.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=None)
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+        ks: int, slice, list or np.ndarray (default=None)
+            the perturbations indices associated with the returned information.
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         ## Format k
         ks = self.get_k(k)
         idx_ks = self._get_k_indices(ks)
@@ -1255,12 +1890,45 @@ class Neighs_Info:
         return neighs, sp_relative_pos, ks, iss
 
     def _default_get_information(self, k=None):
-        """For the unset instances."""
+        """For the unset instances.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=None)
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+        ks: int, slice, list or np.ndarray (default=None)
+            the perturbations indices associated with the returned information.
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         raise Exception("Information not set in pst.Neighs_Info.")
 
     ################################ Get neighs ###############################
     def _get_neighs_general(self, k_is=[0]):
-        """General getting neighs."""
+        """General getting neighs.
+
+        Parameters
+        ----------
+        ks: int, slice, list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         if type(self.idxs) == slice:
             neighs = self._get_neighs_slice(k_is)
         elif type(self.idxs) == np.ndarray:
@@ -1278,7 +1946,20 @@ class Neighs_Info:
         return neighs
 
     def _get_neighs_slice(self, k_is=[0]):
-        """Getting neighs from slice."""
+        """Getting neighs from slice.
+
+        Parameters
+        ----------
+        ks: slice (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         neighs = [np.array([range(self.idxs.start, self.idxs.stop,
                                   self.idxs.step)
                             for j in range(len(self.iss))])
@@ -1287,42 +1968,152 @@ class Neighs_Info:
         return neighs
 
     def _get_neighs_array_dynamic(self, k_is=[0]):
-        """Getting neighs from array."""
+        """Getting neighs from array.
+
+        Parameters
+        ----------
+        ks: np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         neighs = self.idxs[k_is, :, :]
         return neighs
 
     def _get_neighs_array_static(self, k_is=[0]):
-        """Getting neighs from array."""
+        """Getting neighs from array.
+
+        Parameters
+        ----------
+        ks: np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         neighs = [self.idxs for i in range(len(k_is))]
         neighs = np.array(neighs)
         return neighs
 
     def _get_neighs_list_dynamic(self, k_is=[0]):
-        """Getting neighs from list."""
+        """Getting neighs from list.
+
+        Parameters
+        ----------
+        ks: list (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         neighs = [self.idxs[k_i] for k_i in k_is]
         return neighs
 
     def _get_neighs_list_static(self, k_is=[0]):
-        """Getting neighs from list."""
+        """Getting neighs from list.
+
+        Parameters
+        ----------
+        ks: list or np.ndarray (default=[0])
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         neighs = [self.idxs for k_i in k_is]
         return neighs
 
     def _default_get_neighs(self, k_i=0):
-        """Default get neighs (when it is not set)"""
+        """Default get neighs (when it is not set)
+
+        Parameters
+        ----------
+        ks: int, list or np.ndarray (default=0)
+            the perturbations indices associated with the returned information.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k` required in the input.
+
+        """
         raise Exception("Information not set in pst.Neighs_Info.")
 
     ########################## Get by coreinfo by iss #########################
     ## Get the neighs_info copy object with same information but iss reduced.
     ## Format into get_copy_iss and get_copy_iss_by_ind
     def _staticneighs_get_copy_iss(self, iss):
+        """Get the neighs_info copy object with same information but iss
+        reduced.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information of the elements `i` for the
+            perturbations `k`.
+
+        """
         inds = self._get_indices_from_iss(iss)
         return self._staticneighs_get_copy_iss_by_ind(inds)
 
     def _notstaticneighs_get_copy_iss(self, iss):
+        """Get the neighs_info copy object with same information but iss
+        reduced.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information of the elements `i` for the
+            perturbations `k`.
+
+        """
         inds = self._get_indices_from_iss(iss)
         return self._notstaticneighs_get_copy_iss_by_ind(inds)
 
     def _staticneighs_get_copy_iss_by_ind(self, indices):
+        """Get the neighs_info copy object with same information but iss
+        reduced.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information of the elements `i` for the
+            perturbations `k`.
+
+        """
         indices = [indices] if type(indices) == int else indices
         iss = [self.iss[i] for i in indices]
         idxs, sp_relpos = self._staticneighs_get_corestored_by_inds(indices)
@@ -1334,6 +2125,21 @@ class Neighs_Info:
         return neighs_info
 
     def _notstaticneighs_get_copy_iss_by_ind(self, indices):
+        """Get the neighs_info copy object with same information but iss
+        reduced.
+
+        Parameters
+        ----------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information of the elements `i` for the
+            perturbations `k`.
+
+        """
         indices = [indices] if type(indices) == int else indices
         iss = [self.iss[i] for i in indices]
         idxs, sp_relpos = self._notstaticneighs_get_corestored_by_inds(indices)
@@ -1346,6 +2152,23 @@ class Neighs_Info:
 
     ## Auxiliar functions
     def _staticneighs_get_corestored_by_inds_notslice(self, inds):
+        """Get the neighborhood information from the indices.
+
+        Parameters
+        ----------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` and for each
+            perturbation `k`.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         inds = [inds] if type(inds) == int else inds
         idxs = [self.idxs[i] for i in inds]
         idxs = np.array(idxs) if type(self.idxs) == np.ndarray else idxs
@@ -1356,6 +2179,23 @@ class Neighs_Info:
         return idxs, sp_relative_pos
 
     def _notstaticneighs_get_corestored_by_inds_notslice(self, inds):
+        """Get the neighborhood information from the indices.
+
+        Parameters
+        ----------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` and for each
+            perturbation `k`.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         inds = [inds] if type(inds) == int else inds
         idxs = []
         for k in range(len(self.idxs)):
@@ -1371,6 +2211,23 @@ class Neighs_Info:
         return idxs, sp_relative_pos
 
     def _staticneighs_get_corestored_by_inds_slice(self, inds):
+        """Get the neighborhood information from the indices.
+
+        Parameters
+        ----------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` and for each
+            perturbation `k`.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         inds = [inds] if type(inds) == int else inds
         idxs = self.idxs
         if self.sp_relative_pos is not None:
@@ -1380,6 +2237,23 @@ class Neighs_Info:
         return idxs, sp_relative_pos
 
     def _notstaticneighs_get_corestored_by_inds_slice(self, inds):
+        """Get the neighborhood information from the indices.
+
+        Parameters
+        ----------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` and for each
+            perturbation `k`.
+        sp_relpos: list or np.ndarray (default=None)
+            the relative position information for each element `i` and for each
+            perturbation `k`.
+
+        """
         inds = [inds] if type(inds) == int else inds
         idxs = self.idxs
         if self.sp_relative_pos is not None:
@@ -1391,7 +2265,19 @@ class Neighs_Info:
         return idxs, sp_relative_pos
 
     def _get_indices_from_iss(self, iss):
-        """Indices of iss from self.iss."""
+        """Indices of iss from self.iss.
+
+        Parameters
+        ----------
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        Returns
+        -------
+        inds: list
+            the indices of the elements codes we stored their neighbourhood.
+
+        """
         iss = [iss] if type(iss) not in [np.ndarray, list] else iss
         if self.iss is not None:
             inds = []
@@ -1495,13 +2381,38 @@ class Neighs_Info:
             raise Exception("Not proper type in self.idxs. Type: %s." % types)
 
     def check_output_standards(self, neighs, sp_relative_pos, ks, iss):
-        """Check output standarts."""
+        """Check output standarts.
+
+        Parameters
+        ----------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k`.
+        sp_relpos: list or np.ndarray
+            the relative position information for each element `i` for each
+            perturbation `k`.
+        ks: list or np.ndarray
+            the perturbations indices associated with the returned information.
+        iss: list or np.ndarray
+            the indices of the elements we stored their neighbourhood.
+
+        """
         self.check_output_neighs(neighs, ks)
         self.check_output_rel_pos(sp_relative_pos, ks)
         assert(len(iss) == len(self.iss))
 
     def check_output_neighs(self, neighs, ks):
-        """Check standart outputs of neighs."""
+        """Check standart outputs of neighs.
+
+        Parameters
+        ----------
+        neighs: list or np.ndarray
+            the neighs information for each element `i` for each possible
+            perturbation `k`.
+        ks: list or np.ndarray
+            the perturbations indices associated with the returned information.
+
+        """
         if type(neighs) == list:
             assert(len(neighs) == len(ks))
             #assert(type(neighs[0]) == list)
@@ -1517,6 +2428,17 @@ class Neighs_Info:
             raise Exception("Not correct neighs output.Type: %s." % types)
 
     def check_output_rel_pos(self, sp_relative_pos, ks):
+        """Check standart outputs of rel_pos.
+
+        Parameters
+        ----------
+        sp_relpos: list or np.ndarray
+            the relative position information for each element `i` for each
+            perturbation `k`.
+        ks: list or np.ndarray
+            the perturbations indices associated with the returned information.
+
+        """
         assert(type(sp_relative_pos) in [np.ndarray, list])
         assert(len(sp_relative_pos) == len(ks))
         assert(len(sp_relative_pos[0]) == len(self.iss))
@@ -1545,6 +2467,24 @@ class Neighs_Info:
                 self.join_neighs_xor = join_neighsinfo_XOR_notstatic_notdist
 
     def join_neighs(self, neighs_info, mode='and', joiner_pos=None):
+        """General joining function.
+
+        Parameters
+        ----------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information of the other neighs we want to join.
+        mode: str optional ['and', 'or', 'xor']
+            the type of joining process we want to do.
+        joiner_pos: function (default=None)
+            the function to join the relative positions of the different
+            neighbourhood.
+
+        Returns
+        -------
+        new_neighs_info: pst.Neighs_Info
+            the neighbourhood information of joined neighbourhood.
+
+        """
         assert(mode in ['and', 'or', 'xor'])
         if mode == 'and':
             if self.ifdistance:
@@ -1571,7 +2511,21 @@ class Neighs_Info:
 ######################### Auxiliar inspect functions ##########################
 ###############################################################################
 def ensuring_neighs_info(neighs_info, k):
-    """Ensuring that the neighs_info is in Neighs_Info object container."""
+    """Ensuring that the neighs_info is in Neighs_Info object container.
+
+    Parameters
+    ----------
+    neighs_info: pst.Neighs_Info or tuple
+        the neighbourhood information.
+    k: list
+        the list of perturbation indices.
+
+    Returns
+    -------
+    neighs_info: pst.Neighs_Info
+        the properly formatted neighbourhood information.
+
+    """
     if not type(neighs_info).__name__ == 'instance':
         parameters = inspect_raw_neighs(neighs_info, k=k)
         parameters['format_structure'] = 'tuple_k'
@@ -1583,7 +2537,22 @@ def ensuring_neighs_info(neighs_info, k):
 
 def inspect_raw_neighs(neighs_info, k=0):
     """Useful class to inspect a raw structure neighs, in order to set
-    some parts of the class in order to a proper settting adaptation."""
+    some parts of the class in order to a proper settting adaptation.
+
+    Parameters
+    ----------
+    neighs_info: pst.Neighs_Info or tuple
+        the neighbourhood information.
+    k: int or list (default=0)
+        the list of perturbation indices.
+
+    Returns
+    -------
+    parameters: dict
+        the parameters to reinstantiate the neighbourhood information
+        properly.
+
+    """
     deep = find_deep(neighs_info)
     k = [k] if type(k) == int else k
     parameters = {'format_structure': 'raw'}
@@ -1599,7 +2568,19 @@ def inspect_raw_neighs(neighs_info, k=0):
 
 
 def find_deep(neighs_info):
-    """Find deep from a raw structure."""
+    """Find deep from a raw structure.
+
+    Parameters
+    ----------
+    neighs_info: tuple
+        the neighbourhood information.
+
+    Returns
+    -------
+    deep: int
+        the level in which the information is provided.
+
+    """
     if '__len__' not in dir(neighs_info):
         deep = 0
     else:
@@ -1619,8 +2600,27 @@ def find_deep(neighs_info):
 
 
 def neighsinfo_features_preformatting_tuple(key, k_perturb):
-    """Assumed that tuple input:
-        * idxs, ks
+    """Preformatting tuple.
+
+    Parameters
+    ----------
+    neighs_info: tuple
+        the neighborhood information. Assumed that tuple input:
+            * idxs, ks
+    k_perturb: int
+        the number of perturbations.
+
+    Returns
+    -------
+    neighs: list or np.ndarray
+        the neighs information for each element `i` for each possible
+        perturbation `k`.
+    ks: list or np.ndarray
+        the perturbations indices associated with the returned information.
+    sp_relpos: list or np.ndarray
+        the relative position information for each element `i` for each
+        perturbation `k`.
+
     """
     deep = find_deep(key[0])
     if deep == 1:
@@ -1636,6 +2636,28 @@ def neighsinfo_features_preformatting_tuple(key, k_perturb):
 
 
 def neighsinfo_features_preformatting_list(key, k_perturb):
+    """Preformatting list.
+
+    Parameters
+    ----------
+    neighs_info: list
+        the neighborhood information. Assumed that tuple input:
+            * idxs, ks
+    k_perturb: int
+        the number of perturbations.
+
+    Returns
+    -------
+    neighs: list or np.ndarray
+        the neighs information for each element `i` for each possible
+        perturbation `k`.
+    ks: list or np.ndarray
+        the perturbations indices associated with the returned information.
+    sp_relpos: list or np.ndarray
+        the relative position information for each element `i` for each
+        perturbation `k`.
+
+    """
     kn = range(k_perturb+1) if type(k_perturb) == int else k_perturb
     key = [[idx] for idx in key]
     i, k, d = np.array([key]*len(kn)), kn, [[None]*len(key)]*len(kn)
@@ -1647,7 +2669,19 @@ def neighsinfo_features_preformatting_list(key, k_perturb):
 ###############################################################################
 def join_by_iss(list_neighs_info):
     """Joinning by iss.
-    It is not able to join by """
+
+    Parameters
+    ----------
+    list_neighs_info: list of pst.Neighs_Info
+        the list of different neighbourhood information, with overlapping
+        set of iss.
+
+    Returns
+    -------
+    neighs_info: tuple
+        the joined neighbourhood information.
+
+    """
     ## Computation
     if len(list_neighs_info) == 1:
         return list_neighs_info[0]

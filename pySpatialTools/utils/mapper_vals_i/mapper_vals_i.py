@@ -27,12 +27,39 @@ class Map_Vals_i:
         self.collapse = False
         self.prefilter = lambda idx: idx
 
-    def __init__(self, mapper, n_in=None, n_out=None, sptype='Matrix'):
+    def __init__(self, mapper, n_in=None, n_out=None, sptype='matrix'):
+        """The map to the elements indices to the stored indices.
+
+        Parameters
+        ----------
+        mapper
+        n_in: int or None (default=None)
+            the size of the input. If None, it is open.
+        n_out: int or None (default=None)
+            the size of the output. If None, it is open.
+        sptype: str (default='matrix')
+            the type of mapper.
+
+        """
         self._initialization()
         self._format_mapper(mapper, n_in, n_out)
         self.sptype = sptype
 
     def __getitem__(self, key):
+        """Apply mapper.
+
+        Parameters
+        ----------
+        key: tuple
+            it contains the feature retriever object, the indices of the
+            elements and the perturbations indices.
+
+        Returns
+        -------
+        map_key: int, list or np.ndarray
+            the mapped indices.
+
+        """
         featret_o, i, k = key
         if type(i) == int:
             i = self.prefilter(i)
@@ -42,14 +69,47 @@ class Map_Vals_i:
             return self.mapper(featret_o, i, k)
 
     def apply(self, o, i, k):
+        """Apply the mapping.
+
+        Parameters
+        ----------
+        key: tuple
+        o: pst.FeatureManagement.FeaturesRetriever
+            feature retriever object.
+        i: int, list or np.ndarray
+            the indices of the elements.
+        k: int or list or np.ndarray
+            the perturbations indices.
+
+        Returns
+        -------
+        map_key: int, list or np.ndarray
+            the mapped indices.
+
+        """
         return self[o, i, k]
 
     def set_sptype(self, sptype):
+        """Set type of mapping.
+
+        Parameters
+        ----------
+        sptype: str
+            type of mapping.
+
+        """
+        assert(type(sptype) == str)
         self.sptype = sptype
 
     def set_prefilter(self, filter_):
         """Set a function which filters the indice applied. It is useful
         for parallelization tasks.
+
+        Parameters
+        ----------
+        filter_: int, slice, list or np.ndarray
+            the pretransformation of the indice of the element.
+
         """
         if type(filter_) == int:
             self.prefilter = lambda i: i+filter_
@@ -62,6 +122,19 @@ class Map_Vals_i:
             self.prefilter = lambda i: int(filter_[i])
 
     def _format_mapper(self, mapper, n_in, n_out):
+        """Format the mapper function.
+
+        Parameters
+        ----------
+        mapper: int, float, list, tuple, np.ndarray, function or instance
+            the main mapper information from elements indices to to-store
+            indices.
+        n_in: int
+            the size of the input. If None, the inputs are open.
+        n_out: int
+            the size of the output. If None, the outputs are open.
+
+        """
         if type(mapper) in [int, float, list, tuple]:
             if type(mapper) in [int, float]:
                 mapper = int(mapper)
@@ -91,7 +164,21 @@ class Map_Vals_i:
 
 
 def create_mapper_vals_i(type_sp='correlation', features_out=None):
-    """Create the values."""
+    """Create the values.
+
+    Parameters
+    ----------
+    type_sp: str, tuple, np.ndarray, function, instance (default='correlation')
+        the type of mapping.
+    features_out: int, slice, np.ndarray (default=None)
+        the features out information.
+
+    Returns
+    -------
+    _map_vals_i: pst.Map_Vals_i
+        the mapper instance from indices of elements to to-store indices.
+
+    """
     mapper, n_in, n_out = None, None, None
     _map_vals_i = None
 
@@ -136,7 +223,7 @@ def create_mapper_vals_i(type_sp='correlation', features_out=None):
     if type(type_sp) == str:
         if type_sp == 'correlation':
             if mapper is not None:
-                _map_vals_i = Map_Vals_i(mapper, sptype="Correlation")
+                _map_vals_i = Map_Vals_i(mapper, sptype="correlation")
             else:
                 raise TypeError("Not enough information to build the mapper.")
         elif type_sp == 'matrix':
