@@ -9,6 +9,19 @@ from itertools import product
 def combinatorial_combination_features(features):
     """Transform a categorical multidimension element feature matrix to one
     categorical feature.
+
+    Parameters
+    ----------
+    features: np.ndarray, shape (n, m)
+        the features we want to join. There are `m` categorical dimensions.
+
+    Returns
+    -------
+    new_features: np.ndarray, shape (n, 1)
+        the new features coded in only one integer dimension.
+    translator: np.ndarray, shape (n, m)
+        the ordered possible features combination.
+
     """
     assert(len(features.shape) == 2)
     features = features.astype(int)

@@ -9,12 +9,29 @@ import numpy as np
 
 
 def remove_unknown_locations(locations, logi):
-    "Remove unknown locations."
+    """Remove unknown locations."""
     return locations[logi]
 
 
 def jitter_group_imputation(locations, logi, groups):
-    "Jitter the average locations of the group."
+    """Jitter the average locations of the group.
+
+    Parameters
+    ----------
+    locations: np.ndarray, shape (n, 2)
+        the locations information.
+    logi: boolean np.ndarray, shape (n)
+        the locations which are uncorrect.
+    groups: integer np.ndarray, shape (n)
+        the groups in which we want to obtain their own standard deviation
+        in order to create a random loation.
+
+    Returns
+    -------
+    new_locations: np.ndarray
+        the new locations.
+
+    """
     if np.all(logi):
         return locations
     u_groups, new_locations = np.unique(groups), np.zeros(locations.shape)
