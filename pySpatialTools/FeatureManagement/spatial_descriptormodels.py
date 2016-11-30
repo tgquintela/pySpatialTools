@@ -13,6 +13,7 @@ TODO
 
 ## General imports
 import numpy as np
+import copy
 ## General objects
 from process_descriptormodel import SpatialDescriptorModelProcess
 from pySpatialTools.Retrieve import RetrieverManager
@@ -24,6 +25,8 @@ from pySpatialTools.Discretization import _discretization_parsing_creation,\
 from pySpatialTools.Retrieve.tools_retriever import create_aggretriever
 from features_objects import _featuresobject_parsing_creation
 from pySpatialTools.utils.perturbations import sp_general_filter_perturbations
+## Models
+from aux_skmodels import DummySkmodel
 
 
 class SpatialDescriptorModel:
@@ -40,7 +43,6 @@ class SpatialDescriptorModel:
     ----
     - Return main parameters summary of the class
     - Run the process here
-    -
 
     """
 
@@ -59,7 +61,31 @@ class SpatialDescriptorModel:
 
     def __init__(self, retrievers, featurers, mapselector_spdescriptor=None,
                  pos_inputs=None, map_indices=None, perturbations=None,
-                 aggregations=None, name_desc=None):
+                 aggregations=None, name_desc="", model=None):
+        """Spatial descriptor model initialization.
+
+        Parameters
+        ----------
+        retrievers: list, pst.BaseRetriver or pst.RetrieverManager
+            the retriever information.
+        featurers: list, pst.FeaturesManager or pst.BaseFeatures
+            the features to be used in order to compute spatial descriptors.
+        mapselector_spdescriptor: np.ndarray, tuple, function or instance
+            the selector information in order to decide retriever or
+            features or descriptormodel use. (default=None)
+        pos_inputs: int, tuple, slice (default=None)
+            the possible indices input in order to obtain their spatial
+            descriptors.
+        map_indices: function or None (default=None)
+            the map from the input index to the usable index.
+        perturbations: list or pst.BasePerturbation (default=None)
+            the perturbation information.
+        aggregations: tuple (default=None)
+            the aggregation information.
+        name_desc: str (default="")
+            the name of the descriptor we are going to use.
+
+        """
         self._initialization()
         self._format_retrievers(retrievers)
         self._format_featurers(featurers)
@@ -68,9 +94,25 @@ class SpatialDescriptorModel:
         self._format_loop(pos_inputs, map_indices)
         self._format_aggregations(aggregations)
         self._format_identifiers(name_desc)
+        self._format_model(model)
 
     def compute(self, i=None):
-        """Computation interface function."""
+        """Computation interface function.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray (default=None)
+            the indice or indices of the elements we want to get their spatial
+            descriptors.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model. It
+            could return a partial result of some particular element `i`, if
+            the parameter `i` is not None.
+
+        """
         if i is None:
             return self._compute_nets()
         else:
@@ -79,7 +121,14 @@ class SpatialDescriptorModel:
     ################################ Formatters ###############################
     ###########################################################################
     def _format_retrievers(self, retrievers):
-        "Formatter for retrievers."
+        """Formatter for retrievers.
+
+        Parameters
+        ----------
+        retrievers: list, pst.BaseRetriver or pst.RetrieverManager
+            the retriever information.
+
+        """
         if type(retrievers) == list:
             self.retrievers = RetrieverManager(retrievers)
         elif isinstance(retrievers, RetrieverManager):
@@ -89,7 +138,14 @@ class SpatialDescriptorModel:
         self.retrievers.set_neighs_info(True)
 
     def _format_perturbations(self, perturbations):
-        """Format perturbations. TODO"""
+        """Format perturbations. TODO
+
+        Parameters
+        ----------
+        perturbations: list or pst.BasePerturbation
+            the perturbation information.
+
+        """
         ## 0. Perturbations processing
         if perturbations is None:
             return
@@ -104,7 +160,16 @@ class SpatialDescriptorModel:
         assert(self.retrievers.k_perturb == self.featurers.k_perturb)
 
     def _format_aggregations(self, aggregations, i_r=(None, None)):
-        """Prepare and add aggregations to retrievers and features."""
+        """Prepare and add aggregations to retrievers and features.
+
+        Parameters
+        ----------
+        aggregations: tuple
+            the aggregation information.
+        i_r: tuple
+            the indices of retriever and features to use in the aggregation.
+
+        """
         if aggregations is None:
             return
         if type(aggregations) == list:
@@ -139,13 +204,29 @@ class SpatialDescriptorModel:
                     self.featurers.add_aggregations(new_features)
 
     def _format_featurers(self, featurers):
+        """Format features retriever.
+
+        Parameters
+        ----------
+        featurers: list, pst.FeaturesManager or pst.BaseFeatures
+            the features to be used in order to compute spatial descriptors.
+
+        """
         if isinstance(featurers, FeaturesManager):
             self.featurers = featurers
         else:
             self.featurers = FeaturesManager(featurers)
 
     def _format_mapper_selectors(self, _mapselector_spdescriptor):
-        "Format selectors."
+        """Format selectors.
+
+        Returns
+        -------
+        _mapselector_spdescriptor: np.ndarray, tuple, function or instance
+            the selector information in order to decide retriever or
+            features or descriptormodel use.
+
+        """
         self.selectors = self._default_selectors
         if _mapselector_spdescriptor is None:
             self._mapselector_spdescriptor =\
@@ -231,7 +312,17 @@ class SpatialDescriptorModel:
 #                raise TypeError(msg)
 
     def _format_loop(self, pos_inputs, map_indices):
-        "Format the possible loop to go through."
+        """Format the possible loop to go through.
+
+        Parameters
+        ----------
+        pos_inputs: int, tuple, slice
+            the possible indices input in order to obtain their spatial
+            descriptors.
+        map_indices: function or None
+            the map from the input index to the usable index.
+
+        """
         ## TODO: check coherence with retriever
         if pos_inputs is None:
             pos_inputs = self.retrievers.n_inputs
@@ -247,7 +338,7 @@ class SpatialDescriptorModel:
             n_inputs = len(range(st0, st1, stp))
             self.n_inputs = n_inputs
             self._pos_inputs = pos_inputs
-        elif type(pos_inputs) not in [int, slice]:
+        elif type(pos_inputs) not in [int, tuple, slice]:
             raise TypeError("Incorrect possible indices input.")
         ## Create map_indices
         if map_indices is None:
@@ -262,16 +353,50 @@ class SpatialDescriptorModel:
         self.featurers.set_map_vals_i(pos_inputs)
 
     def _format_identifiers(self, name_desc):
-        """Format information of the method applied."""
+        """Format information of the method applied.
+
+        Parameters
+        ----------
+        name_desc: str
+            the name of the descriptor we are going to use.
+
+        """
         if name_desc is None or type(name_desc) != str:
             self.name_desc = self.featurers.descriptormodels[0].name_desc
         else:
             self.name_desc = name_desc
 
+    def _format_model(self, model):
+        if model is None:
+            self.model = DummySkmodel()
+        elif type(model) == dict:
+            self.model = DummySkmodel(**model)
+        elif type(model) == tuple:
+            self.model = model[0](**model[1])
+        else:
+            self.model = model
+
     ################################# Getters #################################
     ###########################################################################
     def _get_methods(self, i):
-        "Obtain the possible mappers we have to use in the process."
+        """Obtain the possible mappers we have to use in the process.
+
+        Parameters
+        ----------
+        i: int, list, np.ndarray
+            the indices of the elements we want to compute its spatial
+            features.
+
+        Returns
+        -------
+        staticneighs: boolean
+            if there is a retriever with loation perturbations.
+        typeret: tuple
+            the indices of the selections in the retriever part.
+        typefeats: tuple
+            the indices of the selections in the features part.
+
+        """
         staticneighs = self.retrievers.staticneighs
         methods = self._mapselector_spdescriptor(i)
         if type(methods) == list:
@@ -285,6 +410,14 @@ class SpatialDescriptorModel:
         return staticneighs, typeret, typefeats
 
     def _mapselector_spdescriptor_null(self, i):
+        """Get the selectors for the element `i` from the constant information.
+
+        Returns
+        -------
+        selectors_i: tuple
+            the selectors for the element `i`.
+
+        """
         return self._default_selectors
 
 #    def _mapselector_spdescriptor_constant(self, i):
@@ -296,10 +429,25 @@ class SpatialDescriptorModel:
 #            return [self.selectors[0]]*i_len, [self.selectors[1]]*i_len
 
     def _mapselector_spdescriptor_selector(self, i):
+        """Get the selectors for the element `i` from the selector object.
+
+        Returns
+        -------
+        selectors_i: tuple
+            the selectors for the element `i`.
+
+        """
         return self.selectors[i]
 
     def iter_indices(self):
-        """Get indices in iteration of indices."""
+        """Get indices in iteration of indices.
+
+        Returns
+        -------
+        idx: int
+            the indices output sequentially.
+
+        """
         start, stop = self._pos_inputs.start, self._pos_inputs.stop
         step = self._pos_inputs.step
         for idx in xrange(start, stop, step):
@@ -308,50 +456,134 @@ class SpatialDescriptorModel:
     ################################# Setters #################################
     ###########################################################################
     def add_perturbations(self, perturbations):
-        """Add perturbations to the spatial descriptormodel."""
+        """Add perturbations to the spatial descriptormodel.
+
+        Parameters
+        ----------
+        perturbations: list or pst.BasePerturbation
+            the perturbation information.
+
+        """
         self._format_perturbations(perturbations)
 
     def add_aggregations(self, aggregations, i_r=(None, None)):
-        """Add aggregations to the spatial descriptor model."""
+        """Add aggregations to the spatial descriptor model.
+
+        Parameters
+        ----------
+        aggregations: tuple
+            the aggregation information.
+        i_r: tuple
+            the indices of retriever and features to use in the aggregation.
+
+        """
         self._format_aggregations(aggregations, i_r)
 
     def set_loop(self, pos_inputs, map_indices=None):
-        """Set loop in order to get only reduced possibilities."""
+        """Set loop in order to get only reduced possibilities.
+
+        Parameters
+        ----------
+        pos_inputs: int, tuple, slice
+            the possible indices input in order to obtain their spatial
+            descriptors.
+        map_indices: function or None (default=None)
+            the map from the input index to the usable index.
+
+        """
         self._format_loop(pos_inputs, map_indices)
+
+    def apply_aggregations(self, regs, agg_info, selectors):
+        """Apply aggregations.
+
+        Parameters
+        ----------
+        regs: np.ndarray
+            the regions in which we want to aggregate information.
+        agg_info: tuple
+            the information to aggregate the information.
+        selectors: int, tuple, np.ndarray
+            how to select which retriever.
+
+        """
+        ## 0. Prepare aggregations
+        locs = self.retrievers.retrievers[0]._data
+        if len(regs.shape) == 1:
+            regs = regs.reshape((len(regs), 1))
+        assert(len(locs) == len(regs))
+        ## 1. Create aggregations
+        for i in range(regs.shape[1]):
+            retriever_in, retriever_out, aggregating = copy.copy(agg_info)
+            retriever_out['input_map'] = regs[:, i]
+            disc_info = (locs, regs[:, i])
+            agg_info_i = disc_info, retriever_in, retriever_out, aggregating
+            self.add_aggregations(agg_info_i, i_r=(0, 0))
+        ## 2. Set selectors
+        pass
 
     ############################ Computer functions ###########################
     ###########################################################################
     def _compute_nets(self):
         """Function used to compute the total measure.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
         """
-        desc = self.featurers.initialization_output()
-#        print 'x'*20, desc
+        measure = self.featurers.initialization_output()
+#        print 'x'*20, measure
         for i in self.iter_indices():
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
 #            print 'y'*25, desc_i, vals_i
-            desc = self.featurers.add2result(desc, desc_i, vals_i)
-#        print desc
-        desc = self.featurers.to_complete_measure(desc)
-        return desc
+            measure = self.featurers.add2result(measure, desc_i, vals_i)
+#        print measure
+        measure = self.featurers.to_complete_measure(measure)
+        return measure
 
     def _compute_retdriven(self):
         """Compute the whole spatial descriptor measure let the retrievers
-        drive the process."""
+        drive the process.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
+        """
 #        _, typeret, typefeats = self._get_methods(i)
 #        self.retrievers.set_typeret(typeret)
-        desc = self.featurers.initialization_output()
+        measure = self.featurers.initialization_output()
         k_pert = self.featurers.k_perturb+1
         ks = list(range(k_pert))
         for iss, neighs_info in self.retrievers:
             characs_iss, vals_iss =\
                 self.featurers.compute_descriptors(iss, neighs_info, ks)
-            desc = self.featurers.add2result(desc, characs_iss, vals_iss)
-        desc = self.featurers.to_complete_measure(desc)
-        return desc
+            measure = self.featurers.add2result(measure, characs_iss, vals_iss)
+        measure = self.featurers.to_complete_measure(measure)
+        return measure
 
     def _compute_descriptors(self, i):
-        "Compute the descriptors assigned to element i."
+        """Compute the descriptors assigned to element i.
+
+        Parameters
+        ----------
+        i: int, list, np.ndarray
+            the indices of the elements we want to compute its spatial
+            features.
+
+        Returns
+        -------
+        desc_i: list or np.ndarray
+            the descriptors of each element `i` for each possible `k`
+            perturbation.
+        vals_i: list or np.ndarray
+            the store information index of each element `i` for each possible
+            `k` perturbation.
+
+        """
 #        print 'b'*10, i
         staticneighs, typeret, typefeats = self._get_methods(i)
 #        print 'c', i
@@ -373,9 +605,9 @@ class SpatialDescriptorModel:
 #            assert(neighs_info.ks == ks)
 #        print 'a'*25, typefeats, typeret, i
         #####################
-        characs, vals_i =\
+        desc_i, vals_i =\
             self.featurers.compute_descriptors(i, neighs_info, ks, typefeats)
-        return characs, vals_i
+        return desc_i, vals_i
 
 #    def _compute_descriptors(self, i):
 #        "Compute the descriptors assigned to element i."
@@ -424,7 +656,18 @@ class SpatialDescriptorModel:
     ################################ ITERATORS ################################
     ###########################################################################
     def compute_nets_i(self):
-        """Computation of the associate spatial descriptors for each i."""
+        """Computation of the associate spatial descriptors for each i.
+
+        Returns
+        -------
+        desc_i: list or np.ndarray
+            the descriptors of each element `i` for each possible `k`
+            perturbation.
+        vals_i: list or np.ndarray
+            the store information index of each element `i` for each possible
+            `k` perturbation.
+
+        """
         for i in self.iter_indices():
             ## Compute descriptors for i
             desc_i, vals_i = self._compute_descriptors(i)
@@ -433,6 +676,14 @@ class SpatialDescriptorModel:
     def compute_net_ik(self):
         """Function iterator used to get the result of each val_i and corr_i
         result for each combination of element i and permutation k.
+
+        Returns
+        -------
+        desc_i: list or np.ndarray
+            the descriptors of each element `i`.
+        vals_i: list or np.ndarray
+            the store information index of each element `i`.
+
         """
         for i in self.iter_indices():
             for k in range(self.retrievers.k_perturb+1):
@@ -447,11 +698,73 @@ class SpatialDescriptorModel:
         """Wrapper function to the spatialdescriptormodel process object. This
         processer contains tools of logging and storing information about the
         process.
+
+        Parameters
+        ----------
+        logfile: str
+            the file we want to log all the process.
+        lim_rows: int (default=0)
+            the limit number of rows uninformed. If is 0, there are not
+            partial information of the process.
+        n_procs: int (default=0)
+            the number of cpu used.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
         """
         modelproc = SpatialDescriptorModelProcess(self, logfile, lim_rows,
                                                   n_procs)
         measure = modelproc.compute_measure()
         return measure
+
+    ############################# Model functions #############################
+    ###########################################################################
+    def fit(self, indices, y, sample_weight=None):
+        """Use the SpatialDescriptorModel as a model.
+
+        Parameters
+        ----------
+        indices: np.ndarray
+            the indices of the samples used to compute the model.
+        y: np.ndarray
+            the target we want to predict.
+        sample_weight : np.ndarray [n_samples]
+            Individual weights for each sample
+
+        Returns
+        -------
+        self : returns an instance of self.
+
+        """
+        assert(len(indices) == len(y))
+        indices = list(indices)
+        X = self.compute(indices)
+        self.model = self.model.fit(X, y)
+        return self
+
+    def predict(self, indices):
+        """Use the SpatialDescriptorModel as a model to predict targets from
+        spatial descriptors.
+
+        Parameters
+        ----------
+        indices: np.ndarray
+            the indices of the samples used to compute the target predicted.
+
+        Returns
+        -------
+        y_pred : np.ndarray
+            the predicted target.
+
+        """
+        X = self.compute(indices)
+        indices = list(indices)
+        y_pred = self.model.predict(X)
+        assert(len(indices) == len(y_pred))
+        return y_pred
 
 
 ###############################################################################
@@ -467,6 +780,8 @@ def create_aggfeatures(sp_descriptor, features):
     ----------
     sp_descriptor: tuple (aggregation_info format) or SpatialDescriptorModel
         the information to compute aggregation.
+    features: pst.BaseFeatures
+        the features we want to aggregate.
 
     Returns
     -------
@@ -511,6 +826,30 @@ def create_aggfeatures(sp_descriptor, features):
 
 
 def _parse_aggregation_feat(aggregating_in, features):
+    """Parse aggregation information and format in a correct standard way.
+
+    Parameters
+    ----------
+    aggregating_in: tuple
+        the information for aggregating features
+    features: pst.BaseFeatures
+        the features we want to aggregate.
+
+    Returns
+    -------
+    agg_f_ret: function
+        the aggregation function for the retriever part.
+    desc_in: pst.BaseDescriptorModel
+        the descriptormodel to compute the aggregated features.
+    pars_feat_in: dict
+        the parameters of the featuresmanager to compute the aggregate
+        features.
+    pars_feats: dict
+        the parameters in order to instantiate the new aggregated features.
+    desc_out: pst.BaseDescriptorModel
+        the descriptormodel to use in the new aggregated features.
+
+    """
     assert(type(aggregating_in) == tuple)
     if len(aggregating_in) == 5:
         agg_f_ret, desc_in, pars_feat_in, pars_feats, desc_out = aggregating_in

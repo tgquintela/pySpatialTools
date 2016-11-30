@@ -5,11 +5,10 @@ Count descriptors
 Module which groups the methods related with computing histogram-based spatial
 descriptors.
 
-
 """
 
 import numpy as np
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\
@@ -19,7 +18,7 @@ from ..aux_descriptormodels import\
     count_out_formatter_dict2array
 
 
-class CountDescriptor(DescriptorModel):
+class CountDescriptor(BaseDescriptorModel):
     """Model of spatial descriptor computing by counting the type of the
     neighs represented in feat_arr.
 
@@ -28,7 +27,16 @@ class CountDescriptor(DescriptorModel):
     _nullvalue = 0
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
-        """The inputs are the needed to compute model_dim."""
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -42,7 +50,8 @@ class CountDescriptor(DescriptorModel):
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute(self, pointfeats, point_pos):
-        """Compulsary function to pass for the feture retriever.
+        """Compulsary function to pass for the feture retriever. Counts for
+        each of the possible types of elements in the neighbourhood.
 
         Parameters
         ----------
@@ -80,12 +89,24 @@ class CountDescriptor(DescriptorModel):
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
+    def to_complete_measure(self, measure):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
+
+        Parameters
+        ----------
+        measure: np.ndarray
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure: np.ndarray
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
         """
-        corr_loc = null_completer(corr_loc)
-        return corr_loc
+        measure = null_completer(measure)
+        return measure
 
     ###########################################################################
     ########################## Auxiliary functions ############################
@@ -99,6 +120,14 @@ class CountDescriptor(DescriptorModel):
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional
+            type of the input features.
+        type_outfeatures: str, optional
+            type of the output features.
+
         """
         if type_outfeatures == 'dict':
             self._out_formatter = null_out_formatter
@@ -110,7 +139,7 @@ class CountDescriptor(DescriptorModel):
     ###########################################################################
 
 
-class CounterNNDesc(DescriptorModel):
+class CounterNNDesc(BaseDescriptorModel):
     """Descriptor based on count all the neighs that it receives."""
     name_desc = "Counter NN descriptor"
     _nullvalue = 0
@@ -126,6 +155,22 @@ class CounterNNDesc(DescriptorModel):
         self._assert_correctness()
 
     def compute(self, pointfeats, point_pos):
+        """Compute descriptors by counting neighs in the neighbourhood.
+
+        Parameters
+        ----------
+        pointfeats: list of arrays, np.ndarray or list of list of dicts
+            the point features information. [iss][nei][feats]
+        point_pos: list of arrays or np.ndarray.
+            the element relative position of the neighbourhood.
+            [iss][nei][rel_pos]
+
+        Returns
+        -------
+        descriptors: list of arrays or np.ndarray or list of dicts
+            the descriptor of the neighbourhood. [iss][feats]
+
+        """
         n_iss = len(pointfeats)
         descriptors = np.zeros((n_iss, 1))
         for i in range(n_iss):

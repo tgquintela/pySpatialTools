@@ -22,7 +22,19 @@ import numpy as np
 
 def counter_featurenames(features_o):
     """Compute default feature names of variables when there is a variable
-    categorical used in a counter type descriptor."""
+    categorical used in a counter type descriptor.
+
+    Parameters
+    ----------
+    features_o: np.ndarray, (iss, feats) or list of dicts, [iss]{feats}
+        the features collection for one ks.
+
+    Returns
+    -------
+    featurenames: list
+        the list of featurenames.
+
+    """
     if type(features_o) == np.ndarray:
         featurenames = list(np.unique(features_o[:, 0]))
     else:
@@ -39,7 +51,19 @@ def counter_featurenames(features_o):
 
 def general_featurenames(features_o):
     """Compute featurenames of the array-like features and let as void
-    featurenames for the dict-based featues."""
+    featurenames for the dict-based featues.
+
+    Parameters
+    ----------
+    features_o: np.ndarray, (iss, feats) or list of dicts, [iss]{feats}
+        the features collection for one ks.
+
+    Returns
+    -------
+    featurenames: list
+        the list of featurenames.
+
+    """
     if type(features_o) == list and type(features_o[0]) == list:
         featurenames = []
     else:
@@ -48,7 +72,19 @@ def general_featurenames(features_o):
 
 
 def list_featurenames(features_o):
-    """Compute the featurenames for list of dicts features collections."""
+    """Compute the featurenames for list of dicts features collections.
+
+    Parameters
+    ----------
+    features_o: np.ndarray, (iss, feats) or list of dicts, [iss]{feats}
+        the features collection for one ks.
+
+    Returns
+    -------
+    featurenames: list
+        the list of featurenames.
+
+    """
     if type(features_o[0]) == dict:
         keys = []
         for i in range(len(features_o)):
@@ -65,7 +101,19 @@ def list_featurenames(features_o):
 
 
 def array_featurenames(features_o):
-    "Compute default feature names of variables when there is an array type."
+    """Compute default feature names of variables when there is an array type.
+
+    Parameters
+    ----------
+    features_o: np.ndarray, (iss, feats) or list of dicts, [iss]{feats}
+        the features collection for one ks.
+
+    Returns
+    -------
+    featurenames: list
+        the list of featurenames.
+
+    """
     if type(features_o) == np.ndarray:
         featurenames = list(np.arange(features_o.shape[1]))
     else:

@@ -38,8 +38,29 @@ from aux_descriptormodels import append_addresult_function,\
 ###############################################################################
 ################### Creation functions initialization_desc ####################
 def creation_initialization_desc_array(fm):
+    """Creation of the null descriptors in an array-form.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_desc: function
+        the initialization function of null descriptors.
+
+    """
     ## Format initialization descriptors
     def initialization_desc():
+        """Initialization of descriptors.
+
+        Returns
+        -------
+        descriptors: list
+            the null descriptors for each perturbation and element.
+
+        """
         descriptors = []
         for i in range(len(fm)):
             aux_i = np.ones((1, len(fm[i].out_features)))
@@ -50,6 +71,19 @@ def creation_initialization_desc_array(fm):
 
 
 def creation_initialization_desc_dict(fm=None):
+    """Creation of the dictionary null descriptors.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager (default=None)
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_desc: function
+        the initialization function of null descriptors.
+
+    """
     ## Format initialization descriptors
     initialization_desc = lambda: [{}]
     return initialization_desc
@@ -59,6 +93,17 @@ def creation_initialization_desc_dict(fm=None):
 def creation_initialization_output_lists(fm):
     """ Format function initialization of global measure of descriptors for
     list of lists result.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_output: function
+        function to initialize the whole complete null measure.
+
     """
     n_vals_i, _, k_perturb = fm.shape_measure
 
@@ -70,10 +115,29 @@ def creation_initialization_output_lists(fm):
 def creation_initialization_output_list_selfdriven(fm):
     """ Format function initialization of global measure of descriptors for
     list of lists result.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_output: function
+        function to initialize the whole complete null measure.
+
     """
     n_vals_i, _, k_perturb = fm.shape_measure
 
     def initialization_output():
+        """Function to initialize the whole complete null measure.
+
+        Returns
+        -------
+        measure: list
+            the measure computed by the whole spatial descriptor model.
+
+        """
         return [[[], []] for k in range(k_perturb)]
     return initialization_output
 
@@ -81,6 +145,17 @@ def creation_initialization_output_list_selfdriven(fm):
 def creation_initialization_output_list(fm):
     """ Format function initialization of global measure of descriptors for
     list result.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_output: function
+        function to initialize the whole complete null measure.
+
     """
     initialization_output = lambda: []
     return initialization_output
@@ -88,7 +163,19 @@ def creation_initialization_output_list(fm):
 
 def creation_initialization_output_closearray(fm):
     """Format function initialization of global measure of descriptors for
-    closed array."""
+    closed array.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    initialization_output: function
+        function to initialize the whole complete null measure.
+
+    """
     shape = fm.shape_measure
     assert(all([e is not None for e in shape]))
     initialization_output = lambda: np.zeros(shape)
@@ -97,17 +184,55 @@ def creation_initialization_output_closearray(fm):
 
 #################### Creation functions _join_descriptors #####################
 def creation_null_joiner():
+    """Creation of a null joiner of descriptors.
+
+    Returns
+    -------
+    _join_descriptors: function
+        function to join the final descriptors computed by the featuresmanager.
+
+    """
     _join_descriptors = lambda x: x
     return _join_descriptors
 
 
 def creation_concatenator_joiner():
+    """Creation of a concatenator joiner of descriptors.
+
+    Returns
+    -------
+    _join_descriptors: function
+        function to join the final descriptors computed by the featuresmanager.
+
+    """
     _join_descriptors = lambda x: np.concatenate(x)
     return _join_descriptors
 
 
 ################## Default creation functions initialization ##################
 def default_creation_initializations(fm):
+    """Default creation of initialization.
+
+    Parameters
+    ----------
+    fm: pst.FeatureManager
+        the featuresmanager object.
+
+    Returns
+    -------
+    init_desc: function
+        function to initialize the null descriptor.
+    init_output: function
+        function to initialize the whole complete null measure.
+    _join_descriptors: function
+        function to join the final descriptors computed by the
+        featuresmanager.
+    add2result: function
+        function to add the new computed descriptors to the whole measure.
+    completer: function
+        function to complete the measure once we finish the iterations.
+
+    """
     ## If array descriptors
     if fm._out == 'ndarray':
         init_desc = creation_initialization_desc_array(fm)
@@ -142,29 +267,64 @@ def default_creation_initializations(fm):
 
 ########################## Collections of resulters ###########################
 ###############################################################################
-class GeneralResulter:
+class BaseResulter:
+    """The basic functions for the base resulter. The resulter is the basic
+    information to build the final measure from the computations of the
+    featuresmanager.
+    """
+    def get_functions(self):
+        """Function to get all the basic functions which build the resulter."""
+        return self.initialization_desc, self.initialization_output,\
+            self._join_descriptors,  self.add2result, self.to_complete_measure
+
+
+class GeneralResulter(BaseResulter):
     """General resulter building object. It contains the main functions to set
     the initialization of the measure and the functions to build it from the
     results of the descriptormodel outputs."""
 
     def __init__(self, init_desc, init_output, _join_descriptors,  add2result,
                  completer):
+        """General resulter instantiation.
+
+        Parameters
+        ----------
+        init_desc: function
+            function to initialize the null descriptor.
+        init_output: function
+            function to initialize the whole complete null measure.
+        _join_descriptors: function
+            function to join the final descriptors computed by the
+            featuresmanager.
+        add2result: function
+            function to add the new computed descriptors to the whole measure.
+        completer: function
+            function to complete the measure once we finish the iterations.
+
+        """
         self.initialization_desc = init_desc
         self.initialization_output = init_output
         self._join_descriptors = _join_descriptors
         self.add2result = add2result
         self.to_complete_measure = completer
 
-    def get_functions(self):
-        return self.initialization_desc, self.initialization_output,\
-            self._join_descriptors,  self.add2result, self.to_complete_measure
 
-
-class DefaultResulter(GeneralResulter):
+class DefaultResulter(BaseResulter):
     """Default resulter building object. It selects and contains the main
     functions to manage descriptors and build the result measure.
     """
     def __init__(self, fm, resulter=None):
+        """The default resulter building.
+
+        Parameters
+        ----------
+        fm: pst.FeatureManager
+            the featuresmanager object.
+        resulter: pst.BaseResulter or None (default=None)
+            the basic information to build the final measure from the
+            computations of the featuresmanager.
+
+        """
         if resulter is not None:
             self.initialization_desc = resulter.initialization_desc
             self.initialization_output = resulter.initialization_output

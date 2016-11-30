@@ -7,7 +7,7 @@ descriptors.
 
 """
 
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import sum_reducer, null_completer,\
@@ -19,7 +19,7 @@ from ..aux_descriptormodels import characterizer_summer,\
     characterizer_summer_listarray, characterizer_summer_arrayarray
 
 
-class SumDescriptor(DescriptorModel):
+class SumDescriptor(BaseDescriptorModel):
     """Model of spatial descriptor computing by averaging the type of the
     neighs represented in feat_arr.
 
@@ -35,7 +35,16 @@ class SumDescriptor(DescriptorModel):
     _nullvalue = 0
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
-        """The inputs are the needed to compute model_dim."""
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -49,7 +58,8 @@ class SumDescriptor(DescriptorModel):
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute(self, pointfeats, point_pos):
-        """Compulsary function to pass for the feture retriever.
+        """Compulsary function to pass for the feture retriever. It sums the
+        features in the neighbourhood.
 
         Parameters
         ----------
@@ -84,12 +94,24 @@ class SumDescriptor(DescriptorModel):
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
+    def to_complete_measure(self, measure):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
+
+        Parameters
+        ----------
+        measure: np.ndarray or list dicts
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure: np.ndarray or list dicts
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
         """
-        corr_loc = null_completer(corr_loc, None)
-        return corr_loc
+        measure = null_completer(measure, None)
+        return measure
 
     ###########################################################################
     ########################## Auxiliary functions ############################
@@ -103,6 +125,14 @@ class SumDescriptor(DescriptorModel):
 
     def set_functions(self, type_infeatures, type_outfeatures=None):
         """Set specific functions knowing a constant input and output desired.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
         """
         ## Preparing the clas for the known input
         if type_infeatures is None:

@@ -24,7 +24,24 @@ OUTPUTS:
 
 
 def sum_addresult_function(x, x_i, vals_i):
-    "Sum the result to the final result."
+    """Sum the result to the final result.
+
+    Parameters
+    ----------
+    x: list or np.ndarray
+        the stored measure. The standard input is:
+            * x: (vals_i, feats, ks)
+    x_i: list [ks](feats) or np.ndarray (ks, feats)
+        the parcial measure to be stored.
+    vals_i: list or np.ndarray
+        the information of the stored indice.
+
+    Returns
+    -------
+    x: np.ndarray (vals_i, feats, ks)
+        the stored measure.
+
+    """
     for k in range(len(vals_i)):
         x[[vals_i[k]], :, k] += x_i[k]
     return x
@@ -32,7 +49,22 @@ def sum_addresult_function(x, x_i, vals_i):
 
 def append_addresult_function(x, x_i, vals_i):
     """Append the result to the final result.
-    * x: [ks][iss_vals]{feats}
+
+    Parameters
+    ----------
+    x: list
+        the stored measure. The standard input is:
+            * x: [ks][iss_vals]{feats}
+    x_i: list
+        the parcial measure to be stored.
+    vals_i: list or np.ndarray
+        the information of the stored indice.
+
+    Returns
+    -------
+    x: list
+        the stored measure.
+
     """
     for k in range(len(vals_i)):
         for i in range(len(vals_i[k])):
@@ -47,7 +79,21 @@ def append_addresult_function(x, x_i, vals_i):
 
 def replacelist_addresult_function(x, x_i, vals_i):
     """Replace the element in a preinitialized list. For unknown vals_i.
-    * x: [ks][0][iss_vals]{feats} and [ks][1][iss_vals](vals_i)
+
+    Parameters
+    ----------
+    x: list
+        the stored measure. The standard input is:
+            * x: [ks][0][iss_vals]{feats} and [ks][1][iss_vals](vals_i)
+    x_i: list
+        the parcial measure to be stored.
+    vals_i: list or np.ndarray
+        the information of the stored indice.
+
+    Returns
+    -------
+    x: list
+        the stored measure.
 
     See also:
     ---------

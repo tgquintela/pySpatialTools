@@ -6,7 +6,7 @@ Descriptor which counts a histogram by using nbins.
 """
 
 import numpy as np
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\
@@ -16,7 +16,7 @@ from ..aux_descriptormodels import\
     count_out_formatter_dict2array
 
 
-class NBinsHistogramDesc(DescriptorModel):
+class NBinsHistogramDesc(BaseDescriptorModel):
     """Model of spatial descriptor computing by binning and counting the type
     of the neighs represented in feat_arr.
     WARNING: Probably it is more efficient to binning first the all the feature
@@ -29,7 +29,21 @@ class NBinsHistogramDesc(DescriptorModel):
 
     def __init__(self, n_bins, features=None, type_infeatures=None,
                  type_outfeatures=None):
-        """The inputs are the needed to compute model_dim."""
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        n_bins: int
+            the number of bins we are going to use in order to make the
+            histogram.
+        features: np.ndarray
+            the features in a array_like mode.
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -78,6 +92,15 @@ class NBinsHistogramDesc(DescriptorModel):
     ############################# Extra functions #############################
     ###########################################################################
     def transform_features(self, features):
+        """Transform the features into a discretize version of them in order
+        to make counting or apply other descriptormodel.
+
+        Parameters
+        ----------
+        features: np.ndarray
+            the features in a array_like mode.
+
+        """
         if self.globals_[2] is not None:
             features = self.globals_[2](features)
         return features
@@ -86,6 +109,18 @@ class NBinsHistogramDesc(DescriptorModel):
     ##################### Non-compulsary main functions #######################
     ###########################################################################
     def set_global_info(self, features, transform=True):
+        """Set global information for future tasks. It sees all the available
+        features and compute some interesting quantities in order to be used
+        during the descriptormodel computation.
+
+        Parameters
+        ----------
+        features: np.ndarray
+            the features in a array_like mode.
+        transform: boolean (default=True)
+            if we want to return transformed features.
+
+        """
         self.globals_[0]
         mini, maxi = features.min(), features.max()
         diff = (maxi - mini)/float(self.globals_[0])
@@ -94,6 +129,19 @@ class NBinsHistogramDesc(DescriptorModel):
         self.globals_[1] = borders
 
         def binning(feats):
+            """Binning function.
+
+            Parameters
+            ----------
+            features: np.ndarray
+                the features in a array_like mode.
+
+            Returns
+            -------
+            binned_feats: np.ndarray
+                the features after binning. Discretized features.
+
+            """
             binned_feats = -1*np.ones(feats.shape)
             for i in range(len(borders)):
                 j = len(borders)-1-i
@@ -116,6 +164,14 @@ class NBinsHistogramDesc(DescriptorModel):
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
         """
         assert(type_infeatures in [None, 'ndarray'])
         if type_outfeatures is None:
@@ -126,14 +182,29 @@ class NBinsHistogramDesc(DescriptorModel):
             self._out_formatter = count_out_formatter_dict2array
 
 
-class HistogramDistDescriptor(DescriptorModel):
+class HistogramDistDescriptor(BaseDescriptorModel):
     """Descriptor which creates a histogram of distances.
     """
     name_desc = "Histogram of Distances"
     _nullvalue = 0
 
     def __init__(self, start, stop, n_points, ks, logscale=False):
-        """The inputs are the needed to compute model_dim."""
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        start: float
+            the start point of the histogram. The minimum value.
+        stop: float
+            the stop point of the histogram. The maximum value.
+        n_points: int
+            the number of intervals of the histogram.
+        ks: np.ndarray
+            quantity of histograms.
+        logscale: boolean
+            if logarithmic scale.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -147,7 +218,22 @@ class HistogramDistDescriptor(DescriptorModel):
         self._out_formatter = null_out_formatter
 
     def compute(self, pointfeats, point_pos):
-        """[iss][nei][feats]"""
+        """It compute a histogram over the positions.
+
+        Parameters
+        ----------
+        pointfeats: list of arrays, np.ndarray or list of list of dicts
+            the point features information. [iss][nei][feats]
+        point_pos: list of arrays or np.ndarray.
+            the element relative position of the neighbourhood.
+            [iss][nei][rel_pos]
+
+        Returns
+        -------
+        descriptors: list of arrays or np.ndarray or list of dicts
+            the descriptor of the neighbourhood. [iss][feats]
+
+        """
         n_bins, n_ks = len(self._globals[0])-1, len(self._globals[1])
         mult = np.arange(n_ks)*n_bins
         descriptors = np.zeros((len(pointfeats), n_bins*n_ks))
@@ -163,6 +249,22 @@ class HistogramDistDescriptor(DescriptorModel):
         return descriptors
 
     def _set_parameters(self, start, stop, n_points, logscale, ks):
+        """Setting parameters to the method.
+
+        Parameters
+        ----------
+        start: float
+            the start point of the histogram. The minimum value.
+        stop: float
+            the stop point of the histogram. The maximum value.
+        n_points: int
+            the number of intervals of the histogram.
+        logscale: boolean
+            if logarithmic scale.
+        ks: np.ndarray
+            quantity of histograms.
+
+        """
         bins = create_binningdist(start, stop, n_points, logscale)
         ks = np.array([ks]) if type(ks) else np.array(ks)
         self._globals = bins, ks.ravel()
@@ -170,6 +272,25 @@ class HistogramDistDescriptor(DescriptorModel):
 
 
 def create_binningdist(start, stop, n_points, logscale=True):
+    """Create binning of distances.
+
+    Parameters
+    ----------
+    start: float
+        the start point of the histogram. The minimum value.
+    stop: float
+        the stop point of the histogram. The maximum value.
+    n_points: int
+        the number of intervals of the histogram.
+    logscale: boolean
+        if logarithmic scale.
+
+    Returns
+    -------
+    bins: np.ndarray
+        the bins definitions.
+
+    """
     if start < 1:
         bins = np.logspace(0, np.log10(stop+1), n_points+1)-1
     else:

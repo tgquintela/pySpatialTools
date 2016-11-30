@@ -7,7 +7,7 @@ descriptors.
 
 """
 
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import avg_reducer, null_completer,\
@@ -19,19 +19,25 @@ from ..aux_descriptormodels import characterizer_average,\
     characterizer_average_listarray, characterizer_average_arrayarray
 
 
-class AvgDescriptor(DescriptorModel):
+class AvgDescriptor(BaseDescriptorModel):
     """Model of spatial descriptor computing by averaging the type of the
     neighs represented in feat_arr.
-
-    Parameters
-    ----------
 
     """
     name_desc = "Average descriptor"
     _nullvalue = 0
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
-        "The inputs are the needed to compute model_dim."
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -45,7 +51,8 @@ class AvgDescriptor(DescriptorModel):
     ####################### Compulsary main functions #########################
     ###########################################################################
     def compute(self, pointfeats, point_pos):
-        """Compulsary function to pass for the feture retriever.
+        """Compulsary function to pass for the feture retriever. Compute
+        average of features.
 
         Parameters
         ----------
@@ -82,14 +89,26 @@ class AvgDescriptor(DescriptorModel):
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
+    def to_complete_measure(self, measure):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
 
         TODO: count_vals and average
+
+        Parameters
+        ----------
+        measure: np.ndarray
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure: np.ndarray
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
         """
-        corr_loc = null_completer(corr_loc)
-        return corr_loc
+        measure = null_completer(measure)
+        return measure
 
     ###########################################################################
     ########################## Auxiliary functions ############################
@@ -102,6 +121,14 @@ class AvgDescriptor(DescriptorModel):
 
     def set_functions(self, type_infeatures, type_outfeatures=None):
         """Set specific functions knowing a constant input and output desired.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
         """
         ## Preparing the clas for the known input
         if type_infeatures is None:

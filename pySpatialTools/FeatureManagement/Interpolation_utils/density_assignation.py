@@ -8,6 +8,7 @@ TODO
 ----
 - Use neighbourhood defintion?
 - Recurrent measure (TODO)[better before with the population?]
+
 """
 
 from scipy.spatial import KDTree
@@ -19,7 +20,8 @@ import numpy as np
 
 def general_density_assignation(locs, retriever, info_ret, values, f_weights,
                                 params_w, f_dens, params_d):
-    """
+    """General function for density assignation task.
+
     Parameters
     ----------
     locs: array_like shape(n, 2)
@@ -62,6 +64,32 @@ def general_density_assignation(locs, retriever, info_ret, values, f_weights,
 ###############################################################################
 def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
                     f_dens, params_d):
+    """Function to compute assignation.
+
+    Parameters
+    ----------
+    locs: array_like shape(n, 2)
+        location variables
+    retriever: pySpatialTools.Retrieve.retrievers object
+        retriever. Return the indices and distances of the possible retrivable
+        points.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+    f_weighs: functions, str
+        function of weighs assignation. It transforms the distance to weights.
+    params_w: dict
+        parameters needed to apply f_weighs.
+    f_dens: function, set_scale_surgauss
+        function of density assignation.
+    params_d: dict
+        parameters needed to apply f_dens.
+
+    Returns
+    -------
+    M: array_like, shape(n)
+        mesasure of each location given.
+
+    """
     ## Computation of the measure based in the distances as weights.
     #M = np.zeros(locs.shape[0])
     M = []
@@ -83,7 +111,26 @@ def compute_measure(locs, retriever, info_ret, values, f_weighs, params_w,
 
 
 def compute_measure_i(weights, values, f_dens, params_d):
-    "Swither function between different possible options to compute density."
+    """Swither function between different possible options to compute density.
+
+    Parameters
+    ----------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+    f_dens: function, set_scale_surgauss
+        function of density assignation.
+    params_d: dict
+        parameters needed to apply f_dens.
+
+    Returns
+    -------
+    measure: float
+        the measure of assignation to the element with the neighbourhood
+        described by the weights and values input.
+
+    """
     if type(f_dens) == str:
         if f_dens == 'weighted_count':
             measure = compute_measure_wcount(weights, values, **params_d)
@@ -100,6 +147,20 @@ def compute_measure_i(weights, values, f_dens, params_d):
 def compute_measure_wcount(weights, values):
     """Measure to compute density only based on the weighted count of selected
     elements around the point considered.
+
+    Parameters
+    ----------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+
+    Returns
+    -------
+    measure: float
+        the measure of assignation to the element with the neighbourhood
+        described by the weights and values input.
+
     """
     measure = np.sum(weights)
     return measure
@@ -108,6 +169,20 @@ def compute_measure_wcount(weights, values):
 def compute_measure_wavg(weights, values):
     """Measure to compute density based on the weighted average of selected
     elements around the point considered.
+
+    Parameters
+    ----------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+
+    Returns
+    -------
+    measure: float
+        the measure of assignation to the element with the neighbourhood
+        described by the weights and values input.
+
     """
 #    measure = np.sum((np.array(weights) * np.array(values).T).T, axis=0)
     measure = np.dot(weights, values)
@@ -115,6 +190,22 @@ def compute_measure_wavg(weights, values):
 
 
 def compute_measure_null(weights, values):
+    """Null measure computation.
+
+    Parameters
+    ----------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+    values: array_like, shape (num. of retrievable candidates)
+        values we will use to compute density.
+
+    Returns
+    -------
+    measure: float
+        the measure of assignation to the element with the neighbourhood
+        described by the weights and values input.
+
+    """
     measure = values[0]
     return measure
 
@@ -125,7 +216,23 @@ def compute_measure_null(weights, values):
 ############################# Distance to weights #############################
 ###############################################################################
 def from_distance_to_weights(dist, method, params):
-    "Function which transforms the distance given to weights."
+    """Function which transforms the distance given to weights.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    method: str, optional
+        the method we want to use in order to transform distances into weights.
+    params: dict
+        the paramters used to transform distance into weights.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
 
     if type(method) == str:
         if method == 'linear':
@@ -151,13 +258,51 @@ def from_distance_to_weights(dist, method, params):
 
 
 def dist2weights_linear(dist, max_r, max_w=1, min_w=0):
-    "Linear distance weighting."
+    """Linear distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=0)
+        minimum weight to be considered.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
     weights = (max_w - dist)*((max_w-min_w)/float(max_r))+min_w
     return weights
 
 
 def dist2weights_trapez(dist, max_r, r2, max_w=1, min_w=0):
-    "Trapezoidal distance weighting."
+    """Trapezoidal distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    r2: float
+        intermediate radius.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=0)
+        minimum weight to be considered.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
     if type(dist) == np.ndarray:
         weights = dist2weights_linear(dist-r2, max_r-r2, max_w, min_w)
         weights[dist <= r2] = max_w
@@ -170,7 +315,27 @@ def dist2weights_trapez(dist, max_r, r2, max_w=1, min_w=0):
 
 
 def dist2weights_invers(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
-    "Inverse distance weighting."
+    """Inverse distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    rescale: boolean (default=True)
+        if re-scale the magnitude.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
     if min_w == 0:
         tau = 1.
     else:
@@ -188,7 +353,28 @@ def dist2weights_invers(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
 
 
 def dist2weights_exp(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
-    "Exponential distanve weighting."
+    """Exponential distanve weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    rescale: boolean (default=True)
+        if re-scale the magnitude.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
+
     if min_w == 0:
         C = 1.
     else:
@@ -201,7 +387,29 @@ def dist2weights_exp(dist, max_r, max_w=1, min_w=1e-8, rescale=True):
 
 
 def dist2weights_gauss(dist, max_r, max_w=1, min_w=1e-3, S=None, rescale=True):
-    "Gaussian distance weighting."
+    """Gaussian distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    S: float or None (default=None)
+        the scale magnitude.
+    rescale: boolean (default=True)
+        if re-scale the magnitude.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
     if S is None:
         S = set_scale_gauss(max_r, max_w, min_w)
     if rescale:
@@ -215,7 +423,29 @@ def dist2weights_gauss(dist, max_r, max_w=1, min_w=1e-3, S=None, rescale=True):
 
 def dist2weights_surgauss(dist, max_r, max_w=1, min_w=1e-3, S=None,
                           rescale=True):
-    "Survival gaussian distance weighting."
+    """Survival gaussian distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    S: float or None (default=None)
+        the scale magnitude.
+    rescale: boolean (default=True)
+        if re-scale the magnitude.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
 
     if S is None:
         S = set_scale_surgauss(max_r, max_w, min_w)
@@ -230,7 +460,31 @@ def dist2weights_surgauss(dist, max_r, max_w=1, min_w=1e-3, S=None,
 
 def dist2weights_sigmoid(dist, max_r, max_w=1, min_w=1e-3, r_char=0, B=None,
                          rescale=True):
-    "Sigmoid-like distance weighting"
+    """Sigmoid-like distance weighting.
+
+    Parameters
+    ----------
+    dist: float or np.ndarray
+        the distances to be transformed into weights.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    r_char: float (default=0)
+        characteristic radius.
+    B: float or None (default=None)
+        a scale parameter.
+    rescale: boolean (default=True)
+        if re-scale the magnitude.
+
+    Returns
+    -------
+    weights: np.ndarray, array_like, shape (num. of retrievable candidates)
+        values of the weight of the neighs inferred from the distances.
+
+    """
 
     C = r_char*max_r
     if B is None:
@@ -247,8 +501,28 @@ def dist2weights_sigmoid(dist, max_r, max_w=1, min_w=1e-3, r_char=0, B=None,
 ###############################################################################
 ############################# Set scale functions #############################
 ###############################################################################
-def set_scales_kernel(method, max_r, max_w, min_w, r_char=None):
-    "Switcher function for set scale functions."
+def set_scales_kernel(method, max_r, max_w, min_w, r_char=0):
+    """Switcher function for set scale functions.
+
+    Parameters
+    ----------
+    method: str, optional ['surgaussian', 'gaussian', 'sigmoid']
+        the method used to set the scales kernel.
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int (default=1)
+        maximum weight to be considered.
+    min_w: float (default=1e-8)
+        minimum weight to be considered.
+    r_char: float (default=0)
+        characteristic radius.
+
+    Returns
+    -------
+    scale: float
+        scale value.
+
+    """
     if method == 'surgaussian':
         scale = set_scale_surgauss(max_r, max_w, min_w)
     elif method == 'gaussian':
@@ -259,7 +533,23 @@ def set_scales_kernel(method, max_r, max_w, min_w, r_char=None):
 
 
 def set_scale_surgauss(max_r, max_w, min_w):
-    "Set the scale factor of the surgauss kernel."
+    """Set the scale factor of the surgauss kernel.
+
+    Parameters
+    ----------
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int
+        maximum weight to be considered.
+    min_w: float
+        minimum weight to be considered.
+
+    Returns
+    -------
+    scale: float
+        scale value.
+
+    """
     A = max_w/norm.sf(0)
     f_err = lambda x: (A*norm.sf(max_r, scale=x)-min_w)**2
     scale = minimize(f_err, x0=np.array([max_r]), method='Powell', tol=1e-8)
@@ -268,7 +558,23 @@ def set_scale_surgauss(max_r, max_w, min_w):
 
 
 def set_scale_gauss(max_r, max_w, min_w):
-    "Set the scale factor of the gauss kernel."
+    """Set the scale factor of the gauss kernel.
+
+    Parameters
+    ----------
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int
+        maximum weight to be considered.
+    min_w: float
+        minimum weight to be considered.
+
+    Returns
+    -------
+    scale: float
+        scale value.
+
+    """
     A = max_w/norm.pdf(0)
     f_err = lambda x: (A*norm.pdf(max_r, scale=x)-min_w)**2
     scale = minimize(f_err, x0=np.array([0]), method='Powell', tol=1e-8)
@@ -277,7 +583,25 @@ def set_scale_gauss(max_r, max_w, min_w):
 
 
 def set_scale_sigmoid(max_r, max_w, min_w, r_char):
-    "Set scale for sigmoidal functions."
+    """Set scale for sigmoidal functions.
+
+    Parameters
+    ----------
+    max_r: float
+        maximum radius of the neighbourhood considered.
+    max_w: int
+        maximum weight to be considered.
+    min_w: float
+        minimum weight to be considered.
+    r_char: float
+        characteristic radius.
+
+    Returns
+    -------
+    scale: float
+        scale value.
+
+    """
     C = r_char*max_r
     sigmoid_c = lambda B: (1./(1.+B*np.exp(max_r+C)) - min_w)**2
     B = minimize(sigmoid_c, x0=np.array([1]), method='BFGS',

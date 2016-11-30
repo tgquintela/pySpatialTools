@@ -48,9 +48,37 @@ from ..Interpolation_utils.density_assignation import\
 ###############################################################################
 def characterizer_from_unitcharacterizer(f):
     """Transform a common individual characterizer to a standard characterizer
-    function."""
+    function.
+
+    Parameters
+    ----------
+    f: function
+        the function characterizer which applies only o idxs. Its inputs are
+        with the shape of (nei, feats) or [nei]{feats}
+
+    Returns
+    -------
+    new_characterizer: function
+        the usual characterizer.
+
+    """
     def new_characterizer(pointfeats, point_pos):
-        """New characterizer from an individual one."""
+        """New characterizer from an individual one.
+
+        Parameters
+        ----------
+        pointfeats: np.ndarray or list
+            the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}
+        point_pos: list
+            the indices are [idxs][neighs]
+
+        Returns
+        -------
+        descriptors: np.ndarray or list
+            the result is expressed with the indices (idxs, nfeats)
+            [idxs]{nfeats}
+
+        """
         descriptors = []
         for i in range(len(pointfeats)):
             descriptors.append(f(pointfeats[i], point_pos[i]))
@@ -66,10 +94,24 @@ def characterizer_from_unitcharacterizer(f):
 def characterizer_1sh_counter(pointfeats, point_pos):
     """Characterizer which counts the different types of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i](nei, feats)
-    * (iss_i, nei, feats)
-    n_feats = 1
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i](nei, feats)
+            * (iss_i, nei, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats)
+        [idxs]{nfeats}
+
     """
     n_iss = len(pointfeats)
     descriptors = [[]]*n_iss
@@ -84,11 +126,26 @@ def characterizer_1sh_counter(pointfeats, point_pos):
 def characterizer_summer(pointfeats, point_pos):
     """Characterizer which sums the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i](nei, feats)
-    * (iss_i, nei, feats)
-    * (nei, feats)
-    * [iss_i][nei]{feats}
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i](nei, feats)
+            * (iss_i, nei, feats)
+            * (nei, feats)
+            * [iss_i][nei]{feats}
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats) or
+        [idxs]{nfeats}
+
     """
     if type(pointfeats) == np.ndarray:
         descriptors = characterizer_summer_array(pointfeats, point_pos)
@@ -105,10 +162,25 @@ def characterizer_summer(pointfeats, point_pos):
 def characterizer_summer_array(pointfeats, point_pos):
     """Characterizer which sums the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i](nei, feats)
-    * (iss_i, nei, feats)
-    * (nei, feats)
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i](nei, feats)
+            * (iss_i, nei, feats)
+            * (nei, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats) or
+        [idxs]{nfeats}
+
     """
     if type(pointfeats) == list:
         descriptors = characterizer_summer_listarray(pointfeats, point_pos)
@@ -120,8 +192,22 @@ def characterizer_summer_array(pointfeats, point_pos):
 def characterizer_summer_listdict(pointfeats, point_pos):
     """Characterizer which sums the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i][nei]{feats}
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i][nei]{feats}
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices [idxs]{nfeats}
+
     """
     descriptors = []
     for i in range(len(pointfeats)):
@@ -139,6 +225,24 @@ def characterizer_summer_listdict(pointfeats, point_pos):
 
 
 def characterizer_summer_listarray(pointfeats, point_pos):
+    """Characterizer which sums the point features of elements in the
+    neighbourhood of the element studied.
+
+    Parameters
+    ----------
+    pointfeats: list of np.ndarray
+        the indices are [idxs](neighs, feats). The standard inputs are:
+            * [idxs](neighs, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list or None
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats)
+
+    """
     descriptors = []
     for i in range(len(pointfeats)):
         sh = pointfeats[i].shape
@@ -148,6 +252,24 @@ def characterizer_summer_listarray(pointfeats, point_pos):
 
 
 def characterizer_summer_arrayarray(pointfeats, point_pos):
+    """Characterizer which sums the point features of elements in the
+    neighbourhood of the element studied.
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are [idxs](neighs, feats). The standard inputs are:
+            * (idxs, neighs, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: np.ndarray or None
+        the indices are (idxs, neighs)
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats)
+
+    """
     sh = pointfeats.shape
     pointfeats = np.array(pointfeats)
     descriptors = np.sum(pointfeats, axis=len(sh)-2)
@@ -159,11 +281,26 @@ def characterizer_summer_arrayarray(pointfeats, point_pos):
 def characterizer_average(pointfeats, point_pos):
     """Characterizer which average the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i](nei, feats)
-    * (iss_i, nei, feats)
-    * (nei, feats)
-    * [iss_i][nei]{feats}
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i](nei, feats)
+            * (iss_i, nei, feats)
+            * (nei, feats)
+            * [iss_i][nei]{feats}
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats) or
+        [idxs]{nfeats}
+
     """
     if type(pointfeats) == np.ndarray:
         descriptors = characterizer_average_arrayarray(pointfeats, point_pos)
@@ -180,10 +317,25 @@ def characterizer_average(pointfeats, point_pos):
 def characterizer_average_array(pointfeats, point_pos):
     """Characterizer which average the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i](nei, feats)
-    * (iss_i, nei, feats)
-    * (nei, feats)
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i](nei, feats)
+            * (iss_i, nei, feats)
+            * (nei, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats) or
+        [idxs]{nfeats}
+
     """
     if type(pointfeats) == list:
         descriptors = characterizer_average_listarray(pointfeats, point_pos)
@@ -195,8 +347,23 @@ def characterizer_average_array(pointfeats, point_pos):
 def characterizer_average_listdict(pointfeats, point_pos):
     """Characterizer which average the point features of elements in the
     neighbourhood of the element studied.
-    Inputs standards:
-    * [iss_i][nei]{feats}
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats) or [idxs][neighs]{feats}. The
+        standard inputs are:
+            * [iss_i][nei]{feats}
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are [idxs][neighs]
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats) or
+        [idxs]{nfeats}
+
     """
     descriptors = []
     for i in range(len(pointfeats)):
@@ -214,6 +381,24 @@ def characterizer_average_listdict(pointfeats, point_pos):
 
 
 def characterizer_average_listarray(pointfeats, point_pos):
+    """Characterizer which average the point features of elements in the
+    neighbourhood of the element studied.
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are [iss_i](nei, feats). The standard inputs are:
+            * [iss_i](nei, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are (idxs, neighs)
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats)
+
+    """
     descriptors = []
     for i in range(len(pointfeats)):
         sh = pointfeats[i].shape
@@ -223,6 +408,24 @@ def characterizer_average_listarray(pointfeats, point_pos):
 
 
 def characterizer_average_arrayarray(pointfeats, point_pos):
+    """Characterizer which average the point features of elements in the
+    neighbourhood of the element studied.
+
+    Parameters
+    ----------
+    pointfeats: np.ndarray or list
+        the indices are (idxs, neighs, nfeats). The standard inputs are:
+            * (iss_i, nei, feats)
+        It is required for that function that  n_feats = 1.
+    point_pos: list
+        the indices are (idxs, neighs)
+
+    Returns
+    -------
+    descriptors: np.ndarray or list
+        the result is expressed with the indices (idxs, nfeats)
+
+    """
     sh = pointfeats.shape
     pointfeats = np.array(pointfeats)
     descriptors = np.mean(pointfeats, axis=len(sh)-2)

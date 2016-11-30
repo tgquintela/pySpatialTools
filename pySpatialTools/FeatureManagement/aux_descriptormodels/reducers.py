@@ -34,7 +34,21 @@ from collections import Counter
 
 
 def sum_reducer(aggdescriptors_idxs, point_aggpos):
-    """This reducer sum all possible aggregation features."""
+    """This reducer sum all possible aggregation features.
+
+    Parameters
+    ----------
+    aggdescriptors_idxs: list, np.ndarray or dict [iss][nei][nfeats]
+        The features associated directly to each aggregation.
+    point_aggpos: optional [iss][nei][dim]
+        relative position of the aggregations to the element neighbourhood.
+
+    Returns
+    -------
+    descriptors: dict, np.ndarray
+        The computed descriptors.
+
+    """
     descriptors = []
     for iss in range(len(aggdescriptors_idxs)):
         aux = sum_reducer_ind(aggdescriptors_idxs[iss], point_aggpos[iss])
@@ -43,7 +57,21 @@ def sum_reducer(aggdescriptors_idxs, point_aggpos):
 
 
 def avg_reducer(aggdescriptors_idxs, point_aggpos):
-    """This reducer average all possible aggregation features."""
+    """This reducer average all possible aggregation features.
+
+    Parameters
+    ----------
+    aggdescriptors_idxs: list, np.ndarray or dict [iss][nei][nfeats]
+        The features associated directly to each aggregation.
+    point_aggpos: optional [iss][nei][dim]
+        relative position of the aggregations to the element neighbourhood.
+
+    Returns
+    -------
+    descriptors: dict, np.ndarray
+        The computed descriptors.
+
+    """
     descriptors = []
     for iss in range(len(aggdescriptors_idxs)):
         aux = avg_reducer_ind(aggdescriptors_idxs[iss], point_aggpos[iss])
@@ -52,7 +80,21 @@ def avg_reducer(aggdescriptors_idxs, point_aggpos):
 
 
 def sum_reducer_ind(aggdescriptors_idxs, point_aggpos):
-    """This reducer sum all possible aggregation features."""
+    """This reducer sum all possible aggregation features.
+
+    Parameters
+    ----------
+    aggdescriptors_idxs: list, np.ndarray or dict [iss][nei][nfeats]
+        The features associated directly to each aggregation.
+    point_aggpos: optional [iss][nei][dim]
+        relative position of the aggregations to the element neighbourhood.
+
+    Returns
+    -------
+    descriptors: dict, np.ndarray
+        The computed descriptors.
+
+    """
     ## 0. To array
     if type(aggdescriptors_idxs) == list:
         if type(aggdescriptors_idxs[0]) == np.ndarray:
@@ -76,7 +118,21 @@ def sum_reducer_ind(aggdescriptors_idxs, point_aggpos):
 
 
 def avg_reducer_ind(aggdescriptors_idxs, point_aggpos):
-    """This reducer average all possible aggregation features."""
+    """This reducer average all possible aggregation features.
+
+    Parameters
+    ----------
+    aggdescriptors_idxs: list, np.ndarray or dict [iss][nei][nfeats]
+        The features associated directly to each aggregation.
+    point_aggpos: optional [iss][nei][dim]
+        relative position of the aggregations to the element neighbourhood.
+
+    Returns
+    -------
+    descriptors: dict, np.ndarray
+        The computed descriptors.
+
+    """
     ## 0. To array
     if type(aggdescriptors_idxs) == list:
         if type(aggdescriptors_idxs[0]) == np.ndarray:

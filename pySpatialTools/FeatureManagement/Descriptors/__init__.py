@@ -6,7 +6,7 @@ Collection of precoded descriptors.
 
 """
 
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 from descriptormodel import DummyDescriptor, NullPhantomDescriptor
 from descriptormodel import Interpolator, GeneralDescriptor
 

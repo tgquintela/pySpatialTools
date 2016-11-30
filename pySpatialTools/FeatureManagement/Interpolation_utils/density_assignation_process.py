@@ -42,7 +42,22 @@ class DensityAssign_Process(Processer):
 
     def __init__(self, logfile, retriever, lim_rows=0, n_procs=0,
                  proc_name=""):
-        "Instantiation of a density assignation process class."
+        """Instantiation of a density assignation process class.
+
+        Parameters
+        ----------
+        logfile: str
+            the log file to log all the information about that process.
+        retriever: pst.Retrieve.SpaceRetriever
+            the retriever object instantiation to obtain the neighbourhood.
+        lim_rows: int (default=0)
+            the limit rows to uninform about the loop process.
+        n_procs: int (default=0)
+            number of processors.
+        proc_name: str (default="")
+            the process name.
+
+        """
         # Initialization
         self._initialization()
         # Logfile
@@ -59,6 +74,19 @@ class DensityAssign_Process(Processer):
     def compute_density(self, locs, data, datavars, info_ret, params):
         """Compute density of the locations locs from a spatial distribution
         of features given in data.
+
+        Parameters
+        ----------
+        locs: np.ndarray
+            the spatial information of the retrievable 
+        data: pd.DataFrame
+            the information
+        datavars: dict of list
+        the variables of 'loc_vars' and 'feat_vars'.
+        datavars
+        info_ret
+        params: dict
+            t
         """
 
         d = compute_population_data(locs, data, datavars, self.retriever,
@@ -72,6 +100,25 @@ class DensityAssign_Process(Processer):
 def compute_population_data(locs, data, datavars, retriever, info_ret, params):
     """Function to compute the correspondant density data to each point in locs
     given the spatial distribution of features given in data.
+
+    Parameters
+    ----------
+    locs: np.ndarray
+        the spatial information of the retrievable 
+    data: pd.DataFrame
+        the information
+    datavars: dict of list
+        the variables of 'loc_vars' and 'feat_vars'.
+    info_ret: functions, str
+        function of weighs assignation. It transforms the distance to weights.
+    params: dict
+        parameters needed to apply f_dens.
+
+    Returns
+    -------
+    dens_assignation: array_like, shape(n)
+        mesasure of each location given.
+
     """
 
     ## 0. Computation of initial variables

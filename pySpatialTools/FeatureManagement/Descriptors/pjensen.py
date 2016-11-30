@@ -12,7 +12,7 @@ Parameters
 
 import numpy as np
 from collections import Counter
-from descriptormodel import DescriptorModel
+from descriptormodel import BaseDescriptorModel
 
 ## Specific functions
 from ..aux_descriptormodels import\
@@ -21,7 +21,7 @@ from ..aux_descriptormodels import\
     count_out_formatter_general, count_out_formatter_dict2array
 
 
-class PjensenDescriptor(DescriptorModel):
+class PjensenDescriptor(BaseDescriptorModel):
     """Model of spatial descriptor computing by counting the type of the
     neighs represented in feat_arr.
 
@@ -31,7 +31,18 @@ class PjensenDescriptor(DescriptorModel):
 
     def __init__(self, features=None, type_infeatures=None,
                  type_outfeatures=None):
-        "The inputs are the needed to compute model_dim."
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        features: np.ndarray (default=None)
+            the features in a array_like mode.
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -73,6 +84,26 @@ class PjensenDescriptor(DescriptorModel):
         """Completion of individual descriptor of neighbourhood by crossing the
         information of the individual descriptor of point to its neighbourhood
         descriptor.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        neighs_info:
+            the neighbourhood information of each `i`.
+        desc_i: np.ndarray or list of dict
+            the descriptors associated to the elements `iss`.
+        desc_neighs: np.ndarray or list of dict
+            the descriptors associated to the neighbourhood elements of each
+            `iss`.
+        vals_i: list or np.ndarray
+            the storable index information.
+
+        Returns
+        -------
+        desc_neigh: list
+            the descriptors for each element.
+
         """
         descriptors = []
         for iss_i in range(len(desc_neigh)):
@@ -97,16 +128,34 @@ class PjensenDescriptor(DescriptorModel):
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
+    def to_complete_measure(self, measure):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
+
+        Parameters
+        ----------
+        measure: np.ndarray
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure: np.ndarray
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
         """
-        corr_loc = normalization_jensen(corr_loc, self.globals_)
-        return corr_loc
+        measure = normalization_jensen(measure, self.globals_)
+        return measure
 
     def set_global_info(self, features):
         """Set the global stats info in order to get information to normalize
         the measure.
+
+        Parameters
+        ----------
+        features: np.ndarray (default=None)
+            the features in a array_like mode.
+
         """
         ##Globals
         if len(features.shape) >= 2:
@@ -128,6 +177,14 @@ class PjensenDescriptor(DescriptorModel):
 
     def set_functions(self, type_infeatures, type_outfeatures):
         """Set specific functions knowing a constant input and output desired.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
         """
         if type_outfeatures == 'dict':
             self._out_formatter = null_out_formatter

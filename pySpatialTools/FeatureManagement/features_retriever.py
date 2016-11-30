@@ -30,8 +30,8 @@ from pySpatialTools.utils.selectors import Feat_RetrieverSelector,\
     format_selection
 from pySpatialTools.utils.neighs_info import ensuring_neighs_info
 #from aux_featuremanagement import create_aggfeatures
-from features_objects import _featuresobject_parsing_creation, Features
-from Descriptors import DummyDescriptor, DescriptorModel
+from features_objects import _featuresobject_parsing_creation, BaseFeatures
+from Descriptors import DummyDescriptor, BaseDescriptorModel
 from aux_resulter_building import DefaultResulter
 
 
@@ -67,6 +67,31 @@ class FeaturesManager:
     def __init__(self, features_objects, mode=None, maps_input=None,
                  maps_output=None, maps_vals_i=None, descriptormodels=None,
                  selectors=[None]*3, resulter=None):
+        """Manager of features.
+
+        Parameters
+        ----------
+        features_objects: list or pst.BaseFeatures
+            the features objects in order to be managed by the manage.
+        mode: str optional or None (default=None)
+            the mode we want to manage the different features. 'parallel' for
+            a parallel management or 'sequential' for a sequential management.
+        maps_input: function or pst.BaseSelector (default=None)
+            input map for the indices of transformed elements.
+        maps_output: function or pst.BaseSelector (default=None)
+            output map for the descriptors computed by the descriptormodels.
+        maps_vals_i: function or pst.BaseSelector (default=None)
+            the mapper from elements `i` to the values of the storing the
+            resulter measure `vals_i`.
+        descriptormodels: list or pst.BaseDescriptormodel (default=None)
+            the descriptormodels to be manage externally by that class.
+        selectors: list, tuple or pst.BaseSelector (default=[None]*3)
+            the selection information to manage the process.
+        resulter: pst.BaseResulter (default=None)
+            the object which manages all the possibilities of measure
+            construction we could do.
+
+        """
         self._initialization()
 #        out = out if out in ['ndarray', 'dict'] else None
 #        self._out = self._out if out is None else out
@@ -89,12 +114,36 @@ class FeaturesManager:
     @property
     def shape(self):
         """As a mapper its shapes represents the size of the input and the
-        output stored in maps_vals_i."""
+        output stored in maps_vals_i.
+
+        Returns
+        -------
+        n_in: int or None
+            the number of values indices of the elements to retrieve and
+            compute their descriptors. If it is None, it is open (e.g. on-line
+            elements added)
+        n_out: int or None
+            the number of values indices of the resulter measure. In case of
+            None, it is an open container.
+
+        """
         return self._maps_vals_i.n_in, self._maps_vals_i.n_out
 
     @property
     def shape_measure(self):
-        """The measures of the possible output measure."""
+        """The measures of the possible output measure.
+
+        Returns
+        -------
+        n_vals_i: int or None
+            the number of values indices of the resulter measure. In case of
+            None, it is an open container.
+        n_feats: int or None
+            the number of descriptors resultant in the measure.
+        ks: int
+            the number of perturbations plus the non-perturbated case.
+
+        """
         n_vals_i = self._maps_vals_i.n_out
         n_feats = len(self.out_features) if self.out_features else None
         return n_vals_i, n_feats, self.k_perturb+1
@@ -107,7 +156,14 @@ class FeaturesManager:
     ###########################################################################
     ############################## Format features ############################
     def _format_features(self, features_objects):
-        """Formatter of features."""
+        """Formatter of features.
+
+        Parameters
+        ----------
+        features_objects: list or pst.BaseFeatures
+            the features objects in order to be managed by the manage.
+
+        """
         ## 0. Format to list mode
         # Format to list mode
         if type(features_objects) != list:
@@ -127,7 +183,14 @@ class FeaturesManager:
         self._format_k_perturbs()
 
     def _format_descriptormodel(self, descriptormodels=None):
-        """Formatter of the descriptormodels."""
+        """Formatter of the descriptormodels.
+
+        Parameters
+        ----------
+        descriptormodels: pst.BaseDescriptormodel (default=None)
+            the descriptormodels to manage externally of the features classes.
+
+        """
         if descriptormodels is None:
             self.descriptormodels = [DummyDescriptor()]
         else:
@@ -136,11 +199,20 @@ class FeaturesManager:
             self.descriptormodels += descriptormodels
 
     def _format_result_building(self, resulter=None):
-        """It manages all the possibilities of measure construction
-        we could do."""
+        """Format and setting the resulter. The resulter manages all the
+        possibilities of measure construction we could do.
+
+        Parameters
+        ----------
+        resulter: pst.BaseResulter
+            the object which manages all the possibilities of measure
+            construction we could do.
+
+        """
         self.resulter = DefaultResulter(self, resulter)
 
     def _format_k_perturbs(self):
+        """Format k perturbations."""
         ## 1. Format kperturb
         kp = self[0].k_perturb
         k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
@@ -152,7 +224,15 @@ class FeaturesManager:
 
     ############################## Format IO maps #############################
     def _format_map_vals_i(self, sp_typemodel):
-        """Format mapper to indicate external val_i to aggregate result."""
+        """Format mapper to indicate external val_i to aggregate result.
+
+        Parameters
+        ----------
+        sp_typemodel: list, tuple, np.ndarray
+            the information to set the map_vals_i in order to obtain the
+            stored index for each element.
+
+        """
         if sp_typemodel is not None:
             map_vals_i = create_mapper_vals_i(sp_typemodel, self)
 #            if type(sp_typemodel) == tuple:
@@ -164,7 +244,19 @@ class FeaturesManager:
             self._maps_vals_i = create_mapper_vals_i(self._maps_vals_i, self)
 
     def _format_maps(self, maps_input, maps_output, maps_vals_i):
-        "Formatter of maps."
+        """Formatter of maps.
+
+        Parameters
+        ----------
+        maps_input: function or pst.BaseSelector
+            input map for the indices of transformed elements.
+        maps_output: function or pst.BaseSelector
+            output map for the descriptors computed by the descriptormodels.
+        maps_vals_i: function or pst.BaseSelector
+            the mapper from elements `i` to the values of the storing the
+            resulter measure `vals_i`.
+
+        """
         ## 1. Format input maps
         if maps_input is None:
             self._maps_input = [lambda i_info, k=0: i_info]
@@ -189,6 +281,13 @@ class FeaturesManager:
         parallel). In sequential the features are options between which we
         have to choose in order to get the outfeatures. In parallel we have to
         use everyone and join the results into a final result.
+
+        Parameters
+        ----------
+        mode: str optional or None (default=None)
+            the mode we want to manage the different features. 'parallel' for
+            a parallel management or 'sequential' for a sequential management.
+
         """
         ## Format basic modes
         if mode is None:
@@ -243,7 +342,19 @@ class FeaturesManager:
 
     ############################# Format selectors ############################
     def _format_selector(self, selector1, selector2=None, selector3=None):
-        """Programable get_type_feats."""
+        """Programable get_type_feats. It sets selection functions and
+        parameters.
+
+        Parameters
+        ----------
+        selector1: tuple, np.ndarray or None (default=None)
+            the selection of the features for the element `i`.
+        selector2: tuple, np.ndarray or None (default=None)
+            the selection of the features for the neighs of the element `i`.
+        selector3: tuple, np.ndarray or None (default=None)
+            the selection of the descriptor models managed by that class.
+
+        """
         if selector1 is None:
             self.get_type_feats = self._general_get_type_feat
             self._get_input_features = self._get_input_features_general
@@ -273,7 +384,16 @@ class FeaturesManager:
     ################################# Setters #################################
     ###########################################################################
     def set_map_vals_i(self, _maps_vals_i):
-        "Set how it maps each element of the "
+        """Set how it maps each element of the input indices has to be
+        transformed in order to be obtain the stored index for each element.
+
+        Parameters
+        ----------
+        maps_vals_i: function or pst.BaseSelector
+            the mapper from elements `i` to the values of the storing the
+            resulter measure `vals_i`.
+
+        """
         #self._maps_vals_i = _maps_vals_i
         if type(_maps_vals_i) in [int, slice]:
             _maps_vals_i = (self._maps_vals_i, _maps_vals_i)
@@ -281,17 +401,55 @@ class FeaturesManager:
         self._format_map_vals_i(_maps_vals_i)
 
     def set_descriptormodels(self, descriptormodels):
-        """Set descriptormodels."""
+        """Set descriptormodels.
+
+        Parameters
+        ----------
+        descriptormodels: list or pst.BaseDescriptormodel
+            the descriptormodels to be manage externally by that class.
+
+        """
         self._format_descriptormodel(descriptormodels)
 
     def set_selector(self, selector1, selector2=None, selector3=None):
-        """Set selectors."""
+        """Programable get_type_feats. It sets selection functions and
+        parameters.
+
+        Parameters
+        ----------
+        selector1: tuple, np.ndarray or None (default=None)
+            the selection of the features for the element `i`.
+        selector2: tuple, np.ndarray or None (default=None)
+            the selection of the features for the neighs of the element `i`.
+        selector3: tuple, np.ndarray or None (default=None)
+            the selection of the descriptor models managed by that class.
+
+        """
         self._format_selector(selector1, selector2, selector3)
 
     ################################# Getters #################################
     ###########################################################################
     def compute_descriptors(self, i, neighs_info, k=None, feat_selectors=None):
         """General compute descriptors for descriptormodel class.
+
+        Parameters
+        ----------
+        i: np.ndarray or list
+            the indices of the elements `i`.
+        neighs_info: pst.Neighs_Info
+            the container of all the information of the neighbourhood.
+        k: int or list (default=None)
+            the perturbations indices we wantto get.
+        feat_selectors: list, tuple or pst.BaseSelector (default=None)
+            the selection information.
+
+        Returns
+        -------
+        descriptors: list
+            the descriptors for each perturbation and element.
+        vals_i: list or np.ndarray
+            the store information index of each element `i`.
+
         """
         ## 0. Prepare list of k
         ks = list(range(self.k_perturb+1)) if k is None else k
@@ -310,6 +468,8 @@ class FeaturesManager:
 #        print t_feat_in, t_feat_out, t_feat_des
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
+        print i_input, ks, self._get_input_features, type(t_feat_in)
+        print '.'*20, desc_i
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
 #        print i, ks, i_input, neighs_info, neighs_info.ks, neighs_info.idxs
         ## 3. Map vals_i
@@ -330,18 +490,83 @@ class FeaturesManager:
     ########################## Main manager functions #########################
     ## Interaction with resulter object
     def initialization_desc(self):
+        """Wrapper to the resulter initialization descriptor measure function.
+
+        Returns
+        -------
+        null_descriptor: dict, list or np.ndarray
+            the empty null descriptor for the given measure.
+
+        """
         return self.resulter.initialization_desc()
 
     def initialization_output(self):
+        """Wrapper to the resulter initialization measure resultant.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
+        """
         return self.resulter.initialization_output()
 
     def _join_descriptors(self, descriptors):
+        """Wrapper to the resulter initialization measure resultant.
+
+        Parameters
+        ----------
+        descriptors: list
+            the final descriptors after computing the associated union of the
+            descriptors of `i` with the ones of its neighbourhood.
+
+        Returns
+        -------
+        descriptors: list
+            the final descriptors after formatting properly.
+
+        """
         return self.resulter._join_descriptors(descriptors)
 
-    def add2result(self, desc, desc_i, vals_i):
-        return self.resulter.add2result(desc, desc_i, vals_i)
+    def add2result(self, measure, desc_i, vals_i):
+        """Wrapper to the resulter for adding the new descriptors computed to
+        the resultant measure.
+
+        Parameters
+        ----------
+        measure: np.ndarray or list
+            the transformed measure computed by the whole spatial descriptor
+            model.
+        desc_i: np.ndarray, list or dict or others
+            the spatial descriptors associated to the element `i`.
+        vals_i: list or np.ndarray
+            the store information index of each element `i`.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
+        """
+        return self.resulter.add2result(measure, desc_i, vals_i)
 
     def to_complete_measure(self, measure):
+        """Wrapper to the resulter for the completing function.
+
+        Parameters
+        ----------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
+        """
         return self.resulter.to_complete_measure(measure)
 
     ######################## Interaction with features ########################
@@ -349,6 +574,22 @@ class FeaturesManager:
     def _get_input_features_constant(self, i, k, typefeats=(0, 0)):
         """Get 'input' features. Get the features of the elements of which we
         want to study their neighbourhood. We consider constant typefeats.
+        That case is under the assumption of constant selection of features.
+
+        Parameters
+        ----------
+        i: int, np.ndarray or list
+            the indices of the elements.
+        k: list
+            perturbations indices we want to get.
+        typefeats: tuple
+            the selectors for the features of the elements `i`.
+
+        Returns
+        -------
+        feats_i: np.ndarray or list
+            the features of the elements `i`.
+
         """
         ## Input mapping
         i_input = self._maps_input[typefeats[0]](i)
@@ -361,6 +602,22 @@ class FeaturesManager:
     def _get_input_features_variable(self, i, k, typefeats=(0, 0)):
         """Get 'input' features. Get the features of the elements of which we
         want to study their neighbourhood. We consider constant typefeats.
+        That case is under the assumption of variable selection of features.
+
+        Parameters
+        ----------
+        i: int, np.ndarray or list
+            the indices of the elements.
+        k: list
+            perturbations indices we want to get.
+        typefeats: tuple or list
+            the selectors for the features of the elements `i`.
+
+        Returns
+        -------
+        feats_i: np.ndarray or list
+            the features of the elements `i`.
+
         """
         ## Preparing input
         i = [[i]] if type(i) == int else i
@@ -368,14 +625,17 @@ class FeaturesManager:
         k_l = 1 if type(k) == int else len(k)
         typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
         feats_i = [[] for kl in range(k_l)]
+        print '`'*20, i_l
         for j in range(i_l):
             ## Input mapping
             i_j = [i[j]] if type(i[j]) == int else i[j]
             i_input = self._maps_input[typefeats[j][0]](i_j)
             ## Retrieve features
             feats_ij = self.features[typefeats[j][1]].compute((i_input, k))
+            print feats_ij, i_input, k
             ## Outformat
             feats_ij = self._maps_output(self, feats_ij)
+            print feats_ij
             for k_j in range(len(feats_ij)):
                 feats_i[k_j].append(feats_ij[k_j][0])
         assert(len(feats_i) == k_l)
@@ -385,6 +645,22 @@ class FeaturesManager:
     def _get_input_features_general(self, i, k, typefeats=(0, 0)):
         """Get 'input' features. Get the features of the elements of which we
         want to study their neighbourhood. We dont consider anything.
+        That case is under no assumtions of selection.
+
+        Parameters
+        ----------
+        i: int, np.ndarray or list
+            the indices of the elements.
+        k: list or np.ndarray
+            perturbations indices we want to get.
+        typefeats: tuple or list
+            the selectors for the features of the elements `i`.
+
+        Returns
+        -------
+        feats_i: np.ndarray or list
+            the features of the elements `i`.
+
         """
         if type(typefeats) == list:
             feats_i = self._get_input_features_variable(i, k, typefeats)
@@ -395,7 +671,24 @@ class FeaturesManager:
     ############################# Output features #############################
     def _get_output_features_constant(self, neighs_info, k, typefeats=(0, 0)):
         """Get 'output' features. Get the features of the elements in the
-        neighbourhood of the elements we want to study."""
+        neighbourhood of the elements we want to study. That case is under
+        assumption of the constant selection of features.
+
+        Parameters
+        ----------
+        neighs_info: pst.Neighs_Info
+            the container of all the information of the neighbourhood.
+        k: list or np.ndarray
+            perturbations indices we want to get.
+        typefeats: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+
+        Returns
+        -------
+        feats_neighs: np.ndarray or list
+            the features of the neighs of the elements `i`.
+
+        """
         ## Neighs info as an object
         neighs_info = ensuring_neighs_info(neighs_info, k)
         ## Input mapping
@@ -408,7 +701,24 @@ class FeaturesManager:
 
     def _get_output_features_variable(self, neighs_info, k, typefeats=(0, 0)):
         """Get 'output' features. Get the features of the elements in the
-        neighbourhood of the elements we want to study."""
+        neighbourhood of the elements we want to study. That case is under
+        assumption of the variable selection of features.
+
+        Parameters
+        ----------
+        neighs_info: pst.Neighs_Info
+            the container of all the information of the neighbourhood.
+        k: list or np.ndarray
+            perturbations indices we want to get.
+        typefeats: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+
+        Returns
+        -------
+        feats_neighs: np.ndarray or list
+            the features of the neighs of the elements `i`.
+
+        """
         ## Neighs info as an object
         neighs_info = ensuring_neighs_info(neighs_info, k)
         ## Loop for all typefeats
@@ -435,7 +745,24 @@ class FeaturesManager:
 
     def _get_output_features_general(self, neighs_info, k, typefeats=(0, 0)):
         """Get 'output' features. Get the features of the elements in the
-        neighbourhood of the elements we want to study."""
+        neighbourhood of the elements we want to study. That case is under
+        no assumption of selection.
+
+        Parameters
+        ----------
+        neighs_info: pst.Neighs_Info
+            the container of all the information of the neighbourhood.
+        k: list or np.ndarray
+            perturbations indices we want to get.
+        typefeats: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+
+        Returns
+        -------
+        feats_neighs: np.ndarray or list
+            the features of the neighs of the elements `i`.
+
+        """
         if type(typefeats) == list:
             feats_neighs =\
                 self._get_output_features_variable(neighs_info, k, typefeats)
@@ -448,7 +775,33 @@ class FeaturesManager:
     def _complete_desc_i_constant(self, i, neighs_info, desc_i, desc_neigh,
                                   vals_i, t_feat_desc):
         """Complete descriptors by interaction of point features and
-        neighbourhood features."""
+        neighbourhood features. That unction is under assumption of constant
+        selection.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        neighs_info:
+            the neighbourhood information of each `i`.
+        desc_i: np.ndarray or list of dict
+            the descriptors associated to the elements `iss` for each
+            perturbation `k`.
+        desc_neighs: np.ndarray or list of dict
+            the descriptors associated to the neighbourhood elements of each
+            `iss` for each perturbation `k`.
+        vals_i: list or np.ndarray
+            the storable index information for each perturbation `k`.
+        t_feat_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        Returns
+        -------
+        descriptors: list
+            the descriptors for each perturbation and element.
+
+        """
         if t_feat_desc[0]:
             descriptors = self.features[t_feat_desc[1]].\
                 complete_desc_i(i, neighs_info, desc_i, desc_neigh, vals_i)
@@ -460,7 +813,33 @@ class FeaturesManager:
     def _complete_desc_i_variable(self, i, neighs_info, desc_i, desc_neigh,
                                   vals_i, t_feat_desc):
         """Complete descriptors by interaction of point features and
-        neighbourhood features. Assumption of variable t_feat_desc."""
+        neighbourhood features. Assumption of variable t_feat_desc. That
+        function is under assumption of variable selection.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        neighs_info:
+            the neighbourhood information of each `i`.
+        desc_i: np.ndarray or list of dict
+            the descriptors associated to the elements `iss` for each
+            perturbation `k`.
+        desc_neighs: np.ndarray or list of dict
+            the descriptors associated to the neighbourhood elements of each
+            `iss` for each perturbation `k`.
+        vals_i: list or np.ndarray
+            the storable index information for each perturbation `k`.
+        t_feat_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        Returns
+        -------
+        descriptors: list
+            the descriptors for each perturbation and element.
+
+        """
         ## Preparing input
         i_l = 1 if type(i) == int else len(i)
         i = [i]*i_l if type(i) == int else i
@@ -469,7 +848,8 @@ class FeaturesManager:
             t_feat_desc = [t_feat_desc]*i_l
         ## Sequential computation
         descriptors = [[] for kl in range(k_l)]
-#        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
+        print vals_i, desc_i, self.k_perturb
+        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
         for j in range(i_l):
             neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
             vals_ij = [vals_i[k][j] for k in range(len(vals_i))]
@@ -491,7 +871,34 @@ class FeaturesManager:
     def _complete_desc_i_general(self, i, neighs_info, desc_i, desc_neigh,
                                  vals_i, t_feat_desc):
         """Complete descriptors by interaction of point features and
-        neighbourhood features. No assumptions about iss and t_feat_desc."""
+        neighbourhood features. No assumptions about iss and t_feat_desc.
+        That function has not assumtions of selection features and
+        descriptormodel.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        neighs_info:
+            the neighbourhood information of each `i`.
+        desc_i: np.ndarray or list of dict
+            the descriptors associated to the elements `iss` for each
+            perturbation `k`.
+        desc_neighs: np.ndarray or list of dict
+            the descriptors associated to the neighbourhood elements of each
+            `iss` for each perturbation `k`.
+        vals_i: list or np.ndarray
+            the storable index information for each perturbation `k`.
+        t_feat_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        Returns
+        -------
+        descriptors: list
+            the descriptors for each perturbation and element.
+
+        """
         if type(t_feat_desc) == list:
             descriptors =\
                 self._complete_desc_i_variable(i, neighs_info, desc_i,
@@ -504,7 +911,21 @@ class FeaturesManager:
 
     ############################### Map_vals_i  ###############################
     def _get_vals_i(self, i, ks):
-        """Get indice to store the final result."""
+        """Get indice to store the final result.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        ks: list
+            perturbations indices we want to get.
+
+        Returns
+        -------
+        vals_i: list or np.ndarray
+            the storable index information for each perturbation `k`.
+
+        """
         #### TODO: extend
         ## 0. Prepare variable needed
         vals_i = []
@@ -529,7 +950,28 @@ class FeaturesManager:
     ## pst.RetrieverManager
     #########################
     def _general_get_type_feat(self, i, typefeats_i=None):
-        """Format properly general typefeats selector information."""
+        """Format properly general typefeats selector information. That
+        function has not assumption of selection information.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        typefeats_i: list, tuple or None (default=None)
+            the selector information of all the selections we have to do
+            in that process for each element `i`.
+
+        Returns
+        -------
+        typefeats_i: tuple or list
+            the selectors for the features of the elements `i`.
+        typefeats_nei: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+        typefeats_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        """
         if typefeats_i is None:
             typefeats_i, typefeats_nei, typefeats_desc = self.selector
             if type(i) == list:
@@ -558,7 +1000,28 @@ class FeaturesManager:
         return typefeats_i, typefeats_nei, typefeats_desc
 
     def _static_get_type_feat(self, i, typefeats_i=None):
-        """Format properly typefeats selector information."""
+        """Format properly typefeats selector information. That function has
+        assumptions of static selection.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        typefeats_i: list, tuple or None (default=None)
+            the selector information of all the selections we have to do
+            in that process for each element `i`.
+
+        Returns
+        -------
+        typefeats_i: tuple or list
+            the selectors for the features of the elements `i`.
+        typefeats_nei: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+        typefeats_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        """
         typefeats_i, typefeats_nei, typefeats_desc = self.selector
 #        if type(i) == list:
 #            typefeats_i = [typefeats_i]*len(i)
@@ -567,7 +1030,27 @@ class FeaturesManager:
         return typefeats_i, typefeats_nei, typefeats_desc
 
     def _selector_get_type_feat(self, i, typefeats_i=None):
-        """Get information only from selector."""
+        """Get information only from selector.
+
+        Parameters
+        ----------
+        i: int, list or np.ndarray
+            the index information.
+        typefeats_i: list, tuple or None (default=None)
+            the selector information of all the selections we have to do
+            in that process for each element `i`.
+
+        Returns
+        -------
+        typefeats_i: tuple or list
+            the selectors for the features of the elements `i`.
+        typefeats_nei: tuple or list
+            the selectors for the features of the neighs of elements `i`.
+        typefeats_desc: tuple or list
+            the selection of the features and descriptormodel to compute the
+            descriptor from desc_i and desc_neighs.
+
+        """
         selector_i = format_selection(self.selector[i])
         typefeats_i, typefeats_nei, typefeats_desc = selector_i
 #        if type(i) == int:
@@ -586,6 +1069,12 @@ class FeaturesManager:
     ###########################################################################
     def add_perturbations(self, perturbations):
         """Adding perturbations to features.
+
+        Parameters
+        ----------
+        perturbations: list or pst.BasePerturbation
+            the perturbation information.
+
         """
         ## 1. Apply perturbations
         for i_ret in range(len(self.features)):
@@ -601,6 +1090,12 @@ class FeaturesManager:
         """Add aggregations to featuremanager. Only it is useful this function
         if there is only one retriever previously and we are aggregating the
         first one.
+
+        Parameters
+        ----------
+        aggfeatures: np.ndarray or list
+            the aggregated features to be stored in order to be managed.
+
         """
         self.features.append(aggfeatures)
 #        ## 0. Get kfeats
@@ -631,24 +1126,34 @@ def _featuresmanager_parsing_creation(feats_info):
     """FeaturesManager instantiation from features information. This function
     transforms features information into a FeaturesManager object.
 
-    Standarts inputs:
-    * Features object
-    * FeaturesManager object
-    * (Features object, pars_featuresManager)
-    * (Features object, pars_featuresManager, descriptormodel)
+    Parameters
+    ----------
+    feats_info: np.ndarray, list, tuple, pst.BaseFeatures, pst.FeaturesManager
+        The features information to create features object. The Standards
+        inputs accepted are:
+            * Features object
+            * FeaturesManager object
+            * (Features object, pars_featuresManager)
+            * (Features object, pars_featuresManager, descriptormodel)
+
+    Returns
+    -------
+    feats_info: pst.FeaturesManager
+        the features manager created by the information given in the input.
+
     """
-    if isinstance(feats_info, Features):
+    if isinstance(feats_info, BaseFeatures):
         feats_info = FeaturesManager(feats_info)
     elif type(feats_info) == list:
-        assert(all([isinstance(e, Features) for e in feats_info]))
+        assert(all([isinstance(e, BaseFeatures) for e in feats_info]))
         feats_info = FeaturesManager(feats_info)
     elif isinstance(feats_info, FeaturesManager):
         pass
     else:
         assert(type(feats_info) == tuple)
-        if isinstance(feats_info[0], Features) or type(feats_info[0]) == list:
+        if isinstance(feats_info[0], BaseFeatures) or type(feats_info[0]) == list:
             if type(feats_info[0]) == list:
-                assert(all([isinstance(e, Features) for e in feats_info[0]]))
+                assert(all([isinstance(e, BaseFeatures) for e in feats_info[0]]))
             assert(type(feats_info[1]) == dict)
             assert(len(feats_info) >= 2)
             if len(feats_info) == 2:
@@ -657,9 +1162,10 @@ def _featuresmanager_parsing_creation(feats_info):
                 assert(len(feats_info) == 3)
                 if type(feats_info[2]) == list:
                     for i in range(len(feats_info[2])):
-                        assert(isinstance(feats_info[2][i], DescriptorModel))
+                        assert(isinstance(feats_info[2][i],
+                                          BaseDescriptorModel))
                 else:
-                    assert(isinstance(feats_info[2], DescriptorModel))
+                    assert(isinstance(feats_info[2], BaseDescriptorModel))
                 pars_features = feats_info[1]
                 pars_features['descriptormodels'] = feats_info[2]
             feats_info = FeaturesManager(feats_info[0], **pars_features)
@@ -679,24 +1185,34 @@ def _features_parsing_creation(feats_info):
     """Features General parsing function. This function transforms any features
     information into a FeaturesManager object.
 
-    Standarts inputs:
-    * np.ndarray
-    * Features object
-    * FeaturesManager object
-    * (np.ndarray, pars_featuresManager)
-    * (np.ndarray, pars_featuresManager, descriptormodel)
-    * (Features object, pars_featuresManager)
-    * (Features object, pars_featuresManager, descriptormodel)
-    * (Features_info tuple, pars_featuresManager)
-    * (Features_info tuple, pars_featuresManager, descriptormodel)
+    Parameters
+    ----------
+    feats_info: np.ndarray, list, tuple, pst.BaseFeatures, pst.FeaturesManager
+        The features information to create features object. The Standards
+        inputs accepted are:
+            * np.ndarray
+            * Features object
+            * FeaturesManager object
+            * (np.ndarray, pars_featuresManager)
+            * (np.ndarray, pars_featuresManager, descriptormodel)
+            * (Features object, pars_featuresManager)
+            * (Features object, pars_featuresManager, descriptormodel)
+            * (Features_info tuple, pars_featuresManager)
+            * (Features_info tuple, pars_featuresManager, descriptormodel)
+
+    Returns
+    -------
+    feats_info: pst.FeaturesManager
+        the features manager created by the information given in the input.
+
     """
     if type(feats_info) == np.ndarray:
         feats_info = _featuresobject_parsing_creation(feats_info)
         feats_info = FeaturesManager(feats_info)
-    elif isinstance(feats_info, Features):
+    elif isinstance(feats_info, BaseFeatures):
         feats_info = FeaturesManager(feats_info)
     elif type(feats_info) == list:
-        assert(all([isinstance(e, Features) for e in feats_info]))
+        assert(all([isinstance(e, BaseFeatures) for e in feats_info]))
         feats_info = FeaturesManager(feats_info)
     elif isinstance(feats_info, FeaturesManager):
         pass
@@ -706,7 +1222,7 @@ def _features_parsing_creation(feats_info):
         if type(feats_info[0]) == np.ndarray:
             feats_info = _featuresobject_parsing_creation(feats_info)
             feats_info = FeaturesManager(feats_info)
-        elif isinstance(feats_info[0], Features):
+        elif isinstance(feats_info[0], BaseFeatures):
             feats_info = _featuresmanager_parsing_creation(feats_info)
         elif type(feats_info[0]) == list:
             feats_info = _featuresmanager_parsing_creation(feats_info)

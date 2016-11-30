@@ -18,6 +18,21 @@ class SpatialDescriptorModelProcess(Processer):
 
     def __init__(self, spdescmodel, logfile, lim_rows=0, n_procs=0,
                  prompt_inform=False):
+        """The spatialdescriptor model process instantiation.
+
+        Parameters
+        ----------
+        logfile: str
+            the file we want to log all the process.
+        lim_rows: int (default=0)
+            the limit number of rows uninformed. If is 0, there are not
+            partial information of the process.
+        n_procs: int (default=0)
+            the number of cpu used.
+        prompt_inform: boolean (default=False)
+            if we want to show the logging information in the terminal.
+
+        """
         self._initialization()
         # Logfile
         self.logfile = logfile
@@ -35,6 +50,12 @@ class SpatialDescriptorModelProcess(Processer):
         different possibilities:
         - Parallel
         - Sequential
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
         """
         ## 0. Setting needed variables (TODO: cambiar sptypemodel)
         m_aux0 = self.sp_descriptormodel.featurers._maps_vals_i.sptype
@@ -43,34 +64,49 @@ class SpatialDescriptorModelProcess(Processer):
         t00 = self.setting_global_process()
 
         if self.n_procs in [-1, 0, 1, None]:
-            desc = self._compute_sequential()
+            measure = self._compute_sequential()
         else:
-            desc = self._compute_parallel()
+            measure = self._compute_parallel()
 
         ## 1. Closing process
         # Formatting result
-        desc = self.sp_descriptormodel.featurers.to_complete_measure(desc)
+        measure =\
+            self.sp_descriptormodel.featurers.to_complete_measure(measure)
         # Stop tracking
         self.close_process(t00)
-        return desc
+        return measure
 
     def _compute_sequential(self):
-        """Main function for building the index of the selected model."""
+        """Main function for building the index of the selected model.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
+        """
         ## 1. Computation of the measure (parallel if)
-        desc = self.sp_descriptormodel.featurers.initialization_output()
+        measure = self.sp_descriptormodel.featurers.initialization_output()
         i = 0
         # Begin to track the process
         t0, bun = self.setting_loop(self.sp_descriptormodel.n_inputs)
         for desc_i, vals_i in self.sp_descriptormodel.compute_nets_i():
-            desc = self.sp_descriptormodel.featurers.\
-                add2result(desc, desc_i, vals_i)
+            measure = self.sp_descriptormodel.featurers.\
+                add2result(measure, desc_i, vals_i)
             ## Finish to track this process
             t0, bun = self.messaging_loop(i, t0, bun)
             i += 1
-        return desc
+        return measure
 
     def _compute_parallel(self):
-        """Compute in parallel."""
+        """Compute in parallel.
+
+        Returns
+        -------
+        measure: np.ndarray or list
+            the measure computed by the whole spatial descriptor model.
+
+        """
         ## Compute slicers
         idxs = create_indices_slicers(self.sp_descriptormodel._pos_inputs,
                                       self.n_procs)
@@ -82,9 +118,9 @@ class SpatialDescriptorModelProcess(Processer):
             aux_sp.set_loop(idxs[i])
             spdescs.append(aux_sp)
 
-        desc = computer_function(spdescs, self.n_procs)
+        measure = computer_function(spdescs, self.n_procs)
         # Joinning result
-        return desc
+        return measure
 
 
 def create_indices_slicers(main_slicer, n_procs):

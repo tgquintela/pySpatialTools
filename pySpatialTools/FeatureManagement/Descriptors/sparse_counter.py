@@ -23,7 +23,16 @@ class SparseCounter(CountDescriptor):
     _nullvalue = 0
 
     def __init__(self, type_infeatures=None, type_outfeatures=None):
-        """The inputs are the needed to compute model_dim."""
+        """The inputs are the needed to compute model_dim.
+
+        Parameters
+        ----------
+        type_infeatures: str, optional (default=None)
+            type of the input features.
+        type_outfeatures: str, optional (default=None)
+            type of the output features.
+
+        """
         ## Global initialization
         self.default_initialization()
         ## Initial function set
@@ -41,12 +50,24 @@ class SparseCounter(CountDescriptor):
     ###########################################################################
     ##################### Non-compulsary main functions #######################
     ###########################################################################
-    def to_complete_measure(self, corr_loc):
+    def to_complete_measure(self, measure):
         """Main function to compute the complete normalized measure of pjensen
         from the matrix of estimated counts.
+
+        Parameters
+        ----------
+        measure: list [ks][vals_i]{feats}
+            the measure computed by the whole spatial descriptor model.
+
+        Returns
+        -------
+        measure:  list of scipy.sparse
+            the transformed measure computed by the whole spatial descriptor
+            model.
+
         """
-        corr_loc = sparse_dict_completer(corr_loc)
-        return corr_loc
+        measure = sparse_dict_completer(measure)
+        return measure
 
     ###########################################################################
     ########################## Auxiliary functions ############################

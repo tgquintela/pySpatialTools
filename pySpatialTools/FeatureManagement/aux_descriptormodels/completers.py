@@ -14,6 +14,19 @@ from out_formatters import count_out_formatter_dict2array
 def sparse_dict_completer(measure, global_info=None):
     """Sparse completer transform the dictionaries into a sparse matrices.
 
+    Parameters
+    ----------
+    measure: list [ks][vals_i]{feats}
+        the measure computed by the descriptormodel and joined by the resulter.
+    global_info: optional (default=None)
+        the global information we want to use in order to transform the
+        measure.
+
+    Returns
+    -------
+    measure: list of scipy.sparse
+        the transformed result measure.
+
     See also:
     ---------
     append_addresult_function
@@ -61,6 +74,19 @@ def sparse_dict_completer(measure, global_info=None):
 def sparse_dict_completer_unknown(measure, global_info=None):
     """Sparse completer transform the dictionaries into a sparse matrices.
 
+    Parameters
+    ----------
+    measure: list [ks][vals_i]{feats}
+        the measure computed by the descriptormodel and joined by the resulter.
+    global_info: optional (default=None)
+        the global information we want to use in order to transform the
+        measure.
+
+    Returns
+    -------
+    measure: list of scipy.sparse
+        the transformed result measure.
+
     See also:
     ---------
     replacelist_addresult_function
@@ -103,13 +129,43 @@ def sparse_dict_completer_unknown(measure, global_info=None):
 
 
 def null_completer(measure, global_info=None):
-    "Do not change the measure."
+    """Do not change the measure.
+
+    Parameters
+    ----------
+    measure: optional
+        the measure computed by the descriptormodel and joined by the resulter.
+    global_info: optional (default=None)
+        the global information we want to use in order to transform the
+        measure.
+
+    Returns
+    -------
+    measure: optional
+        the equal measure input as a result of the spatial descriptormodel.
+
+    """
     return measure
 
 
 def null_completer_concatenator(measure, global_info=None):
     """Don not change anything, only concatenate all the partial descriptors
-    for each vals_i."""
+    for each vals_i.
+
+    Parameters
+    ----------
+    measure: list of np.ndarray
+        the measure computed by the descriptormodel and joined by the resulter.
+    global_info: optional (default=None)
+        the global information we want to use in order to transform the
+        measure.
+
+    Returns
+    -------
+    measure: np.ndarray
+        a concatenate np.ndarray of the input measure.
+
+    """
     return np.concatenate(measure)
 
 
@@ -117,6 +173,20 @@ def weighted_completer(measure, global_info):
     """Weight the different results using the global info.
     It is REQUIRED that the global_info is an array of the same length as the
     measure.
+
+    Parameters
+    ----------
+    measure: list of np.ndarray
+        the measure computed by the descriptormodel and joined by the resulter.
+    global_info: optional (default=None)
+        the global information we want to use in order to transform the
+        measure.
+
+    Returns
+    -------
+    measure: np.ndarray
+        a weighted measure computation.
+
     """
     if global_info is None:
         return measure
