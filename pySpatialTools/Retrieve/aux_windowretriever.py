@@ -20,10 +20,40 @@ from pySpatialTools.utils.util_external.parallel_tools import split_parallel
 ########################### Main auxiliar functions ###########################
 ###############################################################################
 def create_window_utils(shape_):
+    """Create the basic utilities for windows retriever.
+
+    Parameters
+    ----------
+    shape_: tuple
+        the size of the grid.
+
+    Returns
+    -------
+    map2indices: function
+        function which maps the spatial information to indices.
+    map2locs: function
+        function which maps the indices to spatial information.
+    WindRetriever: instance Object
+        the core-retriever for windows retrieving.
+
+    """
     ## Create function for mapping
     shapes = np.array(list(np.cumprod(shape_[1:][::-1])[::-1]) + [1])
 
     def map2indices(x):
+        """Mapper function which transforms locations into indices.
+
+        Parameters
+        ----------
+        x: np.ndarray
+            the locations.
+
+        Returns
+        -------
+        idx: indices
+            the indices related with x locations.
+
+        """
 #        assert(len(x) == ndim)
 #        # Check if there is a correct coordinate
 #        if np.all(x >= np.array(shape_)):
@@ -35,6 +65,19 @@ def create_window_utils(shape_):
         return idx
 
     def map2locs(idx):
+        """Mapper function which transforms indices into locations.
+
+        Parameters
+        ----------
+        idx: indices
+            the indices related with coord locations.
+
+        Returns
+        -------
+        coord: np.ndarray
+            the locations related with the given indices.
+
+        """
         if idx < 0 or idx >= np.prod(shape_):
             raise IndexError("Indices out of bounds.")
         coord = np.zeros(len(shapes))
@@ -54,6 +97,7 @@ def create_window_utils(shape_):
 
         @property
         def data(self):
+            """Retrivable data."""
             n = np.prod(self.shape)
             ndim = len(self.shape)
             locs = np.zeros((n, ndim)).astype(int)
@@ -64,12 +108,39 @@ def create_window_utils(shape_):
             return locs
 
         def get_indices(self, loc):
+            """Mapper function which transforms locations into indices.
+
+            Parameters
+            ----------
+            x: np.ndarray
+                the locations.
+
+            Returns
+            -------
+            idx: indices
+                the indices related with x locations.
+
+            """
             return self.map2indices_iss(loc)
 
         def get_locations(self, idx):
+            """Get locations from indices.
+
+            Parameters
+            ----------
+            idx: indices
+                the indices related with coord locations.
+
+            Returns
+            -------
+            coord: np.ndarray
+                the locations related with the given indices.
+
+            """
             return self.map2locs_iss(idx)
 
         def __len__(self):
+            """Number of retrievable elements."""
             return np.prod(self.shape)
 
         def map2indices_iss(self, xss):
@@ -90,7 +161,32 @@ def create_window_utils(shape_):
 
 
 def windows_iteration(shape, max_bunch, l, center, excluded):
-    """Main iteration over all the grid by number of neighs."""
+    """Main iteration over all the grid by number of neighs.
+
+    Parameters
+    ----------
+    shape: tuple
+        the size of the grid.
+    max_bunch: int
+        maximum number of elements we want to retrieve their neighbours
+        at the same time.
+    l: int
+        size of the windows to retrieve.
+    center: int
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    inds: np.ndarray
+        the indices of the elements which we want to retrieve their neighbours.
+    neighs: np.ndarray
+        the neighbours of each inds.
+    rel_pos: np.ndarray
+        the relative positions of each neighbours to its retrieved element.
+
+    """
     ## Splitting by special corner and border points
     shapes = np.array(list(np.cumprod(shape[1:][::-1])[::-1]) + [1])
     coord2ind = create_map2indices(shape)
@@ -127,10 +223,36 @@ def windows_iteration(shape, max_bunch, l, center, excluded):
 
 ############################## Mapper coordinates #############################
 ###############################################################################
-def create_map2indices(shape):
-    shapes = np.array(list(np.cumprod(shape[1:][::-1])[::-1]) + [1])
+def create_map2indices(shape_):
+    """Create the basic utilities for windows retriever.
+
+    Parameters
+    ----------
+    shape_: tuple
+        the size of the grid.
+
+    Returns
+    -------
+    map2indices: function
+        function which maps the spatial information to indices.
+
+    """
+    shapes = np.array(list(np.cumprod(shape_[1:][::-1])[::-1]) + [1])
 
     def map2indices(x):
+        """Mapper function which transforms locations into indices.
+
+        Parameters
+        ----------
+        x: np.ndarray
+            the locations.
+
+        Returns
+        -------
+        idx: indices
+            the indices related with x locations.
+
+        """
         # Check if there is a correct coordinate
         try:
             idx = np.sum(x*shapes, 1).astype(int)
@@ -143,15 +265,37 @@ def create_map2indices(shape):
 ################################ Main functions ###############################
 ###############################################################################
 # Main function regular core
-def get_indices_constant_regular(shape, coord2ind, l, center, excluded=False):
-    """Get the regular neighs matrix."""
+def get_indices_constant_regular(shape_, coord2ind, l, center, excluded=False):
+    """Get the regular neighs matrix.
+
+    Parameters
+    ----------
+    shape_: tuple
+        the size of each dimension.
+    coord2ind: function
+        function which maps the spatial information to indices.
+    l: int
+        size of the windows to retrieve.
+    center: int
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    neighs_coord: np.ndarray
+        the neighbours coordinates.
+    rel_pos: np.ndarray
+        the distance of each neighbours to its retrieved element.
+
+    """
     ## Get extremes regular neighs
     c = center
-    l = np.array(l) if '__len__' in dir(l) else np.array(len(shape)*[l])
-    c = np.array(c) if '__len__' in dir(c) else np.array(len(shape)*[c])
-    extremes = get_extremes_regularneighs_grid(shape, l, c)
+    l = np.array(l) if '__len__' in dir(l) else np.array(len(shape_)*[l])
+    c = np.array(c) if '__len__' in dir(c) else np.array(len(shape_)*[c])
+    extremes = get_extremes_regularneighs_grid(shape_, l, c)
     indices = get_core_indices(extremes, coord2ind)
-    relative_neighs = get_relative_neighs(shape, l, c, excluded)
+    relative_neighs = get_relative_neighs(shape_, l, c, excluded)
     rel_pos = get_relative_neighs_comb(relative_neighs)
     relative_neighs = [coord2ind(np.array(rel)) for rel in rel_pos]
 #    indices = []
@@ -162,14 +306,37 @@ def get_indices_constant_regular(shape, coord2ind, l, center, excluded=False):
 
 
 # Main function borders and corners
-def get_irregular_indices_grid(shape, l, center, excluded):
+def get_irregular_indices_grid(shape_, l, center, excluded):
+    """Get irregular information to get indices of the grid.
+
+    Parameters
+    ----------
+    shape_: tuple
+        the size of each dimension.
+    l: int
+        size of the windows to retrieve.
+    center: int (default = 0)
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    extremes: np.ndarray (dim, 2)
+        the extremes for each dimension.
+    ranges: list
+        the consecutive elements for each dimension.
+    sizes: np.ndarray
+        the size of each bunch of elements.
+
+    """
     c = center
-    l = np.array(l) if '__len__' in dir(l) else np.array(len(shape)*[l])
-    c = np.array(c) if '__len__' in dir(c) else np.array(len(shape)*[c])
-    diff = get_relative_neighs(shape, l, c, excluded)
-    extremes, ranges = new_get_irregular_extremes(diff, shape)
+    l = np.array(l) if '__len__' in dir(l) else np.array(len(shape_)*[l])
+    c = np.array(c) if '__len__' in dir(c) else np.array(len(shape_)*[c])
+    diff = get_relative_neighs(shape_, l, c, excluded)
+    extremes, ranges = new_get_irregular_extremes(diff, shape_)
     extremes, ranges =\
-        new_get_borders_from_irregular_extremes(extremes, shape, diff)
+        new_get_borders_from_irregular_extremes(extremes, shape_, diff)
     sizes = np.array([np.prod([len(e) for e in r]) for r in ranges])
     return extremes, ranges, sizes
 
@@ -216,7 +383,25 @@ def get_indices_from_borders(borders, coord2ind):
 
 
 def new_get_borders_from_irregular_extremes(extremes, shape, grange):
-    """Get all the corners and border slices."""
+    """Get all the corners and border slices.
+
+    Parameters
+    ----------
+    extremes: np.ndarray (dim, 2)
+        the extremes for each dimension.
+    shape: tuple
+        the size of each dimension.
+    grange: array_like (dim, elements)
+        the information to generate ranges for each dimension.
+
+    Returns
+    -------
+    points_corners: list
+        the coordinates of the corners.
+    ranges: list
+        the consecutive elements for each dimension.
+
+    """
     ndim = len(extremes)
     corners, ranges = [], []
     for dim in range(ndim):
@@ -280,7 +465,21 @@ def new_get_irregular_extremes(diff, shape):
 #################### Main auxiliar central core functions #####################
 ###############################################################################
 def get_core_indices(extremes, coord2ind):
-    """Get the indices of the extremes."""
+    """Get the indices of the extremes.
+
+    Parameters
+    ----------
+    extremes: np.ndarray (dim, 2)
+        the extremes for each dimension.
+    coord2ind: function
+        function which maps the spatial information to indices.
+
+    Returns
+    -------
+    indices: np.ndarray
+        the indices of all the elements between that extremes.
+
+    """
     ## 0. Get formatted indices of extrems
     ndim = len(extremes)
     core = [range(extremes[dim][0], extremes[dim][1]) for dim in range(ndim)]
@@ -293,7 +492,25 @@ def get_core_indices(extremes, coord2ind):
 
 
 def get_extremes_regularneighs_grid(shape, l, center, excluded=False):
-    """Get the extremes points of the regularneighs grid."""
+    """Get the extremes points of the regularneighs grid.
+
+    Parameters
+    ----------
+    shape: tuple
+        the size of each dimension.
+    l: int
+        size of the windows to retrieve.
+    center: int (default = 0)
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    extremes: np.ndarray (dim, 2)
+        the extremes for each dimension.
+
+    """
     w_l, c = l, center
     w_l = np.array(l) if '__len__' in dir(l) else np.array(len(shape)*[l])
     c = np.array(c) if '__len__' in dir(c) else np.array(len(shape)*[c])
@@ -330,7 +547,31 @@ def get_relative_neighs_comb(ranges):
 
 def generate_grid_neighs_coord(coords, shape, ndim, l, center=0,
                                excluded=False):
-    """Generation of neighs for different coords."""
+    """Generation of neighs for different coords.
+
+    Parameters
+    ----------
+    coords: np.ndarray
+        the coordinates we want to obtain its neighs.
+    shape: tuple
+        the size of each dimension.
+    ndim: int
+        the number of dimensions.
+    l: int
+        size of the windows to retrieve.
+    center: int (default = 0)
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    neighs_coords: np.ndarray
+        the neighbours coordinates.
+    rel_poss: np.ndarray
+        the distance of each neighbours to its retrieved element.
+
+    """
     ## Preparation inputs
     coords = np.array(coords).astype(int)
     if len(coords.shape) != 2:
@@ -348,7 +589,31 @@ def generate_grid_neighs_coord(coords, shape, ndim, l, center=0,
 
 def generate_grid_neighs_coord_i(coord, shape, ndim, l, center=0,
                                  excluded=False):
-    """Generation of neighbours from a point and the pars_ret."""
+    """Generation of neighbours from a point and the pars_ret.
+
+    Parameters
+    ----------
+    coord: np.ndarray
+        the coordinates we want to obtain its neighs.
+    shape: tuple
+        the size of each dimension.
+    ndim: int
+        the number of dimensions.
+    l: int
+        size of the windows to retrieve.
+    center: int (default = 0)
+        the place of the center.
+    excluded: boolean (default = False)
+        if we want to exclude the element `i`.
+
+    Returns
+    -------
+    neighs_coord: np.ndarray
+        the neighbours coordinates.
+    rel_pos: np.ndarray
+        the relative positions of each neighbours to its retrieved element.
+
+    """
     ## Format and check inputs
     coord = coord.ravel()
     c = center

@@ -23,7 +23,7 @@ from collectionretrievers import RetrieverManager
 from general_retriever import GeneralRetriever
 
 ## Import useful functions
-from aux_retriever import NullRetriever
+from aux_retriever import NullCoreRetriever
 from dummy_retrievers import DummyLocObject
 
 ## Import retriever parsing utils

@@ -9,7 +9,7 @@ Auxialiar functions for retrieving.
 import numpy as np
 
 
-class NullRetriever:
+class NullCoreRetriever:
     """Dummy null retriever container. It gives the structure desired by the
     retrievers classes to work properly.
     """
@@ -19,7 +19,14 @@ class NullRetriever:
 
 
 def _check_retriever(retriever):
-    """
+    """The checker function to assert that the retriever object input is well
+    formatted for this package.
+
+    Parameters
+    ----------
+    retriever: pst.BaseRetriever
+        the retriever object we want to check.
+
     Conditions (code checker function)
     ----------
     self.retriever has data property
@@ -27,6 +34,7 @@ def _check_retriever(retriever):
     self.retriever[i].data has __len__ function.
     self.retriever has _default_ret_val property
     self.__init__ has to call to _initialization()
+
     """
 
     ## 0. Functions needed
@@ -72,8 +80,23 @@ def _check_retriever(retriever):
 def _list_autoexclude(to_exclude_elements, neighs, dists):
     """Over-writable function to exclude the own elements from the retrieved
     set.
-    * neighs {list form} [iss][nei]
-    * dists {listform} [iss][nei][dim]
+
+    Parameters
+    ----------
+    to_exclude_elements: list
+        the list of the elements we want to exclude.
+    neighs: list [iss][nei]
+        the neighbour id for each element.
+    dists: list [iss][nei][dim]
+        the neighbour distance for each element.
+
+    Returns
+    -------
+    neighs: list [iss][nei]
+        the neighbour id for each element.
+    dists: list [iss][nei][dim]
+        the neighbour distance for each element.
+
     """
     neighs, dists = list(neighs), list(dists) if dists is not None else dists
     for iss_i in range(len(to_exclude_elements)):
@@ -95,7 +118,23 @@ def _list_autoexclude(to_exclude_elements, neighs, dists):
 def _array_autoexclude(to_exclude_elements, neighs, dists):
     """Over-writable function to exclude the own elements from the retrieved
     set.
-    * neighs {array form} (iss, nei)
+
+    Parameters
+    ----------
+    to_exclude_elements: list
+        the list of the elements we want to exclude.
+    neighs: np.ndarray (iss, nei)
+        the neighbour id for each element.
+    dists: list [iss][nei][dim]
+        the neighbour distance for each element.
+
+    Returns
+    -------
+    neighs: np.ndarray [iss][nei]
+        the neighbour id for each element.
+    dists: list [iss][nei][dim] or np.ndarray (iss, nei, dim)
+        the neighbour distance for each element.
+
     """
     neighs, dists = _list_autoexclude(to_exclude_elements, neighs, dists)
     ## Transformation to array
@@ -106,6 +145,25 @@ def _array_autoexclude(to_exclude_elements, neighs, dists):
 
 
 def _general_autoexclude(to_exclude_elements, neighs, dists):
+    """General autoexclude function. No assumption about type of inputs.
+
+    Parameters
+    ----------
+    to_exclude_elements: list
+        the list of the elements we want to exclude.
+    neighs: np.ndarray [iss][nei]
+        the neighbour id for each element.
+    dists: list [iss][nei][dim]
+        the neighbour distance for each element.
+
+    Returns
+    -------
+    neighs: list [iss][nei] or np.ndarray (iss, nei)
+        the neighbour id for each element.
+    dists: list [iss][nei][dim] or np.ndarray (iss, nei, dim)
+        the neighbour distance for each element.
+
+    """
     if type(neighs) == np.ndarray:
         neighs, dists = _array_autoexclude(to_exclude_elements, neighs, dists)
     elif type(neighs) == list:

@@ -5,9 +5,10 @@ Retrievers
 The objects to retrieve neighbours in topological space or precomputed
 mapped relations.
 The retrievers can be defined in different topologic spaces.
-This class acts as a wrapper to the core definition of this retrievers. In
+This class acts as a wrapper to the core definition of these retrievers. In
 this class are coded all the structure and administrative stuff in order to
-manage and optimize the retrieve of neighbourhood.
+manage and optimize the retrieve of neighbourhood given flexibility to the
+user.
 
 Structure:
 ----------
@@ -28,7 +29,6 @@ Structure:
 Main Functionalities
 --------------------
 Function to retrieve required information to retrieve neighbourhood:
-
 get_loc_i: function which is useful to get locations from the data input
     pool using locations itself or indices.
 get_indice_i: function which serves to get indices of the pool of data
@@ -45,11 +45,15 @@ Functions to retrieve neighbourhood:
 retrieve_neighs: the main function to retrieve the neighbourhood. It
     accepts as parameters the loc_i (information of the element i of
     which we want to get its neighbourhood), info_i (retrieving
-    information), 
+    information), ifdistance (retrieve dists), k (compute the
+    perturbations k) and output (which output selection apply)
 
 Functions to format neighbourhood information
-_exclude_auto:
-
+_exclude_auto: the main function to exclude the element which we call to
+    retrieve its neighbourhood.
+_format_output: the main function to format the output and prepare the
+    retrieved result in order to be packed in the pst.Neighs_Info class
+    and to be delivered to the user.
 
 
 TODO:
@@ -79,13 +83,24 @@ arraytypes = [np.ndarray, list]
 inttypes = [int, np.int32, np.int64]
 
 
-class Retriever:
+class BaseRetriever:
     """Class which contains the retriever of elements.
     """
-    __name__ = 'pySpatialTools.Retriever'
+    __name__ = 'pySpatialTools.BaseRetriever'
 
     ######################## Retrieve-driven retrieve #########################
     def set_iter(self, info_ret=None, max_bunch=None):
+        """Set iteration properties.
+
+        Parameters
+        ----------
+        info_ret: optional or None (default)
+            the information which defines the neighborhood regarding the
+            retrieve neighborhood model selected.
+        max_bunch: int or None (default)
+            the maximum number of retrieved indices at the same time.
+
+        """
         ## Inforet management
         info_ret = self._info_ret if info_ret is None else info_ret
         self._info_ret = info_ret
@@ -99,6 +114,16 @@ class Retriever:
         self._max_bunch = max_bunch
 
     def __iter__(self):
+        """Iteration which secuencially retrive neighbours in order.
+
+        Returns
+        -------
+        idxs: list or np.ndarray
+            the indices of the retrieved neighborhoods.
+        neighs: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         ## Prepare iteration
         bool_input_idx, constant_info = True, True
         self._format_general_information(bool_input_idx, constant_info)
@@ -115,6 +140,20 @@ class Retriever:
         more specific functions designed in the specific classes and methods.
         This function is composed by mutable functions in order to take profit
         of saving times excluding flags. It assumes staticneighs.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        output: int (default = 0)
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
         """
         ## 1. Retrieve neighs
         neighs, dists = self._retrieve_neighs_spec(i_loc, {})
@@ -123,7 +162,8 @@ class Retriever:
         neighs_info = self._format_output(i_loc, neighs, dists, output)
         ## 3. Format neighs_info
         self.neighs_info._reset_stored()
-#        print 'setting:', i_loc, neighs_info, type(dists), dists, self._ifdistance, type(neighs_info[0])
+#        print 'setting:', i_loc, neighs_info, type(dists), dists
+#        print self._ifdistance, type(neighs_info[0])
         self.neighs_info.set(neighs_info, self.get_indice_i(i_loc))
         assert(self.staticneighs == self.neighs_info.staticneighs)
         assert(self.staticneighs)
@@ -140,6 +180,20 @@ class Retriever:
         This function is composed by mutable functions in order to take profit
         of saving times excluding flags. It assumes different preset
         perturbations to retrieve.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        output: int
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
         """
         neighs_info = []
         ks = list(range(self.k_perturb+1))
@@ -164,6 +218,27 @@ class Retriever:
                                  k=None, output=0):
         """Retrieve neighs and distances. This function acts as a wrapper to
         more specific functions designed in the specific classes and methods.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        info_i: dict or other (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        k: int or list or np.ndarray or None (default)
+            the k perturbations we want to get.
+        output: int (default = 0)
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
         """
         assert(not self._constant_ret)
         ## 0. Prepare variables
@@ -223,6 +298,32 @@ class Retriever:
 
     def _format_inputs_retriever(self, i_loc, info_i, ifdistance, k, output):
         """Format inputs retriever check and format the inputs for retrieving.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        ifdistance: boolean or None
+            if we want to retrieve distance or not.
+        k: int or None
+            the number of perturbations.
+        output: int
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        ifdistance: boolean
+            if we want to retrieve distance or not.
+        ks: list
+            the perturbations indices.
+
         """
         # Prepare information retrieve
 #        print 'input', info_i
@@ -244,7 +345,14 @@ class Retriever:
     ######################### Perturbation management #########################
     ###########################################################################
     def add_perturbations(self, perturbations):
-        """Add perturbations."""
+        """Add perturbations.
+
+        Parameters
+        ----------
+        perturbations: pst.BasePerturbation or list
+            the perturbations we want to apply.
+
+        """
         perturbations = ret_filter_perturbations(perturbations)
         assert(type(perturbations) == list)
         for p in perturbations:
@@ -257,7 +365,14 @@ class Retriever:
         self._format_neighs_info(self.bool_input_idx)
 
     def _format_perturbation(self, perturbations):
-        """Format initial perturbations."""
+        """Format initial perturbations.
+
+        Parameters
+        ----------
+        perturbations: pst.BasePerturbation or list
+            the perturbations we want to apply.
+
+        """
         if perturbations is None:
             def _map_perturb(x):
                 if x != 0:
@@ -301,7 +416,14 @@ class Retriever:
 
     def _add_perturbated_retrievers(self, perturbation):
         """Add a perturbated retriever in self.retriever using the class
-        function self._define_retriever."""
+        function self._define_retriever.
+
+        Parameters
+        ----------
+        perturbation: pst.BasePerturbation
+            a perturbation we want to apply.
+
+        """
         if perturbation._categorytype == 'location':
             self.staticneighs = False
             self._format_neighs_info(self.bool_input_idx)
@@ -318,6 +440,7 @@ class Retriever:
 
     @property
     def k_perturb(self):
+        """Number of perturbations applied."""
         return np.sum(self._dim_perturb)-1
 
     ######################### Aggregation management ##########################
@@ -364,9 +487,21 @@ class Retriever:
         _check_retriever(self)
 
     def _format_general_information(self, bool_input_idx, constant_info):
-        """Assumption parameters:
+        """Format the whole information which defines the retriever process.
+
+        Assumption parameters that has to be set previously:
         - self._info_ret
         - self.k_perturb
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+        constant_info: boolean or None
+            if the information which defines the retrieved neighborhood is
+            always the same.
+
         """
 #        print '9'*15, self._ifdistance
         ## Retrieve information getters and functions
@@ -392,7 +527,20 @@ class Retriever:
     ## in order to be efficient and do the proper work.
     ###################### Output information formatting ######################
     def _format_output_information(self, autoexclude, ifdistance, relativepos):
-        """Format functions to use in output creation."""
+        """Format functions to use in output creation.
+
+        Parameters
+        ----------
+        autoexclude: boolean
+            if we want to exclude from the neighborhood retrieved the point we
+            query for its neighborhood. That depends on the properties of the
+            core retriever.
+        ifdistance: boolean
+            if we want to retrieve distance or not.
+        relativepos: pst.BaseRelativePos or None
+            the relative positioner.
+
+        """
         ## Autoexclude managing
         self._autoexclude = autoexclude
         if autoexclude:
@@ -411,7 +559,18 @@ class Retriever:
             self._apply_relative_pos = self._general_relative_pos
 
     def _format_exclude(self, bool_input_idx, constant_neighs):
-        """Format the excluding auto elements."""
+        """Format the excluding auto elements.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+        constant_info: boolean or None
+            if the information which defines the retrieved neighborhood is
+            always the same.
+
+        """
         ## Inputs
         if bool_input_idx is True:
             self._build_excluded_elements =\
@@ -440,7 +599,21 @@ class Retriever:
     ####################### Core interaction formatting #######################
     ## Format information retrieve getters
     def _format_retriever_info(self, info_ret, info_f, constant_info):
-        """Format properly the retriever information."""
+        """Format properly the retriever information.
+
+        Parameters
+        ----------
+        info_ret: optional
+            parameter which defines the neighborhood given the neighborhood
+            model.
+        info_f: function
+            the function which defines the neighborhood given the neighborhood
+            model.
+        constant_info: boolean or None
+            if the information which defines the retrieved neighborhood is
+            always the same.
+
+        """
         if type(info_ret).__name__ == 'function':
             self._info_f = info_ret
             self._info_ret = self._default_ret_val
@@ -467,6 +640,19 @@ class Retriever:
         WARNING: Force to transform info_ret information to the types
         similar to default retriever val `_default_ret_val`. This casting
         could produce errors in not considered cases.
+
+        Parameters
+        ----------
+        info_ret: optional
+            the parameter which defines the neighborhood given the neighborhood
+            model.
+
+        Returns
+        -------
+        info_ret: optional
+            the parameter which defines the neighborhood given the neighborhood
+            model.
+
         """
         logi_array = type(self._default_ret_val) in arraytypes
         logi_number = type(self._default_ret_val) in [np.float]+inttypes
@@ -488,7 +674,21 @@ class Retriever:
         return info_ret
 
     def _detect_constant_info_ret(self, info_ret=None):
-        """Detect if the information is constant or not."""
+        """Detect if the information is constant or not.
+
+        Parameters
+        ----------
+        info_ret: optional
+            the parameter which defines the neighborhood given the neighborhood
+            model.
+
+        Returns
+        -------
+        logi_cte: boolean
+            gives the information if the is constant retriever parameter or it
+            will depend on the element.
+
+        """
         ## TODO: len(info_ret) == len(self.data_input):
         if info_ret is None:
             info_ret = self._info_ret
@@ -523,6 +723,15 @@ class Retriever:
             self._retrieve_neighs_spec = self._retrieve_neighs_general_spec
 
     def _format_getters(self, bool_input_idx):
+        """Format getters information.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+
+        """
         ## Format retrieve locs and indices
         self._format_get_loc_i(bool_input_idx)
         self._format_get_indice_i(bool_input_idx)
@@ -532,13 +741,57 @@ class Retriever:
     ## information by formatting the class Neighs_Info
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
-        """Over-writtable function."""
+        """Over-writtable function. It is a function that given some of the
+        properties of how the core-retriever is going to give us the
+        information of the neighborhood.
+
+        Parameters
+        ----------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        Returns
+        -------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         return format_level, type_neighs, type_sp_rel_pos
 
     def _format_neighs_info(self, bool_input_idx, format_level=None,
                             type_neighs=None, type_sp_rel_pos=None):
         """Format neighs_info object in order to have better improvement and
         robusticity in the program.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
         """
         ## Preformatting neighs_info
         format_level, type_neighs, type_sp_rel_pos =\
@@ -577,7 +830,18 @@ class Retriever:
                                        type_sp_rel_pos=type_sp_rel_pos)
 
     def set_neighs_info(self, type_neighs, type_sp_rel_pos):
-        """Utility function in order to reset neighs_info types."""
+        """Utility function in order to reset neighs_info types.
+
+        Parameters
+        ----------
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         self.neighs_info.set_types(type_neighs, type_sp_rel_pos)
 
     ######################### Input-output formatting #########################
@@ -585,8 +849,29 @@ class Retriever:
     ## required spatial elements and to adapt the input information to retrieve
     ## its neighbourhood.
     def _format_maps(self, input_map, output_map):
+        """Format maps for transform the input and the output to give more
+        flexibility.
+
+        Parameters
+        ----------
+        input_map: function
+            the function to transform the input into the desired input of the
+            core-retriever.
+        output_map: function or list of function
+            the functions which transrform the output given by the
+            core-retriever into the desired output.
+
+        """
         if input_map is not None:
-            self._input_map = input_map
+            if type(input_map) == np.ndarray:
+                u_regs = np.unique(input_map)
+                self._n0 = len(input_map)
+                input_map_u = np.ones(self._n0)
+                for i in range(self._n0):
+                    input_map_u[input_map == u_regs[i]] = i
+                self._input_map = lambda s, idx: list(input_map_u[[idx]])
+            else:
+                self._input_map = input_map
         if output_map is not None:
             if type(output_map).__name__ == 'function':
                 self._output_map = [output_map]
@@ -599,6 +884,13 @@ class Retriever:
     def _format_preparators(self, bool_input_idx):
         """Format the prepare inputs function in order to be used properly and
         efficient avoiding extra useless computations.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+
         """
         if self.preferable_input_idx == bool_input_idx:
             self._prepare_input = self._dummy_prepare_input
@@ -610,7 +902,15 @@ class Retriever:
             self._prepare_input = self._dummy_idx2loc_prepare_input
 
     def _format_get_loc_i(self, bool_input_idx):
-        """Format the get locations function."""
+        """Format the get locations function.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+
+        """
         ## General functions
         if bool_input_idx is True:
             self.get_loc_i = self._get_loc_i_general_from_indices
@@ -632,7 +932,15 @@ class Retriever:
                 self._get_loc_from_idxs = self._get_loc_from_idxs_notlistind
 
     def _format_get_indice_i(self, bool_input_idx):
-        """Format the get indice function."""
+        """Format the get indice function.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+
+        """
         ## General functions
         if bool_input_idx is True:
             self.get_indice_i = self._get_indice_i_general_from_indices
@@ -669,6 +977,30 @@ class Retriever:
     def _exclude_auto_general(self, i_loc, neighs, dists, kr=0):
         """Exclude auto elements if there exist in the neighs retrieved.
         This is a generic function independent on the type of the element.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list or np.ndarray
+            the neighbours indices.
+        dists: list or np.ndarray
+            the spatial relative position of the neighbours.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighbours indices.
+        dists: list or np.ndarray
+            the spatial relative position of the neighbours.
+
         """
         ## 0. Detect input i_loc and retrieve to_exclude_elements list
 #        print '=0'*15, i_loc, neighs, type(i_loc), len(neighs), self._build_excluded_elements
@@ -685,6 +1017,32 @@ class Retriever:
         return neighs, dists
 
     def _null_exclude_auto(self, i_loc, neighs, dists, kr=0):
+        """The null exclude option. It return the same neighs and dists.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list or np.ndarray
+            the neighbours indices.
+        dists: list or np.ndarray
+            the spatial relative position of the neighbours.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list or np.ndarray
+            the neighbours indices.
+        dists: list or np.ndarray
+            the spatial relative position of the neighbours.
+
+        """
         return neighs, dists
 
     ############################### Output format #############################
@@ -695,6 +1053,14 @@ class Retriever:
     #     the outmat to select
     #
     def set_outmapper_selector(self, outmapper):
+        """Selector configuration.
+
+        Parameters
+        ----------
+        outmapper: list, np.ndarray or int
+            the selector of output_map.
+
+        """
         ## TODO: selects automatically the outmap function
         if type(outmapper) in [list, np.ndarray]:
             outmapper = np.array(outmapper).astype(int)
@@ -707,12 +1073,57 @@ class Retriever:
             self._output_map_selector = outmapper
 
     def _null_select_output(self, i, output):
+        """Null selection configuration.
+
+        Parameters
+        ----------
+        i: int
+            index of retriever element.
+        output: int (default = 0)
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        output: int
+            the number of output mapper function selected.
+
+        """
         return output
 
     def _cte_select_output(self, i, output=0):
+        """Null selection configuration.
+
+        Parameters
+        ----------
+        i: int
+            index of retriever element.
+        output: int (default = 0)
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        output: int
+            the number of output mapper function selected.
+
+        """
         return self._output_map_selector
 
     def _indexed_select_output(self, i, output=0):
+        """Null selection configuration.
+
+        Parameters
+        ----------
+        i: int
+            index of retriever element.
+        output: int (default = 0)
+            the number of output mapper function selected.
+
+        Returns
+        -------
+        output: int
+            the number of output mapper function selected.
+
+        """
         j = self.get_indice_i(i)
         return self._output_map_selector[j]
 
@@ -730,6 +1141,18 @@ class Retriever:
         ----------
         i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
             the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        to_exclude_elements: list of list
+            the list of excluded elements for each element.
+
         """
         # If it is an indice
         if type(i_loc) in [int, np.int32, np.int64, list]:
@@ -742,11 +1165,24 @@ class Retriever:
         return to_exclude_elements
 
     def _indices_build_excluded_elements(self, i_loc, kr=0):
-        """
+        """Build the excluded points from i_loc if it is an index.
+
         Parameters
         ----------
         i_loc: list of ints or int
             the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        to_exclude_elements: list of list
+            the list of excluded elements for each element.
+
         """
         # If it is an indice
         if type(i_loc) in [int, np.int32, np.int64]:
@@ -756,11 +1192,24 @@ class Retriever:
         return to_exclude_elements
 
     def _locs_build_excluded_elements(self, i_loc, kr=0):
-        """
+        """Build the excluded points from i_loc if it is a location.
+
         Parameters
         ----------
         i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
             the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        to_exclude_elements: list of list
+            the list of excluded elements for each element.
+
         """
         ## 0. Preparing input
         i_loc = [i_loc] if type(i_loc) != list else i_loc
@@ -769,7 +1218,7 @@ class Retriever:
         for i in range(len(i_loc)):
             # Getting indices from the pool of elements
             to_exclude_elements.append(self.get_indice_i(i_loc[i]))
-        ## 2. Check correct output
+#        ## 2. Check correct output
 #        print to_exclude_elements, i_loc
 #        assert(all([type(e) in arraytypes for e in to_exclude_elements]))
 #        assert(all([all([type(e1) in inttypes for e1 in e])
@@ -777,10 +1226,48 @@ class Retriever:
         return to_exclude_elements
 
     def _list_build_excluded_elements(self, i_loc, kr=0):
+        """Build the excluded points from i_loc if it is a location.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        to_exclude_elements: list of list
+            the list of excluded elements for each element.
+
+        """
         to_exclude_elements = [[i_loc[i]] for i in range(len(i_loc))]
         return to_exclude_elements
 
     def _int_build_excluded_elements(self, i_loc, kr=0):
+        """Build the excluded points from i_loc as integer.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        to_exclude_elements: list of list
+            the list of excluded elements for each element.
+
+        """
         to_exclude_elements = [[i_loc]]
         return to_exclude_elements
 
@@ -795,22 +1282,85 @@ class Retriever:
 #        return info_i
 
     def _dummy_get_info_i_stored(self, i_loc, info_i=None):
-        """Dummy get retrieve information."""
+        """Dummy get retrieve information.
+
+        Parameters
+        ----------
+        i_loc: list of ints or int
+            the locations we want to retrieve their neighbourhood.
+        info_i: pars or other (default = None)
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        Returns
+        -------
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        """
         return self._info_ret
 
     def _dummy_get_info_i_indexed(self, i_loc, info_i=None):
-        """Dummy indexable retrieve information."""
+        """Dummy indexable retrieve information with indexable info_ret.
+
+        Parameters
+        ----------
+        i_loc: list of ints or int
+            the locations we want to retrieve their neighbourhood.
+        info_i: pars or other (default = None)
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        Returns
+        -------
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        """
         ### TODO: Referenced that __len__ and == len(self.data_input)
         return self._info_ret[i_loc]
 
     def _dummy_get_info_i_f(self, i_loc, info_i=None):
-        """Dummy get retrieve information using function."""
+        """Dummy get retrieve information using function.
+
+        Parameters
+        ----------
+        i_loc: list of ints or int
+            the locations we want to retrieve their neighbourhood.
+        info_i: pars or other (default = None)
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        Returns
+        -------
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        """
         return self._info_f(i_loc, self._info_ret)
 
     def _general_get_info_i(self, i_loc, info_i):
         """Get retrieving information for each element i_loc. Comunicate the
         input i with the data_input. It is a generic function independent on
         the type of the elements we want to retrieve.
+
+        Parameters
+        ----------
+        i_loc: list of ints or int
+            the locations we want to retrieve their neighbourhood.
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
+        Returns
+        -------
+        info_i: pars or other
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+
         """
         if info_i in [{}, [], None]:
             if self._info_f is None:
@@ -832,7 +1382,25 @@ class Retriever:
     #     core retriever.
     #
     def _general_prepare_input(self, i_loc, kr=0):
-        """General prepare input."""
+        """General prepare input.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        i_mloc: optional
+            the correct format of the input required for the core-retriever.
+
+        """
         if self.preferable_input_idx:
             i_mloc = self._get_indice_i_general(i_loc, kr)
         else:
@@ -840,7 +1408,25 @@ class Retriever:
         return i_mloc
 
     def _dummy_prepare_input(self, i_loc, kr=0):
-        """Dummy prepare input."""
+        """Dummy prepare input.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        i_mloc: optional
+            the correct format of the input required for the core-retriever.
+
+        """
         # Formatting to contain list of iss
         if not '__len__' in dir(i_loc):
             i_loc = [i_loc]
@@ -852,7 +1438,25 @@ class Retriever:
         return i_mloc
 
     def _dummy_idx2loc_prepare_input(self, i_loc, kr=0):
-        """Dummy prepare input transforming indice to location."""
+        """Dummy prepare input transforming indice to location.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        i_mloc: optional
+            the correct format of the input required for the core-retriever.
+
+        """
         # Formatting to contain list of iss
         if type(i_loc) not in [list, np.ndarray]:
             i_loc = [i_loc]
@@ -861,7 +1465,25 @@ class Retriever:
         return loc_i
 
     def _dummy_loc2idx_prepare_input(self, loc_i, kr=0):
-        """Dummy prepare input transforming location to indice."""
+        """Dummy prepare input transforming location to indice.
+
+        Parameters
+        ----------
+        i_loc: np.ndarray, shape(iss, dim) or shape(dim,)
+            the locations we want to retrieve their neighbourhood.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        i_mloc: optional
+            the correct format of the input required for the core-retriever.
+
+        """
 #        loc_i = np.array(loc_i)
 #        if len(loc_i.shape) == 1:
 #            loc_i = loc_i.reshape((1, len(loc_i)))
@@ -888,7 +1510,20 @@ class Retriever:
     # SAME type as input data
     #####################################################################
     def _get_loc_from_idxs_notlistind(self, i_loc):
-        """Specific interaction with the data stored in retriever object."""
+        """Specific interaction with the data stored in retriever object.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
         data_locs = []
 #        print i_loc, type(i_loc), 'p'*10, type(self.data_input)
         i_loc = [i_loc] if type(i_loc) not in arraytypes else i_loc
@@ -901,7 +1536,20 @@ class Retriever:
         return data_locs
 
     def _get_loc_from_idxs_listind(self, i_loc):
-        """Specific interaction with the data stored in retriever object."""
+        """Specific interaction with the data stored in retriever object.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
         locs_i = self._get_loc_from_idx(i_loc)
 #        print 'a'*10, locs_i, type(locs_i), type(locs_i[0]), type(self.data_input)
         ## Same structure as input data
@@ -910,7 +1558,20 @@ class Retriever:
         return locs_i
 
     def _get_loc_from_idx_indata(self, i_loc):
-        """Get data from indata."""
+        """Get data from indata.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
 #        i_loc = i_loc if type(i_loc) in [np.ndarray, list] else [i_loc]
         if type(i_loc) in arraytypes:
             locs_i = [self.data_input[i] for i in i_loc]
@@ -923,7 +1584,20 @@ class Retriever:
 
     def _get_loc_i_general_from_locations(self, i_loc):
         """Get element spatial information from spatial information.
-        Format properly the input spatial information."""
+        Format properly the input spatial information.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
         ### TO CHECK
 #        print 'o'*20, i_loc, self.data_input
         ## Preprocessing to have list of locs
@@ -952,7 +1626,20 @@ class Retriever:
 
     def _get_loc_i_general_from_indices(self, i_loc):
         """Get element spatial information from spatial information.
-        Format properly the input spatial information."""
+        Format properly the input spatial information.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
         if type(i_loc) == list:
             if len(i_loc) == 0:
                 return i_loc
@@ -965,7 +1652,20 @@ class Retriever:
         return loc_i
 
     def _get_loc_i_general(self, i_loc):
-        """Get element spatial information. Generic function."""
+        """Get element spatial information. Generic function.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
         ## 0. Needed variable computations
         int_types = [int, np.int32, np.int64]
         ## 1. Loc retriever
@@ -1003,7 +1703,20 @@ class Retriever:
         return loc_i
 
     def _get_loc_dummy_array(self, i_loc):
-        """Get location from coordinates array."""
+        """Get location from coordinates array.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+
+        Returns
+        -------
+        locs_i: optional
+            the spatial information of the element i.
+
+        """
 #        sh = self.data_input.shape  # Global computation substitution
 #        if len(np.array(i_loc).shape) == 1:
 #            i_loc = np.array(i_loc).reshape((1, sh[1]))
@@ -1032,7 +1745,25 @@ class Retriever:
     #     the indices of the associeted spatial information elements input.
     #
     def _get_idx_from_loc_indata(self, loc_i, kr=0):
-        """Get indices from stored data."""
+        """Get indices from stored data.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
         ### Check
         indices = []
         if type(self.data_input) == list:
@@ -1046,7 +1777,26 @@ class Retriever:
         return indices
 
     def _get_idxs_from_locs_notlistind(self, loc_i, kr=0):
-        """Specific interaction with the data stored in retriever object."""
+        """Specific interaction with the data stored in retriever object.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+
+        """
         data_idxs = []
         for i in range(len(loc_i)):
             data_idxs += self._get_idx_from_loc(loc_i[i], kr)
@@ -1057,13 +1807,49 @@ class Retriever:
         return data_idxs
 
     def _get_idxs_from_locs_listind(self, loc_i, kr=0):
-        """Specific interaction with the data stored in retriever object."""
+        """Specific interaction with the data stored in retriever object.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
         i_locs = self._get_idx_from_loc(loc_i, kr)
         return i_locs
 
-    def _get_indice_i_general_from_indices(self, i_loc, k=0, inorout=0):
+    def _get_indice_i_general_from_indices(self, i_loc, k=0):
         """Get indices of spatial information from spatial information.
-        Format properly the input spatial information."""
+        Format properly the input spatial information.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
         if type(i_loc) == list:
             loc_i = i_loc
         elif type(i_loc) in [int, np.int32, np.int64]:
@@ -1074,7 +1860,25 @@ class Retriever:
 
     def _get_indice_i_general_from_locations(self, loc_i, kr=0):
         """Get indices of spatial information from spatial information.
-        Format properly the input spatial information."""
+        Format properly the input spatial information.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
 #        print '+'*20, loc_i, type(loc_i), self._get_idxs_from_locs
         if type(loc_i) == list:
             if len(loc_i) == 0:
@@ -1091,7 +1895,25 @@ class Retriever:
         return i_locs
 
     def _get_indice_i_general(self, loc_i, kr=0):
-        """Get indice of spatial information. Generic function."""
+        """Get indice of spatial information. Generic function.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
         ## 0. Needed variable computations
         int_types = [int, np.int32, np.int64]
         # If indice
@@ -1114,7 +1936,25 @@ class Retriever:
         return i_loc
 
     def _get_idx_dummy(self, i_loc, kr=0):
-        """Dummy index to index."""
+        """Dummy index to index.
+
+        Parameters
+        ----------
+        loc_i: optional
+            the spatial information of the element i.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list of int
+            the indices of the elements required.
+
+        """
         i_locs = i_loc if type(i_loc) == list else [i_loc]
         return i_locs
 
@@ -1129,7 +1969,23 @@ class Retriever:
     #
     def _general_relative_pos(self, neighs_info, element_i, element_neighs):
         """Intraclass interface for manage the interaction with relative
-        position function."""
+        position function.
+
+        Parameters
+        ----------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information.
+        element_i: optional
+            the spatial information of the element i.
+        element_neighs: optional
+            the spatial information of the neighbours of the element i.
+
+        Returns
+        -------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         if self.relative_pos is not None:
             ## Relative position computation
             if type(self.relative_pos).__name__ == 'function':
@@ -1144,10 +2000,41 @@ class Retriever:
         return neighs_info
 
     def _dummy_relative_pos(self, neighs_info, element_i, element_neighs):
-        """Not relative pos available."""
+        """Not relative pos available.
+
+        Parameters
+        ----------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information.
+        element_i: optional
+            the spatial information of the element i.
+        element_neighs: optional
+            the spatial information of the neighbours of the element i.
+
+        Returns
+        -------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         return neighs_info
 
     def _apply_relative_pos_complete(self, res, point_i):
+        """Apply the relative_pos.
+
+        Parameters
+        ----------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+        point_i: optional
+            the spatial information of the element i.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         loc_neighs = []
         for i in range(len(res[0])):
             loc_neighs_i = self._get_loc_from_idxs(res[0][i])
@@ -1156,32 +2043,87 @@ class Retriever:
         return res
 
     def _apply_relative_pos_null(self, res, point_i):
+        """
+        Parameters
+        ----------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+        point_i: optional
+            the spatial information of the element i.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         return res
 
     def _apply_preprocess_relative_pos_dim(self, res):
+        """Correction of the input in the relative positioner.
+
+        Parameters
+        ----------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         for i in range(len(res)):
             res[i] = res[i].reshape((len(res[i]), 1))
         return res
 
     def _apply_preprocess_relative_pos_null(self, res):
+        """Null correction application of relative_pos.
+
+        Parameters
+        ----------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information.
+
+        """
         return res
 
     ###########################################################################
     ########################### Auxiliary functions ###########################
     ###########################################################################
     def __getitem__(self, i):
-        "Perform the map assignation of the neighbourhood."
+        """Perform the map assignation of the neighbourhood.
+
+        Parameters
+        ----------
+        i: int
+            the index of the element we want to retrieve its neighbourhood.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighbourhood information.
+
+        """
         neighs_info = self.retrieve_neighs(i)
         return neighs_info
 
     def __len__(self):
+        """The size of the possible input pool."""
         return self._n0
 
     def export_neighs_info(self):
+        "Auxiliar function which give us a copy of the neighbourhood object."
         return copy(self.neighs_info)
 
     @property
     def _n0(self):
+        """The dimension of the input pool."""
         if self._heterogenous_input:
             raise Exception("Impossible action. Heterogenous input.")
         try:
@@ -1195,6 +2137,7 @@ class Retriever:
 
     @property
     def _n1(self):
+        """The dimension of the possible output pool."""
         if self._heterogenous_output:
             raise Exception("Impossible action. Heterogenous output.")
         try:
@@ -1205,10 +2148,12 @@ class Retriever:
 
     @property
     def shape(self):
+        """The dimension of the input pool and the possible output pool."""
         return (self._n0, self._n1)
 
     @property
     def data_input(self):
+        """Returns the possible to retrieve neighbourhood spatial elements."""
         if self._autodata:
             return self.retriever[0].data
         else:
@@ -1220,6 +2165,7 @@ class Retriever:
 
     @property
     def data_output(self):
+        """Returns the retrivable spatial elements collection."""
         return self.retriever[0].data
 
     def compute_neighnet(self, mapper=None, datavalue=None):
@@ -1227,6 +2173,18 @@ class Retriever:
         with the defined retriever class.
         If we have an explicit retriever it is probably better to use algebra
         in order to vectorize computations.
+
+        Parameters
+        ----------
+        mapper: int, list or np.ndarray (default = None)
+            output mapper selector defined.
+        datavalue: float (default = None)
+            the value of each connection if it is constant.
+
+        Returns
+        -------
+        nets: list of scipy.sparse or scipy.sparse
+            the spatial networks computed using spatial neigbourhood retrieved.
 
         TODO
         ----
@@ -1243,6 +2201,9 @@ class Retriever:
             msg += "Only will be considered the 0 output_map"
             warnings.warn(msg)
         ## 00. Define global variables (TODO: Definition a priori)
+        # Define selector
+        if mapper is not None:
+            self.set_outmapper_selector(mapper)
 #        n_data = self._ndim_rel_pos
 #        neighs, dists = self[0]
 #        try:

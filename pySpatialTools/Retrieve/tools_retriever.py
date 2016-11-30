@@ -8,7 +8,7 @@ Tools to use retrievers
 
 import numpy as np
 from pySpatialTools.Discretization import _discretization_parsing_creation
-from retrievers import Retriever
+from retrievers import BaseRetriever
 
 
 ###############################################################################
@@ -19,6 +19,17 @@ def create_aggretriever(aggregation_info):
     input in the aggregation_info variable. It returns an instance of a
     retriever object to be appended in the collection manager list of
     retrievers.
+
+    Parameters
+    ----------
+    aggregation_info: tuple
+        the information to create a retriever aggregation.
+
+    Returns
+    -------
+    ret_out: pst.BaseRetriever
+        the retriever instance.
+
     """
     ## 0. Preparing inputs
     assert(type(aggregation_info) == tuple)
@@ -29,7 +40,7 @@ def create_aggretriever(aggregation_info):
     ## 1. Computing retriever_out
     locs, regs, disc = _discretization_parsing_creation(disc_info)
     ret_out = aggregating_ret(retriever_out, locs, regs, disc)
-    assert(isinstance(ret_out, Retriever))
+    assert(isinstance(ret_out, BaseRetriever))
     return ret_out
 
 
@@ -38,7 +49,27 @@ def create_aggretriever(aggregation_info):
 ###############################################################################
 def dummy_implicit_outretriver(retriever_out, locs, regs, disc):
     """Dummy implicit outretriever creation. It only maps the common output
-    to a regs discretized space."""
+    to a regs discretized space.
+
+    Parameters
+    ----------
+    retriever_out: class (pst.BaseRetriever)
+        the retriever object.
+    locs: list, np.ndarray or other
+        the spatial information of the retrievable elements.
+    regs: np.ndarray
+        the assigned region for each of the retrievable spatial elements.
+    disc: pst.BaseDiscretizor
+        a discretizor.
+
+    Returns
+    -------
+    ret_out: pst.BaseRetriever
+        the retriever instance.
+
+    """
+
+    ## Assert inputs
     assert(type(retriever_out) == tuple)
     assert(isinstance(retriever_out[0], object))
 
@@ -55,14 +86,33 @@ def dummy_implicit_outretriver(retriever_out, locs, regs, disc):
     pars_ret['output_map'] = m_out
 
     ## Instantiation
-    retriever_out_instance = retriever_out[0](locs, **pars_ret)
-    assert(isinstance(retriever_out_instance, Retriever))
-    return retriever_out_instance
+    ret_out = retriever_out[0](locs, **pars_ret)
+    assert(isinstance(ret_out, BaseRetriever))
+    return ret_out
 
 
 def dummy_explicit_outretriver(retriever_out, locs, regs, disc):
-    """Dummy explicit outretriever creation. It computes a regiondistances between
-    the ."""
+    """Dummy explicit outretriever creation. It computes a regiondistances
+    between each regions.
+
+    Parameters
+    ----------
+    retriever_out: tuple (class (pst.BaseRetriever), dict, function)
+        the retriever information.
+    locs: list, np.ndarray or other
+        the spatial information of the retrievable elements.
+    regs: np.ndarray
+        the assigned region for each of the retrievable spatial elements.
+    disc: pst.BaseDiscretizor
+        a discretizor.
+
+    Returns
+    -------
+    ret_out: pst.BaseRetriever
+        the retriever instance.
+
+    """
+    ## Assert inputs
     assert(type(retriever_out) == tuple)
     assert(isinstance(retriever_out[0], object))
 
@@ -71,12 +121,33 @@ def dummy_explicit_outretriver(retriever_out, locs, regs, disc):
         pars_ret = retriever_out[1]
     main_mapper = retriever_out[2](retriever_out[3])
 
-    retriever_out_instance = retriever_out[0](main_mapper, **pars_ret)
-    assert(isinstance(retriever_out_instance, Retriever))
-    return retriever_out_instance
+    ret_out = retriever_out[0](main_mapper, **pars_ret)
+    assert(isinstance(ret_out, BaseRetriever))
+    return ret_out
 
 
 def avgregionlocs_outretriever(retriever_out, locs, regs, disc):
+    """Retriever creation for avg region locations. It retrieves the
+    prototype of the region, the average location of the region each one
+    belong.
+
+    Parameters
+    ----------
+    retriever_out: class (pst.BaseRetriever)
+        the retriever object.
+    locs: list, np.ndarray or other
+        the spatial information of the retrievable elements.
+    regs: np.ndarray
+        the assigned region for each of the retrievable spatial elements.
+    disc: pst.BaseDiscretizor
+        a discretizor.
+
+    Returns
+    -------
+    ret_out: pst.BaseRetriever
+        the retriever instance.
+
+    """
     u_regs = np.unique(regs)
     avg_locs = np.zeros((len(u_regs), locs.shape[1]))
     for i in xrange(len(u_regs)):

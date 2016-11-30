@@ -4,11 +4,12 @@ Auxiliar retrievers parsing
 ---------------------------
 Tools and utilities to parse heterogenous ways to give retriever information
 in order to obtain retriever objects.
+
 """
 
 
 import numpy as np
-from retrievers import Retriever
+from retrievers import BaseRetriever
 from collectionretrievers import RetrieverManager
 from pySpatialTools.Discretization import _discretization_parsing_creation
 
@@ -21,13 +22,23 @@ def _retrieverobject_parsing_creation(retriever_info):
     """Function which uniforms the retriever info to be useful in other
     parts of the code.
 
-    Standarts
-    * Retriever object
-    * (Retriever class, main_info)
-    * (Retriever class, main_info, pars_ret)
-    * (Retriever class, main_info, pars_ret, autolocs)
+    Parameters
+    ----------
+    retriever_info: pst.BaseRetriever or tuple
+        Variable which contains the retriever information. The standarts input
+        of that variable are:
+            * Retriever object
+            * (Retriever class, main_info)
+            * (Retriever class, main_info, pars_ret)
+            * (Retriever class, main_info, pars_ret, autolocs)
+
+    Returns
+    -------
+    retriever_info: pst.BaseRetriever
+        the retriever instance.
+
     """
-    if isinstance(retriever_info, Retriever):
+    if isinstance(retriever_info, BaseRetriever):
         pass
     else:
         assert(type(retriever_info) == tuple)
@@ -38,7 +49,7 @@ def _retrieverobject_parsing_creation(retriever_info):
         if len(retriever_info) == 4:
             pars_ret['autolocs'] = retriever_info[3]
         retriever_info = retriever_info[0](retriever_info[1], **pars_ret)
-    assert(isinstance(retriever_info, Retriever))
+    assert(isinstance(retriever_info, BaseRetriever))
     return retriever_info
 
 
@@ -46,14 +57,25 @@ def _retrievermanager_parsing_creation(retriever_info):
     """Function which uniforms the retriever info to be useful in other
     parts of the code.
 
-    Standarts
-    * Retriever object
-    * Retriever objects
+    Parameters
+    ----------
+    retriever_info: pst.BaseRetriever or tuple
+        Variable which contains the retriever information. The standarts input
+        of that variable are:
+            * Retriever object
+            * Retriever objects
+            * RetrieverManager objects
+
+    Returns
+    -------
+    retriever_info: pst.BaseRetriever
+        the retriever instance.
+
     """
-    if isinstance(retriever_info, Retriever):
+    if isinstance(retriever_info, BaseRetriever):
         retriever_info = RetrieverManager(retriever_info)
     elif type(retriever_info) == list:
-        assert(all([isinstance(e, Retriever) for e in retriever_info]))
+        assert(all([isinstance(e, BaseRetriever) for e in retriever_info]))
         retriever_info = RetrieverManager(retriever_info)
     else:
         assert(isinstance(retriever_info, RetrieverManager))
@@ -65,15 +87,25 @@ def _retriever_parsing_creation(retriever_info):
     """Function which uniforms the retriever info to be useful in other
     parts of the code.
 
-    Standarts
-    * Retriever object
-    * (Retriever class, main_info)
-    * (Retriever class, main_info, pars_ret)
-    * (Retriever class, main_info, pars_ret, autolocs)
+    Parameters
+    ----------
+    retriever_info: pst.BaseRetriever or tuple
+        Variable which contains the retriever information. The standarts input
+        of that variable are:
+            * Retriever object
+            * (Retriever class, main_info)
+            * (Retriever class, main_info, pars_ret)
+            * (Retriever class, main_info, pars_ret, autolocs)
+
+    Returns
+    -------
+    retriever_info: pst.BaseRetriever
+        the retriever instance.
+
     """
     if isinstance(retriever_info, RetrieverManager):
         pass
-    elif isinstance(retriever_info, Retriever):
+    elif isinstance(retriever_info, BaseRetriever):
         retriever_info = _retrievermanager_parsing_creation(retriever_info)
     elif type(retriever_info) == list:
         r = [_retrieverobject_parsing_creation(ret) for ret in retriever_info]
@@ -89,7 +121,25 @@ def _retriever_parsing_creation(retriever_info):
 ################## Creation of automatic discretization maps ##################
 ###############################################################################
 def create_m_in_inverse_discretization(discretization_info):
-    """Create in_map for inverse discretization."""
+    """Create in_map for inverse discretization.
+
+    Parameters
+    ----------
+    discretization_info: tuple or pst.BaseSpatialDiscretizor
+        It is defined by a discretization object or a tuple of locations,
+        regions and discretization object. The standard inputs of that
+        function parameter are:
+            * (discretizator, locs)
+            * (locs, regions)
+            * disc
+            * locs, regs, disc
+
+    Returns
+    -------
+    m_in_inverse_discretazation: function
+        the function which formats the input of the retriever.
+
+    """
     ## 0. Parsing discretization information input
     locs, regions, disc = _discretization_parsing_creation(discretization_info)
 
@@ -105,7 +155,25 @@ def create_m_in_inverse_discretization(discretization_info):
 
 
 def create_m_in_direct_discretization(discretization_info):
-    """Create in_map for direct discretization."""
+    """Create in_map for direct discretization.
+
+    Parameters
+    ----------
+    discretization_info: tuple or pst.BaseSpatialDiscretizor
+        It is defined by a discretization object or a tuple of locations,
+        regions and discretization object. The standard inputs of that
+        function parameter are:
+            * (discretizator, locs)
+            * (locs, regions)
+            * disc
+            * locs, regs, disc
+
+    Returns
+    -------
+    m_in_direct_discretazation: function
+        the function which formats the input of the retriever.
+
+    """
     ## 0. Parsing discretization information input
     locs, regions, disc = _discretization_parsing_creation(discretization_info)
     ## 1. Building map
@@ -122,7 +190,25 @@ def create_m_in_direct_discretization(discretization_info):
 
 
 def create_m_out_inverse_discretization(discretization_info):
-    """Create out_map for inverse discretization."""
+    """Create out_map for inverse discretization.
+
+    Parameters
+    ----------
+    discretization_info: tuple or pst.BaseSpatialDiscretizor
+        It is defined by a discretization object or a tuple of locations,
+        regions and discretization object. The standard inputs of that
+        function parameter are:
+            * (discretizator, locs)
+            * (locs, regions)
+            * disc
+            * locs, regs, disc
+
+    Returns
+    -------
+    m_out_inverse_discretization: function
+        the function which formats the output of the retriever.
+
+    """
     ## 0. Parsing discretization information input
     locs, regions, disc = _discretization_parsing_creation(discretization_info)
 
@@ -157,7 +243,25 @@ def create_m_out_inverse_discretization(discretization_info):
 
 
 def create_m_out_direct_discretization(discretization_info):
-    """Create out_map for inverse discretization."""
+    """Create out_map for inverse discretization.
+
+    Parameters
+    ----------
+    discretization_info: tuple or pst.BaseSpatialDiscretizor
+        It is defined by a discretization object or a tuple of locations,
+        regions and discretization object. The standard inputs of that
+        function parameter are:
+            * (discretizator, locs)
+            * (locs, regions)
+            * disc
+            * locs, regs, disc
+
+    Returns
+    -------
+    m_out_direct_discretization: function
+        the function which formats the output of the retriever.
+
+    """
     ## 0. Parsing discretization information input
     locs, regions, disc = _discretization_parsing_creation(discretization_info)
 
@@ -167,7 +271,19 @@ def create_m_out_direct_discretization(discretization_info):
             """This out_map for retrievers don't change the size of
             neighbourhood, only substitutes the element id for the group or
             regions id. It is useful for PhantomFeatures and direct distance
-            features. Distance don't change."""
+            features. Distance don't change.
+
+            Parameters
+            ----------
+            neighs_info: tuple (neighs, dists)
+                the neighbourhood information.
+
+            Returns
+            -------
+            neighs_info: tuple (neighs, dists)
+                the neighbourhood information.
+
+            """
             neighs, dists = neighs_info
             neighs_o = []
             for iss_i in range(len(neighs)):
@@ -184,7 +300,19 @@ def create_m_out_direct_discretization(discretization_info):
             """This out_map for retrievers don't change the size of
             neighbourhood, only substitutes the element id for the group or
             regions id. It is useful for PhantomFeatures and direct distance
-            features. Distance don't change."""
+            features. Distance don't change.
+
+            Parameters
+            ----------
+            neighs_info: tuple (neighs, dists)
+                the neighbourhood information.
+
+            Returns
+            -------
+            neighs_info: tuple (neighs, dists)
+                the neighbourhood information.
+
+            """
             neighs, dists = neighs_info
             neighs_o = []
             for iss_i in range(len(neighs)):

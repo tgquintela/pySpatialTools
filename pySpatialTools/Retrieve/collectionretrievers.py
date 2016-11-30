@@ -17,7 +17,7 @@ from tools_retriever import create_aggretriever
 from pySpatialTools.utils.selectors import Spatial_RetrieverSelector,\
     format_selection
 from pySpatialTools.utils.neighs_info import join_by_iss
-from retrievers import Retriever
+from retrievers import BaseRetriever
 
 inttypes = [int, np.int32, np.int64]
 
@@ -29,7 +29,7 @@ class RetrieverManager:
 
     See also
     --------
-    FeaturesManagement.FeaturesManager
+    pst.FeaturesManagement.FeaturesManager
 
     """
     __name__ = 'pySpatialTools.RetrieverManager'
@@ -43,6 +43,7 @@ class RetrieverManager:
         self.n_inputs = 0
         self.staticneighs = True
         self.selector = (0, 0)
+        self._preferent_ret = 0
 
     def __init__(self, retrievers, selector_retriever=None):
         self._initialization()
@@ -50,23 +51,47 @@ class RetrieverManager:
         self._format_selector(selector_retriever)
 
     def __len__(self):
+        """Number of retrievers which are in this manager."""
         return len(self.retrievers)
 
     def __getitem__(self, i_ret):
+        """Get the `i_ret` retriever."""
         if i_ret < 0 or i_ret >= len(self.retrievers):
             raise IndexError("Not correct index for features.")
         return self.retrievers[i_ret]
 
+    def set_iter(self, ret_pre):
+        """Set preferent retriever."""
+        self._preferent_ret = ret_pre
+
     def __iter__(self):
         """It assumes preferent retriever 0."""
         ## If constant selected retriever
-        for neighs_info in self[0]:
-            yield neighs_info
-        ## If mapper active (TODO)
+        if type(self._preferent_ret) == int:
+            for neighs_info in self[self._preferent_ret]:
+                yield neighs_info
+        else:
+            pass
 
+    ############################ Retriever functions ##########################
+    ###########################################################################
     def _retrieve_neighs_constant(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
-        interior parameters. Constant typeret_i assumption."""
+        interior parameters. Constant typeret_i assumption.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         typeret_i, out_ret = self.get_type_ret(i, typeret_i)
         neighs_info =\
             self.retrievers[typeret_i].retrieve_neighs(i, output=out_ret)
@@ -74,7 +99,21 @@ class RetrieverManager:
 
     def _retrieve_neighs_variable(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
-        interior parameters. Variable typeret_i assumption."""
+        interior parameters. Variable typeret_i assumption.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         typeret_i, out_ret = self.get_type_ret(i, typeret_i)
         i = [i] if type(i) in inttypes else i
         typeret_i = [typeret_i] if type(typeret_i) != list else typeret_i
@@ -89,7 +128,21 @@ class RetrieverManager:
 
     def _retrieve_neighs_general(self, i, typeret_i=None):
         """Retrieve neighbourhood under conditions of ifdistance or others
-        interior parameters. No typeret_i assumption."""
+        interior parameters. No typeret_i assumption.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        neighs_info: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         typeret_i, out_ret = self.get_type_ret(i, typeret_i)
         if type(typeret_i) == list:
             i = [i] if type(i) in inttypes else i
@@ -107,6 +160,12 @@ class RetrieverManager:
     def compute_nets(self, kret=None):
         """Compute all the possible relations if there is a common
         (homogeneous) ouput.
+
+        Parameters
+        ----------
+        kret: int, list or None (default)
+            the id of the retrievers we want to get their spatial networks
+
         """
         ## Check that match conditions (TODO)
         ## Format kret
@@ -121,26 +180,55 @@ class RetrieverManager:
     ######################### Auxiliar administrative #########################
     ###########################################################################
     def add_retrievers(self, retrievers):
-        """Add new retrievers."""
+        """Add new retrievers.
+
+        Parameters
+        ----------
+        retrievers: list, pst.BaseRetriever
+            the retrievers we want to input to that manager.
+
+        """
         self._format_retrievers(retrievers)
 
     def set_neighs_info(self, bool_input_idx):
-        """Setting the neighs info of the retrievers."""
+        """Setting the neighs info of the retrievers.
+
+        Parameters
+        ----------
+        bool_input_idx: boolean or None
+            if the input is going to be indices or in the case of false,
+            the whole spatial information.
+
+        """
         for i in range(len(self)):
             self.retrievers[i]._format_neighs_info(bool_input_idx)
 
     def set_selector(self, selector):
         """Set a common selector in order to not depend on continous external
         orders.
+
+        Parameters
+        ----------
+        selector: tuple, np.ndarray, None or others
+            the selector information to choose retriever.
+
         """
         self._format_selector(selector)
 
     ################################ Formatters ###############################
     ###########################################################################
     def _format_retrievers(self, retrievers):
+        """Format the retrievers.
+
+        Parameters
+        ----------
+        retrievers: list, pst.BaseRetriever
+            the retrievers we want to input to that manager.
+
+        """
         if type(retrievers) == list:
             self.retrievers += retrievers
-        elif retrievers.__name__ == 'pySpatialTools.Retriever':
+        elif retrievers.__name__ == 'pySpatialTools.BaseRetriever':
             self.retrievers.append(retrievers)
         elif not(type(retrievers) == list):
             raise TypeError("Incorrect type. Not retrievers list.")
@@ -162,6 +250,9 @@ class RetrieverManager:
         assert(aux)
 
     def _format_k_perturbs(self):
+        """Format perturbations. Assert all have the same number of
+        perturbations.
+        """
         ## 1. Format kperturb
         kp = self[0].k_perturb
         k_rei_bool = [self[i].k_perturb == kp for i in range(len(self))]
@@ -172,7 +263,14 @@ class RetrieverManager:
         self.k_perturb = kp
 
     def _format_selector(self, selector):
-        """Programable get_type_ret."""
+        """Programable get_type_ret.
+
+        Parameters
+        ----------
+        selector: tuple, np.ndarray, None or others
+            the selector information to choose retriever.
+
+        """
         if selector is None:
             self.get_type_ret = self._general_get_type_ret
             self.retrieve_neighs = self._retrieve_neighs_general
@@ -196,7 +294,23 @@ class RetrieverManager:
     #########################
     def _general_get_type_ret(self, i, typeret_i=None):
         """Interaction with the selector. Using upside information of selection
-        or the own selector the manager owns."""
+        or the own selector the manager owns.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        typeret_i: int
+            the retriever we want to use.
+        out_ret: int
+            the out retriever we want to use.
+
+        """
         if typeret_i is None:
             typeret_i, out_ret = self.selector
         else:
@@ -213,12 +327,44 @@ class RetrieverManager:
 
     def _static_get_type_ret(self, i, typeret_i=None):
         """Interaction with the selector. Using upside information of selection
-        or the own selector the manager owns."""
+        or the own selector the manager owns.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        typeret_i: int
+            the retriever we want to use.
+        out_ret: int
+            the out retriever we want to use.
+
+        """
         typeret_i, out_ret = self.selector
         return typeret_i, out_ret
 
     def _selector_get_type_ret(self, i, typeret_i=None):
-        """Get information only from selector."""
+        """Get information only from selector.
+
+        Parameters
+        ----------
+        i: int
+            the element id.
+        typeret_i: tuple, np.ndarray or None (default)
+            the selector of the retrievers we want to use.
+
+        Returns
+        -------
+        typeret_i: int
+            the retriever we want to use.
+        out_ret: int
+            the out retriever we want to use.
+
+        """
         selection = format_selection(self.selector[i])
         typeret_i, out_ret = selection
         return typeret_i, out_ret
@@ -226,7 +372,14 @@ class RetrieverManager:
     ######################## Perturbation management ##########################
     ###########################################################################
     def add_perturbations(self, perturbations):
-        """Adding perturbations to retrievers."""
+        """Adding perturbations to retrievers.
+
+        Parameters
+        ----------
+        perturbations: pst.BasePerturbation
+            setting the perturbation information.
+
+        """
         for i_ret in range(len(self.retrievers)):
             self.retrievers[i_ret].add_perturbations(perturbations)
         ## Update staticneighs
@@ -239,8 +392,14 @@ class RetrieverManager:
         """Add aggregations to retrievers. Only it is useful this function if
         there is only one retriever previously and we are aggregating the first
         one.
+
+        Parameters
+        ----------
+        aggregation_info: tuple or pst.BaseRetriever
+            the information to create a retriever aggregation.
+
         """
-        if isinstance(aggregation_info, Retriever):
+        if isinstance(aggregation_info, BaseRetriever):
             self.retrievers.append(aggregation_info)
         else:
             retriever = create_aggretriever(aggregation_info)

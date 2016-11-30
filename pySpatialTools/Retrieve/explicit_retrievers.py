@@ -8,13 +8,13 @@ The module which groups the explicit defined retrievers of generic elements.
 
 import numpy as np
 #from itertools import combinations
-from retrievers import Retriever
+from retrievers import BaseRetriever
 
 
 ###############################################################################
 ############################## Network Retrievers #############################
 ###############################################################################
-class NetworkRetriever(Retriever):
+class NetworkRetriever(BaseRetriever):
     """Retriever class for precomputed network distances.
     """
     typeret = 'network'
@@ -24,7 +24,40 @@ class NetworkRetriever(Retriever):
                  autoexclude=False, ifdistance=True, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
                  output_map=None, constant_info=False, bool_input_idx=None):
-        "Creation a element network retriever class method."
+        """Creation a element network retriever class method.
+
+        Parameters
+        ----------
+        main_mapper: pst.RegionDistances
+            the explicit definition of the spatial network of neighborhoods.
+        info_ret: optional (default=None)
+            the information to set the core-retriever or to define the
+            neighborhood.
+        pars_ret: optional (default=None)
+            the parameters required to set the core-retriever.
+        autoexclude: boolean or None (default=None)
+            if we want to exclude the element from its neighborhood.
+        ifdistance: boolean (default=True)
+            if we want to retrieve the distance or the relative position.
+        info_f: function (default=None)
+            information creation to query for neighborhood.
+        perturbations: pst.BasePerturbation (default=None)
+            perturbations applied to the spatial model.
+        relative_pos: function or pst.BaseRelative_positioner (default=None)
+            the relative position function or object.
+        input_map: function or None (default=None)
+            the map applied to the input queried.
+        output_map: function or list or None (default=None)
+            the maps applied to the result of the retieved task.
+        constant_info: boolean (default=None)
+            if we are going to use it statically, inputting the same type
+            of inputs.
+        bool_input_idx: boolean or None (default=None)
+            if the input are going to be always indices (True), always the
+            whole spatial information (False) or we do not know or even
+            there is going to be not always the same (None)
+
+        """
         # Reset globals
         self._initialization()
         # IO mappers
@@ -51,7 +84,32 @@ class NetworkRetriever(Retriever):
     ###########################################################################
     def _retrieve_neighs_general_spec(self, elem_i, info_i={},
                                       ifdistance=True, kr=0):
-        """Retrieve element neighbourhood information. """
+        """Retrieve element neighbourhood information.
+
+        Parameters
+        ----------
+        elem_i: int
+            the indice of the elem_i.
+        info_i: dict (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
         elem_i = self._prepare_input(elem_i, kr)
 #        print '.'*25, elem_i, self._prepare_input
 #        info_i = self._format_info_i_reg(info_i, elem_i)
@@ -72,6 +130,23 @@ class NetworkRetriever(Retriever):
         ----------
         elem_i: int
             the indice of the elem_i.
+        info_i: dict (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
         """
         info_i = self._get_info_i(elem_i, info_i)
         elem_i = self._prepare_input(elem_i, kr)
@@ -86,6 +161,23 @@ class NetworkRetriever(Retriever):
         ----------
         elem_i: int
             the indice of the elem_i.
+        info_i: dict (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
         """
         info_i = self._get_info_i(elem_i, info_i)
         elem_i = self._prepare_input(elem_i, kr)
@@ -96,12 +188,48 @@ class NetworkRetriever(Retriever):
     ############################# Getter functions ############################
     ###########################################################################
     def _get_loc_from_idx(self, i, kr=0):
-        """Not list indexable interaction with data."""
+        """Not list indexable interaction with data.
+
+        Parameters
+        ----------
+        i: int
+            the index the element we want to get.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+
+        """
         loc_i = np.array(self.retriever[kr].data_input[i])
         return loc_i
 
     def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from stored data."""
+        """Get indices from stored data.
+
+        Parameters
+        ----------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        i_loc: int
+            the index of the elements input.
+
+        """
         i_loc = np.where(self.retriever[kr].data_input == loc_i)[0]
         i_loc = list(i_loc) if len(i_loc) else []
         return i_loc
@@ -109,7 +237,16 @@ class NetworkRetriever(Retriever):
     ############################ Auxiliar functions ###########################
     ###########################################################################
     def _define_retriever(self, main_mapper, pars_ret={}):
-        """Define the main mapper as a special retriever."""
+        """Define the main mapper as a special retriever.
+
+        Parameters
+        ----------
+        main_mapper: pst.Relations
+            the main precomputed information.
+        pars_ret: dict
+            the parameters of the to define the retrivers.
+
+        """
         ## TODO: Ensure correct class
         self.retriever.append(main_mapper)
         ## TODO: Compute constant neighs
@@ -126,12 +263,39 @@ class NetworkRetriever(Retriever):
 #            self.preferable_input_idx = None
 
     def _check_proper_retriever(self):
-        "Check the correctness of the retriever for this class."
+        """Check the correctness of the retriever for this class."""
         check = True
         return check
 
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
-        "Format output."
+        """Format output.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+        output: int (default = 0)
+            the number of output mapper function selected.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
 #        print 'this is the point of debug', neighs, dists, i_locs
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
 #        neighs, dists = np.array(neighs), np.array(dists)
@@ -143,7 +307,33 @@ class NetworkRetriever(Retriever):
         return neighs, dists
 
     def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
-        "Format output."
+        """Format output.
+
+        Parameters
+        ----------
+        element_i: int, list or np.ndarray
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        pars_ret: dict
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, is the size
+            of the windows, the place of the center of the windows and the
+            excluded auto elements.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
+        """
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
 #        neighs, dists = np.array(neighs), np.array(dists)
 #        n_dim = 1 if len(dists.shape) == 1 else dists.shape[1]
@@ -152,12 +342,41 @@ class NetworkRetriever(Retriever):
 
     def _preformat_neighs_info(self, format_level=None, type_neighs=None,
                                type_sp_rel_pos=None):
-        """Over-writtable function."""
+        """Over-writtable function. It is a function that given some of the
+        properties of how the core-retriever is going to give us the
+        information of the neighborhood.
+
+        Parameters
+        ----------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        Returns
+        -------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
 
     @property
     def data_input(self):
+        """Returns the possible to retrieve neighbourhood spatial elements."""
         ## Assumption kr=0 is the leading data input.
         return self.retriever[0].data_input
 
@@ -182,6 +401,12 @@ class SameEleNeigh(NetworkRetriever):
         ----------
         elem_i: int or numpy.ndarray
             the element we want to get its neighsbour elements.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
 
         Returns
         -------

@@ -12,7 +12,7 @@ used to define the neighborhood.
 import numpy as np
 #from itertools import product
 from sklearn.neighbors import KDTree
-from retrievers import Retriever
+from retrievers import BaseRetriever
 #from aux_retriever import DummyRetriever
 from aux_windowretriever import generate_grid_neighs_coord,\
     create_window_utils, windows_iteration
@@ -22,7 +22,7 @@ from pySpatialTools.utils.util_external.parallel_tools import split_parallel
 ###############################################################################
 ############################ Space-Based Retrievers ###########################
 ###############################################################################
-class SpaceRetriever(Retriever):
+class SpaceRetriever(BaseRetriever):
     """Retriever of elements considering its spacial information from a pool
     of elements retrievable.
     """
@@ -32,7 +32,42 @@ class SpaceRetriever(Retriever):
                  autoexclude=False, ifdistance=False, info_f=None,
                  perturbations=None, relative_pos=None, input_map=None,
                  output_map=None, constant_info=False, bool_input_idx=None):
-        "Creation a element space retriever class method."
+        """Creation a element space retriever class method.
+
+        Parameters
+        ----------
+        locs: list, np.ndarray or others
+            the spatial information of the retrievable elements.
+        info_ret: optional (default=None)
+            the information to set the core-retriever or to define the
+            neighborhood.
+        autolocs: list, np.ndarray or others (default=None)
+            the data to query for their neighborhoods.
+        pars_ret: optional (default=None)
+            the parameters required to set the core-retriever.
+        autoexclude: boolean or None (default=None)
+            if we want to exclude the element from its neighborhood.
+        ifdistance: boolean (default=True)
+            if we want to retrieve the distance or the relative position.
+        info_f: function (default=None)
+            information creation to query for neighborhood.
+        perturbations: pst.BasePerturbation (default=None)
+            perturbations applied to the spatial model.
+        relative_pos: function or pst.BaseRelative_positioner (default=None)
+            the relative position function or object.
+        input_map: function or None (default=None)
+            the map applied to the input queried.
+        output_map: function or list or None (default=None)
+            the maps applied to the result of the retieved task.
+        constant_info: boolean (default=None)
+            if we are going to use it statically, inputting the same type
+            of inputs.
+        bool_input_idx: boolean or None (default=None)
+            if the input are going to be always indices (True), always the
+            whole spatial information (False) or we do not know or even
+            there is going to be not always the same (None)
+
+        """
         ## Reset globals
         self._initialization()
         # IO mappers
@@ -62,14 +97,68 @@ class SpaceRetriever(Retriever):
     ############################ Auxiliar functions ###########################
     ###########################################################################
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
-        "Format output with excluding."
+        """Format output with excluding.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+        output: int (default = 0)
+            the number of output mapper function selected.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
         output = self._select_output(i_locs, output)
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         neighs, dists = self._exclude_auto(i_locs, neighs, dists, kr)
         return neighs, dists
 
     def _format_output_noexclude(self, i_locs, neighs, dists, output=0, kr=0):
-        "Format output without excluding the same i."
+        """Format output without excluding the same i.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+        output: int (default = 0)
+            the number of output mapper function selected.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
         output = self._select_output(i_locs, output)
         neighs, dists = self._output_map[output](self, i_locs, (neighs, dists))
         return neighs, dists
@@ -103,6 +192,16 @@ class KDTreeBasedRetriever(SpaceRetriever):
 
     ######################## Retrieve-driven retrieve #########################
     def __iter__(self):
+        """Iteration which secuencially retrive neighbours in order.
+
+        Returns
+        -------
+        idxs: list or np.ndarray
+            the indices of the retrieved neighborhoods.
+        neighs: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         ## Prepare iteration
         bool_input_idx, constant_info = True, True
         ## Format functions
@@ -117,7 +216,18 @@ class KDTreeBasedRetriever(SpaceRetriever):
 
     ######################## Retrieve-driven retrieve #########################
     def _define_retriever(self, locs, pars_ret=None):
-        """Define a kdtree for retrieving neighbours."""
+        """Define a kdtree for retrieving neighbours.
+
+        Parameters
+        ----------
+        locs: list, np.ndarray, or others
+            spatial information of the whole pool of retrievable spatial
+            elements.
+        pars_ret: int or None (default)
+            the parameters to set the core-retriever. In sklearn-KDTree
+            core-retriever, we only need leafsize parameter.
+
+        """
         if pars_ret is not None:
             leafsize = int(pars_ret)
         else:
@@ -129,6 +239,7 @@ class KDTreeBasedRetriever(SpaceRetriever):
 
     ########################### Auxiliar functions ############################
     def _heterogeneity_definition(self):
+        """Function which sets the Heterogeneous variable flags."""
         ## Heterogeneous definition
         if self.data is None and len(self.retriever) == 0:
             if self.data is not None:
@@ -149,18 +260,55 @@ class KDTreeBasedRetriever(SpaceRetriever):
             self._heterogenous_output = not all(logi)
 
     def _get_loc_from_idx(self, i, kr=0):
-        """Not list indexable interaction with data."""
+        """Not list indexable interaction with data.
+
+        Parameters
+        ----------
+        i: int
+            the index of the element we want to get.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+
+        """
         loc_i = np.array(self.retriever[kr].data[i])
         return loc_i
 
     def _get_idx_from_loc(self, loc_i, kr=0):
-        """Get indices from locations."""
+        """Get indices from locations.
+
+        Parameters
+        ----------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list
+            the list of element we want to get from the data.
+
+        """
         indices = np.where(np.all(self.retriever[kr].data == loc_i, axis=1))[0]
         indices = list(indices)
         return indices
 
     @property
     def data_input(self):
+        """Returns the possible to retrieve neighbourhood spatial elements."""
         if self._autodata:
             return np.array(self.retriever[0].data)
         else:
@@ -172,13 +320,15 @@ class KDTreeBasedRetriever(SpaceRetriever):
 
     @property
     def data_output(self):
+        """Returns the retrivable spatial elements collection."""
         return np.array(self.retriever[0].data)
 
 
 ################################ K Neighbours #################################
 ###############################################################################
 class KRetriever(KDTreeBasedRetriever):
-    "Class which contains a retriever of K neighbours."
+    """Class which contains a retriever of K neighbours based on the
+    core-retriever provided by the sklearn package KDTree."""
     _default_ret_val = 1
     ## Basic information of the core retriever
     constant_neighs = True
@@ -190,7 +340,32 @@ class KRetriever(KDTreeBasedRetriever):
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, kneighs, ifdistance=False,
                                       kr=0):
-        """General function to retrieve neighs in the specific way we want."""
+        """General function to retrieve neighs in the specific way we want.
+
+        Parameters
+        ----------
+        point_i: int, list or np.ndarray
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        kneighs: int (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the number
+            of neighbours we want to retrieve.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
+        """
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query(point_i, int(kneighs), ifdistance)
         if ifdistance:
@@ -209,6 +384,22 @@ class KRetriever(KDTreeBasedRetriever):
         ----------
         point_i: int
             the indice of the point_i.
+        info_i: int (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the number
+            of neighbours we want to retrieve.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
         """
         kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
@@ -223,6 +414,22 @@ class KRetriever(KDTreeBasedRetriever):
         ----------
         point_i: int
             the indice of the point_i.
+        info_i: int (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the number
+            of neighbours we want to retrieve.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
         """
         kneighs = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
@@ -235,7 +442,35 @@ class KRetriever(KDTreeBasedRetriever):
     ########################### Auxiliar functions ############################
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
-        """Over-writtable function."""
+        """Over-writtable function. It is a function that given some of the
+        properties of how the core-retriever is going to give us the
+        information of the neighborhood.
+
+        Parameters
+        ----------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        Returns
+        -------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         if self._autoexclude:
             format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         else:
@@ -271,7 +506,32 @@ class CircRetriever(KDTreeBasedRetriever):
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, point_i, radius_i,
                                       ifdistance=False, kr=0):
-        """General function to retrieve neighs in the specific way we want."""
+        """General function to retrieve neighs in the specific way we want.
+
+        Parameters
+        ----------
+        point_i: int, list or np.ndarray
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        radius_i: float
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the size of
+            the radius.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
+        """
         point_i = self._prepare_input(point_i, kr)
         res = self.retriever[kr].query_radius(point_i, radius_i, ifdistance)
         if ifdistance:
@@ -290,6 +550,22 @@ class CircRetriever(KDTreeBasedRetriever):
         ----------
         point_i: int
             the indice of the point_i.
+        info_i: float (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the size of
+            the radius.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
         """
         radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
@@ -304,6 +580,22 @@ class CircRetriever(KDTreeBasedRetriever):
         ----------
         point_i: int
             the indice of the point_i.
+        info_i: float (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, the size of
+            the radius.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        res: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
         """
         radius = self._get_info_i(point_i, info_i)
         point_i = self._prepare_input(point_i, kr)
@@ -316,7 +608,35 @@ class CircRetriever(KDTreeBasedRetriever):
     ########################### Auxiliar functions ############################
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
-        """Over-writtable function."""
+        """Over-writtable function. It is a function that given some of the
+        properties of how the core-retriever is going to give us the
+        information of the neighborhood.
+
+        Parameters
+        ----------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        Returns
+        -------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
 
@@ -338,7 +658,10 @@ class CircRetriever(KDTreeBasedRetriever):
 ###############################################################################
 class WindowsRetriever(SpaceRetriever):
     """Class which contains a retriever of window neighbours for
-    n-dimensional grid data.
+    n-dimensional grid data. It is a retriever based on regular data in which
+    there is stored the Implicit relations between elements and try to be
+    as quick as possible. It is not enough to compete with the specialized
+    alternatives.
     """
     _default_ret_val = {'l': 1, 'center': 0, 'excluded': False}
     ## Basic information of the core retriever
@@ -350,13 +673,34 @@ class WindowsRetriever(SpaceRetriever):
 
     ######################## Retrieve-driven retrieve #########################
     def set_iter(self, info_ret=None, max_bunch=None):
+        """Set iteration properties.
+
+        Parameters
+        ----------
+        info_ret: optional or None (default)
+            the information which defines the neighborhood regarding the
+            retrieve neighborhood model selected.
+        max_bunch: int or None (default)
+            the maximum number of retrieved indices at the same time.
+
+        """
         info_ret = self._default_ret_val if info_ret is None else info_ret
         max_bunch = len(self) if max_bunch is None else max_bunch
         self._info_ret = info_ret
         self._max_bunch = max_bunch
 
     def __iter__(self):
-        """WARNING: Support only for kr=0"""
+        """Iteration which secuencially retrive neighbours in order.
+        WARNING: Support only for kr=0
+
+        Returns
+        -------
+        idxs: list or np.ndarray
+            the indices of the retrieved neighborhoods.
+        neighs: pst.Neighs_Info
+            the neighborhood information.
+
+        """
         ## Prepare iteration
         bool_input_idx = True
         constant_info = True
@@ -374,19 +718,91 @@ class WindowsRetriever(SpaceRetriever):
             yield inds, self.neighs_info
 
     def neighs_creation_iter(self, neighs, rel_pos):
+        """Auxiliar function to Neighs creation the interation in windows
+        retriever.
+
+        Parameters
+        ----------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        rel_pos: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        rel_pos: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
         if self.k_perturb == 0 or self.staticneighs:
             return neighs, len(neighs)*[rel_pos]
         else:
             return ([(neighs, len(neighs)*[rel_pos])], [0])
 
     def _format_output_exclude(self, i_locs, neighs, dists, output=0, kr=0):
-        "Format output with excluding."
+        """Format output with excluding.
+
+        Parameters
+        ----------
+        i_loc: int, list or np.ndarray or other
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+        output: int (default = 0)
+            the number of output mapper function selected.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs: list of np.ndarray or np.ndarray
+            the neighs indices for each iss in i_loc.
+        dists: list of list of np.ndarray or np.ndarray
+            the information or relative position in respect to each iss
+
+        """
         raise Exception("Combination impossible")
 
     ###################### Retrieve functions candidates ######################
     def _retrieve_neighs_general_spec(self, element_i, pars_ret,
                                       ifdistance=False, kr=0):
-        """Retrieve all the neighs in the window described by pars_ret."""
+        """General function to retrieve neighs in the specific way we want.
+        Retrieve all the neighs in the window described by pars_ret.
+
+        Parameters
+        ----------
+        element_i: int, list or np.ndarray
+            the information of the element (as index or the whole spatial
+            information of the element to retieve its neighborhood)
+        pars_ret: dict
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, is the size
+            of the windows, the place of the center of the windows and the
+            excluded auto elements.
+        ifdistance: boolean or None (default)
+            if we want to retrieve distances.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
+        """
         ## Get loc
         loc_i = self._prepare_input(element_i, kr)
 #        assert(len(loc_i.shape) == 2)
@@ -408,7 +824,30 @@ class WindowsRetriever(SpaceRetriever):
         return neighs_info
 
     def _retrieve_neighs_constant_nodistance(self, element_i, pars_ret, kr=0):
-        """Retrieve neighs not computing distance by default."""
+        """Retrieve neighs not computing distance by default.
+
+        Parameters
+        ----------
+        element_i: int, np.ndarray
+            the indice of the element_i.
+        pars_ret: int (default = {})
+            the information which defines the retrieved neighborhood regarding
+            the selected model of neighborhood. In that retriever, is the size
+            of the windows, the place of the center of the windows and the
+            excluded auto elements.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        neighs_info: tuple (neighs, dists)
+            the neighbourhood information prepared to be stored.
+
+        """
         pars_ret = self._get_info_i(element_i, pars_ret)
         loc_i = self._prepare_input(element_i, kr)
         neighs_info = generate_grid_neighs_coord(loc_i, self._shape,
@@ -436,25 +875,102 @@ class WindowsRetriever(SpaceRetriever):
                                                    neighs_info[1])
         return neighs_info
 
-    def _get_loc_from_idx(self, i_locs, kr=0):
-        """Not list indexable interaction with data."""
-        locs_i = self.retriever[kr].get_locations(i_locs)
-        return locs_i
+    def _get_loc_from_idx(self, i_loc, kr=0):
+        """Not list indexable interaction with data.
 
-    def _get_idx_from_loc(self, locs_i, kr=0):
-        """Get indices from locations."""
-        i_locs = self.retriever[kr].get_indices(locs_i)
-        return i_locs
+        Parameters
+        ----------
+        i_loc: int
+            the index of the element we want to get.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+
+        """
+        loc_i = self.retriever[kr].get_locations(i_loc)
+        return loc_i
+
+    def _get_idx_from_loc(self, loc_i, kr=0):
+        """Get indices from locations.
+
+        Parameters
+        ----------
+        loc_i: np.ndarray
+            the spatial information of the element `i`.
+        kr: int (default = 0)
+            the indice of the core-retriever selected. When there are location
+            perturbations, the core-retriever it is replicated for each
+            perturbation, so we need to select perturbated retriever. `kr`
+            could be equal to the `k` or not depending on the type of
+            perturbations.
+
+        Returns
+        -------
+        indices: list
+            the list of element we want to get from the data.
+
+        """
+        indices = self.retriever[kr].get_indices(loc_i)
+        return indices
 
     ########################### Auxiliar functions ############################
     def _preformat_neighs_info(self, format_level, type_neighs,
                                type_sp_rel_pos):
-        """Over-writtable function."""
+        """Over-writtable function. It is a function that given some of the
+        properties of how the core-retriever is going to give us the
+        information of the neighborhood.
+
+        Parameters
+        ----------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        Returns
+        -------
+        format_level: int
+            the level of information which gives neighborhood (see
+            pst.Neighs_Info)
+        type_neighs: str (optional)
+            the type of neighs is given by the core-retriever (see
+            pst.Neighs_Info)
+        type_sp_rel_pos: str (optional)
+            the type of relative position information is given by the
+            core-retriever (see pst.Neighs_Info)
+
+        """
         format_level, type_neighs, type_sp_rel_pos = 2, 'list', 'list'
         return format_level, type_neighs, type_sp_rel_pos
 
     def _define_retriever(self, locs, pars_ret=None):
-        """Define a kdtree for retrieving neighbours."""
+        """Define a grid retriever for retrieving neighbours with implicit
+        relations.
+
+        Parameters
+        ----------
+        locs: np.ndarray or tuple of int
+            spatial information of the whole pool of retrievable spatial
+            elements. It could be defined as the tuple of int of the ndim
+            for each considered dimension.
+        pars_ret: int or None (default)
+            the parameters to set the core-retriever. In that core-retriever
+            it is not needed.
+
+        """
         # If it has to be excluded it will be excluded initially
         self._autoexclude = False
         self._format_output = self._format_output_noexclude
@@ -487,6 +1003,7 @@ class WindowsRetriever(SpaceRetriever):
         self._virtual_data = True
 
     def _heterogeneity_definition(self):
+        """Function which sets the Heterogeneous variable flags."""
         ## Heterogeneous definition (TODO)
         self._heterogenous_input = False
         self._heterogenous_output = False
