@@ -23,7 +23,7 @@ The main structure of the problem is inspired by a general definition of the pro
 There are some *hot spots*, where the user can take profit of the framework code and use it as a wrapper of his own code in order to take profit of the tools he has available. The main *hot spots* are:
 * `BaseRetriever` (or even its son classes): where it happens the connection (and possibly the storage) of the spatial data, as well as the retrieve.
 * `BaseFeatures` (or even its son classes): where it happens the connection (and possibly the storage) of the feature data, as well as the retrieve and computation of descriptors).
-* `BaseDescriptorModel`: where it is computed the descriptors of the selected element from the associated spatial neighborhood retrieved.
+* `BaseDescriptorModel`: where it is computed the descriptors of the selected element from the associated spatial neighborhood retrieved. It can change while see the data.
 * `BasePerturbations`: where it is implemented the statistical random models to apply to the data in order to perform posterior statistical testing.
 * `BaseRelativePositioner`: where it is implemented the basic relative position quantity (distance, similarity or other complex object) definition for assign a posteriori measure between elements and the elements in their neighborhoods after the retrieve. 
 
@@ -40,7 +40,7 @@ With these classes the users, by using inheritance and respecting the standards 
 * Possibility to wrap an interaction with external spatial databases.
 * Some specific simple retrievers (as K-order, k-neighbour, radius retriever) coded in [Retrievers](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Retrieve/retrievers.py) submodule.
 * Some specific simple descriptor models (as histogram or averaging desc) coded in [Descriptors](https://github.com/tgquintela/pySpatialTools/blob/master/pySpatialTools/Feature_engineering/Descriptors) submodule.
-
+* Possibility to deal with different spatial scales data in the same pipeline.
 
 ## Applications
 
@@ -48,13 +48,18 @@ With these classes the users, by using inheritance and respecting the standards 
 * Transform topological data into another topological space, more appropriate for the study of the system.
 * Explore cross-information between aggregated information and punctual features.
 * Assigning local features to some elements for posterior study.
+* Computation of Local indicators of spatial association
+* Egocentric spatial network study and egocentric network features extraction.
+* Graph-based machine learning (using explicit retrievable representation), and operating over a parameter modifiable descriptor model object.
 
 ### General applications
 * Spatial game theory: study and prediction in [*spatial games*]() evolution by using the statistical and machine learning tools to the extracted features.
 * Spatial regression models: perform a local regression model for a heterogeneous and user-defined neighborhood.
+* Spatial econometrics.
 * Support tool in Exploratory Analysis computing quickly easy local measures.
 * Preprocessing information for modeling or visualization, e.g. spatially aggregating data.
 * Study the spatial scaling property of features data.
+* Easily transformation of a spatial data and a neighborhood definition to a spatial network.
 
 ## Installation
 
