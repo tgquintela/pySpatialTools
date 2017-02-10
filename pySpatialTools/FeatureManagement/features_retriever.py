@@ -468,8 +468,8 @@ class FeaturesManager:
 #        print t_feat_in, t_feat_out, t_feat_des
         ## 2. Get pfeats (pfeats 2dim array (krein, jvars))
         desc_i = self._get_input_features(i_input, ks, t_feat_in)
-        print i_input, ks, self._get_input_features, type(t_feat_in)
-        print '.'*20, desc_i
+#        print i_input, ks, self._get_input_features, type(t_feat_in)
+#        print '.'*20, desc_i
         desc_neigh = self._get_output_features(neighs_info, ks, t_feat_out)
 #        print i, ks, i_input, neighs_info, neighs_info.ks, neighs_info.idxs
         ## 3. Map vals_i
@@ -594,9 +594,12 @@ class FeaturesManager:
         ## Input mapping
         i_input = self._maps_input[typefeats[0]](i)
         ## Retrieve features
+#        print '-'*20, i_input, k
         feats_i = self.features[typefeats[1]].compute((i_input, k))
+#        print '-.'*20, feats_i
         ## Outformat
         feats_i = self._maps_output(self, feats_i)
+#        print '-,'*20, feats_i
         return feats_i
 
     def _get_input_features_variable(self, i, k, typefeats=(0, 0)):
@@ -625,21 +628,21 @@ class FeaturesManager:
         k_l = 1 if type(k) == int else len(k)
         typefeats = [typefeats]*i_l if type(typefeats) == tuple else typefeats
         feats_i = [[] for kl in range(k_l)]
-        print '`'*20, i_l
+#        print '`'*20, i_l
         for j in range(i_l):
             ## Input mapping
             i_j = [i[j]] if type(i[j]) == int else i[j]
             i_input = self._maps_input[typefeats[j][0]](i_j)
             ## Retrieve features
             feats_ij = self.features[typefeats[j][1]].compute((i_input, k))
-            print feats_ij, i_input, k
+#            print feats_ij, i_input, k, typefeats, j
             ## Outformat
             feats_ij = self._maps_output(self, feats_ij)
-            print feats_ij
-            for k_j in range(len(feats_ij)):
+#            print feats_ij
+            for k_j in range(k_l):
                 feats_i[k_j].append(feats_ij[k_j][0])
         assert(len(feats_i) == k_l)
-        assert(len(feats_i[0]) == i_l)
+        assert(all([len(feats_i[ind]) == i_l for ind in range(k_l)]))
         return feats_i
 
     def _get_input_features_general(self, i, k, typefeats=(0, 0)):
@@ -848,8 +851,8 @@ class FeaturesManager:
             t_feat_desc = [t_feat_desc]*i_l
         ## Sequential computation
         descriptors = [[] for kl in range(k_l)]
-        print vals_i, desc_i, self.k_perturb
-        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
+#        print vals_i, desc_i, self.k_perturb
+#        print 'joe', i_l, len(desc_i), len(desc_neigh), len(vals_i)
         for j in range(i_l):
             neighs_info_j = neighs_info.get_copy_iss_by_ind(j)
             vals_ij = [vals_i[k][j] for k in range(len(vals_i))]

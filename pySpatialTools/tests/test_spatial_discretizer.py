@@ -233,7 +233,11 @@ def test():
 #            #disc5.get_limits(Locs[i], disc5[0])
         disc4.discretize(locs_r)
         #disc4.map_locs2regionlocs(locs_r)
-        disc4.map2agglocs(locs_r)
+        #########################################
+        ## TODO: map2agglocs for multiple regions
+        #########################################
+#        disc4.map2agglocs(locs_r)
+        #########################################
         disc4.get_activated_regions(locs_r)
         disc4.belong_region(locs_r)
         disc4.belong_region(locs_r, disc4[0])

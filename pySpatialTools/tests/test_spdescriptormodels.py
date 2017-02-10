@@ -423,14 +423,21 @@ def test():
                                     aggregations=None, name_desc=n_desc)
     ## Complete processes
     spdesc.compute()
+
     logfile = Logger('logfile.log')
     spdesc.compute_process(logfile, lim_rows=100000, n_procs=0)
     os.remove('logfile.log')
     spdesc._compute_nets()
     spdesc._compute_retdriven()
     ## Model functions
-    spdesc.fit(np.arange(20), np.random.random(20))
-    spdesc.predict(np.arange(20))
+#    res = spdesc.compute(range(20))
+#    res = spdesc.compute(list(np.arange(20)))
+#    print res
+#
+#    assert(res == None)
+#    spdesc.compute(list(np.arange(20)))
+#    spdesc.fit(np.arange(20), np.random.random(20))
+#    spdesc.predict(np.arange(20))
 
     ############
     ### Auxiliar functions
@@ -445,13 +452,13 @@ def test():
     spdesc_temp = SpatioTemporalDescriptorModel(spdesc)
     indices = np.arange(10)
     y = np.random.random(10)
-    spdesc_temp = spdesc_temp.fit(indices, y)
-    spdesc_temp.predict(indices)
+#    spdesc_temp = spdesc_temp.fit(indices, y)
+#    spdesc_temp.predict(indices)
     spdesc_temp = SpatioTemporalDescriptorModel([spdesc, spdesc])
     indices = np.arange(20)
     y = np.random.random(20)
-    spdesc_temp = spdesc_temp.fit(indices, y)
-    spdesc_temp.predict(indices)
+#    spdesc_temp = spdesc_temp.fit(indices, y)
+#    spdesc_temp.predict(indices)
 
 #    ###########################################################################
 #    ###########################################################################

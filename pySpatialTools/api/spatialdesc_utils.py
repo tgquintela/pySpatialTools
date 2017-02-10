@@ -18,6 +18,31 @@ from pySpatialTools.FeatureManagement.features_retriever import\
 from pySpatialTools.FeatureManagement.spatial_descriptormodels import\
     SpatialDescriptorModel
 
+from implicit_retrievers import KRetriever, CircRetriever, WindowsRetriever
+from explicit_retrievers import SameEleNeigh, OrderEleNeigh,\
+    LimDistanceEleNeigh
+
+'''
+retrievers = {'sameeleneigh': SameEleNeigh, 'ordereleneigh': OrderEleNeigh,
+              'limdistanceneigh': LimDistanceEleNeigh,
+              'kretriever': KRetriever, 'circretriever': CircRetriever,
+              'windowsretriever': WindowsRetriever}
+features = {}
+
+    feats1 = ImplicitFeatures(featsarr0)
+
+    m_vals_i = np.random.randint(0, 5, 50)
+    ret = CircRetriever(locs1, autolocs=locs_input, info_ret=3,
+                        bool_input_idx=True)
+    feat = FeaturesManager(feats1, maps_vals_i=m_vals_i, mode='sequential',
+                           descriptormodels=None)
+    spdesc = SpatialDescriptorModel(retrievers=ret, featurers=feat,
+                                    mapselector_spdescriptor=None,
+                                    perturbations=perturbation,
+                                    aggregations=None, name_desc=n_desc)
+    ## Complete processes
+    spdesc.compute()
+'''
 
 def create_null_selfindices_desc(locs):
     """Create the PhantomFeatures to be used for the indices.
