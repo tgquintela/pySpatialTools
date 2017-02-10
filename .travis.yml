@@ -7,9 +7,9 @@ addons:
    apt:
       packages:
       - gfortran
-      - nose
-      - libgfortran
-      - coverage
+      - python-nose
+      - libgfortran3
+      - python-coverage
 
 matrix:
   include:
